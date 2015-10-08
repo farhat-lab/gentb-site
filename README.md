@@ -16,7 +16,7 @@ A basic view/template combination
   - View: "view_homepage" [gentb_website/tb_website/apps/basic_pages/views.py](gentb_website/tb_website/apps/basic_pages/views.py)
   - Template: [gentb-site/gentb_website/tb_website/templates/homepage.html](gentb-site/gentb_website/tb_website/templates/homepage.html)
 
-![TB homepage screenshot](screen-shots/genTB-home.png?raw=true "genTB Homepage")
+![homepage screenshot](screen-shots/genTB-home.png?raw=true "genTB Homepage")
 
 ### Share
 
@@ -24,3 +24,5 @@ A basic view/template combination.  The template includes embedded [Dataverse Wi
 
   - View: "view_share_page" [gentb_website/tb_website/apps/basic_pages/views.py](gentb_website/tb_website/apps/basic_pages/views.py)
   - Template: [gentb-site/gentb_website/tb_website/templates/share.html](gentb-site/gentb_website/tb_website/templates/share.html)
+![Share Page screenshot](screen-shots/genTB-share.png?raw=true "genTB Share page")
+
