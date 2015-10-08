@@ -18,6 +18,10 @@ A basic view/template combination
 
 ![homepage screenshot](screen-shots/genTB-home.png?raw=true "genTB Homepage")
 
+### Predict
+
+This pages requires the user to be logged in.  
+
 ### Share
 
 A basic view/template combination.  The template includes embedded [Dataverse Widgets](http://datascience.iq.harvard.edu/blog/dataverse-40-theme-widgets) in the form of javascript snippets
