@@ -61,5 +61,6 @@ docs/_build/
 target/
 
 gentb_website/tb_website/tb_website/settings/mail_settings_production.json
+gentb_website/tb_website/tb_website/settings/mail_settings_local.json
 gentb_website/tb_website/tb_website/settings/secret_settings_prod.json
 gentb_website/tb_website/tb_website/settings/production.py
