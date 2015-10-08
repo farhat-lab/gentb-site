@@ -1,0 +1,163 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+
+{% block main_content %}
+        <!-- Jumbotron Header -->
+
+        {% if just_logged_in %}
+        {% comment %}
+        <div class="alert alert-success" role="alert">
+            <p>Welcome, you are now logged in as <b>{{ username }}</b></p>
+            {% if my_dataset_count and my_dataset_count > 0 %}
+                  <p>View your <a href="{% url 'view_my_datasets' %}">{{ my_dataset_count }} dataset{{ my_dataset_count|pluralize }}</a></p>
+            {% endif %}
+        </div>
+        {% endcomment %}
+
+        {% endif %}
+        <header class="jumbotron hero-spacer">
+            <font size = "7">Translational Genomics of Tuberculosis</font>
+            <p>genTB is a genomics analysis tool for <i>Mycobacterium tuberculosis (TB)</i> data exploration and offers clinicians and researchers four main features: a seamless method to share data, the prediction of drug resistances based on genotype, geographic mapping, and a user friendly statistical analysis tool.</p>
+            <p><a href="{% url 'view_about_page' %}" class="btn btn-primary btn-large">Learn More</a>
+            </p>
+        </header>
+
+        <hr>
+
+        <!-- Title -->
+        <!-- <div class="row">
+            <div class="col-lg-12">
+                <h3>Latest Features</h3>
+            </div>
+        </div> -->
+        <!-- /.row -->
+
+        <!-- Page Features -->
+        <div class="row text-left">
+
+              <div class="col-md-3 col-sm-6 hero-feature">
+                <div class="thumbnail">
+                    <center><h4>Predict resistance based <br>on genotypic data</h4></center>
+                    <a href="{% url 'view_predict_page' %}"><img src="{% static 'images/predict.png' %}" alt=""></a>
+                    <div class="caption">
+                        <p class="text-center">
+                            <a href="{% url 'view_predict_page' %}" class="btn btn-primary">Run Predictions</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+
+            <div class="col-md-3 col-sm-6 hero-feature">
+                <div class="thumbnail">
+                    <center><h4>Contribute your data <br>to this project</h4></center>
+                    <a href="{#% url 'view_share_page' %#}"><img src="{% static 'images/share.png' %}" alt=""></a>
+                    <div class="caption">
+                        <p class="text-center">
+                            <a href="{#% url 'view_share_page' %#}" class="btn btn-primary">Share Your Data</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-3 col-sm-6 hero-feature">
+                <div class="thumbnail">
+                    <center><h4>Visualize impacts and <br>strains globally</h4></center>
+                    <a href="{% url 'view_map_page' %}"><img src="{% static 'images/map.png' %}" alt=""></a>
+                    <div class="caption">
+                        <p class="text-center">
+                            <a href="{% url 'view_map_page' %}" class="btn btn-primary">Start Mapping</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-3 col-sm-6 hero-feature">
+                <div class="thumbnail">
+                    <center><h4>Interactively analyze our <br>project data</h4></center>
+                    <a href="{% url 'view_explore_page' %}"><img src="{% static 'images/explore.png' %}" alt=""></a>
+                    <div class="caption">
+                        <p class="text-center">
+                            <a href="{% url 'view_explore_page' %}" class="btn btn-primary">Explore Our Data</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+ <!-- Projects Row -->
+        <div class="row">
+            <div class="col-md-3 col-sm-6 hero-feature">
+                <div class="panel-group" id="accordion">
+                  <div class="panel panel-default">
+                    <div class="panel-heading">
+                      <h4 class="panel-title">
+                        <a data-toggle="collapse" data-parent="#accordion" href="#collapseOne">
+                          Contact Information
+                        </a>
+                      </h4>
+                    </div>
+                    <div id="collapseOne" class="panel-collapse collapse">
+                      <div class="panel-body">
+                        Maha Farhat, MD <br> <a href="mailto:TBpredict@gmail.com">genTB@gmail.com</a>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="panel panel-default">
+                    <div class="panel-heading">
+                      <h4 class="panel-title">
+                        <a data-toggle="collapse" data-parent="#accordion" href="#collapseTwo">
+                          Citing the Project
+                        </a>
+                      </h4>
+                    </div>
+                    <div id="collapseTwo" class="panel-collapse collapse">
+                      <div class="panel-body">
+                        Farhat MR, Murray M, Honaker J, Choirat C, Durbin P, Idris MY. <b>genTB: Translational Genomics of Tuberculosis.</b> 2014.
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="panel panel-default">
+                    <div class="panel-heading">
+                      <h4 class="panel-title">
+                        <a data-toggle="collapse" data-parent="#accordion" href="#collapseThree">
+                          Frequently Asked Questions
+                        </a>
+                      </h4>
+                    </div>
+                    <div id="collapseThree" class="panel-collapse collapse">
+                      <div class="panel-body">
+                        <i>Coming Soon</i>
+                        <!-- <a href="#">FAQs can be found here</a> -->
+                      </div>
+                    </div>
+                  </div>
+
+              </div>
+            </div>
+
+            <div class="col-md-6 portfolio-item">
+                <p><b>Terms of Use:</b></p>
+
+                <p>This project is developed and maintained by researchers and clinicians as a benefit to the research and education community. Although this website is curated, it is also provided in an "as is" basis only, without warranty or representation as to its accuracy or reliability.<!-- <br>(read more) --></p>
+
+
+            </div>
+
+
+            <div class="col-md-3 col-sm-6 hero-feature">
+                    <p>
+                        Supported with funding by:
+                        <br><br>
+                        <a href="http://www.lung.org"><img src="{% static 'images/lung.png' %}" alt=""></a>
+                    </p>
+                </div>
+            </div>
+
+
+
+        <!-- /.row -->
+
+{% endblock %}

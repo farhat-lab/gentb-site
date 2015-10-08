@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+
+{% block head_title_block %}
+My Datasets - Phthisis Ravens
+{% endblock %}
+
+{% block extra_js %}
+    <script type="text/javascript" language="javascript" src="http://code.jquery.com/jquery-1.11.3.min.js"></script>
+
+{% endblock %}
+
+{% block main_content %}
+
+        <div class="row">
+            <div class="col-lg-12">
+                <h1>My Datasets</h1>
+
+                {% if not IS_LOGGED_IN %}
+                <div class="alert alert-warning" role="alert">
+                     <p>Please <a href="{% url 'view_login_page' %}">Log In</a> to see your Datasets.</p>
+                     <p>(Or <a href="{% url 'view_signup_page' %}">Sign Up</a> for an account.)</p>
+                </div>
+                {% endif %}
+
+                {% if datasets and IS_LOGGED_IN %}
+                    {% include "predict/my_datasets_list.html" %}
+                {% endif %}
+
+            </div>
+        </div>
+
+        <div class="col-md-6" id="d3-target-div" style="padding-left:60px;">
+        </div>
+
+
+    <script>
+        $(document).ready(function(){
+            //alert('hi');
+           // $('#datasets').DataTable();
+        });
+    </script>
+{% endblock %}

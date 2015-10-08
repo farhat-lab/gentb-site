@@ -1,0 +1,49 @@
+
+{% if ERROR_FOUND %}
+    <div class="alert alert-danger" role="alert">Please check the errors below
+    </div>
+
+    {% for error in login_form.non_field_errors %}
+        <div class="alert alert-danger" role="alert">{{error}}</div>
+    {% endfor %}
+{% endif %}
+
+<form action="{% url 'view_login_page' %}" enctype="multipart/form-data" method="post">
+    {% csrf_token %}
+
+    {% for hidden_field in login_form.hidden_fields %}
+        {{ hidden_field }}
+    {% endfor %}
+
+    <table class="table-condensed">
+        {% for field in login_form.visible_fields %}
+            {% if field.id_for_label == 'id_title' %}
+                <tr>
+                    <th colspan="2" class="text-center">Dataset information</th>
+                </tr>
+            {% endif %}
+            <tr>
+                <th class="text-primary">{{ field.label_tag }}{% if field.field.required %} <span class="text-warning">*</span>{% endif %}</th>
+                <td>{{ field }}
+                    {% if field.errors %}
+                    <span class="text-danger">
+                         {% for error in field.errors %}
+                          <br />{{ field.label_tag }} {{ error }}
+                        {% endfor %}
+                    </span>
+                    {% endif %}
+                 </td>
+            </tr>
+            {% endfor %}
+         <tr>
+                <td colspan="2"><hr /></td>
+        </tr>
+        <tr>
+            <td colspan="2" class="text-center">
+                <button type="reset" class="btn btn-default">Reset</button>
+                &nbsp;
+                <button type="submit" class="btn btn-success">Submit</button>
+            </td>
+        </tr>
+    </table>
+</form>

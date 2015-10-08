@@ -1,0 +1,47 @@
+[
+{
+    "fields": {
+        "sort_order": 1,
+        "name": "UPLOADED - Not Ready for Processing",
+        "slug": "uploaded-not-ready-for-processing"
+    },
+    "model": "predict.vcfdatasetstatus",
+    "pk": 1
+},
+{
+    "fields": {
+        "sort_order": 2,
+        "name": "READY for Processing",
+        "slug": "ready-for-processing"
+    },
+    "model": "predict.vcfdatasetstatus",
+    "pk": 2
+},
+{
+    "fields": {
+        "sort_order": 3,
+        "name": "PROCESSING - STARTED",
+        "slug": "processing-started"
+    },
+    "model": "predict.vcfdatasetstatus",
+    "pk": 3
+},
+{
+    "fields": {
+        "sort_order": 4,
+        "name": "PROCESSED - SUCCESS",
+        "slug": "processed-success"
+    },
+    "model": "predict.vcfdatasetstatus",
+    "pk": 4
+},
+{
+    "fields": {
+        "sort_order": 5,
+        "name": "PROCESSED - FAILED",
+        "slug": "processed-failed"
+    },
+    "model": "predict.vcfdatasetstatus",
+    "pk": 5
+}
+]

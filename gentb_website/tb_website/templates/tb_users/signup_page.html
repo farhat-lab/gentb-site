@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+{% block head_title_block %}
+{{ title }} - Phthisis Ravens
+{% endblock %}
+
+{% block main_content %}
+
+        <div class="row">
+            <div class="col-lg-12">
+                <h1>{{ title }}</h1>
+
+                <p>To upload data for analysis, please use the sign form below.<br />&nbsp;</p>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-lg-12">
+
+                {% include "tb_users/signup_form.html" %}
+            </div>
+        </div>
+
+
+{% endblock %}

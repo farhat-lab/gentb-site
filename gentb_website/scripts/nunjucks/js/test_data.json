@@ -1,0 +1,354 @@
+{
+    "success": true,
+    "data": {
+        "pagination": {
+            "isNecessary": true,
+            "numResults": 225,
+            "docsPerPage": 10,
+            "selectedPageNumber": 2,
+            "pageCount": 23,
+            "hasPreviousPageNumber": true,
+            "previousPageNumber": 1,
+            "hasNextPageNumber": true,
+            "nextPageNumber": 3,
+            "startCardNumber": 11,
+            "endCardNumber": 20,
+            "remainingCards": 205,
+            "numberNextResults": 10,
+            "pageNumberList": [
+                1,
+                2,
+                3,
+                4,
+                5
+            ]
+        },
+        "items": [
+            {
+                "name": "tu917977-1.fits.fz",
+                "type": "file",
+                "url": "https://dvn-build.hmdc.harvard.edu/api/access/datafile/542",
+                "image_url": "https://dvn-build.hmdc.harvard.edu/api/access/fileCardImage/542",
+                "file_id": "542",
+                "description": "FITS file, 2 HDUs total:\nThe primary HDU; 1 Table HDU(s) \nThe following recognized metadata keys have been found in the FITS file:\nINSTRUME; NAXIS0; NAXIS1; TELESCOP; DATE-OBS; CRVAL2; OBJECT; CD1_1; CRVAL1; FILTER; EXPTIME; \n",
+                "file_type": "FITS",
+                "file_content_type": "application/fits",
+                "size_in_bytes": 11790720,
+                "md5": "e9b54e18ad740027aba1a947411fc6d3",
+                "dataset_citation": "Admin, Dataverse, 2015, \"test double create\", http://dx.doi.org/10.5072/FK2/CTYFAG,  Cool Dataverse,  DRAFT VERSION ",
+                "matches": [],
+                "score": 1,
+                "entity_id": 542,
+                "publication_statuses": [
+                    "Unpublished",
+                    "Draft"
+                ],
+                "is_draft_state": true,
+                "is_unpublished_state": true,
+                "is_published": false,
+                "is_deaccesioned": false,
+                "date_to_display_on_card": "Aug 6, 2015",
+                "user_roles": [
+                    "Curator"
+                ],
+                "parentIdentifier": "doi:10.5072/FK2/CTYFAG",
+                "parentName": "test double create"
+            },
+            {
+                "name": "u93k0101m_c0f_ad-1.fits",
+                "type": "file",
+                "url": "https://dvn-build.hmdc.harvard.edu/api/access/datafile/535",
+                "image_url": "https://dvn-build.hmdc.harvard.edu/api/access/fileCardImage/535",
+                "file_id": "535",
+                "description": "FITS file, 2 HDUs total:\nThe primary HDU; 1 Table HDU(s) 1 Image HDU(s); \nThe following recognized metadata keys have been found in the FITS file:\nINSTRUME; NAXIS0; NAXIS1; NAXIS2; TELESCOP; TARGNAME; DATE-OBS; CRVAL2; NAXIS; CD1_1; CRVAL1; EXPTIME; \n",
+                "file_type": "FITS",
+                "file_content_type": "application/fits",
+                "size_in_bytes": 10298880,
+                "md5": "c67c1e9502a81e1a68cb7137f66a0092",
+                "dataset_citation": "Admin, Dataverse, 2015, \"test double create\", http://dx.doi.org/10.5072/FK2/CTYFAG,  Cool Dataverse,  DRAFT VERSION ",
+                "matches": [],
+                "score": 1,
+                "entity_id": 535,
+                "publication_statuses": [
+                    "Unpublished",
+                    "Draft"
+                ],
+                "is_draft_state": true,
+                "is_unpublished_state": true,
+                "is_published": false,
+                "is_deaccesioned": false,
+                "date_to_display_on_card": "Aug 6, 2015",
+                "user_roles": [
+                    "Curator"
+                ],
+                "parentIdentifier": "doi:10.5072/FK2/CTYFAG",
+                "parentName": "test double create"
+            },
+            {
+                "name": "2007å¹´æµ¦ä¸œæ–°åŒºåƒæˆ·è°ƒæŸ¥åŽŸå§‹æ•°æ®.sav",
+                "type": "file",
+                "url": "https://dvn-build.hmdc.harvard.edu/api/access/datafile/518",
+                "image_url": "https://dvn-build.hmdc.harvard.edu/api/access/fileCardImage/518",
+                "file_id": "518",
+                "file_type": "SPSS SAV",
+                "file_content_type": "application/x-spss-sav",
+                "size_in_bytes": 262427,
+                "md5": "aa28890bb77912889b86a5bddaa89b6b",
+                "dataset_citation": "Admin, Dataverse, 2015, \"test double create\", http://dx.doi.org/10.5072/FK2/JKLYLZ,  Cool Dataverse,  DRAFT VERSION ",
+                "matches": [],
+                "score": 1,
+                "entity_id": 518,
+                "publication_statuses": [
+                    "Unpublished",
+                    "Draft"
+                ],
+                "is_draft_state": true,
+                "is_unpublished_state": true,
+                "is_published": false,
+                "is_deaccesioned": false,
+                "date_to_display_on_card": "Aug 6, 2015",
+                "user_roles": [
+                    "Curator"
+                ],
+                "parentIdentifier": "doi:10.5072/FK2/JKLYLZ",
+                "parentName": "test double create"
+            },
+            {
+                "name": "2208768-Sahel-species-ranks-Weber.xlsx",
+                "type": "file",
+                "url": "https://dvn-build.hmdc.harvard.edu/api/access/datafile/512",
+                "image_url": "https://dvn-build.hmdc.harvard.edu/api/access/fileCardImage/512",
+                "file_id": "512",
+                "file_type": "MS Excel (XLSX)",
+                "file_content_type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                "size_in_bytes": 97894,
+                "md5": "6b6a2977cbd3edb3d172d35a1a5cad6f",
+                "dataset_citation": "Admin, Dataverse, 2015, \"test double create\", http://dx.doi.org/10.5072/FK2/JKLYLZ,  Cool Dataverse,  DRAFT VERSION ",
+                "matches": [],
+                "score": 1,
+                "entity_id": 512,
+                "publication_statuses": [
+                    "Unpublished",
+                    "Draft"
+                ],
+                "is_draft_state": true,
+                "is_unpublished_state": true,
+                "is_published": false,
+                "is_deaccesioned": false,
+                "date_to_display_on_card": "Aug 6, 2015",
+                "user_roles": [
+                    "Curator"
+                ],
+                "parentIdentifier": "doi:10.5072/FK2/JKLYLZ",
+                "parentName": "test double create"
+            },
+            {
+                "name": "2360903-Land_Use_Change_Database_Tanzania.xlsx",
+                "type": "file",
+                "url": "https://dvn-build.hmdc.harvard.edu/api/access/datafile/526",
+                "image_url": "https://dvn-build.hmdc.harvard.edu/api/access/fileCardImage/526",
+                "file_id": "526",
+                "file_type": "MS Excel (XLSX)",
+                "file_content_type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                "size_in_bytes": 63728,
+                "md5": "e58e1a27af2352d2c93c424e82e0601d",
+                "dataset_citation": "Admin, Dataverse, 2015, \"test double create\", http://dx.doi.org/10.5072/FK2/JKLYLZ,  Cool Dataverse,  DRAFT VERSION ",
+                "matches": [],
+                "score": 1,
+                "entity_id": 526,
+                "publication_statuses": [
+                    "Unpublished",
+                    "Draft"
+                ],
+                "is_draft_state": true,
+                "is_unpublished_state": true,
+                "is_published": false,
+                "is_deaccesioned": false,
+                "date_to_display_on_card": "Aug 6, 2015",
+                "user_roles": [
+                    "Curator"
+                ],
+                "parentIdentifier": "doi:10.5072/FK2/JKLYLZ",
+                "parentName": "test double create"
+            },
+            {
+                "name": "50by1000.dta",
+                "type": "file",
+                "url": "https://dvn-build.hmdc.harvard.edu/api/access/datafile/514",
+                "image_url": "https://dvn-build.hmdc.harvard.edu/api/access/fileCardImage/514",
+                "file_id": "514",
+                "file_type": "Stata Binary",
+                "file_content_type": "application/x-stata",
+                "size_in_bytes": 58216,
+                "md5": "003b8c67fbdfa6df31c0e43e65b93f0e",
+                "dataset_citation": "Admin, Dataverse, 2015, \"test double create\", http://dx.doi.org/10.5072/FK2/JKLYLZ,  Cool Dataverse,  DRAFT VERSION ",
+                "matches": [],
+                "score": 1,
+                "entity_id": 514,
+                "publication_statuses": [
+                    "Unpublished",
+                    "Draft"
+                ],
+                "is_draft_state": true,
+                "is_unpublished_state": true,
+                "is_published": false,
+                "is_deaccesioned": false,
+                "date_to_display_on_card": "Aug 6, 2015",
+                "user_roles": [
+                    "Curator"
+                ],
+                "parentIdentifier": "doi:10.5072/FK2/JKLYLZ",
+                "parentName": "test double create"
+            },
+            {
+                "name": "collier-1740.csv",
+                "type": "file",
+                "url": "https://dvn-build.hmdc.harvard.edu/api/access/datafile/522",
+                "image_url": "https://dvn-build.hmdc.harvard.edu/api/access/fileCardImage/522",
+                "file_id": "522",
+                "file_type": "Comma Separated Values",
+                "file_content_type": "text/csv",
+                "size_in_bytes": 509455,
+                "md5": "19b9163f67d3acdfb3d2595997f59671",
+                "dataset_citation": "Admin, Dataverse, 2015, \"test double create\", http://dx.doi.org/10.5072/FK2/JKLYLZ,  Cool Dataverse,  DRAFT VERSION ",
+                "matches": [],
+                "score": 1,
+                "entity_id": 522,
+                "publication_statuses": [
+                    "Unpublished",
+                    "Draft"
+                ],
+                "is_draft_state": true,
+                "is_unpublished_state": true,
+                "is_published": false,
+                "is_deaccesioned": false,
+                "date_to_display_on_card": "Aug 6, 2015",
+                "user_roles": [
+                    "Curator"
+                ],
+                "parentIdentifier": "doi:10.5072/FK2/JKLYLZ",
+                "parentName": "test double create"
+            },
+            {
+                "name": "fearonLaitinData.dta",
+                "type": "file",
+                "url": "https://dvn-build.hmdc.harvard.edu/api/access/datafile/531",
+                "image_url": "https://dvn-build.hmdc.harvard.edu/api/access/fileCardImage/531",
+                "file_id": "531",
+                "file_type": "Stata Binary",
+                "file_content_type": "application/x-stata",
+                "size_in_bytes": 2206742,
+                "md5": "ee1762c9603a8658910904f8338e7dfe",
+                "dataset_citation": "Admin, Dataverse, 2015, \"test double create\", http://dx.doi.org/10.5072/FK2/JKLYLZ,  Cool Dataverse,  DRAFT VERSION ",
+                "matches": [],
+                "score": 1,
+                "entity_id": 531,
+                "publication_statuses": [
+                    "Unpublished",
+                    "Draft"
+                ],
+                "is_draft_state": true,
+                "is_unpublished_state": true,
+                "is_published": false,
+                "is_deaccesioned": false,
+                "date_to_display_on_card": "Aug 6, 2015",
+                "user_roles": [
+                    "Curator"
+                ],
+                "parentIdentifier": "doi:10.5072/FK2/JKLYLZ",
+                "parentName": "test double create"
+            },
+            {
+                "name": "geopilin_structure.tif",
+                "type": "file",
+                "url": "https://dvn-build.hmdc.harvard.edu/api/access/datafile/528",
+                "image_url": "https://dvn-build.hmdc.harvard.edu/api/access/fileCardImage/528",
+                "file_id": "528",
+                "file_type": "TIFF Image",
+                "file_content_type": "image/tiff",
+                "size_in_bytes": 2266171,
+                "md5": "4092da4e263890c6976eb92eda7fd45f",
+                "dataset_citation": "Admin, Dataverse, 2015, \"test double create\", http://dx.doi.org/10.5072/FK2/JKLYLZ,  Cool Dataverse,  DRAFT VERSION ",
+                "matches": [],
+                "score": 1,
+                "entity_id": 528,
+                "publication_statuses": [
+                    "Unpublished",
+                    "Draft"
+                ],
+                "is_draft_state": true,
+                "is_unpublished_state": true,
+                "is_published": false,
+                "is_deaccesioned": false,
+                "date_to_display_on_card": "Aug 6, 2015",
+                "user_roles": [
+                    "Curator"
+                ],
+                "parentIdentifier": "doi:10.5072/FK2/JKLYLZ",
+                "parentName": "test double create"
+            },
+            {
+                "name": "harris_s1635_spss.labels.txt",
+                "type": "file",
+                "url": "https://dvn-build.hmdc.harvard.edu/api/access/datafile/525",
+                "image_url": "https://dvn-build.hmdc.harvard.edu/api/access/fileCardImage/525",
+                "file_id": "525",
+                "file_type": "Plain Text",
+                "file_content_type": "text/plain",
+                "size_in_bytes": 29314,
+                "md5": "3d6b46d25694613ba95249bd24d9be85",
+                "dataset_citation": "Admin, Dataverse, 2015, \"test double create\", http://dx.doi.org/10.5072/FK2/JKLYLZ,  Cool Dataverse,  DRAFT VERSION ",
+                "matches": [],
+                "score": 1,
+                "entity_id": 525,
+                "publication_statuses": [
+                    "Unpublished",
+                    "Draft"
+                ],
+                "is_draft_state": true,
+                "is_unpublished_state": true,
+                "is_published": false,
+                "is_deaccesioned": false,
+                "date_to_display_on_card": "Aug 6, 2015",
+                "user_roles": [
+                    "Curator"
+                ],
+                "parentIdentifier": "doi:10.5072/FK2/JKLYLZ",
+                "parentName": "test double create"
+            }
+        ],
+        "total_count": 225,
+        "start": 10,
+        "search_term": "*:*",
+        "dvobject_counts": {
+            "files_count": 225,
+            "dataverses_count": 0,
+            "datasets_count": 0
+        },
+        "pubstatus_counts": {
+            "draft_count": 137,
+            "deaccessioned_count": 0,
+            "unpublished_count": 116,
+            "published_count": 88
+        },
+        "selected_filters": {
+            "publication_statuses": [
+                "Published",
+                "Unpublished",
+                "Draft",
+                "Deaccessioned"
+            ],
+            "role_names": [
+                "Admin",
+                "File Downloader",
+                "Dataverse + Dataset Creator",
+                "Dataverse Creator",
+                "Dataset Creator",
+                "Contributor",
+                "Curator",
+                "Member"
+            ]
+        }
+    },
+    "other_user": "@dataverseAdmin"
+}

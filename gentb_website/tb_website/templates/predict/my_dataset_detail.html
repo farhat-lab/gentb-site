@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+{% load predict_extras %}
+
+{% block head_title_block %}
+My Datasets - Phthisis Ravens
+{% endblock %}
+
+{% block extra_js %}
+{% endblock %}
+
+{% block main_content %}
+
+<div class="row">
+    <div class="col-lg-12">
+        Return to <a href="{% url 'view_my_datasets' %}">My Datasets ({{ my_dataset_count }})</a>
+
+        <h1>Dataset: <span style="font-weight:normal;">{{ dataset.title }}</span></h1>
+
+        {% if not IS_LOGGED_IN %}
+             <p>Please <a href="{% url 'view_login_page' %}">Log In</a> to see your Datasets.</p>
+        {% endif %}
+
+        {% if dataset %}
+
+<table class="table table-condensed table-bordered">
+
+     <tr>
+        <th colspan="2">Dataset Information</th>
+    </tr>
+    <tr>
+        <th class="text-primary">Title</th>
+        <td>{{ dataset.title }}</td>
+    </tr>
+    <tr>
+        <th class="text-primary">Status</th>
+        <td>{{ dataset.status }}</td>
+    </tr>
+    <tr>
+        <th class="text-primary">Description</th>
+        <td>{{ dataset.description|linebreaks }}</td>
+    </tr>
+    <tr>
+        <th class="text-primary">File 1<br />(Size)</th>
+        <td>
+            {{ dataset.filename1 }}
+
+            <br />({{ dataset.file1.file.size|readable_filesize }})
+        </td>
+    </tr>
+    {% if dataset.file2 %}
+    <tr>
+        <th class="text-primary">File 2 (Size)</th>
+        <td>
+            {{ dataset.filename2 }}
+            ({{ dataset.file2.file.size|readable_filesize }})
+        </td>
+    </tr>
+    {% endif %}
+    <tr>
+        <th class="text-primary">Created</th>
+        <td>{{ dataset.created }}</td>
+    </tr>
+</table>
+{% for script_run in script_runs %}
+{% if forloop.first %}<h3>Script Runs</h3>{% endif %}
+
+
+<div class="panel panel-default">
+  <div class="panel-heading">
+    <h3 class="panel-title">{{ script_run.created }} <small>updated: {{ script_run.modified }}</small></h3>
+  </div>
+  <div class="panel-body">
+      {% if script_run.result_received %}
+            {% if script_run.result_success %}
+                <span class="label label-success">Success</span><br />
+            {% else %}
+                <span class="label label-warning">Fail</span><br />
+            {% endif %}
+      {% else %}
+          <span class="label label-info">Results not received</span><br />
+      {% endif %}
+      Command run: <div class="well">{{ script_run.notes }}</div>
+
+      {% if script_run.result_data %}
+      Results
+      <div class="well" id="result_div_{{ forloop.counter }}">{{ script_run.result_data }}</div>
+      {% endif %}
+  </div>
+</div>
+{% endfor %}
+
+
+{% for note in dataset_notes %}
+{% if forloop.first %}<h3>Notes</h3>{% endif %}
+
+<div class="panel panel-default">
+  <div class="panel-heading">
+    <h3 class="panel-title">{{ note.title }} <small>{{ note.modified }}</small></h3>
+  </div>
+  <div class="panel-body">
+   {{ note.note|linebreaks  }}
+  </div>
+</div>
+{% endfor %}
+{% comment %}
+<table class="table table-condensed table-bordered">
+    <tr>
+        <th colspan="2">Contact Information</th>
+    </tr>
+    <tr>
+        <th class="text-primary">Name</th>
+        <td>{{ tb_user }}
+            {#{ dataset.middle_name }#}
+            {#{ dataset.tb_user.last_name }#}
+        </td>
+    </tr>
+    <tr>
+        <th class="text-primary">Affiliation</th>
+        <td>{{ tb_user.affiliation }}</td>
+    </tr>
+      <tr>
+        <th class="text-primary">Email</th>
+        <td>{{ tb_user.user.email }}</td>
+    </tr>
+</table>
+{% endcomment %}
+
+        {% endif %}
+    </div>
+</div>
+
+
+
+{% endblock %}

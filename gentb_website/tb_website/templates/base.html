@@ -1,0 +1,111 @@
+{% load staticfiles %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>{% block head_title_block %}
+        {% if page_title %}{{ page_title }}{% else %}genTB{% endif %}
+        {% endblock %}
+    </title>
+
+    <!-- Bootstrap Core CSS -->
+    <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
+
+    <!-- Custom CSS -->
+    <link href="{% static 'css/heroic-features.css' %}" rel="stylesheet">
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+    <!-- Use this to quickly test CSS changes in a template,
+        then move to tb_website.css -->
+    {% block extra_css %}
+    {% endblock %}
+    {% block extra_js %}
+    {% endblock %}
+
+</head>
+
+<body>
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+        <div class="container">
+            <!-- Brand and toggle get grouped for better mobile display -->
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="{% url 'view_homepage' %}">genTB</a>
+            </div>
+            <!-- Collect the nav links, forms, and other content for toggling -->
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                <ul class="nav navbar-nav">
+                    {% include "base_navbar.html" %}
+                </ul>
+            </div>
+            <!-- /.navbar-collapse -->
+        </div>
+        <!-- /.container -->
+    </nav>
+
+    <!-- Page Content -->
+    <div class="container">
+        {% block main_content %}
+            (main_content)
+        {% endblock %}
+
+        {% block footer_content %}
+            <!-- Footer -->
+            <hr>
+            <footer>
+                <div class="row">
+                    <div class="col-lg-12">
+
+                    <center>
+                        &copy; {% now "Y" %} genTB. All Rights Reserved. <a href="#">Terms of Use</a>. <a href="mailto:TBpredict@gmail.com">Contact</a>.<br>
+                    </center>
+
+                    <div style="float: right;">
+                    <div style="float: right;">
+                        <a href="https://www.iq.harvard.edu"><img src="{% static 'images/iqss-logo.png' %}" alt="Built by IQSS" height="50" style="PADDING-RIGHT: 15px"></a>
+                    </div>
+                    <div style="float: right;">
+                        <a href="http://dataverse.org"><img src="{% static 'images/dataverse_network-logo.png' %}" alt="Data Archived by Dataverse" height="50" style="PADDING-RIGHT: 15px"></a>
+                    </div>
+                    <div style="float: right;">
+                        <a href="https://datascience.iq.harvard.edu/about-tworavens"><img src="{% static 'images/TwoRavens.png' %}" alt="Analysis with TwoRavens" height="40" style="PADDING-RIGHT: 15px"></a>
+                    </div>
+
+                    </div>
+
+                        <br /><small>({% now "F jS, Y f:s a" %})</small>
+                    </div>
+                </div>
+            </footer>
+        {% endblock %}
+    </div>
+    <!-- /.container -->
+
+    <!-- jQuery Version 1.11.0 -->
+    <script src="{% static 'js/jquery.min.js' %}"></script>
+
+    <!-- Bootstrap Core JavaScript -->
+    <script src="{% static 'js/bootstrap.min.js' %}"></script>
+
+</body>
+
+</html>

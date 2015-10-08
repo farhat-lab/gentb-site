@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block head_title_block %}
+Share - genTB
+{% endblock %}
+
+{% block main_content %}
+
+        <div class="row">
+            <div class="col-lg-12">
+                <h1 class="page-header">Share <small>contribute your data to this project.</small><h1>
+            </div>
+        </div>
+
+        <div class = "row">
+            <div class="col-md-6 portfolio-item">
+                {% if UPLOAD_SUCCESS %}
+                    {% include "share/success_message.html" %}
+                {% else %}
+                    {% include "share/share_form.html" %}
+                {% endif %}
+               
+               {% comment %}
+                <img src="{{ STATIC_URL }}images/upload1.png" alt="TB Project" width=100% style="margin-top:0.2em">
+        		<img src="{{ STATIC_URL }}images/upload2.png" alt="TB Project" width=100% style="margin-top:0.2em">
+                {% endcomment %}
+            </div>
+        </div>
+{% endblock %}

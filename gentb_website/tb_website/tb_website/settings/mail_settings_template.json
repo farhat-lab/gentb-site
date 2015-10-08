@@ -1,0 +1,8 @@
+{
+  "EMAIL_HOST": "smtp.myhost.edu",
+  "EMAIL_PORT": 587,
+  "EMAIL_HOST_USER": "username",
+  "EMAIL_HOST_PASSWORD": "some-password",
+  "DEFAULT_FROM_EMAIL" : "admin@tb.edu",
+  "EMAIL_USE_TLS" : true
+}

@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+
+{% block head_title_block %}
+Explore - genTB
+{% endblock %}
+{% block extra_css %}
+<style>
+h1.right {
+   display: inline-block;
+   text-align: right;
+   width: 100%;
+}
+
+iframe{
+	height: 720px;
+	width: 100%;
+}
+
+</style>
+{% endblock %}
+{% block main_content %}
+
+		<div class="row">
+		    <div class="col-xs-12"><!-- Info row -->
+		        <h1 class="page-header">Explore <small>interactively analyze our project data.</small></h1>
+                    {% if explore_link_info %}
+                        <p><a href="{{ explore_link_info.codebook_file_url }}" class="btn btn-primary">Open Codebook</a></p>
+                    {% else %}
+                        <div class="alert alert-danger" role="alert">
+                            Sorry! An Open Codebook  Link is not available.
+                        <p>(If you are the administrator, make sure that "Explore Data File Information" is available in the database.)</p>
+                        {#<a href="https://dataverse.harvard.edu/api/access/datafile/2694344" class="btn btn-primary">Open Codebook</a>#}
+                        </div>
+                    {% endif %}
+		    </div>
+        </div>
+        <div class="row">
+            <div class="col-xs-12"><!-- Two Ravens Iframe row -->
+                {% if explore_link_info %}
+                    <iframe src="{{ explore_link_info.two_ravens_url }}"></iframe>
+                {% else %}
+                    <div class="alert alert-danger" role="alert">
+                        Sorry! An Explore Link is not available.
+                        <p>(If you are the administrator, make sure that "Explore Data File Information" is available in the database.)
+                    {#<iframe src="https://rserve.dataverse.harvard.edu/dataexplore/gui.html?dfId=2693726&key=c54f07b7-5098-461c-adf3-a976c0d62f6e"></iframe>#}
+                    </div>
+                {% endif %}
+            </div>
+		</div>
+
+
+{% endblock %}

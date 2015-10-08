@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+{% block head_title_block %}
+About - Phthisis Ravens
+{% endblock %}
+
+{% block main_content %}
+
+        <div class="row">
+            <div class="col-lg-12">
+                <h1 class="page-header">genTB<small> is a genomics tool for analyzing and predicting drug resistances to tuberculosis (TB).</small></h1>
+            </div>
+        </div>
+
+        <p>
+        	<font size="3"><i>The application makes sharing, mapping, manipulating and linking TB genetic data to drug resistance phenotype as well as other epidemiological, demographic and host variables. As such, the tool performs 4 different tasks in its current version:</i></font>
+        </p><br>
+
+        <div class="row">
+            <div class="col-md-6 portfolio-item">
+                <img src="{% static 'images/predict.png' %}" align="right">
+                <p>
+                	<font size = "4"><b>Predict DR: </b></font>
+                	<font size="3">Clinicians and researchers can make predictions about a strain's resistance based on its genotype using a random forest classifier, trained using a 1400 strain bank of clinical <i>Mycobacterium tuberculosis</i>. This classifier will be updated and retrained with the contribution of new high quality genotype and drug resistance data from the research community.</font>
+                </p>
+            </div>
+
+            <div class="col-md-6 portfolio-item">
+                <img src="{% static 'images/share.png' %}" align="right">
+                <p>
+                	<font size = "4"><b>Share: </b></font>
+                	<font size="3">Clinicians and researchers can also store and share TB genetic and phenotypic data, allowing for the expansion of the current dataset. Every additional dataset that is uploaded is given a persistent and citable identifier using the broadly supported <a href="https://http://www.doi.org/">Digital Object Identifier (DOI)</a> system, an ISO standard which provides an actionable, interpretable, and persistent link.</font>
+                </p>
+            </div>
+        </div>
+
+        <br>
+
+        <div class="row">
+            <div class="col-md-6 portfolio-item">
+                <img src="{% static 'images/map.png' %}" align="right">
+                <p>
+                	<font size = "4"><b>Map: </b></font>
+                	<font size="3">The tool also makes mapping TB genetic and phenotypic data as well as resistances easy. In particular, the tool, as it stands, allows for the mapping of resistance frequencies by different geographies through an interactive interface.</font>
+                </p>
+            </div>
+
+            <div class="col-md-6 portfolio-item">
+                <img src="{% static 'images/explore.png' %}" align="right">
+                <p>
+                	<font size = "4"><b>Explore: </b></font>
+                	<font size="3">Finally the tool allows clinicians and researchers with limited statistical experience to explore the data using a point and click interface that can generate summary statistics and a graphical or tabular data display. This feature is powered by the <a href="https://github.com/IQSS/TwoRavens/">TwoRavens</a>.</font>
+                </p>
+            </div>
+        </div>
+
+        <hr>
+
+		<div class="row">
+            <div class="col-md-6 portfolio-item">
+                <p><font size="4"><i>Features and Tools in Development</i></font></p>
+                <font size="3">
+	                 <ui>
+	                    <li> Integration with existing tools for TB outbreak and transmission analyses.</li>
+	                    <li> A genomic annotation tool for TB</li>
+	                    <li> Spoligotype and MIRU VNTR predictor based on Whole Genomc Sequencing. For more information on MIRU VNTR see: <i>Supply, P. et al. Proposal for Standardization of Optimized Mycobacterial Interspersed Repetitive Unit-Variable-Number Tandem Repeat Typing of Mycobacterium Tuberculosis. J. Clin. Microbiol. 44, 4498–4510 (2006).</i></li>
+	                </ui>
+                </font>
+            </div>
+
+            <div class="col-md-6 portfolio-item">
+                <p><font size="4"><i>Training data sources are described in:</i></font></p>
+                <font size="3">
+                	<p> Farhat MR et. al. <b>Genomic analysis identifies targets of convergent positive selection in drug-resistant Mycobacterium tuberculosis</b> <i>Nat Genet</i> 2013</p>
+                </font>
+
+
+            </div>
+        </div>
+
+{% endblock %}

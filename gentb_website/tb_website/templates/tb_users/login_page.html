@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+{% block head_title_block %}
+{{ title }} - Phthisis Ravens
+{% endblock %}
+
+{% block main_content %}
+
+        <div class="row">
+            <div class="col-lg-12">
+                <h1>{{ title }}</h1>
+
+
+
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-lg-12">
+                {% if JUST_LOGGED_OUT %}
+                    <div class="alert alert-success" role="alert">
+                        <p>You are now logged out</p>
+                    </div>
+                {% endif %}
+                {% if ALREADY_LOGGED_IN %}
+                    <div class="alert alert-info" role="alert">
+                        <p>You are already logged in as <b>{{ username }}</b></p>
+                        <p>Please continue to the <a href="{% url 'view_homepage' %}">home page</a></p>
+                    </div>
+
+                {% else %}
+                    <p>To log in, please use the sign form below.
+                     &nbsp; </p>
+                    {% include "tb_users/login_form.html" %}
+
+                    <p><br />&nbsp;
+                        <i>(I forgot my <a href="">password</a>
+                            or <a href="">username</a>)</i>
+                    <br />&nbsp;</p>
+                {% endif %}
+            </div>
+        </div>
+
+
+{% endblock %}

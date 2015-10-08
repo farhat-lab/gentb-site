@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>basic example</title>
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+
+    <!-- Optional theme -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css">
+
+</head>
+
+<body>
+    <!-- Page Content -->
+    <div class="container">
+        <h2>nunjucks example</h2>
+
+        <div id="id_alert_box" style="display:none;">
+            <div class="alert alert-warning alert-dismissible" role="alert">
+              <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+              <div class="id_alert_msg"></div>
+          </div>
+      </div>
+
+        <div class="panel panel-default">
+        <div class="panel-heading">Pager (non-working) from JSON</div>
+
+            <div class="panel-body">
+                <div id="div-pagination">
+                </div>
+            </div>
+        </div>
+
+        <div class="panel panel-default">
+        <div class="panel-heading">Cards from JSON</div>
+            <div class="panel-body">
+                <div id="div-cards" style="width:80%;">
+                </div>
+            </div>
+        </div>
+
+
+    </div>
+    <!-- /.container -->
+    <!-- jQuery Version 1.11.0 -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+
+    <!-- Latest compiled and minified JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+
+    <script src="js/nunjucks.js"></script>
+
+    <script>
+
+        function show_pagination(json_data){
+
+            var pagination_json = json_data.data.pagination;
+
+            console.log(pagination_json); // show json in consule
+
+            // (2) Use nunjucks to merge JSON + template
+            var pagination_html =  nunjucks.render('pagination.html', pagination_json);
+
+            // (3) Put the pagination HTML into the div
+            $("#div-pagination").html(pagination_html);
+        };
+
+        function show_cards(json_data){
+
+            var card_html =  nunjucks.render('cards.html', json_data);
+
+            $("#div-cards").html(card_html);
+
+        }
+
+        function build_nunjucks_templates(){
+
+            // (1) retrieve the JSON Data
+            var jqxhr = $.getJSON( "js/test_data.json", function(json_data) {
+                console.log( "success" );
+
+                // (2) Looks good, build pagination
+                show_pagination(json_data);
+
+                // (3) Show some card data (sans css)
+                show_cards(json_data);
+            })
+            .done(function(json_data) {
+                console.log( "second success" );
+            })
+            .fail(function() {
+                console.log( "error" );
+                $("id_alert_msg").html('Sorry! Something went wrong');
+                $("id_alert_box").show();
+            })
+            .always(function() {
+                console.log( "complete" );
+            });
+      }
+
+        $( document ).ready(function() {
+
+            nunjucks.configure('templates'); // templates are found in the 'templates'
+
+            console.log( "ready!" );
+            build_nunjucks_templates();
+        });
+
+    </script>
+</body>
+
+</html>

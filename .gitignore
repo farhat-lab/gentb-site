@@ -1,3 +1,5 @@
+gentb_website/test_setup/*
+*.idea
 scratch-work/downloaded/*
 # Byte-compiled / optimized / DLL files
 __pycache__/

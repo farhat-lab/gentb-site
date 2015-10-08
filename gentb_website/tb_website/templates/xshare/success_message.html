@@ -1,0 +1,49 @@
+{% load shared_data_extras %}
+
+<div class="alert alert-success" role="alert">
+    Thank you for contributing your data to this project!
+    
+    <p>Your contribution details are below.</p>
+    
+    <p>Return to the <a href="{% url 'view_homepage' %}">homepage</a> or 
+        <a href="{% url 'view_share_page' %}">share another file</a>.</p>
+</div>
+
+{#% include "share/r_script_results.html" %#}
+<table class="table table-condensed table-bordered">
+    <tr>
+        <th colspan="2">Contact Information</th>
+    </tr>
+    <tr>
+        <th class="text-primary">Name</th>
+        <td>{{ shared_file_info.first_name }}
+            {{ shared_file_info.middle_name }}
+            {{ shared_file_info.last_name }}
+        </td>
+    </tr>
+    <tr>
+        <th class="text-primary">Affiliation</th>
+        <td>{{ shared_file_info.affiliation }}</td>
+    </tr>
+    <tr>
+        <th class="text-primary">Email</th>
+        <td>{{ shared_file_info.contact_email }}</td>
+    </tr>
+     <tr>
+        <th colspan="2">Dataset Information</th>
+    </tr>
+    <tr>
+        <th class="text-primary">Title</th>
+        <td>{{ shared_file_info.title }}</td>
+    </tr>
+    <tr>
+        <th class="text-primary">Description</th>
+        <td>{{ shared_file_info.description }}</td>
+    </tr>
+    <tr>
+        <th class="text-primary">Uploaded File Name (Size)</th>
+        <td>{{ shared_file_info.filename }}
+            ({{ shared_file_info.file_obj.file.size|readable_filesize }})
+        </td>
+    </tr>
+</table>

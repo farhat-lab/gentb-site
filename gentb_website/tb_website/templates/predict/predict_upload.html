@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+
+{% block head_title_block %}
+Predict - genTB
+{% endblock %}
+
+
+{% block main_content %}
+
+        <div class="row">
+            <div class="col-lg-12">
+                <h1 class="page-header">Predict <small> upload your data and make predictions about resistances by drug.</small><h1>
+            </div>
+        </div>
+
+        <div class = "row">
+            <div class="col-md-6 portfolio-item">
+                {% if not IS_LOGGED_IN %}
+                <div class="panel panel-info">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">Upload Your Data</h3>
+                    </div>
+                  <div class="panel-body">
+                    <p>To contribute a file for prediction, please:
+                        {% include "login_signup_links.html" %}
+                    </p>
+                  </div>
+                </div>
+
+                {% else %}
+
+
+                    <h4><i>Upload VCF File:</i></h4>
+                    {% include "predict/predict_form.html" %}
+               {% endif %}
+
+            </div>
+
+            <div class="col-md-6 portfolio-item">
+                
+                <p>
+                <h4>What is a Variant Call Format file (VCF)? </h4>
+                A Variant Call Format (VCF) file is used by the 1000 Genomes project to encode SNPs and other structural genetic variants. The format is currently maintained by The Global Alliance Data Working Group File Formats Task Team (<a href="http://ga4gh.org/#/fileformats-team">http://ga4gh.org/#/fileformats-team</a>) and is further described <a href="http://samtools.github.io/hts-specs/VCFv4.2.pdf">here</a>.
+                </p>
+
+                <br>
+
+                <p>
+                    <div class="panel-group" id="accordion"> 
+                        <div class="panel panel-default">
+                            <div class="panel-heading"> 
+                              <h4 class="panel-title">
+                                <a data-toggle="collapse" data-parent="#accordion" href="#collapseOne">
+                                  Genotypic Information for Accurate Resistance Predictions
+                                </a>
+                              </h4>
+                            </div>
+
+                            <div id="collapseOne" class="panel-collapse collapse">
+                                <div class="panel-body">
+                                    <table class="table">
+                                    <tr>
+                                        <th align = "center">Drug</th>
+                                        <th align = "cetner">Genes</th>
+                                    </tr>
+                                    <tr>
+                                        <td>Isoniazid</td>
+                                        <td>katG, fabG1/inhA promoter, inhA, embB, iniB, kasA, embA/B promoter, ahpC and promoter</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Rifampicin</td>
+                                        <td>rpoB</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Pyrazinamide</td>
+                                        <td>pncA</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Ethambutol</td>
+                                        <td>embB, iniB, embAB promoter, embC</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Kanamycin*</td>
+                                        <td>rrs, tlyA*</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Capreomycin</td>
+                                        <td>rrs</td>
+                                    </tr>  
+                                    <tr>
+                                        <td>Amikacin</td>
+                                        <td>rrs</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Fluoroquinolones</td>
+                                        <td>gyrA, gyrB</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Para&#8209;aminosalicylic&nbsp;acid</td>
+                                        <td>thyA</td>
+                                    </tr>  
+                                    </table>
+                                    *Gene eis is a predictor of Kanamycin resistance, but data for this gene was not available when the predictive model was built.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </p>
+            </div>
+        </div>
+
+        
+        <div class="col-md-6" id="d3-target-div" style="padding-left:60px;">
+        </div>
+        <script type="text/javascript" src="{{ STATIC_URL }}{% static 'd3/d3.v3.min.js' %}"></script>
+        <script type="text/javascript" src="{{ STATIC_URL }}js/app.js"></script>
+{% endblock %}

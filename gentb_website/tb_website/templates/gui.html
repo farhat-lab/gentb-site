@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>PhthisisRavens</title>
+        
+        <link rel="stylesheet" href="bootstrap/css/bootstrap.css">
+        <link rel="stylesheet" href="bootstrap/css/bootstrap-theme.min.css">
+        
+        <link rel="stylesheet" href="app.css">
+        <link rel="stylesheet" href="Ladda/dist/ladda-themeless.min.css">
+            
+        <script src="Ladda/dist/spin.min.js"></script>
+        <script src="Ladda/dist/ladda.min.js"></script>
+        
+        <script type="text/javascript" src="jquery/jquery.min.js"></script>
+        <script type="text/javascript" src="bootstrap/js/bootstrap.min.js"></script>
+        
+        <script type="text/javascript" src="{% static 'd3/d3.v3.min.js' %}"></script>
+
+
+<style>
+
+  body {
+   font: 24px Helvetica;
+   background: #F5F3EE;
+  }
+
+  #main {
+   min-height: 200px;
+   margin: 0px;
+   padding: 0px;
+   display: -webkit-flex;
+   display:         flex;
+   -webkit-flex-flow: row;
+           flex-flow: row;
+   }
+
+  #desc {
+   min-height: 200px;
+   margin: 0px;
+   padding: 0px;
+   display: -webkit-flex;
+   display:         flex;
+   -webkit-flex-flow: row;
+           flex-flow: row;
+   }
+ 
+  #desc {
+   min-height: 200px;
+   margin: 0px;
+   padding: 0px;
+   display: -webkit-flex;
+   display:         flex;
+   -webkit-flex-flow: row;
+           flex-flow: row;
+   }
+
+  .Site {
+  display: flex;
+  min-height: 100vh;
+  flex-direction: column;
+}
+
+.Site-content {
+  flex: 1;
+}
+
+  #main > article {
+   min-height: 100px;
+   max-width:200px;
+   margin: 4px;
+   padding: 5px;
+   border: 2px solid #383838 ;
+   border-radius: 7pt;
+   background: #FFFFFF;
+   -webkit-flex: 3 1 20%;
+           flex: 3 1 20%;
+   -webkit-order: 2;
+           order: 2;
+   }
+
+  #desc > description {
+   max-width:600px;
+   margin: 4px;
+   padding: 5px;
+   border: 2px solid #CC3366;
+   border-radius: 7pt;
+   background: #E0E0E0;
+   -webkit-flex: 3 1 60%;
+           flex: 3 1 60%;
+   -webkit-order: 3;
+           order: 3;
+   }
+
+  #main > nav {
+   margin: 4px;
+   padding: 5px;
+   border: 1px solid #F0FFFF;
+   border-radius: 7pt;
+   background: #FFFFFF;
+   -webkit-flex: 1 6 20%;
+           flex: 1 6 20%;
+   -webkit-order: 1;
+           order: 1;
+   }
+  
+  #desc > nav {
+   margin: 4px;
+   padding: 5px;
+   border: 1px solid #F0FFFF;
+   border-radius: 7pt;
+   background: #FFFFFF;
+   -webkit-flex: 1 6 20%;
+           flex: 1 6 20%;
+   -webkit-order: 1;
+           order: 1;
+   }
+
+  #main > aside {
+   margin: 4px;
+   padding: 5px;
+   border: 1px solid #F0FFFF;
+   border-radius: 7pt;
+   background: #FFFFFF;
+   -webkit-flex: 1 6 20%;
+           flex: 1 6 20%;
+   -webkit-order: 4;
+           order: 4;
+   }
+  
+  #desc > aside {
+   margin: 4px;
+   padding: 5px;
+   border: 1px solid #F0FFFF;
+   border-radius: 7pt;
+   background: #FFFFFF;
+   -webkit-flex: 1 6 20%;
+           flex: 1 6 20%;
+   -webkit-order: 4;
+           order: 4;
+   }
+
+  header, footer {
+   display: block;
+   margin: 4px;
+   padding: 5px;
+   min-height: 100px;
+   border: 1px solid #eebb55;
+   border-radius: 7pt;
+   background: #FFFFEB;
+   }
+ 
+  /* Too narrow to support columns */
+  @media all and (max-width: 640px) {
+  
+   #main, #page {
+    -webkit-flex-flow: column;
+            flex-flow: column;
+            flex-direction: column;
+   }
+
+   #main > article, #main > nav, #main > aside {
+    /* Return them to document order */
+    -webkit-order: 0;
+            order: 0;
+   }
+  
+   #main > nav, #main > aside, header, footer {
+    min-height: 50px;
+    max-height: 50px;
+   }
+  }
+
+
+
+
+
+
+</style>
+
+  </head>
+  
+<body class="Site">
+<header>
+  <div class="field" id="datasetName" style="text-align:center;margin-top:0.5em">
+                  <h2 style="display:inline;">Tuberculosis Resistance Predictor and Data Explorer</h2>
+</header>
+
+ <div id='main'>
+    <nav></nav>
+    <article>
+        <a href="./predict/index.html" style="text-decoration: none; color:#000000">
+        Predict
+        <img src="images/tbseq.png" alt="TB Project" width=100% style="margin-top:0.2em">
+        <h4>Determine resistance for sequenced data</h4>
+        </a>
+    </article>
+    <article>
+        <a href="./share/index.html" style="text-decoration: none; color:#000000">
+        Share
+        <img src="images/tbshare.png" alt="TB Project" width=100% style="margin-top:0.2em">
+        <h4>Contribute your data to this project</h4>
+        </a>
+    </article>
+    <article>
+        <a href="./map/index.html" style="text-decoration: none; color:#000000">
+        Map
+        <img src="images/tbmap.png" alt="TB Project" width=100% style="margin-top:0.2em">
+        <h4>Visualize impacts and strains globally</h4>
+        </a>
+    </article>
+    <article>
+        <a href="./explore/index.html" style="text-decoration: none; color:#000000">
+        Explore
+        <img src="images/tbexplore.png" alt="TB Project" width=100% style="margin-top:0.2em">
+        <h4>Interactively analyze our project data</h4>
+        </a>
+    </article>
+    <aside></aside>
+ </div>
+ <div id='desc'>
+   <nav></nav>
+    <description>Project Description
+    <h4>
+    qui dolorem ipsum, quia dolor sit amet consectetur adipiscing velit, sed quia non numquam do eius modi tempora incididunt, ut labore et dolore magnam aliquam quaerat voluptatem.
+    </h4>
+    </description>
+    <aside></aside>
+ </div>
+
+ <div class='Site-buffer'>
+  something here
+ </div>
+
+ <footer>footer</footer>
+  </body>
+</html>
+
