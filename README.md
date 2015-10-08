@@ -30,7 +30,7 @@ A basic view/template combination.  The template includes embedded [Dataverse Wi
 
 ### Map
 
-A basic view/template combination.  The template includes embedded an iframe of a Shiny application which allows interactive browsing.  The url to the iframe is written directly into the template.
+A basic view/template combination.  The maps are actually hosted by a Shiny application and embedded in an iframe.  The url to the iframe is written directly into the template.
 
   - View: "view_map_page" [gentb_website/tb_website/apps/maps/views.py](gentb_website/tb_website/apps/maps/views.py)
   - Template: [gentb_website/tb_website/templates/maps/basic_map.html](gentb_website/tb_website/templates/maps/basic_map.html)
