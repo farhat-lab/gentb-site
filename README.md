@@ -43,14 +43,15 @@ A basic view/template combination.  The maps are actually hosted by a Shiny appl
 
 TwoRavens needs two values which are supplied via the genTB database:
 
-  1. **codebook_file_url** - This is url to download a Dataverse file by file id number
-    - Example: https://dataverse.harvard.edu/api/access/datafile/2694344
+  1. **codebook_file_url** - This url links directly to PDF file on Dataverse and identified by file id number
+    - Example ```codebook_file_url``: https://dataverse.harvard.edu/api/access/datafile/2694344
   2. **two_ravens_url** - This url contains the TwoRavens link and is used within an iframe.  
-    - The url contains both a **Dataverse file id number** and a **API key**
+    - The url contains both a **Dataverse file id number** and an **API key**
         - This API key within the url is bad practice and will probably be changed on the Dataverse side
-    - Example: https://rserve.dataverse.harvard.edu/dataexplore/gui.html?dfId=2693726&key=c54f07b7-5098-461c-adf3-a976c0d62f6e
+    - Example ```two_ravens_url```: https://rserve.dataverse.harvard.edu/dataexplore/gui.html?dfId=2693726&key=c54f07b7-5098-461c-adf3-a976c0d62f6e
 
 These values may be supplied via the Django admin:
+
     - Models.py file for the values above:
         - [gentb_website/tb_website/apps/explore/models.py](gentb_website/tb_website/apps/explore/models.py)
 
