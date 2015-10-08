@@ -64,3 +64,12 @@ The view/template files may be found here:
   - Template: [gentb_website/tb_website/templates/explore.html](gentb_website/tb_website/templates/explore.html)
 
 ![Explore Page screenshot](screen-shots/genTB-explore.png?raw=true "genTB Explore page")
+
+### About Page
+
+A basic view/template combination
+
+  - View: "view_about_page" [gentb_website/tb_website/apps/basic_pages/views.py](gentb_website/tb_website/apps/basic_pages/views.py)
+  - Template: [gentb_website/tb_website/templates/about.html](gentb_website/tb_website/templates/about.html)
+
+![about page screenshot](screen-shots/genTB-about.png?raw=true "genTB About Page")
