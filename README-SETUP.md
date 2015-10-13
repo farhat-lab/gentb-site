@@ -57,6 +57,12 @@ source venv_tb/bin/activate
 pip install -r requirements.txt
 ```
 
+mysql connector installed manually
+```
+pip install --allow-external mysql-connector-python mysql-connector-python
+```
+
+
 ### Reuse the virtualenv -- after setup
 
 ```
@@ -71,7 +77,32 @@ Add these settings files:
 To this directory:
   - ```/www/gentb.hms.harvard.edu/code/gentb-site/gentb_website/tb_website/tb_website/settings```
 
-Check the settings
+### Check the settings
+
 ```
 cd /www/gentb.hms.harvard.edu/code/gentb-site/gentb_website/tb_website
 python manage.py check --settings=tb_website.settings.production_hms
+#
+# Updates to prod settings
+vim tb_website/settings/secret_settings_prod_hms.json
+```
+
+If this check fails, it is likely a setting in the ```secret_settings_prod_hms.json``` referred to above
+
+### Create db tables and superuser
+
+```
+python manage.py migrate --settings=tb_website.settings.production_hms
+python manage.py createsuperuser --settings=tb_website.settings.production_hms
+```
+
+### Load Explore fixtures
+
+These are the links to the Shiny server.
+
+```
+python manage.py loaddata apps/explore/fixtures/initial_data.json --settings=tb_website.settings.production_hms
+```
+
+
+### Move st
