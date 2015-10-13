@@ -2,7 +2,7 @@
 
 from __future__ import absolute_import
 import os
-from os import environ
+from os.path import join, normpath, dirname, isfile
 from .base import *
 
 # Normally you should not import ANYTHING from Django directly
@@ -18,8 +18,6 @@ from django.core.exceptions import ImproperlyConfigured
 #        error_msg = "Set the %s env variable" % setting
 #        raise ImproperlyConfigured(error_msg)
 import json
-from os.path import join, normpath, dirname, isfile
-import os
 ########## CONFIGURATION FROM JSON FILE
 
 json_secrets_fname = join( dirname(abspath(__file__)), "secret_settings_prod_hms.json")
