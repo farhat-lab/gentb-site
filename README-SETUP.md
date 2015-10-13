@@ -6,9 +6,9 @@ The directory structure is as follows:
 
 1. ```/www/gentb.hms.harvard.edu/docroot/```
     - contains .htaccess file
-1. ```/www/gentb.hms.harvard.edu/docroot/static-files```
+1. ```/www/gentb.hms.harvard.edu/docroot/tb/static```
   - Static files for Django app
-1. ```/www/gentb.hms.harvard.edu/gentb-app/```
+1. ```/www/gentb.hms.harvard.edu/code/```
   - Repository with Django app
   - Contains Virtualenv running python 2.7.x
   - Gunicorn is run from ```flexatone.orchestra:9001```
@@ -41,13 +41,25 @@ git clone git@github.com:IQSS/gentb-site.git
 
 ### Set up virtualenv
 
+fyi: HMS server has virtualenv but not virtualenvwrapper
+
 ```
 cd /www/gentb.hms.harvard.edu/code/gentb-site/gentb_website
+#
 # Load python 2.7
 module load dev/python/2.7.6
+#
 # Create virtualenv
 virtualenv venv_tb
 source venv_tb/bin/activate
-# Load requirements
+#
+# Load requirements, includes django and gunicorn
 pip install -r requirements.txt
 ```
+
+### Add production settings
+
+Add these settings files:
+  - ```secret_settings_prod_hms.json```
+To this directory:
+  - ```/www/gentb.hms.harvard.edu/code/gentb-site/gentb_website/tb_website/tb_website/settings```
