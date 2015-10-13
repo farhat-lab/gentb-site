@@ -49,7 +49,7 @@ TB_ADMINS = JSON_SECRETS['TB_ADMINS']
 
 ########## HOST CONFIGURATION
 # See: https://docs.djangoproject.com/en/1.5/releases/1.5/#allowed-hosts-required-in-production
-ALLOWED_HOSTS = ['gentb.hms.harvard.edu', 'orchestraweb.hms.harvard.edu', '134.174.150.16]
+ALLOWED_HOSTS = ['gentb.hms.harvard.edu', 'orchestraweb.hms.harvard.edu', '134.174.150.16']
 ########## END HOST CONFIGURATION
 
 ########## EMAIL CONFIGURATION

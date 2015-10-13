@@ -57,9 +57,21 @@ source venv_tb/bin/activate
 pip install -r requirements.txt
 ```
 
+### Reuse the virtualenv -- after setup
+
+```
+cd /www/gentb.hms.harvard.edu/code/gentb-site/gentb_website
+source venv_tb/bin/activate
+```
+
 ### Add production settings
 
 Add these settings files:
   - ```secret_settings_prod_hms.json```
 To this directory:
   - ```/www/gentb.hms.harvard.edu/code/gentb-site/gentb_website/tb_website/tb_website/settings```
+
+Check the settings
+```
+cd /www/gentb.hms.harvard.edu/code/gentb-site/gentb_website/tb_website
+python manage.py check --settings=tb_website.settings.production_hms
