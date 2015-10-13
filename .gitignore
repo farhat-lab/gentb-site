@@ -64,3 +64,11 @@ gentb_website/tb_website/tb_website/settings/mail_settings_production.json
 gentb_website/tb_website/tb_website/settings/mail_settings_local.json
 gentb_website/tb_website/tb_website/settings/secret_settings_prod.json
 gentb_website/tb_website/tb_website/settings/production.py
+
+scratch-work/server_access_log.2015-10-08.txt
+
+scratch-work/test-data/server_access_log.2015-10-08.txt
+
+gentb_website/tb_website/tb_website/settings/secret_settings_prod_hms.json
+
+gentb_website/tb_website/tb_website/settings/production_hms.py
