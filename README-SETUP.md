@@ -91,10 +91,27 @@ If this check fails, it is likely a setting in the ```secret_settings_prod_hms.j
 
 ### Create db tables and superuser
 
+- Create tables
 ```
 python manage.py migrate --settings=tb_website.settings.production_hms
+```
+
+- Create superuser
+```
 python manage.py createsuperuser --settings=tb_website.settings.production_hms
 ```
+
+- Collect static files
+This moves css, js, images, etc to the docroot.  Example image:
+ - https://gentb.hms.harvard.edu/tb/static/images/TwoRavens.png
+
+```
+python manage.py collectstatic --settings=tb_website.settings.production_hms
+```
+Should see something like this:
+  - ```109 static files copied to '/www/gentb.hms.harvard.edu/docroot/tb/static'.```
+  - the 109 may be a different number
+
 
 ### Load Explore fixtures
 
@@ -103,6 +120,45 @@ These are the links to the Shiny server.
 ```
 python manage.py loaddata apps/explore/fixtures/initial_data.json --settings=tb_website.settings.production_hms
 ```
+
+### Set up the .htaccess file
+
+Create an .htaccess file
+```
+vim /www/gentb.hms.harvard.edu/docroot/.htaccess
+```
+
+Add the following content:
+```
+# ----------------------------------
+# Redirect requests to the Django app running on flexatone
+# Gunicorn is being used to serve Django on http://flexatone.orchestra:9001
+# -----------------------------------
+RewriteEngine On
+RewriteBase /
+# -------------------------------
+#
+# Serve static files (css, js, images) directly
+# These files live under /docroot/tb/...
+# --------------------------------
+RewriteCond %{REQUEST_URI} !^/tb/
+# -------------------------------
+#
+# Send other requests to the Django app on flexatone
+# -------------------------------
+#ReWriteRule ^(.*)$ http://flexatone.orchestra:9001/$1 [P]
+# -------------------------------
+#
+# Temp redirect, if needed
+# -------------------------------
+ReWriteRule ^(.*)$ /tb/static/images/predict.png
+```
+
+HMS QUESTIONS
+
+flexatone - mysqldb driver
+ImproperlyConfigured: Error loading MySQLdb module: libssl.so.10: cannot open shared object file: No such file or directory
+
 
 
 ### Move st
