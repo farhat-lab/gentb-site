@@ -30,7 +30,6 @@ def run_metadata(dlink):
     print headers
     r = requests.post('https://api.dropbox.com/1/metadata/link',
                     data=params,
-                    #auth=(app_key, secret_key)
                     headers=headers
                     )
     print r.status_code

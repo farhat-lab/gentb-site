@@ -1,13 +1,17 @@
+from datetime import datetime
 import json
-from os.path import isdir
-from pprint import pprint
+import os, sys, shutil
+from os.path import basename, join, isdir, isfile
 import re
 import requests
-import sys
+import urllib2
+import zipfile
+
 from dropbox_info import DROPBOX_ACCESS_TOKEN
 
-#GENTB_FILE_PATTERNS = ['\.fastq$', '\.fastq\.', '\.vcf$', '\.vcf\.', ]
-GENTB_FILE_PATTERNS = ['\.fastq$', '\.fastq\.', '\.vcf$', '\.vcf\.', '\.txt$']
+GENTB_FILE_PATTERNS = ['\.fastq$', '\.fastq\.', '\.vcf$', '\.vcf\.', ]
+#GENTB_FILE_PATTERNS = ['\.fastq$', '\.fastq\.', '\.vcf$', '\.vcf\.', '\.txt$']
+#GENTB_FILE_PATTERNS = ['6.txt$']
 
 class DropboxRetriever:
     """
@@ -20,6 +24,8 @@ class DropboxRetriever:
     def __init__(self, dbox_link, destination_dir, file_patterns=[]):
 
         self.dbox_link = dbox_link
+        self.is_directory_link = False
+
         self.destination_dir = destination_dir
         self.file_patterns = file_patterns
 
@@ -31,7 +37,8 @@ class DropboxRetriever:
         self.matching_files_metadata = []
 
         # For Step 3 - retrieve files
-        self.file_paths = []
+        self.target_zip_fullname = None
+        self.final_file_paths = []
 
         # Error holders
         self.err_found = False
@@ -45,8 +52,7 @@ class DropboxRetriever:
 
     def initial_check(self):
 
-        if self.dbox_link is None:
-            self.add_err_msg("dbox_link cannot be None")
+        if not self.is_valid_dropbox_link():
             return False
 
         if self.destination_dir is None:
@@ -61,6 +67,35 @@ class DropboxRetriever:
             self.file_patterns = []
 
         return True
+
+    def is_valid_dropbox_link(self):
+        """
+        Starts with "https://www.dropbox.com"
+        Ends with: "?dl=0" or "?dl=1"
+
+        Always changes ?dl=0" -> "?dl=1"
+        """
+        if self.dbox_link is None:
+            self.add_err_msg("dbox_link cannot be None")
+            return False
+
+        d = self.dbox_link.lower()
+
+        dbox_start = 'https://www.dropbox.com'
+        if not d.startswith(dbox_start):
+            self.add_err("Not a dropbox url.  Doesn't start with '%s'" % dbox_start)
+            return False
+
+        if d.endswith('?dl=0'):
+            self.dbox_link = self.dbox_link.replace('?dl=0', '?dl=1')
+            return True
+
+        if d.endswith('?dl=1'):
+            return True
+
+        self.add_err('Does not appear to be a valid download link.  Should end with "?dl=0" or "?dl=1"')
+        return False
+
 
     def step1_retrieve_metadata(self):
         """
@@ -117,8 +152,12 @@ class DropboxRetriever:
         assert "is_dir" in self.dropbox_link_metadata,\
             "Do not call this unless step 1, retrieval of Dropbox metadata is successful. (Metadata doesn't look good. Missing key 'is_dir')"
 
-        # Is this link to a file?
+        # -------------------------------------
+        # Handle a Dropbox link to a file?
+        # -------------------------------------
         if self.dropbox_link_metadata['is_dir'] is False:   # Yes, this is a file
+            self.is_directory_link = False
+
             # Does it match?
             fpath = self.dropbox_link_metadata['path']
             if self.does_file_match_criteria(fpath):
@@ -127,6 +166,11 @@ class DropboxRetriever:
             else:
                 self.add_err_msg('No files match what we are looking for.')
                 return False
+
+        # -------------------------------------
+        # Handle a Dropbox link to a directory?
+        # -------------------------------------
+        self.is_directory_link = True
 
         # This is a directory, check each file
         #
@@ -171,44 +215,175 @@ class DropboxRetriever:
 
     def step3_retrieve_files(self):
         """
-        Download the dropbox file paths stored in "self.matching_files_metadata"
+        Download the dropbox link as a .zip.
+        There is currently no method download selected files from a shared dierctory link.
+        Desired paths stored in "self.matching_files_metadata"
         """
         if self.err_found:
             return False
-        assert isinstance(self.matching_files_metadata, []), \
+
+        assert isinstance(self.matching_files_metadata, list), \
             "Do not call this unless dropbox metadata (step 2) has files that we want"
         assert len(self.matching_files_metadata) > 0, \
-            "Do not call this unless dropbox metadata (step 2) has files that we want"
+            "No matching files. Do not call this unless dropbox metadata (step 2) has files that we want"
 
-        
+        if self.is_directory_link:
+            if self.step4a_download_directory_as_zip():
+                if self.step4b_organize_files():
+                    return True
+        else:
+            self.step3a_download_single_file()
+            return True
+        return False
 
-print type(self.dropbox_link_metadata)
-assert isinstance(self.dropbox_link_metadata, dict),\
-    "Do not call this unless step 1, retrieval of Dropbox metadata is successful"
+    def step3a_download_single_file(self):
 
         if self.err_found:
             return False
 
-        pass
+        # -------------------------------------
+        # Set the .zip name and destination
+        # -------------------------------------
+        target_fname = 'dropbox_download_{0}.zip'.format(datetime.now().strftime('%Y-%m-%d_%H-%M-%S'))
+
+        self.target_fullname = join(self.destination_dir, basename(self.dropbox_link_metadata['path'][1:]))
+
+        chunk_size = 16 * 1024
+        req = urllib2.urlopen(self.dbox_link)
+
+        # -------------------------------------
+        # Download it!
+        # -------------------------------------
+        print 'pre download: {0} @ {1}'.format(self.dbox_link, datetime.now())
+        with open(self.target_fullname, 'wb') as fp:
+            print 'downloading...'
+            shutil.copyfileobj(req, fp, chunk_size)
+
+        print 'file written: {0} @ {1}'.format(self.target_fullname, datetime.now())
+        return True
+
+
+    def step4a_download_directory_as_zip(self):
+        if self.err_found:
+            return False
+
+        # -------------------------------------
+        # Set the .zip name and destination
+        # -------------------------------------
+        target_fname = 'dropbox_download_{0}.zip'.format(datetime.now().strftime('%Y-%m-%d_%H-%M-%S'))
+        self.target_zip_fullname = join(self.destination_dir, target_fname)
+
+        chunk_size = 16 * 1024
+        req = urllib2.urlopen(self.dbox_link)
+
+        # -------------------------------------
+        # Download it!
+        # -------------------------------------
+        print 'pre download: {0} @ {1}'.format(self.dbox_link, datetime.now())
+        with open(self.target_zip_fullname, 'wb') as fp:
+            print 'downloading...'
+            shutil.copyfileobj(req, fp, chunk_size)
+
+        print 'file written: {0} @ {1}'.format(self.target_zip_fullname, datetime.now())
+
+        print '-' * 50
+        for fp in self.final_file_paths:
+            print fp
+
+        return True
+
+
+    def step4b_organize_files(self):
+
+        if not isfile(self.target_zip_fullname):
+            self.add_err_msg("The dropbox .zip file was not found: {0}".format(self.target_zip_fullname))
+            return False
+
+        # -------------------------------------
+        # Unzip the download
+        # -------------------------------------
+        unzip_dir = join(self.destination_dir, self.dropbox_link_metadata['path'][1:])
+        try:
+            dbox_zip = zipfile.ZipFile(self.target_zip_fullname, 'r')
+            dbox_zip.extractall(unzip_dir)
+            dbox_zip.close()
+        except:
+            self.add_err_msg("Failed to unzip file '{0}' to directory '{1}'".format(\
+                                self.target_zip_fullname, self.destination_dir))
+            return False
+
+        # -------------------------------------
+        # Remove directories and unwanted files
+        # -------------------------------------
+        for item in os.listdir(unzip_dir):
+            full_item = join(unzip_dir, item)
+
+            # -------------------------------------
+            # The files must be at the first level
+            # delete any embedded directories
+            # -------------------------------------
+            if isdir(full_item):
+                shutil.rmtree(full_item)
+                print 'directory removed: {0}'.format(full_item)
+                continue    # go to the next item
+
+            # -------------------------------------
+            # It's a file, one of ours?
+            # -------------------------------------
+            needed_file = False
+            for fname in dr.matching_files_metadata:
+                if full_item.endswith(fname):
+                    needed_file = True
+            if not needed_file:
+                os.remove(full_item)
+                print 'file removed: {0}'.format(full_item)
+            else:
+                self.final_file_paths.append(full_item)
+                print 'file kept: {0}'.format(full_item)
+
+        if len(self.final_file_paths) == 0:
+            self.add_err_msg("The desired files were not downloaded")
+            return False
+
+        print '-' * 50
+        for fp in self.final_file_paths:
+            print fp
+
+        return True
 
 if __name__=='__main__':
     #example_dlink = 'https://www.dropbox.com/s/4tqczonkaeakvua/001.txt?dl=0'
-    example_dlink = 'https://www.dropbox.com/sh/vbicdol2e8mn57r/AACeJzBhUpgxTNjj6jHL2UJoa?dl=0'
+    #example_dlink = 'https://www.dropbox.com/sh/vbicdol2e8mn57r/AACeJzBhUpgxTNjj6jHL2UJoa?dl=0'
+    # dir of files
+    example_dlink = 'https://www.dropbox.com/sh/19krhpbo4ph93rp/AAB6z3SpKs3w7jHy0bVi4JtPa?dl=0'
+    # single file
+    example_dlink = 'https://www.dropbox.com/s/tipb48hahtmbk05/008.1.fastq.txt?dl=0'
     dest_dir = '/Users/rmp553/Documents/iqss-git/gentb-site/scratch-work/test-files'
 
-    # initiate
+    # Initialize
     #
     dr = DropboxRetriever(example_dlink, dest_dir, GENTB_FILE_PATTERNS)
     if dr.err_found:
         print dr.err_msg
         sys.exit(1)
 
+    # Get the metadata
+    #
     if not dr.step1_retrieve_metadata():
         print dr.err_msg
         sys.exit(1)
 
+    # Does it have what we want?
+    #
     if not dr.step2_check_file_matches():
         print dr.err_msg
         sys.exit(1)
 
     print dr.matching_files_metadata
+    #sys.exit(1)
+
+    # Download the files
+    #
+    if not dr.step3_retrieve_files():
+        print dr.err_msg
+        sys.exit(1)

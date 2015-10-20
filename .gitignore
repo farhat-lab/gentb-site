@@ -74,3 +74,5 @@ gentb_website/tb_website/tb_website/settings/secret_settings_prod_hms.json
 scratch-work/dropbox_info.py
 
 gentb_website/tb_website/apps/predict/dropbox_info.py
+
+scratch-work/test-files/008.1.fastq.txt
