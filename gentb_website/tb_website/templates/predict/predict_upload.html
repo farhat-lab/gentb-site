@@ -19,7 +19,7 @@ Predict - genTB
                 {% if not IS_LOGGED_IN %}
                 <div class="panel panel-info">
                     <div class="panel-heading">
-                        <h3 class="panel-title">Upload Your Data</h3>
+                        <h3 class="panel-title">Send Your FASTQ or VCF Data</h3>
                     </div>
                   <div class="panel-body">
                     <p>To contribute a file for prediction, please:
@@ -38,7 +38,7 @@ Predict - genTB
             </div>
 
             <div class="col-md-6 portfolio-item">
-                
+
                 <p>
                 <h4>What is a Variant Call Format file (VCF)? </h4>
                 A Variant Call Format (VCF) file is used by the 1000 Genomes project to encode SNPs and other structural genetic variants. The format is currently maintained by The Global Alliance Data Working Group File Formats Task Team (<a href="http://ga4gh.org/#/fileformats-team">http://ga4gh.org/#/fileformats-team</a>) and is further described <a href="http://samtools.github.io/hts-specs/VCFv4.2.pdf">here</a>.
@@ -47,9 +47,9 @@ Predict - genTB
                 <br>
 
                 <p>
-                    <div class="panel-group" id="accordion"> 
+                    <div class="panel-group" id="accordion">
                         <div class="panel panel-default">
-                            <div class="panel-heading"> 
+                            <div class="panel-heading">
                               <h4 class="panel-title">
                                 <a data-toggle="collapse" data-parent="#accordion" href="#collapseOne">
                                   Genotypic Information for Accurate Resistance Predictions
@@ -87,7 +87,7 @@ Predict - genTB
                                     <tr>
                                         <td>Capreomycin</td>
                                         <td>rrs</td>
-                                    </tr>  
+                                    </tr>
                                     <tr>
                                         <td>Amikacin</td>
                                         <td>rrs</td>
@@ -99,7 +99,7 @@ Predict - genTB
                                     <tr>
                                         <td>Para&#8209;aminosalicylic&nbsp;acid</td>
                                         <td>thyA</td>
-                                    </tr>  
+                                    </tr>
                                     </table>
                                     *Gene eis is a predictor of Kanamycin resistance, but data for this gene was not available when the predictive model was built.
                                 </div>
@@ -110,7 +110,7 @@ Predict - genTB
             </div>
         </div>
 
-        
+
         <div class="col-md-6" id="d3-target-div" style="padding-left:60px;">
         </div>
         <script type="text/javascript" src="{{ STATIC_URL }}{% static 'd3/d3.v3.min.js' %}"></script>

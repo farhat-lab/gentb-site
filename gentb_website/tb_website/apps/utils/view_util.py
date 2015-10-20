@@ -1,4 +1,4 @@
-from apps.predict.models import VCFDataset
+from apps.predict.models import PredictDataset
 from django.views.decorators.cache import cache_page
 from apps.utils.site_url_util import get_site_url
 
@@ -35,4 +35,4 @@ def get_dataset_count(request):
     if not hasattr(request.user, 'tbuser'):
         return 0
 
-    return VCFDataset.objects.filter(user=request.user.tbuser).count()
+    return PredictDataset.objects.filter(user=request.user.tbuser).count()

@@ -5,7 +5,7 @@
         "name": "UPLOADED - Not Ready for Processing",
         "slug": "uploaded-not-ready-for-processing"
     },
-    "model": "predict.vcfdatasetstatus",
+    "model": "predict.PredictDatasetStatus",
     "pk": 1
 },
 {
@@ -14,7 +14,7 @@
         "name": "READY for Processing",
         "slug": "ready-for-processing"
     },
-    "model": "predict.vcfdatasetstatus",
+    "model": "predict.PredictDatasetStatus",
     "pk": 2
 },
 {
@@ -23,7 +23,7 @@
         "name": "PROCESSING - STARTED",
         "slug": "processing-started"
     },
-    "model": "predict.vcfdatasetstatus",
+    "model": "predict.PredictDatasetStatus",
     "pk": 3
 },
 {
@@ -32,7 +32,7 @@
         "name": "PROCESSED - SUCCESS",
         "slug": "processed-success"
     },
-    "model": "predict.vcfdatasetstatus",
+    "model": "predict.PredictDatasetStatus",
     "pk": 4
 },
 {
@@ -41,7 +41,7 @@
         "name": "PROCESSED - FAILED",
         "slug": "processed-failed"
     },
-    "model": "predict.vcfdatasetstatus",
+    "model": "predict.PredictDatasetStatus",
     "pk": 5
 }
 ]

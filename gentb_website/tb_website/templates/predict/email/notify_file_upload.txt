@@ -2,7 +2,7 @@
 
 A new dataset has been uploaded to the genTB website.  The details are below:
 
-Link to the admin page: {{ SITE_URL }}{% url 'admin:predict_vcfdataset_change' dataset.id %}
+Link to the admin page: {{ SITE_URL }}{% url 'admin:predict_PredictDataset_change' dataset.id %}
 
 -----------
 Dataset

@@ -7,12 +7,12 @@ from django.db import models, migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('predict', '0004_remove_vcfdataset_prediction_results'),
+        ('explore', '0001_initial'),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='datasetscriptrun',
-            options={'ordering': ('-modified', '-created')},
+            name='exploredatafileinfo',
+            options={'ordering': ('-created',), 'verbose_name': 'Explore Data File Information', 'verbose_name_plural': 'Explore Data File Information'},
         ),
     ]

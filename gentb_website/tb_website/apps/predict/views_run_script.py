@@ -7,7 +7,7 @@ from django.http import HttpResponseRedirect, HttpResponse, Http404
 from django.template import RequestContext
 from django.views.decorators.csrf import csrf_exempt
 
-from apps.predict.models import VCFDataset, VCFDatasetStatus, VCFDatasetNote, DatasetScriptRun
+from apps.predict.models import PredictDataset, PredictDatasetStatus, PredictDatasetNote, DatasetScriptRun
 from apps.utils.view_util import get_common_dict, IS_ACTIVE_STAFF
 from apps.predict.script_run_helper import run_script_on_dataset
 from apps.predict.forms import DatasetRunNotificationForm
@@ -29,9 +29,9 @@ def view_run_dataset_script(request, dataset_md5):
     # Get the dataset
     #
     try:
-        dataset = VCFDataset.objects.get(md5=dataset_md5)
-    except VCFDataset.DoesNotExist:
-        raise Http404('VCFDataset not found')
+        dataset = PredictDataset.objects.get(md5=dataset_md5)
+    except PredictDataset.DoesNotExist:
+        raise Http404('PredictDataset not found')
 
     d['dataset'] = dataset
 

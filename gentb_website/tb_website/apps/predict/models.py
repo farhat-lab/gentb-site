@@ -1,6 +1,7 @@
-import os
+import collections
 from hashlib import md5
 import json
+import os
 
 from model_utils.models import TimeStampedModel
 
@@ -10,6 +11,7 @@ from django.conf import settings
 from django.utils.text import slugify
 from django.core import serializers
 from django.core.urlresolvers import reverse
+from jsonfield import JSONField # https://github.com/bradjasper/django-jsonfield
 
 from apps.tb_users.models import TBUser
 from apps.utils.site_url_util import get_site_url
@@ -28,7 +30,7 @@ DATASET_STATUS_PROCESSED_SUCCESS = 4
 DATASET_STATUS_PROCESSED_FAILED = 4
 
 
-class VCFDatasetStatus(models.Model):
+class PredictDatasetStatus(models.Model):
     name = models.CharField(max_length=50)
     slug = models.SlugField(blank=True)
     sort_order = models.IntegerField()
@@ -38,19 +40,19 @@ class VCFDatasetStatus(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.id:
-            super(VCFDatasetStatus, self).save(*args, **kwargs)
+            super(PredictDatasetStatus, self).save(*args, **kwargs)
 
         self.slug = slugify(self.name)
 
-        super(VCFDatasetStatus, self).save(*args, **kwargs)
+        super(PredictDatasetStatus, self).save(*args, **kwargs)
 
     class Meta:
         ordering = ('sort_order', '-name')
         verbose_name = 'VCF Dataset Status'
-        verbose_name_plural = 'VCF Dataset Statuses'
+        verbose_name_plural = 'Predict Dataset Statuses'
 
 
-class VCFDataset(TimeStampedModel):
+class PredictDataset(TimeStampedModel):
     """
     Information from API call: https://api.github.com/repos/iqss/dataverse/milestones
     """
@@ -60,10 +62,14 @@ class VCFDataset(TimeStampedModel):
 
     description = models.TextField('Dataset description')
 
-    status = models.ForeignKey(VCFDatasetStatus)
+    status = models.ForeignKey(PredictDatasetStatus)
 
-    file1 = models.FileField('File 1', upload_to='shared-files/%Y/%m'\
-                            , storage=tb_file_system_storage)
+    file_directory = models.CharField(max_length=255, blank=True)
+
+    file1 = models.FileField('File 1', upload_to='shared-files/%Y/%m',
+                            storage=tb_file_system_storage,
+                             null=True,
+                             blank=True)
 
     file2 = models.FileField('File 2 (optional)',
                              upload_to='shared-files/%Y/%m',
@@ -78,7 +84,6 @@ class VCFDataset(TimeStampedModel):
 
     def __str__(self):
         return self.title
-
 
     def run_script_link(self):
         if not self.id:
@@ -108,11 +113,11 @@ class VCFDataset(TimeStampedModel):
 
     def save(self, *args, **kwargs):
         if not self.id:
-            super(VCFDataset, self).save(*args, **kwargs)
+            super(PredictDataset, self).save(*args, **kwargs)
 
         self.md5 = md5('%s%s' % (self.id, self.title)).hexdigest()
 
-        super(VCFDataset, self).save(*args, **kwargs)
+        super(PredictDataset, self).save(*args, **kwargs)
 
     def filename1(self):
         return os.path.basename(self.file1.name)
@@ -122,13 +127,13 @@ class VCFDataset(TimeStampedModel):
 
 
     def get_full_json(self):
-        return serializers.serialize('json', VCFDataset.objects.filter(id=self.id))
+        return serializers.serialize('json', PredictDataset.objects.filter(id=self.id))
 
     def get_script_args_json(self, run_md5, as_list=False):
 
         site_url = get_site_url()
 
-        url_to_dataset = reverse('admin:predict_vcfdataset_change', args=(self.id,))
+        url_to_dataset = reverse('admin:predict_PredictDataset_change', args=(self.id,))
         admin_url = '{0}{1}'.format(site_url, url_to_dataset)
         callback_url = '{0}{1}'.format(site_url, reverse('view_dataset_run_notification', kwargs={}))
 
@@ -149,24 +154,24 @@ class VCFDataset(TimeStampedModel):
         return json.dumps(d)
 
     def set_status_uploaded_ready(self, save_status=True):
-        self.status = VCFDatasetStatus.objects.get(pk=DATASET_STATUS_UPLOADED_READY_ID)
+        self.status = PredictDatasetStatus.objects.get(pk=DATASET_STATUS_UPLOADED_READY_ID)
         if save_status:
             self.save()
 
     def set_status_processing_started(self, save_status=True):
-        self.status = VCFDatasetStatus.objects.get(pk=DATASET_STATUS_PROCESSING_STARTED_ID)
+        self.status = PredictDatasetStatus.objects.get(pk=DATASET_STATUS_PROCESSING_STARTED_ID)
         if save_status:
             self.save()
 
 
     def set_status_process_failed(self, save_status=True):
-        self.status = VCFDatasetStatus.objects.get(pk=DATASET_STATUS_PROCESSED_FAILED)
+        self.status = PredictDatasetStatus.objects.get(pk=DATASET_STATUS_PROCESSED_FAILED)
         self.has_prediction = False
         if save_status:
             self.save()
 
     def set_status_process_success(self, save_status=True):
-        self.status = VCFDatasetStatus.objects.get(pk=DATASET_STATUS_PROCESSED_SUCCESS)
+        self.status = PredictDatasetStatus.objects.get(pk=DATASET_STATUS_PROCESSED_SUCCESS)
         self.has_prediction = True
         if save_status:
             self.save()
@@ -178,12 +183,45 @@ class VCFDataset(TimeStampedModel):
         verbose_name_plural = 'VCF Datasets'
 
 
-class VCFDatasetNote(TimeStampedModel):
+class DropboxDataSource(TimeStampedModel):
 
-    dataset = models.ForeignKey(VCFDataset)
+    dataset = models.ForeignKey(PredictDataset)
+
+    # url supplied by the user
+    dropbox_url = models.URLField()
+
+    # retrieved from dropbox
+    file_metadata = JSONField(load_kwargs={'object_pairs_hook': collections.OrderedDict}, blank=True)
+
+    # selected from metadata by user
+    selected_files = JSONField(load_kwargs={'object_pairs_hook': collections.OrderedDict}, blank=True)
+
+    # system attempts to download files
+    retrieval_start = models.DateTimeField(null=True, blank=True)
+    retrieval_error = models.TextField(blank=True)
+
+    # success
+    files_retrieved = models.BooleanField(default=False)
+
+
+    def __str__(self):
+        return '{0}'.format(self.dataset)
+
+    class Meta:
+        ordering = ('-created', 'dataset')
+        verbose_name = 'Dropbox Data Source'
+        verbose_name_plural = '{0}s'.format(verbose_name)
+
+
+class PredictDatasetNote(TimeStampedModel):
+
+    dataset = models.ForeignKey(PredictDataset)
 
     title = models.CharField(max_length=255)
     note = models.TextField()
+
+    def __str__(self):
+        return self.title
 
     class Meta:
         ordering = ('-modified', '-created')
@@ -194,7 +232,7 @@ class ScriptToRun(TimeStampedModel):
     name = models.CharField(max_length=100)
     is_chosen_script = models.BooleanField(default=True)
     script = models.TextField('Command line script run by webserver.  Arguments will be passed in JSON format.',
-                              help_text='Example of JSON argument: \'{"admin_url": "http://127.0.0.1:8000/tb-admin/predict/vcfdataset/3/", "callback_url": "some_url to receive results", "dataset_id": 3, "user_email": "user_who_uploaded_file@place.edu", "file1_path": ".../tb_uploaded_files/shared-files/2015/08/Predict_-_genTB_BnVjFcO.png"}\'')
+                              help_text='Example of JSON argument: \'{"admin_url": "http://127.0.0.1:8000/tb-admin/predict/PredictDataset/3/", "callback_url": "some_url to receive results", "dataset_id": 3, "user_email": "user_who_uploaded_file@place.edu", "file1_path": ".../tb_uploaded_files/shared-files/2015/08/Predict_-_genTB_BnVjFcO.png"}\'')
 
     script_args = models.TextField(blank=True, help_text='populated on save')
 
@@ -222,7 +260,7 @@ class ScriptToRun(TimeStampedModel):
 
 class DatasetScriptRun(TimeStampedModel):
 
-    dataset = models.ForeignKey(VCFDataset)
+    dataset = models.ForeignKey(PredictDataset)
 
     notes = models.TextField(blank=True)
 
@@ -247,4 +285,3 @@ class DatasetScriptRun(TimeStampedModel):
 
     class Meta:
         ordering = ('-modified', '-created')
-

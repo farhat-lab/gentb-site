@@ -1,6 +1,6 @@
 from django import forms
-from apps.predict.models import VCFDataset,\
-                VCFDatasetStatus,\
+from apps.predict.models import PredictDataset,\
+                PredictDatasetStatus,\
                 DATASET_STATUS_UPLOADED_READY_ID
 
 
@@ -20,7 +20,7 @@ class UploadPredictionDataForm(forms.ModelForm):
     retype_password = forms.CharField(label='Retype Password', widget=forms.PasswordInput())
     """
     class Meta:
-        model = VCFDataset
+        model = PredictDataset
         fields = ('title', 'description', 'file1', 'file2')
 
     def get_vfc_dataset(self, tb_user):
@@ -28,7 +28,7 @@ class UploadPredictionDataForm(forms.ModelForm):
         assert tb_user is not None, "tb_user cannot be None"
         assert hasattr(self, 'cleaned_data'), "Do not call this method on an invalid form."
 
-        # save VCFDataset, made inactive
+        # save PredictDataset, made inactive
         #
         vcf_dataset = self.save(commit=False)   # get object
         vcf_dataset.user = tb_user              # set user

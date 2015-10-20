@@ -154,6 +154,21 @@ RewriteCond %{REQUEST_URI} !^/tb/
 ReWriteRule ^(.*)$ /tb/static/images/predict.png
 ```
 
+### Email Settings
+
+Email message are sent via Django's [send_mail function](https://docs.djangoproject.com/en/1.8/topics/email/#send-mail).
+
+Currently the project uses a Gmail account with settings supplied in the file: ```secret_settings_prod_hms.json```
+
+Note: In order to work currently, the Gmail account must be set up with 2-step verification and an application password. For more information, read [How to generate an App password](https://support.google.com/accounts/answer/185833?hl=en)
+
+To run a command line email test, log into the server and:
+```
+
+
+```
+
+
 HMS QUESTIONS
 
 flexatone - mysqldb driver

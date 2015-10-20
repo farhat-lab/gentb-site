@@ -1,4 +1,4 @@
-from apps.predict.models import VCFDatasetStatus, VCFDataset, VCFDatasetNote, DatasetScriptRun, ScriptToRun,\
+from apps.predict.models import PredictDatasetStatus, PredictDataset, PredictDatasetNote, DatasetScriptRun, ScriptToRun,\
             DATASET_STATUS_PROCESSING_STARTED_ID
 from apps.script_helper.script_runner_basic import run_script
 
@@ -17,7 +17,7 @@ def run_script_on_dataset(dataset):
     except ScriptToRun.DoesNotExist:
         err_title='No chosen script'
         err_note = """Please go into the admin control panel and add a 'ScriptToRun'.  Talk to your administrator for details."""
-        note = VCFDatasetNote(dataset=dataset,
+        note = PredictDatasetNote(dataset=dataset,
                               title=err_title,
                               note=err_note)
         note.save()

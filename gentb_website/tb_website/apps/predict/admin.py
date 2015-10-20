@@ -1,25 +1,25 @@
 from django.contrib import admin
 
 # Register your models here.
-from apps.predict.models import VCFDatasetStatus, VCFDataset, VCFDatasetNote, DatasetScriptRun, ScriptToRun
+from apps.predict.models import PredictDatasetStatus, PredictDataset, PredictDatasetNote, DatasetScriptRun, ScriptToRun, DropboxDataSource
 
 
-class VCFDatasetStatusAdmin(admin.ModelAdmin):
+class PredictDatasetStatusAdmin(admin.ModelAdmin):
     save_on_top = True
     list_display = ['name', 'sort_order', 'slug']
     search_fields = ['name']
-admin.site.register(VCFDatasetStatus, VCFDatasetStatusAdmin)
+admin.site.register(PredictDatasetStatus, PredictDatasetStatusAdmin)
 
 
 
-class VCFDatasetNoteAdmin(admin.ModelAdmin):
+class PredictDatasetNoteAdmin(admin.ModelAdmin):
     list_display = ('dataset', 'title', 'modified', 'created',)
     search_fields = ('title', 'note')
-admin.site.register(VCFDatasetNote, VCFDatasetNoteAdmin)
+admin.site.register(PredictDatasetNote, PredictDatasetNoteAdmin)
 
 
-class VCFDatasetNoteInline(admin.StackedInline):
-    model = VCFDatasetNote
+class PredictDatasetNoteInline(admin.StackedInline):
+    model = PredictDatasetNote
     can_delete = True
     verbose_name_plural = 'Dataset Notes'
     extra = 0
@@ -32,8 +32,21 @@ class DatasetScriptRunInline(admin.StackedInline):
     extra = 0
 
 
-class VCFDatasetAdmin(admin.ModelAdmin):
-    inlines = (VCFDatasetNoteInline, DatasetScriptRunInline)# VCFDatasetNoteInline, )
+
+class DropboxDataSourceAdmin(admin.ModelAdmin):
+    save_on_top = True
+    list_display = ('dataset', 'files_retrieved', 'created', 'dropbox_url')
+    list_filter = ('files_retrieved', )
+admin.site.register(DropboxDataSource, DropboxDataSourceAdmin)
+
+class DropboxDataSourceInline(admin.StackedInline):
+    model = DropboxDataSource
+    can_delete = True
+    extra = 0
+
+
+class PredictDatasetAdmin(admin.ModelAdmin):
+    inlines = (DropboxDataSourceInline, PredictDatasetNoteInline, DatasetScriptRunInline)# PredictDatasetNoteInline, )
     save_on_top = True
     search_fields = ('title', 'user__first_name', 'user__last_name',)
     list_display = ('title', 'user', 'status', 'has_prediction', 'created', 'modified')
@@ -57,7 +70,7 @@ class VCFDatasetAdmin(admin.ModelAdmin):
     prediction_results = models.TextField( blank=True)
 
     md5 = models.'''
-admin.site.register(VCFDataset, VCFDatasetAdmin)
+admin.site.register(PredictDataset, PredictDatasetAdmin)
 
 
 class DatasetScriptRunAdmin(admin.ModelAdmin):
@@ -73,4 +86,3 @@ class ScriptToRunAdmin(admin.ModelAdmin):
     readonly_fields = ['created', 'modified', 'script_args']
     list_filter = ['is_chosen_script']
 admin.site.register(ScriptToRun, ScriptToRunAdmin)
-

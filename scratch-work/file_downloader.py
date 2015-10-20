@@ -73,5 +73,14 @@ if __name__ == '__main__':
     # 1gb
     #dlink = 'https://www.dropbox.com/s/ls4xqbyvd3lj3p9/1gb.txt?dl=0'
     dlink = 'https://www.dropbox.com/sh/2rr42u7v7x9549x/AAAcg8v8AzmWva0Nx-kwr7qxa?dl=0'
-
     dbox = DropBoxFileDownloader(dlink, 'downloaded')
+
+"""
+from dropbox_info import *
+
+link = 'https://www.dropbox.com/sh/r7qb9skx1vc3xxd/AABPxsafyiXtcsJ0Vg20JNloa?dl=0'
+print """curl -X POST https://api.dropbox.com/1/metadata/link -u {0}:{1} -d link={2}""".format(app_key, secret_key, link)
+
+app curl -X POST https://api.dropbox.com/1/metadata/link -u <APP_KEY>:<APP_SECRET> \
+      -d link=https://www.dropbox.com/sh/748f94925f0gesq/AAAMSoRJyhJFfkupnAU0wXuva?dl=0
+"""

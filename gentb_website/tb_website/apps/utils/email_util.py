@@ -60,4 +60,3 @@ def send_email_to_admins(subject, text_msg, html_message=None):
               to_emails,
               fail_silently=False,
               html_message=html_message)
-
