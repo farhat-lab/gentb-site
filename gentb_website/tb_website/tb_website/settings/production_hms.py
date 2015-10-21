@@ -32,6 +32,8 @@ except:
 ########## END CONFIGURATION FROM JSON FILE
 
 
+MEDIA_URL = '/tb/media/'
+STATIC_URL = '/tb/static/'
 
 STATIC_ROOT = '/www/gentb.hms.harvard.edu/docroot/tb/static'
 MEDIA_ROOT = '/www/gentb.hms.harvard.edu/docroot/tb/media'

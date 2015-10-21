@@ -147,11 +147,11 @@ RewriteCond %{REQUEST_URI} !^/tb/
 # Send other requests to the Django app on flexatone
 # -------------------------------
 #ReWriteRule ^(.*)$ http://flexatone.orchestra:9001/$1 [P]
-# -------------------------------
+ReWriteRule ^(.*)$ http://gentb-app-prod01.orchestra:9001/$1 [P]# -------------------------------
 #
 # Temp redirect, if needed
 # -------------------------------
-ReWriteRule ^(.*)$ /tb/static/images/predict.png
+#ReWriteRule ^(.*)$ /tb/static/images/predict.png
 ```
 
 ### Email Settings
