@@ -121,6 +121,17 @@ These are the links to the Shiny server.
 python manage.py loaddata apps/explore/fixtures/initial_data.json --settings=tb_website.settings.production_hms
 ```
 
+### Set the site name
+
+```
+python manage.py shell --settings=tb_website.settings.production_hms
+from django.contrib.sites.models import Site
+s = Site.objects.all()[0]
+s.name = 'gentb.hms.harvard.edu'
+s.domain = 'gentb.hms.harvard.edu'
+s.save()
+```
+
 ### Set up the .htaccess file
 
 Create an .htaccess file
@@ -153,6 +164,8 @@ ReWriteRule ^(.*)$ http://gentb-app-prod01.orchestra:9001/$1 [P]# --------------
 # -------------------------------
 #ReWriteRule ^(.*)$ /tb/static/images/predict.png
 ```
+
+
 
 ### Email Settings
 

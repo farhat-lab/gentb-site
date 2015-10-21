@@ -30,7 +30,7 @@ except:
     raise Exception("Failed to parse JSON file for settings: %s" % json_secrets_fname)
 
 ########## END CONFIGURATION FROM JSON FILE
-
+USE_X_FORWARDED_HOST = True
 
 MEDIA_URL = '/tb/media/'
 STATIC_URL = '/tb/static/'
@@ -39,7 +39,7 @@ STATIC_ROOT = '/www/gentb.hms.harvard.edu/docroot/tb/static'
 MEDIA_ROOT = '/www/gentb.hms.harvard.edu/docroot/tb/media'
 ROOT_URLCONF = '%s.urls_prod' % SITE_NAME
 
-DEBUG = False
+DEBUG = True
 
 ########## ADMIN CONTACTS
 ADMINS = JSON_SECRETS['ADMINS']
