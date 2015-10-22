@@ -5,6 +5,10 @@
 https://www.shinyapps.io/admin/#/login
 ```
 
+- **Note**: The application instance size should be: ```X-Large (2GB)```
+  - With the default 1GB, the maps were *not* showing up
+
+
 ### Following these instructions:
 ```
 http://shiny.rstudio.com/articles/shinyapps.html
