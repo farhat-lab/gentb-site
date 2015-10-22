@@ -1,4 +1,6 @@
-# notes on shinyapps, mac install
+# notes on shinyapps.io
+
+- current url: https://hmdc.shinyapps.io/genTB
 
 ### Log in for shinyapps.io
 ```
@@ -9,7 +11,7 @@ https://www.shinyapps.io/admin/#/login
   - With the default 1GB, the maps were *not* showing up
 
 
-### Following these instructions:
+### Followed these instructions:
 ```
 http://shiny.rstudio.com/articles/shinyapps.html
 ```
