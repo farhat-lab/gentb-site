@@ -165,7 +165,21 @@ ReWriteRule ^(.*)$ http://gentb-app-prod01.orchestra:9001/$1 [P]# --------------
 #ReWriteRule ^(.*)$ /tb/static/images/predict.png
 ```
 
+### Run gunicorn
 
+
+"""
+# start the virtualenv
+cd /www/gentb.hms.harvard.edu/code/gentb-site/gentb_website
+source venv_tb/bin/activate
+cd tb_website
+gunicorn --log-file=- --workers=1 -b 0.0.0.0:9001 tb_website.wsgi:application
+"""
+
+- view processes (if needed)
+```
+ps -f -u <username>
+```
 
 ### Email Settings
 
