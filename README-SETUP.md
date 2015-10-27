@@ -62,12 +62,31 @@ mysql connector installed manually
 pip install --allow-external mysql-connector-python mysql-connector-python
 ```
 
+### Make postactivate script
+
+Note virtualenvwrapper currently isn't available on the orchestra system.  This is a DIY postactivate script
+
+1.  Create a ```postactivate``` file
+```
+vim venv_tb/bin/postactivate
+```
+1. Add these lines to the file:
+```
+#!/bin/bash
+# This hook is run after this virtualenv is activated.
+export DJANGO_SETTINGS_MODULE=tb_website.settings.production_hms
+```
+1.  Run the ```postactivate``` script
+```
+source venv_tb/bin/postactivate
+```
 
 ### Reuse the virtualenv -- after setup
 
 ```
 cd /www/gentb.hms.harvard.edu/code/gentb-site/gentb_website
 source venv_tb/bin/activate
+source venv_tb/bin/postactivate
 ```
 
 ### Add production settings
@@ -78,6 +97,8 @@ To this directory:
   - ```/www/gentb.hms.harvard.edu/code/gentb-site/gentb_website/tb_website/tb_website/settings```
 
 ### Check the settings
+
+- Note: If you create/run the ```postactivate``` script above, then the ```--settings=...``` option is not needed
 
 ```
 cd /www/gentb.hms.harvard.edu/code/gentb-site/gentb_website/tb_website
@@ -96,10 +117,16 @@ If this check fails, it is likely a setting in the ```secret_settings_prod_hms.j
 python manage.py migrate --settings=tb_website.settings.production_hms
 ```
 
+  - Note: If you create/run the ```postactivate``` script above, then the ```--settings=...``` option is not needed
+
+
 - Create superuser
 ```
 python manage.py createsuperuser --settings=tb_website.settings.production_hms
 ```
+
+  - Note: If you create/run the ```postactivate``` script above, then the ```--settings=...``` option is not needed
+
 
 - Collect static files
 This moves css, js, images, etc to the docroot.  Example image:
@@ -120,6 +147,9 @@ These are the links to the Shiny server.
 ```
 python manage.py loaddata apps/explore/fixtures/initial_data.json --settings=tb_website.settings.production_hms
 ```
+
+  - Note: If you create/run the ```postactivate``` script above, then the ```--settings=...``` option is not needed
+
 
 ### Set the site name
 
@@ -185,13 +215,33 @@ ps -f -u <username>
 
 Email message are sent via Django's [send_mail function](https://docs.djangoproject.com/en/1.8/topics/email/#send-mail).
 
-Currently the project uses a Gmail account with settings supplied in the file: ```secret_settings_prod_hms.json```
-
+Currently the project uses a Gmail account with settings supplied in the file:
+  - file: ```secret_settings_prod_hms.json```
+  - prod location: ```/www/gentb.hms.harvard.edu/code/gentb-site/gentb_website/tb_website/tb_website/settings/secret_settings_prod_hms.json```
+  
 Note: In order to work currently, the Gmail account must be set up with 2-step verification and an application password. For more information, read [How to generate an App password](https://support.google.com/accounts/answer/185833?hl=en)
 
-To run a command line email test, log into the server and:
+To run a command line email test, log into the server and go into the Django shell:
+
+```
+cd /www/gentb.hms.harvard.edu/code/gentb-site/gentb_website
+source venv_tb/bin/activate
+source venv_tb/bin/postactivate
+cd tb_website
+python manage.py shell
 ```
 
+Next, from the django shell, try the ```send_mail``` command:
+
+```
+from django.conf import settings
+from django.core.mail import send_mail
+# !! put your email address in the line below
+to_email = "--YOUR EMAIL ADDRESS HERE--"
+send_mail(subject='genTB test email',
+        message='test the email settings',
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        recipient_list=[to_email])
 
 ```
 
