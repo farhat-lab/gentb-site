@@ -1,7 +1,10 @@
 import collections
 from hashlib import md5
 import json
-import os
+from os.path import basename, join, isdir
+from os import makedirs
+
+from datetime import datetime
 
 from model_utils.models import TimeStampedModel
 
@@ -16,18 +19,20 @@ from jsonfield import JSONField # https://github.com/bradjasper/django-jsonfield
 from apps.tb_users.models import TBUser
 from apps.utils.site_url_util import get_site_url
 
-tb_file_system_storage = FileSystemStorage(location=settings.TB_SHARED_DATAFILE_DIRECTORY)
+#tb_file_system_storage = FileSystemStorage(location=settings.TB_SHARED_DATAFILE_DIRECTORY)
 
 #def generate_new_filename(instance, filename):
 #    #f, ext = os.path.splitext(filename)
 #    instance.original_filename = basename(filename)
 #    return join(instance.dataset.get_partial_path_for_datafile(), generate_storage_identifier())
 
-DATASET_STATUS_UPLOADED_NOT_READY_ID = 1
-DATASET_STATUS_UPLOADED_READY_ID = 2
-DATASET_STATUS_PROCESSING_STARTED_ID = 3
-DATASET_STATUS_PROCESSED_SUCCESS = 4
-DATASET_STATUS_PROCESSED_FAILED = 4
+DATASET_STATUS_NOT_READY_ID = 1
+DATASET_STATUS_CONFIRMED_ID = 2
+DATASET_STATUS_FILE_RETRIEVAL_STARTED = 3
+
+#DATASET_STATUS_PROCESSING_STARTED_ID = 4
+#DATASET_STATUS_PROCESSED_SUCCESS = 5
+#DATASET_STATUS_PROCESSED_FAILED = 6
 
 
 class PredictDatasetStatus(models.Model):
@@ -60,27 +65,17 @@ class PredictDataset(TimeStampedModel):
 
     title = models.CharField('Dataset title', max_length=255)
 
+    dropbox_url = models.URLField()
+
     description = models.TextField('Dataset description')
 
     status = models.ForeignKey(PredictDatasetStatus)
 
     file_directory = models.CharField(max_length=255, blank=True)
 
-    file1 = models.FileField('File 1', upload_to='shared-files/%Y/%m',
-                            storage=tb_file_system_storage,
-                             null=True,
-                             blank=True)
-
-    file2 = models.FileField('File 2 (optional)',
-                             upload_to='shared-files/%Y/%m',
-                             storage=tb_file_system_storage,
-                             null=True,
-                             blank=True)
-
-    has_prediction = models.BooleanField('Has prediction results?',default=False, help_text='auto-filled on save')
+    has_prediction = models.BooleanField(default=False)
 
     md5 = models.CharField(max_length=40, blank=True, db_index=True, help_text='auto-filled on save')
-
 
     def __str__(self):
         return self.title
@@ -92,7 +87,6 @@ class PredictDataset(TimeStampedModel):
         url = reverse('view_run_dataset_script', kwargs=dict(dataset_md5=self.md5))
         return '<a href="%s" target="_blank" style="display:block; border:1px solid #333; padding:10px; width:70px;">Run Script!</a>' % (url)
     run_script_link.allow_tags = True
-
 
 
     def user_name(self):
@@ -111,23 +105,57 @@ class PredictDataset(TimeStampedModel):
         return 'n/a'
     #'user_name', 'user_email'
 
+    def create_dataset_directory_name(self):
+        """
+        Create a directory based on the id of this object.
+
+        e.g. id = 5
+        dirname = 'tbdata_00000005'
+        Attempt to create the directory under settings.TB_SHARED_DATAFILE_DIRECTORY
+        """
+        assert self.id is not None, "The object must be saved (and have an 'id') before this method is called."
+
+        # zero pad the object id
+        #
+        job_num = str(self.id).zfill(8)
+
+        # directory name is (tb_file_system_storage + "tb_data_" + job_num)
+        #
+        dirname = join(settings.TB_SHARED_DATAFILE_DIRECTORY, 'tbdata_{0}'.format(job_num))
+
+        # create the new directory (if it doesn't exist)
+        if not isdir(dirname):
+            makedirs(dirname)
+
+        return dirname
+
+        #datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
+
+
+
     def save(self, *args, **kwargs):
         if not self.id:
             super(PredictDataset, self).save(*args, **kwargs)
 
+        # Set the md5
         self.md5 = md5('%s%s' % (self.id, self.title)).hexdigest()
+
+        # -----------------------------
+        # Initialize the file directory
+        # for this dataset
+        # -----------------------------
+        if not self.file_directory:
+            self.file_directory = self.create_dataset_directory_name()
 
         super(PredictDataset, self).save(*args, **kwargs)
 
-    def filename1(self):
-        return os.path.basename(self.file1.name)
-
-    def filename2(self):
-        return os.path.basename(self.file2.name)
-
 
     def get_full_json(self):
+        """
+        Need to serialize the PredictDataset as well as related PredictDatasetFile objects
+        """
         return serializers.serialize('json', PredictDataset.objects.filter(id=self.id))
+
 
     def get_script_args_json(self, run_md5, as_list=False):
 
@@ -137,7 +165,7 @@ class PredictDataset(TimeStampedModel):
         admin_url = '{0}{1}'.format(site_url, url_to_dataset)
         callback_url = '{0}{1}'.format(site_url, reverse('view_dataset_run_notification', kwargs={}))
 
-        d = dict(file1_path=self.file1.path,
+        d = dict(#file1_path=self.file1.path,
                  dataset_id=self.id,
                  callback_url=callback_url,
                  user_email=self.user.user.email,
@@ -145,16 +173,16 @@ class PredictDataset(TimeStampedModel):
                  run_md5=run_md5
                  )
 
-        if self.file2:
-            d['file2_path'] = self.file2.path
+        #if self.file2:
+        #    d['file2_path'] = self.file2.path
 
         if as_list:
             return [ json.dumps(d)]
             #return [ '\'%s\'' % json.dumps(d)]
         return json.dumps(d)
 
-    def set_status_uploaded_ready(self, save_status=True):
-        self.status = PredictDatasetStatus.objects.get(pk=DATASET_STATUS_UPLOADED_READY_ID)
+    def set_status_not_ready(self, save_status=True):
+        self.status = PredictDatasetStatus.objects.get(pk=DATASET_STATUS_NOT_READY_ID)
         if save_status:
             self.save()
 
@@ -179,21 +207,35 @@ class PredictDataset(TimeStampedModel):
 
     class Meta:
         ordering = ('-created', 'title')
-        verbose_name = 'VCF Dataset'
-        verbose_name_plural = 'VCF Datasets'
+        #verbose_name = 'VCF Dataset'
+        #verbose_name_plural = 'VCF Datasets'
 
 
-class DropboxDataSource(TimeStampedModel):
-
+class PredictDatasetFile(TimeStampedModel):
+    """
+    Single file that has been retrieved for a particular dataset
+    """
     dataset = models.ForeignKey(PredictDataset)
+    name = models.CharField(max_length=255, help_text='Name of the file (w/o) the path')
+    fullpath = models.TextField(help_text='Full path to the file')
+    size = models.IntegerField(default=0, help_text='Size of the file in bytes')
 
-    # url supplied by the user
-    dropbox_url = models.URLField()
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        ordering = ('-created', 'dataset', 'name')
+
+
+class DropboxRetrievalLog(TimeStampedModel):
+
+    dataset = models.ForeignKey(PredictDataset, unique=True)
 
     # retrieved from dropbox
     file_metadata = JSONField(load_kwargs={'object_pairs_hook': collections.OrderedDict}, blank=True)
+    file_metadata_err_msg = models.TextField(blank=True)
 
-    # selected from metadata by user
+    # selected from metadata based on file endings
     selected_files = JSONField(load_kwargs={'object_pairs_hook': collections.OrderedDict}, blank=True)
 
     # system attempts to download files
@@ -203,14 +245,13 @@ class DropboxDataSource(TimeStampedModel):
     # success
     files_retrieved = models.BooleanField(default=False)
 
-
     def __str__(self):
         return '{0}'.format(self.dataset)
 
     class Meta:
         ordering = ('-created', 'dataset')
-        verbose_name = 'Dropbox Data Source'
-        verbose_name_plural = '{0}s'.format(verbose_name)
+        #verbose_name = 'Dropbox Data Source'
+        #verbose_name_plural = '{0}s'.format(verbose_name)
 
 
 class PredictDatasetNote(TimeStampedModel):

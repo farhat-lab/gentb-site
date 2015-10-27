@@ -7,11 +7,13 @@ from django.template import RequestContext
 from django.contrib.auth.decorators import login_required
 
 from apps.predict.forms import UploadPredictionDataForm
-from apps.predict.models import PredictDataset, PredictDatasetStatus, PredictDatasetNote, DatasetScriptRun
+from apps.predict.models import PredictDataset, PredictDatasetStatus,\
+                                PredictDatasetNote, DatasetScriptRun,\
+                                DropboxRetrievalLog
 from apps.shared_data.process_file_helper import get_process_file_results
 from apps.utils.view_util import get_common_dict
 from apps.predict.message_helper import send_new_dataset_message_to_tb_admins
-
+from apps.predict.dropbox_util import get_dropbox_metadata
 
 
 def view_predict_page(request):
@@ -28,9 +30,10 @@ def view_predict_page(request):
     if request.POST:
         f = UploadPredictionDataForm(request.POST, request.FILES)
         if f.is_valid():
-            new_dataset = f.get_vfc_dataset(request.user.tbuser)
+            new_dataset = f.get_dataset(request.user.tbuser)
 
-            send_new_dataset_message_to_tb_admins(new_dataset)
+            get_dropbox_metadata(new_dataset)
+            #send_new_dataset_message_to_tb_admins(new_dataset)
 
             success_url = reverse('view_predict_upload_success',
                                   kwargs=dict(dataset_md5=new_dataset.md5)
@@ -40,7 +43,7 @@ def view_predict_page(request):
             d['ERROR_FOUND']  = True
     else:
         f = UploadPredictionDataForm(label_suffix='')
-    
+
     d['predict_form'] = f
 
     return render_to_response('predict/predict_upload.html',
@@ -56,6 +59,9 @@ def view_predict_upload_success(request, dataset_md5):
         dataset = PredictDataset.objects.get(md5=dataset_md5)
     except PredictDataset.DoesNotExist:
         raise Http404('PredictDataset not found')
+
+    d['dbox_log'] = DropboxRetrievalLog.objects.filter(dataset=dataset).first()
+    print ('get it?', d['dbox_log'])
 
     d['dataset'] = dataset
     d['tb_user'] = dataset.user
@@ -115,7 +121,7 @@ def view_my_datasets(request):
         msg_or_data = shared_file_info.get_prediction_results()
         if msg_or_data:
             success = True
-        else: 
+        else:
             success = False
     else:
         # No, then run the prediction R script
@@ -124,35 +130,35 @@ def view_my_datasets(request):
         if success is True:
             shared_file_info.set_prediction_results(msg_or_data)
             shared_file_info.save()
-        
+
     #print ('msg_or_data', type(msg_or_data))
     d['UPLOAD_SUCCESS'] = True
-    
+
     d['FILE_PROCESS_SUCCESS'] = success
     d['FILE_PROCESS_ERR_OR_DATA'] = msg_or_data
-    
+
     d['shared_file_info'] = shared_file_info
-    
-    
+
+
     return render_to_response('predict/predict_upload_success.html',
                              d,
                              context_instance=RequestContext(request))
     """
 """
 def view_test_upload_success(request):
-    
+
 
     #print ('msg_or_data', type(msg_or_data))
     d = get_common_dict(request, 'Test Predict Upload Success', predict_page=True)
 
     d['UPLOAD_SUCCESS'] = True
-    
+
     d['FILE_PROCESS_SUCCESS'] = True
     d['FILE_PROCESS_ERR_OR_DATA'] = { 'test_data' : True }#msg_or_data
-    
+
     #d['shared_file_info'] = shared_file_info
-    
-    
+
+
     return render_to_response('predict/predict_upload_success.html',
                              d,
                              context_instance=RequestContext(request))

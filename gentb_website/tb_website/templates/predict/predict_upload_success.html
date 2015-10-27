@@ -15,16 +15,31 @@ Predict - genTB
 
         <div class = "row">
             <div class="col-md-6 portfolio-item">
-                    
+
                     <div class="alert alert-success" role="alert">
                         Thank you for contributing your data to this project!
 
                         <p>Your contribution details are below.</p>
 
-                        <p>Return to the <a href="{% url 'view_homepage' %}">homepage</a> or 
+                        <p>Return to the <a href="{% url 'view_homepage' %}">homepage</a> or
                             <a href="{% url 'view_predict_page' %}">upload another file for prediction</a>.</p>
                     </div>
 
+            {% if dbox_log %}
+            hello!
+                {% if dbox_log.file_metadata %}
+                The following file were identified from the drobx link:
+                    <ol>
+                    {% for file_info in dbox_log.file_metadata %}
+                        <li>{{ file_info }}</li>
+                    {% endfor %}
+                    </ol>
+                {% endif %}
+                <br />
+                {{ dbox_log.file_metadata_err_msg }}
+                <br />
+            {% endif %}
+            ayy!
             {% if dataset %}
                 {% include "predict/success_uploaded_info_table.html" %}
             {% endif %}
@@ -44,5 +59,5 @@ Predict - genTB
             <script type="text/javascript" src="{% static 'd3/d3.v3.min.js' %}"></script>
             <script type="text/javascript" src="{% static 'js/app.js' %}"></script>
         {% endcomment %}
-        
+
 {% endblock %}

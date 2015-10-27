@@ -21,7 +21,7 @@ class DropboxRetriever:
         https://blogs.dropbox.com/developers/2015/08/new-api-endpoint-shared-link-metadata/
     This requires a Dataverse app (either app_key + secret OR or access_token)
     """
-    def __init__(self, dbox_link, destination_dir, file_patterns=[]):
+    def __init__(self, dbox_link, destination_dir, file_patterns=GENTB_FILE_PATTERNS):
 
         self.dbox_link = dbox_link
         self.is_directory_link = False

@@ -1,7 +1,12 @@
 from django.contrib import admin
 
 # Register your models here.
-from apps.predict.models import PredictDatasetStatus, PredictDataset, PredictDatasetNote, DatasetScriptRun, ScriptToRun, DropboxDataSource
+from apps.predict.models import PredictDatasetStatus, PredictDataset, DropboxRetrievalLog, PredictDatasetNote, DatasetScriptRun, ScriptToRun#, DropboxDataSource
+
+
+class DropboxRetrievalLogAdmin(admin.ModelAdmin):
+    save_on_top = True
+admin.site.register(DropboxRetrievalLog, DropboxRetrievalLogAdmin)
 
 
 class PredictDatasetStatusAdmin(admin.ModelAdmin):
@@ -32,7 +37,7 @@ class DatasetScriptRunInline(admin.StackedInline):
     extra = 0
 
 
-
+"""
 class DropboxDataSourceAdmin(admin.ModelAdmin):
     save_on_top = True
     list_display = ('dataset', 'files_retrieved', 'created', 'dropbox_url')
@@ -43,22 +48,22 @@ class DropboxDataSourceInline(admin.StackedInline):
     model = DropboxDataSource
     can_delete = True
     extra = 0
-
+"""
 
 class PredictDatasetAdmin(admin.ModelAdmin):
-    inlines = (DropboxDataSourceInline, PredictDatasetNoteInline, DatasetScriptRunInline)# PredictDatasetNoteInline, )
+    inlines = (PredictDatasetNoteInline, DatasetScriptRunInline)# PredictDatasetNoteInline, )
     save_on_top = True
     search_fields = ('title', 'user__first_name', 'user__last_name',)
     list_display = ('title', 'user', 'status', 'has_prediction', 'created', 'modified')
     list_filter = ['status', 'has_prediction']
-    readonly_fields = [ 'created', 'modified', 'md5',
+    readonly_fields = [ 'created', 'modified', 'md5', 'file_directory',
                         'user_name', 'user_email', 'user_affiliation', 'run_script_link']
 
     fieldsets = [
         (None,               {'fields': ['title', ('status', 'has_prediction')]}),
         ('Description',               {'fields': ['description']}),
         ('User',               {'fields': [('user', 'user_affiliation'), ('user_name', 'user_email')]}),
-        ('Files',               {'fields': ['file1', 'file2',]}),
+        ('Files',               {'fields': ['dropbox_url', 'file_directory',]}),
         ('Run Script!', {'fields': ['run_script_link']}),
         ('Timestamps/md5', {'fields': [('created', 'modified'), 'md5']}),
     ]

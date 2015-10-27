@@ -1,5 +1,4 @@
-from apps.predict.models import PredictDatasetStatus, PredictDataset, PredictDatasetNote, DatasetScriptRun, ScriptToRun,\
-            DATASET_STATUS_PROCESSING_STARTED_ID
+from apps.predict.models import PredictDatasetStatus, PredictDataset, PredictDatasetNote, DatasetScriptRun, ScriptToRun
 from apps.script_helper.script_runner_basic import run_script
 
 class ErrMsg:
@@ -52,4 +51,3 @@ def run_script_on_dataset(dataset):
 
 
     return (True, dsr)
-
