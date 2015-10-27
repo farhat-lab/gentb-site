@@ -195,21 +195,6 @@ ReWriteRule ^(.*)$ http://gentb-app-prod01.orchestra:9001/$1 [P]# --------------
 #ReWriteRule ^(.*)$ /tb/static/images/predict.png
 ```
 
-### Run gunicorn
-
-
-"""
-# start the virtualenv
-cd /www/gentb.hms.harvard.edu/code/gentb-site/gentb_website
-source venv_tb/bin/activate
-cd tb_website
-gunicorn --log-file=- --workers=1 -b 0.0.0.0:9001 tb_website.wsgi:application
-"""
-
-- view processes (if needed)
-```
-ps -f -u <username>
-```
 
 ### Email Settings
 
@@ -218,7 +203,7 @@ Email message are sent via Django's [send_mail function](https://docs.djangoproj
 Currently the project uses a Gmail account with settings supplied in the file:
   - file: ```secret_settings_prod_hms.json```
   - prod location: ```/www/gentb.hms.harvard.edu/code/gentb-site/gentb_website/tb_website/tb_website/settings/secret_settings_prod_hms.json```
-  
+
 Note: In order to work currently, the Gmail account must be set up with 2-step verification and an application password. For more information, read [How to generate an App password](https://support.google.com/accounts/answer/185833?hl=en)
 
 To run a command line email test, log into the server and go into the Django shell:
@@ -245,12 +230,18 @@ send_mail(subject='genTB test email',
 
 ```
 
-
-HMS QUESTIONS
-
-flexatone - mysqldb driver
-ImproperlyConfigured: Error loading MySQLdb module: libssl.so.10: cannot open shared object file: No such file or directory
+### Run gunicorn
 
 
+```
+# start the virtualenv
+cd /www/gentb.hms.harvard.edu/code/gentb-site/gentb_website
+source venv_tb/bin/activate
+cd tb_website
+gunicorn --log-file=- --workers=1 -b 0.0.0.0:9001 tb_website.wsgi:application
+```
 
-### Move st
+- view processes (if needed)
+```
+ps -f -u <username>
+```
