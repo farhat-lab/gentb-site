@@ -140,16 +140,6 @@ Should see something like this:
   - the 109 may be a different number
 
 
-### Load Explore fixtures
-
-These are the links to the Shiny server.
-
-```
-python manage.py loaddata apps/explore/fixtures/initial_data.json --settings=tb_website.settings.production_hms
-```
-
-  - Note: If you create/run the ```postactivate``` script above, then the ```--settings=...``` option is not needed
-
 
 ### Set the site name
 
@@ -188,7 +178,8 @@ RewriteCond %{REQUEST_URI} !^/tb/
 # Send other requests to the Django app on flexatone
 # -------------------------------
 #ReWriteRule ^(.*)$ http://flexatone.orchestra:9001/$1 [P]
-ReWriteRule ^(.*)$ http://gentb-app-prod01.orchestra:9001/$1 [P]# -------------------------------
+ReWriteRule ^(.*)$ http://gentb-app-prod01.orchestra:9001/$1 [P]
+# -------------------------------
 #
 # Temp redirect, if needed
 # -------------------------------
@@ -230,6 +221,8 @@ send_mail(subject='genTB test email',
 
 ```
 
+If it works, you should receive an email shortly.  An error message will appear on failure.
+
 ### Run gunicorn
 
 
@@ -245,3 +238,13 @@ gunicorn --log-file=- --workers=1 -b 0.0.0.0:9001 tb_website.wsgi:application
 ```
 ps -f -u <username>
 ```
+
+### Load Explore fixtures (Skip, this has been moved to migrations)
+
+These are the links to the Shiny server.
+
+```
+python manage.py loaddata apps/explore/fixtures/initial_data.json --settings=tb_website.settings.production_hms
+```
+
+  - Note: If you create/run the ```postactivate``` script above, then the ```--settings=...``` option is not needed
