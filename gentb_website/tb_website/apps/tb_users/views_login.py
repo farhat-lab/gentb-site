@@ -77,6 +77,3 @@ def view_logout_page(request):
     logout(request)
 
     return view_login_after_logout(request)
-
-
-

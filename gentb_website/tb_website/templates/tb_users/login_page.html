@@ -1,10 +1,10 @@
 {% extends "base.html" %}
 {% load staticfiles %}
-{% block head_title_block %}
+{% block title %}
 {{ title }} - Phthisis Ravens
 {% endblock %}
 
-{% block main_content %}
+{% block content %}
 
         <div class="row">
             <div class="col-lg-12">
@@ -33,7 +33,7 @@
                     {% include "tb_users/login_form.html" %}
 
                     <p><br />&nbsp;
-                        <i>(I forgot my <a href="">password</a>
+                        <i>(I forgot my <a href="{% url 'password_reset' %}">password</a>
                             or <a href="">username</a>)</i>
                     <br />&nbsp;</p>
                 {% endif %}

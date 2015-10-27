@@ -10,7 +10,7 @@
     <meta name="description" content="">
     <meta name="author" content="">
 
-    <title>{% block head_title_block %}
+    <title>{% block title %}
         {% if page_title %}{{ page_title }}{% else %}genTB{% endif %}
         {% endblock %}
     </title>
@@ -64,7 +64,7 @@
 
     <!-- Page Content -->
     <div class="container">
-        {% block main_content %}
+        {% block content %}
             (main_content)
         {% endblock %}
 
