@@ -241,7 +241,7 @@ ps -f -u <username>
 
 ### Load Explore fixtures (Skip, this has been moved to migrations)
 
-These are the links to the Shiny server.
+These are the links to the Two Ravens app server.
 
 ```
 python manage.py loaddata apps/explore/fixtures/initial_data.json --settings=tb_website.settings.production_hms
