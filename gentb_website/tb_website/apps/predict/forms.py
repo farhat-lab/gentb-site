@@ -1,7 +1,8 @@
 from django import forms
-from apps.predict.models import PredictDataset,\
+from apps.predict.models import PredictDataset, DropboxRetrievalLog,\
                 PredictDatasetStatus
                 #DATASET_STATUS_UPLOADED_READY_ID
+from apps.predict.dropbox_util import get_dropbox_metadata_from_link
 
 
 # requires loading of apps/predict/fixtures/initial_data.json
@@ -14,9 +15,26 @@ class UploadPredictionDataForm(forms.ModelForm):
 
     The dropbox_url is used to retrieve dropbox metadata
     """
+    dropbox_metadata_info = None
+
     class Meta:
         model = PredictDataset
         fields = ('title', 'description', 'dropbox_url', )
+
+
+    def clean_dropbox_url(self):
+        """
+        This should be an async or ajax call in another part of the code.
+        For prototype, we're relying on dropbox uptime, etc.
+        """
+        (success, dbox_metadata_or_err_msg) = get_dropbox_metadata_from_link(self.cleaned_data['dropbox_url'])
+
+        if not success:
+            raise forms.ValidationError(dbox_metadata_or_err_msg)
+
+
+        self.dropbox_metadata_info = dbox_metadata_or_err_msg
+        return self.cleaned_data['dropbox_url']
 
     def get_dataset(self, tb_user):
 
@@ -26,12 +44,21 @@ class UploadPredictionDataForm(forms.ModelForm):
         # -------------------------------------
         # save PredictDataset, made inactive
         # -------------------------------------
-        ds = self.save(commit=False)   # get object
-        ds.user = tb_user              # set user
-        ds.set_status_not_ready(save_status=False)
-        ds.save()      # save the object
+        predict_dataset = self.save(commit=False)   # get object
+        predict_dataset.user = tb_user              # set user
+        predict_dataset.set_status_not_ready(save_status=False)
+        predict_dataset.save()      # save the object
 
-        return ds
+
+        db_log = DropboxRetrievalLog(dataset=predict_dataset)
+        db_log.file_metadata = self.dropbox_metadata_info
+        db_log.save()
+
+        print 'self.dropbox_metadata_info', self.dropbox_metadata_info
+        #(success, dinfo_or_err_msg) = get_dropbox_metadata(ds)
+
+        return predict_dataset
+
 
 
 class DatasetRunNotificationForm(forms.Form):
