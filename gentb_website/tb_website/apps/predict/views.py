@@ -1,5 +1,5 @@
 from __future__ import print_function
-
+import os
 from django.core.urlresolvers import reverse
 from django.shortcuts import render_to_response
 from django.http import HttpResponseRedirect, HttpResponse, Http404
@@ -14,7 +14,15 @@ from apps.shared_data.process_file_helper import get_process_file_results
 from apps.utils.view_util import get_common_dict
 from apps.predict.message_helper import send_new_dataset_message_to_tb_admins
 
+from subprocess import Popen
 
+"""def kick_off_retrieval(request):
+    """just here for dev"""
+    this_dir = os.path.dirname(os.path.realpath("__file__"))
+    cmd = this_dir + '/dropbox_retriever.py' +
+    proc = Popen([cmd_str], shell=True,
+             stdin=None, stdout=None, stderr=None, close_fds=True)
+"""
 def view_predict_page(request):
 
     d = get_common_dict(request, 'Predict', predict_page=True)
@@ -31,6 +39,7 @@ def view_predict_page(request):
         if f.is_valid():
             new_dataset = f.get_dataset(request.user.tbuser)
 
+            kick_off_retrieval(new_dataset)
             #get_dropbox_metadata(new_dataset)
             #send_new_dataset_message_to_tb_admins(new_dataset)
 
