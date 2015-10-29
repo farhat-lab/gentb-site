@@ -3,10 +3,36 @@ from apps.predict.models import PredictDataset, DropboxRetrievalLog,\
                 PredictDatasetStatus
                 #DATASET_STATUS_UPLOADED_READY_ID
 from apps.predict.dropbox_util import get_dropbox_metadata_from_link
-
+import json
 
 # requires loading of apps/predict/fixtures/initial_data.json
 #
+
+class SimpleConfirmationForm(forms.Form):
+    confirm = forms.BooleanField(label="Yes, use these files?", required=False)
+    nope = forms.BooleanField(label="No, Please don't use these files.", required=False)
+
+    def clean(self):
+        is_confirm = self.cleaned_data.get('confirm', False)
+        is_nope = self.cleaned_data.get('nope', False)
+
+        if is_confirm is False and is_nope is False:
+            msg = "Please confirm whether or not to use these files."
+            msg2 = 'Please select ONE of the checkboxes.'
+            self.add_error('confirm', msg2)
+            self.add_error('nope', msg2)
+
+            raise forms.ValidationError(msg)
+
+        if is_confirm is True and is_nope is True:
+            #msg = "Please confirm whether or not to use these files."
+            msg2 = 'Please select ONE of the checkboxes.'
+            self.add_error('confirm', msg2)
+            self.add_error('nope', msg2)
+
+            raise forms.ValidationError(msg2)
+
+        return self.cleaned_data
 
 
 class UploadPredictionDataForm(forms.ModelForm):
@@ -19,8 +45,14 @@ class UploadPredictionDataForm(forms.ModelForm):
 
     class Meta:
         model = PredictDataset
-        fields = ('title', 'description', 'dropbox_url', )
-
+        fields = ('title', 'dropbox_url', 'description', )
+        widgets = {
+            'dropbox_url': forms.Textarea(attrs={'rows': '4'}),
+        }
+    def __init__(self, *args, **kwargs):
+        super(UploadPredictionDataForm, self).__init__(*args, **kwargs)
+        #self.fields['dropbox_url'].widget = forms.TextInput(attrs={'size':'40'}))
+        #self.fields['dropbox_url'].widget.attrs.update({'size' : '40'})
 
     def clean_dropbox_url(self):
         """
@@ -31,6 +63,8 @@ class UploadPredictionDataForm(forms.ModelForm):
 
         if not success:
             raise forms.ValidationError(dbox_metadata_or_err_msg)
+
+        # see if the dropbox error is similar to this
 
 
         self.dropbox_metadata_info = dbox_metadata_or_err_msg
@@ -59,6 +93,24 @@ class UploadPredictionDataForm(forms.ModelForm):
 
         return predict_dataset
 
+
+class DropboxDownloadAttemptForm(forms.Form):
+
+    run_md5 = forms.CharField()
+    success = forms.BooleanField(required=False)
+    result_data = forms.CharField(widget=forms.Textarea, required=False)
+
+    def was_run_successful(self):
+        assert hasattr(self, 'cleaned_data'), "Must have is_valid() == true.  cleaned_data not found"
+        return self.cleaned_data['success']
+
+    def get_run_md5(self):
+        assert hasattr(self, 'cleaned_data'), "Must have is_valid() == true.  cleaned_data not found"
+        return self.cleaned_data['run_md5']
+
+    def get_result_data(self):
+        assert hasattr(self, 'cleaned_data'), "Must have is_valid() == true.  cleaned_data not found"
+        return self.cleaned_data['result_data']
 
 
 class DatasetRunNotificationForm(forms.Form):

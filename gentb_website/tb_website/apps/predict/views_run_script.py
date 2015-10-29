@@ -51,7 +51,6 @@ def view_dataset_run_notification(request):
     """
     Should have middleware to limit IPs with access to method
     """
-
     if not request.POST:
         return HttpResponse('Method Not Allowed (use POST)', status=405)
 

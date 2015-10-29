@@ -1,0 +1,59 @@
+{% load staticfiles %}
+
+{% if ERROR_FOUND %}
+    <div class="alert alert-danger" role="alert">Please check the errors below</div>
+{% endif %}
+
+<form action="{% url 'view_predict_upload_step2_confirm' dataset.md5 %}" method="post">
+    {% csrf_token %}
+
+    {% for hidden in confirm_form.hidden_fields %}
+    {{ hidden }}
+    {% endfor %}
+
+    <table class="table-condensed">
+        <tr>
+            <td colspan="2" class="text-left">
+            {% if dbox_log %}
+                {% if dbox_log.file_metadata %}
+                The following file information was identified from the dropbox link:
+                <br /><br /><b>Link</b>:
+                    <ul>
+                        <li><a href="{{ dataset.dropbox_url }}" target="_blank">{{ dataset.dropbox_url }}</a></li>
+                    </ul>
+                <b>File{{ dbox_log.file_metadata|pluralize }}</b>:
+                    <ol>
+                    {% for file_info in dbox_log.file_metadata %}
+                        <li>{{ file_info }}</li>
+                    {% endfor %}
+                    </ol>
+                {% endif %}
+            {% endif %}
+            </td>
+        </tr>
+        {% for field in confirm_form.visible_fields %}
+            <tr>
+                <th class="text-primary">&nbsp;</th>
+                <td>
+                    {{ field.label_tag }}{% if field.field.required %} <span class="text-warning">*</span>{% endif %}
+                    {{ field }}
+                    {% if field.errors %}
+                    <span class="text-danger">
+                        {{ field.errors }}
+                    </span>
+                    {% endif %}
+                 </td>
+            </tr>
+            {% endfor %}
+         <tr>
+                <td colspan="2"><hr /></td>
+        </tr>
+        <tr>
+            <td colspan="2" class="text-center">
+                <button type="reset" class="btn btn-default">Reset</button>
+                &nbsp;
+                <button type="submit" class="btn btn-success">Confirm</button>
+            </td>
+        </tr>
+    </table>
+</form>

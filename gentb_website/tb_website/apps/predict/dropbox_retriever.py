@@ -118,7 +118,19 @@ class DropboxRetriever:
                         headers=headers
                         )
         if r.status_code != 200:
-            self.add_err_msg("The dropbox request returned an error. Status code: {0}\nError: {1}".format(r.status_code, r.text))
+            dbox_err_msg = None
+            try:
+                rjson = r.json()
+                if 'error' in rjson:
+                    emsg = 'Error: {0}'.format(rjson.get('error'))
+                    if r.status_code == 403:
+                        dbox_err_msg = 'The dropbox link did not work.  Please check the url. ({0})'.format(emsg)
+                    else:
+                        dbox_err_msg = 'The dropbox link returned an error. Status code: {0}\n{1}'.format(r.status_code, emsg)
+            except:
+                dbox_err_msg = 'The dropbox link returned an error. Status code: {0}\n{1}'.format(r.status_code, emsg)
+
+            self.add_err_msg(dbox_err_msg)
             return False
 
         try:
@@ -189,7 +201,7 @@ class DropboxRetriever:
                 self.matching_files_metadata.append(fpath)
 
         if len(self.matching_files_metadata) == 0:
-            self.add_err_msg('No files match what we are looking for.')
+            self.add_err_msg('No files match what we are looking for. Please make sure you have at least one ".fastq" or ".vcf" file.')
             return False
 
         # We've got something

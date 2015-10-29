@@ -272,6 +272,7 @@ TIME_ZONE = 'America/New_York'
 WSGI_APPLICATION = '%s.wsgi.application' % SITE_NAME
 ########## END WSGI CONFIGURATION
 
+LOGIN_URL = 'view_login_page'
 
 ########## TB UPLOADED DATAFILE DIRECTORY
 
