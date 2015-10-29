@@ -92,26 +92,34 @@ def view_predict_upload_step2_confirm(request, dataset_md5):
     if request.POST:
         f = SimpleConfirmationForm(request.POST)
         if f.is_valid():
-            success_url = reverse('view_predict_upload_success',
+            if f.do_not_use_files():
+                """
+                Delete the info and return to predict Upload
+                """
+                predict_dataset.delete() # cascades to DropboxRetrievalLog
+                next_url = reverse('view_predict_upload_delete', args=())
+            else:
+                # >> kick off the download process here...
+                next_url = reverse('view_predict_upload_success',
                                   kwargs=dict(dataset_md5=predict_dataset.md5)
                                 )
-            return HttpResponseRedirect(success_url)
-
-            new_dataset = f.get_dataset(request.user.tbuser)
+            return HttpResponseRedirect(next_url)
         else:
             d['ERROR_FOUND']  = True
     else:
         f = SimpleConfirmationForm()
 
-    d['confirm_form'] = f
     d['dbox_log'] = dbox_log
-    d['dataset'] = predict_dataset
-    d['tb_user'] = predict_dataset.user
+    d['confirm_form'] = f
 
     return render_to_response('predict/predict_upload_step2.html',
                         d,
                         context_instance=RequestContext(request))
 
+
+@login_required
+def view_predict_upload_delete(request):
+    return HttpResponse('view_predict_upload_delete')
 
 @login_required
 def view_predict_upload_success(request, dataset_md5):

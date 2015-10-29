@@ -12,6 +12,11 @@ class SimpleConfirmationForm(forms.Form):
     confirm = forms.BooleanField(label="Yes, use these files?", required=False)
     nope = forms.BooleanField(label="No, Please don't use these files.", required=False)
 
+    def do_not_use_files(self):
+        assert hasattr(self, "cleaned_data"), "Do not call this unless is_valid() is True"
+
+        return self.cleaned_data.get('nope', False)
+
     def clean(self):
         is_confirm = self.cleaned_data.get('confirm', False)
         is_nope = self.cleaned_data.get('nope', False)

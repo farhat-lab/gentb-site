@@ -15,6 +15,8 @@ urlpatterns += patterns('apps.predict.views_upload',
     url(r'^upload-data-step2/(?P<dataset_md5>\w{32})/$', 'view_predict_upload_step2_confirm',
     name="view_predict_upload_step2_confirm"),
 
+    url(r'^upload-delete/$', 'view_predict_upload_delete', name="view_predict_upload_delete"),
+
     url(r'^upload-success/(?P<dataset_md5>\w{32})/$', 'view_predict_upload_success', name="view_predict_upload_success"),
 
     #url(r'^test-upload-success/$', 'view_test_upload_success', name="view_test_upload_success"),
