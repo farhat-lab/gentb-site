@@ -61,6 +61,13 @@ def send_back_fail_results(val):
                 result_data=json_result_string
                 )
     url = d['callback_url']  #http://127.0.0.1:8000/predict/my-dataset-run-notification/'
+
+    print(40*'-')
+    print("--URL--\n{0}".format(url))
+    print(40*'-')
+    print("--payload--\n{0}".format(payload))
+    print(40*'-')
+
     r = requests.post(url, data=payload)
     print(r.status_code)
     print(r.text)
