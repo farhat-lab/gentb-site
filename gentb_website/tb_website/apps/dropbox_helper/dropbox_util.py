@@ -1,7 +1,7 @@
 from os.path import join, isdir
 import os
-from apps.predict.dropbox_retriever import DropboxRetriever
-from apps.predict.models import DropboxRetrievalLog
+from apps.dropbox_helper.dropbox_retriever import DropboxRetriever
+from apps.dropbox_helper.models import DropboxRetrievalLog
 from django.conf import settings
 
 

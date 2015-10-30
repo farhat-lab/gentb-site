@@ -1,8 +1,7 @@
 from django import forms
-from apps.predict.models import PredictDataset, DropboxRetrievalLog,\
-                PredictDatasetStatus
-                #DATASET_STATUS_UPLOADED_READY_ID
-from apps.predict.dropbox_util import get_dropbox_metadata_from_link
+from apps.dropbox_helper.models import DropboxRetrievalLog
+from apps.predict.models import PredictDataset
+from apps.dropbox_helper.dropbox_util import get_dropbox_metadata_from_link
 import json
 
 # requires loading of apps/predict/fixtures/initial_data.json

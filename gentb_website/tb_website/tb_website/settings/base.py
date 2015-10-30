@@ -223,6 +223,7 @@ LOCAL_APPS = (
     'apps.tb_users',
     'apps.script_helper',
     'apps.predict',
+    'apps.dropbox_helper',
     'apps.explore', # Holds dataverse file ids for Two Ravens
 )
 

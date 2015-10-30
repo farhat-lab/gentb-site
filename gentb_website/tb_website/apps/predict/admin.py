@@ -1,12 +1,7 @@
 from django.contrib import admin
 
 # Register your models here.
-from apps.predict.models import PredictDatasetStatus, PredictDataset, DropboxRetrievalLog, PredictDatasetNote, DatasetScriptRun, ScriptToRun#, DropboxDataSource
-
-
-class DropboxRetrievalLogAdmin(admin.ModelAdmin):
-    save_on_top = True
-admin.site.register(DropboxRetrievalLog, DropboxRetrievalLogAdmin)
+from apps.predict.models import PredictDatasetStatus, PredictDataset, PredictDatasetNote, DatasetScriptRun, ScriptToRun#, DropboxDataSource
 
 
 class PredictDatasetStatusAdmin(admin.ModelAdmin):

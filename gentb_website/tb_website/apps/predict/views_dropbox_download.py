@@ -7,10 +7,8 @@ from django.template import RequestContext
 
 from apps.predict.forms import DropboxDownloadAttemptForm
 from apps.predict.models import PredictDataset, PredictDatasetStatus,\
-                                PredictDatasetNote, DatasetScriptRun,\
-                                DropboxRetrievalLog
-#from apps.shared_data.process_file_helper import get_process_file_results
-#from apps.utils.view_util import get_common_dict
+                                PredictDatasetNote, DatasetScriptRun
+from apps.dropbox_helper.models import DropboxRetrievalLog
 from apps.predict.message_helper import send_new_dataset_message_to_tb_admins
 
 

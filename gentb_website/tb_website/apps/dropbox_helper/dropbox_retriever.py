@@ -1,17 +1,22 @@
 from datetime import datetime
 import json
 import os, sys, shutil
-from os.path import basename, join, isdir, isfile
+from os.path import basename, dirname, join, isdir, isfile, realpath
 import re
 import requests
 import urllib2
 import zipfile
 
-from dropbox_info import DROPBOX_ACCESS_TOKEN
+if __name__=='__main__':
+    # For local testing....
+    django_dir = dirname(dirname(dirname(realpath(__file__))))
+    sys.path.append(django_dir)
+    os.environ['DJANGO_SETTINGS_MODULE'] = 'tb_website.settings.local'
+
+from django.conf import settings
 
 GENTB_FILE_PATTERNS = ['\.fastq$', '\.fastq\.', '\.vcf$', '\.vcf\.', ]
 #GENTB_FILE_PATTERNS = ['\.fastq$', '\.fastq\.', '\.vcf$', '\.vcf\.', '\.txt$']
-#GENTB_FILE_PATTERNS = ['6.txt$']
 
 class DropboxRetriever:
     """
@@ -101,15 +106,13 @@ class DropboxRetriever:
         """
         Retrieve metadata about this dropbox link
         """
-        global DROPBOX_ACCESS_TOKEN
-
         # Prepare request params (the dropbox link)
         #
         params = dict(link=self.dbox_link)
 
         # Add token to the header
         #
-        headers = {'Authorization': 'Bearer {0}'.format(DROPBOX_ACCESS_TOKEN)}
+        headers = {'Authorization': 'Bearer {0}'.format(settings.DROPBOX_ACCESS_TOKEN)}
 
         # Make the request
         #
@@ -365,6 +368,8 @@ class DropboxRetriever:
         return True
 
 if __name__=='__main__':
+    # For local testing....see sys.path at top if using this non-locally
+
     #example_dlink = 'https://www.dropbox.com/s/4tqczonkaeakvua/001.txt?dl=0'
     #example_dlink = 'https://www.dropbox.com/sh/vbicdol2e8mn57r/AACeJzBhUpgxTNjj6jHL2UJoa?dl=0'
     # dir of files
