@@ -55,8 +55,8 @@ class DropboxRetriever:
         self.err_found = True
         self.err_msg = m
 
-    def get_err_msg_as_dict(self):
-        return dict(error_message=self.err_msg)
+    #def get_err_msg_as_dict(self):
+    #    return dict(error_message=self.err_msg)
 
     def initial_check(self):
 
@@ -278,6 +278,8 @@ class DropboxRetriever:
             print 'downloading...'
             shutil.copyfileobj(req, fp, chunk_size)
 
+        self.final_file_paths.append(self.target_fullname)
+
         print 'file written: {0} @ {1}'.format(self.target_fullname, datetime.now())
         return True
 
@@ -350,7 +352,7 @@ class DropboxRetriever:
             # It's a file, one of ours?
             # -------------------------------------
             needed_file = False
-            for fname in dr.matching_files_metadata:
+            for fname in self.matching_files_metadata:
                 if full_item.endswith(fname):
                     needed_file = True
             if not needed_file:

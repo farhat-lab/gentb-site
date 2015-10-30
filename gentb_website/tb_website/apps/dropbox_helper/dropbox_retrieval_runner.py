@@ -1,33 +1,36 @@
-import sys
+import os, sys
+from os.path import dirname, realpath
+
+if __name__=='__main__':
+    django_dir = dirname(dirname(dirname(realpath(__file__))))
+    sys.path.append(django_dir)
+    os.environ['DJANGO_SETTINGS_MODULE'] = 'tb_website.settings.local'
+
+    # Allows the working environ to get set-up, apps registered, etc
+    #
+    import django
+    django.setup()
+
+from datetime import datetime
+import requests
+
 from apps.dropbox_helper.models import DropboxRetrievalLog
-from apps.predict.dropbox_retriever import DropboxRetriever
+from apps.dropbox_helper.dropbox_retriever import DropboxRetriever
 from apps.script_helper.script_runner_basic import run_script
 from apps.dropbox_helper.forms import DropboxRetrievalParamsForm
 
-class ErrMsg:
-    def __init__(self, title, note):
-        self.title = title
-        self.note = note
 
 class DropboxRetrievalRunner:
 
-    def __init__(self, json_args_string):
-        assert json_args_string is not None and len(json_args_string) > 0,\
-            "json_args_string must contain arguments that make the DropboxRetrievalParamsForm valid"
+    def __init__(self, dbox_log):
+        assert isinstance(dbox_log, DropboxRetrievalLog), "dbox_log must be an instance of DropboxRetrievalLog"
+
+        self.dbox_log = dbox_log
+        self.predict_dataset = self.dbox_log.dataset
 
         # Error messages
         self.err_found = False
         self.err_msg = None
-
-        # Basic params
-        self.dropbox_url = None
-        self.destination_directory = None
-        self.callback_url = None
-        self.callback_md5 = None
-
-        # Set params
-        if not self.set_params(json_args_string):
-            return
 
         # Run retrieval_error
         self.run_dropbox_retrieval()
@@ -36,84 +39,126 @@ class DropboxRetrievalRunner:
         self.err_found = True
         self.err_msg = m
 
-    def set_params(self, json_args_string)
-        try:
-            json_args = json.loads(json_args_string)
-        except:
-            # MAJOR ERROR!  LOG THIS!  CANNOT MAKE CALLBACK
-            self.set_error_message("These arguments could NOT be converted to JSON: {0}".format(json_args_string))
-            return False
 
-        # Validate the params
+    def record_retrieval_error(self, error_msg):
+
+        self.set_error_message(error_msg)
+        #msg = "There was an error retrieving the dropbox files."
+
+        # Update dataset status
         #
-        f = DropboxRetrievalParamsForm(json_args)
-        if not f.is_valid():
-            # MAJOR ERROR!  LOG THIS!  LIKELY CANNOT MAKE CALLBACK
-            self.set_error_message("Invalid arguments: {0}".format(f.errors))
-            return False
+        self.predict_dataset.set_status_file_retrieval_error()
 
-        self.dropbox_url = f.cleaned_data['dropbox_url']
-        self.destination_directory = f.cleaned_data['destination_directory']
-        self.callback_url = f.cleaned_data['callback_url']
-        self.callback_md5 = f.cleaned_data['callback_md5']
-
-
-    def send_callback_message(self, success_flag, result_data):
-
-        params = dict(success=success_flag,
-                    callback_md5=self.callback_md5,
-                    result_data=result_data
-                    )
-
-        # Make the callback update
+        # Update dropbox log
         #
-        r = requests.post(self.callback_url,
-                        data=params,
-                        )
+        self.dbox_log.retrieval_error = error_msg
+        self.dbox_log.set_retrieval_end_time(self, files_retrieved=False)
+        self.dbox_log.save()
 
-        print r.status_code
-        print r.text
-        if not r.status_code = 200:
-            # LOG THIS
-            print 'FAIL'
+    def run_dropbox_retrieval(self):
 
-
-    def run_dropbox_retrieval(json_args_string):
         if self.err_found:
             return False
 
-        dr = DropboxRetriever(self.dropbox_url,
-                        self.destination_directory)
+
+        # Reset log attributes and mark the retrieval start time
+        #
+        self.dbox_log.set_retrieval_start_time(with_reset=True)
+        self.dbox_log.save()
+
+        # Update PredictDataset status to 'file retrieval started'
+        #
+        self.dbox_log.dataset.set_status_file_retrieval_started()
+
+        dr = DropboxRetriever(self.predict_dataset.dropbox_url,
+                        self.predict_dataset.file_directory)
 
         if dr.err_found:
-            send_callback_message(False, dr.get_err_msg_as_dict())
+            self.record_retrieval_error(dr.err_msg)
             return False
 
         # Get the metadata
         #
         if not dr.step1_retrieve_metadata():
-            send_callback_message(False, dr.get_err_msg_as_dict())
+            self.record_retrieval_error(dr.err_msg)
             return False
 
         # Does it have what we want?
         #
         if not dr.step2_check_file_matches():
-            send_callback_message(False, dr.get_err_msg_as_dict())
+            self.record_retrieval_error(dr.err_msg)
             return False
 
         # Download the files
         #
         if not dr.step3_retrieve_files():
-            send_callback_message(False, dr.get_err_msg_as_dict())
+            self.record_retrieval_error(dr.err_msg)
             return False
 
-        send_callback_message(True, dr.final_file_paths)
+        # ----------------------
+        # Success!
+        # ----------------------
+        self.predict_dataset.set_status_file_retrieval_complete()
+        self.dbox_log.selected_files = dr.final_file_paths
+        self.dbox_log.set_retrieval_end_time(files_retrieved=True)
+        self.dbox_log.save()
+
+    @staticmethod
+    def retrieve_new_dropbox_files(**kwargs):
+        """
+        Are there DropboxRetrievalLog objects
+        where the download process hasn't started?
+
+        Yes, start retrieving the files
+
+        Alternate: **kwargs={ 'retry_files_with_errors' : True}
+            Try to download files where the process encountered an error
+        """
+
+        retry_files_with_errors = kwargs.get('retry_files_with_errors', True)
+        if retry_files_with_errors is True:
+            # Files where download encountered an error
+            #
+            qs_args = dict(retrieval_error__isnull=False)
+        else:
+            # Files where download process hasn't started
+            #
+            qs_args = dict(retrieval_start__isnull=True)
+
+        # Get files that haven't been retrieved from dropbox urls
+        #
+        dbox_logs_to_check = DropboxRetrievalLog.objects.filter(**qs_args\
+                            ).exclude(files_retrieved=True)
+
+        cnt = dbox_logs_to_check.count()
+        if cnt == 0:
+            print 'All set.  Nothing to check'
+            return
+
+        print 'Checking {0} link(s)'.format(cnt)
+        
+        for dbox_log in dbox_logs_to_check:
+
+            # Go get the files!
+            print 'run dlog', dbox_log
+            print 'with params:', dbox_log.get_dropbox_retrieval_script_params()
+            dr = DropboxRetrievalRunner(dbox_log)
 
 
 if __name__=='__main__':
     args = sys.argv
-    if len(args) != 2:
-        print """>python drobox_retrieval_runner.py '{ json string }'"""
-        print """Example:\npython drobox_retrieval_runner.py {"dropbox_url": "https://a-dropbox-shared-link.com", "callback_md5": "8fec9fefa93095fc94a68f495e24325b", "destination_directory": "/an-existing-dir-to-put-files", "callback_url": "https://myserver.com/predict/file-retrieval-results"}"""
+    if len(args) == 1:
+        DropboxRetrievalRunner.retrieve_new_dropbox_files()
+
+    elif len(args) == 2 and args[1] == '--retry':
+        retry_param= dict(retry_files_with_errors=True)
+        DropboxRetrievalRunner.retrieve_new_dropbox_files(**retry_param)
+
     else:
-        dr = DropboxRetrievalRunner(sys.argv[1])
+        print '-' * 40
+        print """Regular run of new dropbox links:
+    >python dropbox_retrieval_runner.py
+
+Retry dropbox links with errors:
+    >python dropbox_retrieval_runner.py --retry
+        """

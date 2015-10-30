@@ -29,11 +29,3 @@ urlpatterns += patterns('apps.predict.views_run_script',
     url(r'^my-dataset-run-notification/$', 'view_dataset_run_notification', name="view_dataset_run_notification"),
 
 )
-
-urlpatterns += patterns('apps.predict.views_dropbox_download',
-    url(r'^file-retrieval-results/$', 'record_file_retrieval_results', name="record_file_retrieval_results"),
-
-)
-#urlpatterns += patterns('apps.predict.views_contact',
-    #url(r'^my-dataset-contact/(?P<dataset_md5>\w{32})/$', 'view_dataset_contact', name="view_dataset_contact"),
-#)

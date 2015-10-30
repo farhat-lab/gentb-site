@@ -32,6 +32,7 @@ DEBUG = False
 TEMPLATE_DEBUG = DEBUG
 ########## END DEBUG CONFIGURATION
 
+IS_HTTPS_SITE = False  # Used for callback urls when request object not available
 
 ########## MANAGER CONFIGURATION
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#admins

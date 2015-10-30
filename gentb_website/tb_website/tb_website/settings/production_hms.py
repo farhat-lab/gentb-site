@@ -18,6 +18,9 @@ from django.core.exceptions import ImproperlyConfigured
 #        error_msg = "Set the %s env variable" % setting
 #        raise ImproperlyConfigured(error_msg)
 import json
+
+IS_HTTPS_SITE = True  # Used for callback urls when request object not available
+
 ########## CONFIGURATION FROM JSON FILE
 
 json_secrets_fname = join( dirname(abspath(__file__)), "secret_settings_prod_hms.json")

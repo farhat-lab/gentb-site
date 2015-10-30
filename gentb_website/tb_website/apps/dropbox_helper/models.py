@@ -1,12 +1,18 @@
 import collections
 from hashlib import md5
-from datetime import datetime
+from django.utils import timezone
+
 from model_utils.models import TimeStampedModel
+
 from django.db import models
 from django.core.urlresolvers import reverse
+
 from jsonfield import JSONField # https://github.com/bradjasper/django-jsonfield
+
+from apps.utils.site_url_util import get_site_url
 from apps.dropbox_helper.forms import DropboxRetrievalParamsForm
 from apps.predict.models import PredictDataset
+
 
 class DropboxRetrievalLog(TimeStampedModel):
 
@@ -46,23 +52,44 @@ class DropboxRetrievalLog(TimeStampedModel):
         #verbose_name = 'Dropbox Data Source'
         #verbose_name_plural = '{0}s'.format(verbose_name)
 
-    def set_retrieval_start_time(self):
-        self.retrieval_start = datetime.now()
+    def set_retrieval_start_time(self, with_reset=True):
+        """
+        Called before kicking off file retrieval.
+        Note: This does not save the object
+        """
+        if with_reset:
+            self.retrieval_end = None
+            self.retrieval_error = ''
+            self.files_retrieved = False
 
-    def set_retrieval_end_time(self):
-        self.retrieval_end = datetime.now()
+        self.retrieval_start = timezone.now()
+
+    def set_retrieval_end_time(self, files_retrieved=True):
+        """
+        Called to mark the close of a file retrieval.
+        Note: This does not save the object
+        """
+        if files_retrieved:
+            self.files_retrieved = True
+
+        self.retrieval_end = timezone.now()
 
     def get_dropbox_retrieval_script_params(self):
         assert self.id is not None, "This function cannot be called for an unsaved object.  (The id field is required)"
 
+        callback_url = '{0}{1}'.format(get_site_url(),
+                                reverse('record_file_retrieval_results', args=()))
+
         params = dict(dropbox_url=self.dataset.dropbox_url,
                 destination_directory=self.dataset.file_directory,
-                callback_url=reverse('record_file_retrieval_results', args=()),
+                callback_url=callback_url,
                 callback_md5=self.md5)
+
+        print 'params', params
 
         f = DropboxRetrievalParamsForm(params)
         if f.is_valid():
             return f.cleaned_data
 
         # Log a major error
-        return {}
+        raise KeyError(f.errors)
