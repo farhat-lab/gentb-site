@@ -136,7 +136,7 @@ def view_predict_upload_success(request, dataset_md5):
         raise Http404('PredictDataset not found')
 
     d['dbox_log'] = DropboxRetrievalLog.objects.filter(dataset=dataset).first()
-    print ('get it?', d['dbox_log'])
+    #print ('get it?', d['dbox_log'])
 
     d['dataset'] = dataset
     d['tb_user'] = dataset.user

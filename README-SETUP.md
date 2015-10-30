@@ -248,3 +248,33 @@ python manage.py loaddata apps/explore/fixtures/initial_data.json --settings=tb_
 ```
 
   - Note: If you create/run the ```postactivate``` script above, then the ```--settings=...``` option is not needed
+
+### Crontabs
+
+- Edit the crontab: ```crontab -e```
+- Add these lines
+
+```
+# ------------------------------------------------
+# Download files from new dropbox links (every 10 minutes)
+# ------------------------------------------------
+*/10 * * * * /www/gentb.hms.harvard.edu/code/gentb-site/gentb_website/cron_scripts/get_dropbox_files_prod_hms.sh
+#
+# ------------------------------------------------
+# See if there are files ready for pipeline processing (every 15 minutes)
+# ------------------------------------------------
+*/15 * * * * /www/gentb.hms.harvard.edu/code/gentb-site/gentb_website/cron_scripts/run_pipeline_prod_hms.sh
+#
+```
+
+### Test script Run
+
+Test ```ScriptToRun``` object to add via the admin:
+```
+/www/gentb.hms.harvard.edu/code/gentb-site/gentb_website/venv_tb/bin/python  /www/gentb.hms.harvard.edu/code/gentb-site/gentb_website/tb_website/apps/script_helper/test_script.py
+```
+
+Test command line run:
+```
+{"file_directory": "/home/rp188/gentb_test/tbdata_00000001", "run_md5": "2af2023f8c6103dbe00803929de54c28", "admin_url": "https://gentb.hms.harvard.edu/gentb-admin/predict/predictdataset/1/", "callback_url": "https://gentb.hms.harvard.edu/predict/pipeline-run-results-notice/", "dataset_id": 1, "user_email": "raman_prasad@harvard.edu"}
+```
