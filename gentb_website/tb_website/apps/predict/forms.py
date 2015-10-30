@@ -100,7 +100,7 @@ class UploadPredictionDataForm(forms.ModelForm):
 
 class DropboxDownloadAttemptForm(forms.Form):
 
-    run_md5 = forms.CharField()
+    callback_md5 = forms.CharField()
     success = forms.BooleanField(required=False)
     result_data = forms.CharField(widget=forms.Textarea, required=False)
 
@@ -110,7 +110,7 @@ class DropboxDownloadAttemptForm(forms.Form):
 
     def get_run_md5(self):
         assert hasattr(self, 'cleaned_data'), "Must have is_valid() == true.  cleaned_data not found"
-        return self.cleaned_data['run_md5']
+        return self.cleaned_data['callback_md5']
 
     def get_result_data(self):
         assert hasattr(self, 'cleaned_data'), "Must have is_valid() == true.  cleaned_data not found"

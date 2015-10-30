@@ -1,4 +1,6 @@
 from os.path import dirname, realpath
+import json
+
 from django.test import TestCase
 from apps.dropbox_helper.forms import DropboxRetrievalParamsForm
 
@@ -10,8 +12,10 @@ class RetrievalParamsTestCase(TestCase):
             destination_directory=dirname(realpath(__file__)), callback_url='https://myserver.com/predict/file-retrieval-results', callback_md5='8fec9fefa93095fc94a68f495e24325b'\
             )
 
+
     def test_params_form(self):
 
+        #print json.dumps(self.test_params)
         # -----------------
         # Good params
         # -----------------

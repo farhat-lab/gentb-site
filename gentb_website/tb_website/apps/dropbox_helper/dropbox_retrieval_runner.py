@@ -9,47 +9,111 @@ class ErrMsg:
         self.title = title
         self.note = note
 
-def run_dropbox_retrieval(**kwargs):
-    #assert isinstance(dbox_log_obj, DropboxRetrievalLog),\
-    #    'dbox_log must be a DropboxRetrievalLog object'
-    assert kwargs is not None and len(kwargs) > 0,\
-        "kwargs must contain arguments that make the DropboxRetrievalParamsForm valid"
+class DropboxRetrievalRunner:
 
-    # Validate the params
-    #
-    f = DropboxRetrievalParamsForm(kwargs)
-    if not f.is_valid():
-        # MAJOR ERROR!  LOG THIS!
-        raise LookupError("Invalid form: {0}".format(f.errors))
+    def __init__(self, json_args_string):
+        assert json_args_string is not None and len(json_args_string) > 0,\
+            "json_args_string must contain arguments that make the DropboxRetrievalParamsForm valid"
 
-    dr = DropboxRetriever(example_dlink, dest_dir, GENTB_FILE_PATTERNS)
-    if dr.err_found:
-        print dr.err_msg
-        sys.exit(1)
+        # Error messages
+        self.err_found = False
+        self.err_msg = None
 
-    # Get the metadata
-    #
-    if not dr.step1_retrieve_metadata():
-        print dr.err_msg
-        sys.exit(1)
+        # Basic params
+        self.dropbox_url = None
+        self.destination_directory = None
+        self.callback_url = None
+        self.callback_md5 = None
 
-    # Does it have what we want?
-    #
-    if not dr.step2_check_file_matches():
-        print dr.err_msg
-        sys.exit(1)
+        # Set params
+        if not self.set_params(json_args_string):
+            return
 
-    print dr.matching_files_metadata
-    #sys.exit(1)
+        # Run retrieval_error
+        self.run_dropbox_retrieval()
 
-    # Download the files
-    #
-    if not dr.step3_retrieve_files():
-        print dr.err_msg
-        sys.exit(1)
+    def set_error_message(self, m):
+        self.err_found = True
+        self.err_msg = m
+
+    def set_params(self, json_args_string)
+        try:
+            json_args = json.loads(json_args_string)
+        except:
+            # MAJOR ERROR!  LOG THIS!  CANNOT MAKE CALLBACK
+            self.set_error_message("These arguments could NOT be converted to JSON: {0}".format(json_args_string))
+            return False
+
+        # Validate the params
+        #
+        f = DropboxRetrievalParamsForm(json_args)
+        if not f.is_valid():
+            # MAJOR ERROR!  LOG THIS!  LIKELY CANNOT MAKE CALLBACK
+            self.set_error_message("Invalid arguments: {0}".format(f.errors))
+            return False
+
+        self.dropbox_url = f.cleaned_data['dropbox_url']
+        self.destination_directory = f.cleaned_data['destination_directory']
+        self.callback_url = f.cleaned_data['callback_url']
+        self.callback_md5 = f.cleaned_data['callback_md5']
+
+
+    def send_callback_message(self, success_flag, result_data):
+
+        params = dict(success=success_flag,
+                    callback_md5=self.callback_md5,
+                    result_data=result_data
+                    )
+
+        # Make the callback update
+        #
+        r = requests.post(self.callback_url,
+                        data=params,
+                        )
+
+        print r.status_code
+        print r.text
+        if not r.status_code = 200:
+            # LOG THIS
+            print 'FAIL'
+
+
+    def run_dropbox_retrieval(json_args_string):
+        if self.err_found:
+            return False
+
+        dr = DropboxRetriever(self.dropbox_url,
+                        self.destination_directory)
+
+        if dr.err_found:
+            send_callback_message(False, dr.get_err_msg_as_dict())
+            return False
+
+        # Get the metadata
+        #
+        if not dr.step1_retrieve_metadata():
+            send_callback_message(False, dr.get_err_msg_as_dict())
+            return False
+
+        # Does it have what we want?
+        #
+        if not dr.step2_check_file_matches():
+            send_callback_message(False, dr.get_err_msg_as_dict())
+            return False
+
+        # Download the files
+        #
+        if not dr.step3_retrieve_files():
+            send_callback_message(False, dr.get_err_msg_as_dict())
+            return False
+
+        send_callback_message(True, dr.final_file_paths)
+
 
 if __name__=='__main__':
     args = sys.argv
     if len(args) != 2:
         print """>python drobox_retrieval_runner.py '{ json string }'"""
-        print """Example:\npython drobox_retrieval_runner.py """
+        print """Example:\npython drobox_retrieval_runner.py {"dropbox_url": "https://a-dropbox-shared-link.com", "callback_md5": "8fec9fefa93095fc94a68f495e24325b", "destination_directory": "/an-existing-dir-to-put-files", "callback_url": "https://myserver.com/predict/file-retrieval-results"}"""
+    else:
+        dr = DropboxRetrievalRunner(sys.argv[1])

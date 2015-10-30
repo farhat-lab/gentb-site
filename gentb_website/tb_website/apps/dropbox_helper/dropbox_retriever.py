@@ -55,6 +55,9 @@ class DropboxRetriever:
         self.err_found = True
         self.err_msg = m
 
+    def get_err_msg_as_dict(self):
+        return dict(error_message=self.err_msg)
+
     def initial_check(self):
 
         if not self.is_valid_dropbox_link():
