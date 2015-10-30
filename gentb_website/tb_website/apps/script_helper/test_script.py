@@ -62,7 +62,7 @@ if __name__=='__main__':
     cnt = 0
     for val in sys.argv:
         cnt +=1
-        if cnt ==2:
+        if cnt == 2:
             send_back_results(val)
             """
             if random.choice([True, False]) is True:

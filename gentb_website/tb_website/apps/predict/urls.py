@@ -26,6 +26,6 @@ urlpatterns += patterns('apps.predict.views_upload',
 urlpatterns += patterns('apps.predict.views_run_script',
     #url(r'^my-dataset-run-script/(?P<dataset_md5>\w{32})/$', 'view_run_dataset_script', name="view_run_dataset_script"),
 
-    url(r'^my-dataset-run-notification/$', 'view_dataset_run_notification', name="view_dataset_run_notification"),
+    url(r'^pipeline-run-results-notice/$', 'view_dataset_run_notification', name="view_dataset_run_notification"),
 
 )

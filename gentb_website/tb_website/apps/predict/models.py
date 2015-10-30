@@ -156,11 +156,11 @@ class PredictDataset(TimeStampedModel):
 
         site_url = get_site_url()
 
-        url_to_dataset = reverse('admin:predict_PredictDataset_change', args=(self.id,))
+        url_to_dataset = reverse('admin:predict_predictdataset_change', args=(self.id,))
         admin_url = '{0}{1}'.format(site_url, url_to_dataset)
         callback_url = '{0}{1}'.format(site_url, reverse('view_dataset_run_notification', kwargs={}))
 
-        d = dict(file_directory=self.file_directory.path,
+        d = dict(file_directory=self.file_directory,
                  dataset_id=self.id,
                  callback_url=callback_url,
                  user_email=self.user.user.email,
@@ -216,8 +216,7 @@ class PredictDataset(TimeStampedModel):
 
     class Meta:
         ordering = ('-created', 'title')
-        #verbose_name = 'VCF Dataset'
-        #verbose_name_plural = 'VCF Datasets'
+
 
 class PredictDatasetNote(TimeStampedModel):
 

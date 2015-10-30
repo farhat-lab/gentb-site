@@ -95,14 +95,14 @@ table.body-wrap .container {
 		FOOTER
 ------------------------------------- */
 table.footer-wrap {
-	width: 100%;	
+	width: 100%;
 	clear: both!important;
 }
 
 .footer-wrap .container p {
 	font-size: 12px;
 	color: #666;
-	
+
 }
 
 table.footer-wrap a {
@@ -192,14 +192,12 @@ ul li, ol li {
 			<table>
 				<tr>
 					<td>
-                        <p>A new dataset has been uploaded to the genTB website.  The details are below:</p>
+                        <p>A genTB dataset has been processed.  The details are below:</p>
 
                         <p>Link to the details page:
                             <a href="{{ SITE_URL }}{% url 'view_single_dataset' dataset.md5 %}">{{ SITE_URL }}{% url 'view_single_dataset' dataset.md5 %}</a></p>
 
 						Link to the details page:
-
-
 
                         {% include "predict/email/notify_table_info.html" %}
 
@@ -208,7 +206,7 @@ ul li, ol li {
 			</table>
 			</div>
 			<!-- /content -->
-			
+
 		</td>
 		<td></td>
 	</tr>
@@ -220,7 +218,7 @@ ul li, ol li {
 	<tr>
 		<td></td>
 		<td class="container">
-			
+
 			<!-- content -->
 			<div class="content">
 				<table>
@@ -235,7 +233,7 @@ ul li, ol li {
 				</table>
 			</div>
 			<!-- /content -->
-			
+
 		</td>
 		<td></td>
 	</tr>

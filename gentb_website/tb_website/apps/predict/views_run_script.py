@@ -95,9 +95,9 @@ def view_dataset_run_notification(request):
     # Update and save the Dataset status
     # --------------------------------------
     if dataset_run.result_success:
-        dataset_run.dataset.set_status_process_success()
+        dataset_run.dataset.set_status_processing_success()
     else:
-        dataset_run.dataset.set_status_process_failed()
+        dataset_run.dataset.set_status_processing_failed()
 
     data = json.dumps(dict(success=True,
                             message="Dataset run updated")
@@ -107,7 +107,7 @@ def view_dataset_run_notification(request):
     send_dataset_run_message_to_tb_admins(dataset_run)
 
     return HttpResponse(data, content_type='application/json')
-    
+
 '''
 import requests
 payload = dict(success=True,
