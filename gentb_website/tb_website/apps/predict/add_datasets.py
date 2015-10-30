@@ -1,4 +1,5 @@
 
+from apps.predict.models import *
 
 statuses = [
 'DATASET_STATUS_NOT_READY_ID',
