@@ -16,10 +16,16 @@ from apps.predict.message_helper import send_new_dataset_message_to_tb_admins
 from django.contrib.auth.decorators import login_required
 from subprocess import Popen
 
+@login_required
+def view_predict_upload_delete(request):
+    return view_predict_page(request, previous_attempt_deleted=True)
 
-def view_predict_page(request):
+
+def view_predict_page(request, previous_attempt_deleted=False):
 
     d = get_common_dict(request, 'Predict', predict_page=True)
+
+    d['PREVIOUS_ATTEMPT_DELETED'] = previous_attempt_deleted
 
     # Not logged in, show login message
     #
@@ -94,12 +100,13 @@ def view_predict_upload_step2_confirm(request, dataset_md5):
         if f.is_valid():
             if f.do_not_use_files():
                 """
-                Delete the info and return to predict Upload
+                Delete the info and return to predict Upload page
                 """
                 predict_dataset.delete() # cascades to DropboxRetrievalLog
                 next_url = reverse('view_predict_upload_delete', args=())
             else:
-                # >> kick off the download process here...
+                # Cron job will kick off download process
+                predict_dataset.set_status_confirmed()
                 next_url = reverse('view_predict_upload_success',
                                   kwargs=dict(dataset_md5=predict_dataset.md5)
                                 )
@@ -117,9 +124,6 @@ def view_predict_upload_step2_confirm(request, dataset_md5):
                         context_instance=RequestContext(request))
 
 
-@login_required
-def view_predict_upload_delete(request):
-    return HttpResponse('view_predict_upload_delete')
 
 @login_required
 def view_predict_upload_success(request, dataset_md5):

@@ -91,7 +91,7 @@ class DropboxRetriever:
 
         dbox_start = 'https://www.dropbox.com'
         if not d.startswith(dbox_start):
-            self.add_err("Not a dropbox url.  Doesn't start with '%s'" % dbox_start)
+            self.add_err_msg("Not a dropbox url.  Doesn't start with '%s'" % dbox_start)
             return False
 
         if d.endswith('?dl=0'):
@@ -101,7 +101,7 @@ class DropboxRetriever:
         if d.endswith('?dl=1'):
             return True
 
-        self.add_err('Does not appear to be a valid download link.  Should end with "?dl=0" or "?dl=1"')
+        self.add_err_msg('Does not appear to be a valid download link.  Should end with "?dl=0" or "?dl=1"')
         return False
 
 

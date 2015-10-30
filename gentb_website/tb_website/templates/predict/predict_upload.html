@@ -16,6 +16,7 @@ Predict - genTB
 
         <div class = "row">
             <div class="col-md-6 portfolio-item">
+
                 {% if not IS_LOGGED_IN %}
                 <div class="panel panel-info">
                     <div class="panel-heading">
@@ -29,9 +30,15 @@ Predict - genTB
                 </div>
 
                 {% else %}
+                    <h4><i>Upload VCF OR FASTQ Files:</i></h4>
 
+                    {% if PREVIOUS_ATTEMPT_DELETED %}
+                        <div class="alert alert-success" role="alert">
+                            Note: Your previous dataset information, including the dropbox link, was removed.
 
-                    <h4><i>Upload VCF File:</i></h4>
+                        </div>
+                    {% endif %}
+
                     {% include "predict/predict_form.html" %}
                {% endif %}
 
