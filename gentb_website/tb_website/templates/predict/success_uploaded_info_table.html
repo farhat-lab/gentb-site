@@ -20,22 +20,24 @@
         <td>{{ dataset.description|linebreaks }}</td>
     </tr>
     <tr>
-        <th class="text-primary">File 1<br />(Size)</th>
+        <th class="text-primary">Files</th>
         <td>
-            {{ dataset.filename1 }}
-
-            <br />({{ dataset.file1.file.size|readable_filesize }})
+            {% if dbox_log %}
+                {% if dbox_log.file_metadata %}
+                The following file were identified from the
+                <a href="{{ dataset.dropbox_url }}" target="_blank">Dropbox link</a>:
+                    <ol>
+                    {% for file_info in dbox_log.file_metadata %}
+                        <li>{{ file_info }}</li>
+                    {% endfor %}
+                    </ol>
+                {% endif %}
+                {% if dbox_log.file_metadata_err_msg %}<br />
+                    {{ dbox_log.file_metadata_err_msg }}
+                {% endif %}
+            {% endif %}
         </td>
     </tr>
-    {% if dataset.file2 %}
-    <tr>
-        <th class="text-primary">File 2<br />(Size)</th>
-        <td>
-            {{ dataset.filename2 }}
-            <br />({{ dataset.file2.file.size|readable_filesize }})
-        </td>
-    </tr>
-    {% endif %}
     <tr>
         <th class="text-primary">Created</th>
         <td>{{ dataset.created }}</td>

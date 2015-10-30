@@ -25,21 +25,8 @@ Predict - genTB
                             <a href="{% url 'view_predict_page' %}">upload another file for prediction</a>.</p>
                     </div>
 
-            {% if dbox_log %}
-            hello!
-                {% if dbox_log.file_metadata %}
-                The following file were identified from the drobx link:
-                    <ol>
-                    {% for file_info in dbox_log.file_metadata %}
-                        <li>{{ file_info }}</li>
-                    {% endfor %}
-                    </ol>
-                {% endif %}
-                <br />
-                {{ dbox_log.file_metadata_err_msg }}
-                <br />
-            {% endif %}
-            ayy!
+        
+
             {% if dataset %}
                 {% include "predict/success_uploaded_info_table.html" %}
             {% endif %}
