@@ -5,7 +5,7 @@ from os.path import dirname, realpath
 if __name__=='__main__':
     django_dir = dirname(dirname(dirname(realpath(__file__))))
     sys.path.append(django_dir)
-    os.environ['DJANGO_SETTINGS_MODULE'] = 'tb_website.settings.local'
+    #os.environ['DJANGO_SETTINGS_MODULE'] = 'tb_website.settings.local'
 
     # Allows the working environ to get set-up, apps registered, etc
     #
