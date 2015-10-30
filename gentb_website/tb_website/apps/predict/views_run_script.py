@@ -14,6 +14,7 @@ from apps.predict.forms import DatasetRunNotificationForm
 
 from apps.predict.message_helper import send_dataset_run_message_to_tb_admins
 
+"""
 def view_run_dataset_script(request, dataset_md5):
 
     d = get_common_dict(request, 'Run Dataset Script', predict_page=True)
@@ -40,10 +41,7 @@ def view_run_dataset_script(request, dataset_md5):
     (success, err_or_script_run) = run_script_on_dataset(dataset)
 
     return HttpResponseRedirect(reverse('view_single_dataset', kwargs=dict(dataset_md5=dataset.md5)))
-
-    #return render_to_response('predict/view_run_dataset_script.html',
-    #                         d,
-    #                         context_instance=RequestContext(request))
+"""
 
 
 @csrf_exempt
@@ -109,6 +107,7 @@ def view_dataset_run_notification(request):
     send_dataset_run_message_to_tb_admins(dataset_run)
 
     return HttpResponse(data, content_type='application/json')
+    
 '''
 import requests
 payload = dict(success=True,

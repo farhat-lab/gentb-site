@@ -1,3 +1,4 @@
+from __future__ import print_function
 import os, sys
 from os.path import dirname, realpath
 
@@ -13,6 +14,8 @@ if __name__=='__main__':
 
 from datetime import datetime
 import requests
+
+from apps.predict.models import PredictDataset
 
 from apps.dropbox_helper.models import DropboxRetrievalLog
 from apps.dropbox_helper.dropbox_retriever import DropboxRetriever
@@ -103,6 +106,34 @@ class DropboxRetrievalRunner:
         self.dbox_log.set_retrieval_end_time(files_retrieved=True)
         self.dbox_log.save()
 
+
+    @staticmethod
+    def retrieve_dataset_files(dataset_id):
+        """
+        Given a dataset id, retrieve the dropbox link files, REGARDLESS of previous attempts
+
+        For running form the command line, output is print statments
+        """
+        # Get PredictDataset
+        #
+        try:
+            dataset = PredictDataset.objects.get(pk=dataset_id)
+        except PredictDataset.DoesNotExist:
+            print ('Failed.  There is not "PredictDataset" with db id: {0}'.format(dataset_id))
+            return False
+
+        # Get DropboxRetrievalLog object
+        #
+        dbox_log = DropboxRetrievalLog.objects.filter(dataset=dataset).first()
+        if dbox_log is None:
+            print ('Failed.  There is not "DropboxRetrievalLog" for the PredictDataset')
+            return False
+
+        # Run it
+        #
+        dr = DropboxRetrievalRunner(dbox_log)
+
+
     @staticmethod
     def retrieve_new_dropbox_files(**kwargs):
         """
@@ -132,33 +163,44 @@ class DropboxRetrievalRunner:
 
         cnt = dbox_logs_to_check.count()
         if cnt == 0:
-            print 'All set.  Nothing to check'
+            print('All set.  Nothing to check')
             return
 
-        print 'Checking {0} link(s)'.format(cnt)
-        
-        for dbox_log in dbox_logs_to_check:
+        print('Checking {0} link(s)'.format(cnt))
 
+        for dbox_log in dbox_logs_to_check:
             # Go get the files!
-            print 'run dlog', dbox_log
-            print 'with params:', dbox_log.get_dropbox_retrieval_script_params()
+            print('Get files for: ', dbox_log)
             dr = DropboxRetrievalRunner(dbox_log)
 
 
 if __name__=='__main__':
     args = sys.argv
     if len(args) == 1:
+        # PredictDatasets where download not yet attempted
+        #
         DropboxRetrievalRunner.retrieve_new_dropbox_files()
 
     elif len(args) == 2 and args[1] == '--retry':
+        # PredictDatasets where download previously failed
+        #
         retry_param= dict(retry_files_with_errors=True)
         DropboxRetrievalRunner.retrieve_new_dropbox_files(**retry_param)
 
+    elif len(args) == 2 and args[1].isdigit():
+        # Single PredictDataset specified by database id, regardless of status
+        #
+        DropboxRetrievalRunner.retrieve_dataset_files(dataset_id=args[1])
+
     else:
-        print '-' * 40
-        print """Regular run of new dropbox links:
+        print('-' * 40)
+        print("""Regular run of new dropbox links:
     >python dropbox_retrieval_runner.py
 
 Retry dropbox links with errors:
     >python dropbox_retrieval_runner.py --retry
-        """
+
+Retrieve dropbox link files for a specifiec PredictDataset:
+    >python dropbox_retrieval_runner.py (dataset id)
+   e.g. >python dropbox_retrieval_runner.py 102
+        """)

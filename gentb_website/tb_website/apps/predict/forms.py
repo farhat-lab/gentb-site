@@ -87,7 +87,6 @@ class UploadPredictionDataForm(forms.ModelForm):
         predict_dataset.set_status_not_ready(save_status=False)
         predict_dataset.save()      # save the object
 
-
         db_log = DropboxRetrievalLog(dataset=predict_dataset)
         db_log.file_metadata = self.dropbox_metadata_info
         db_log.save()

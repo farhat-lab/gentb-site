@@ -52,14 +52,14 @@ class PredictDatasetAdmin(admin.ModelAdmin):
     list_display = ('title', 'user', 'status', 'has_prediction', 'created', 'modified')
     list_filter = ['status', 'has_prediction']
     readonly_fields = [ 'created', 'modified', 'md5', 'file_directory',
-                        'user_name', 'user_email', 'user_affiliation', 'run_script_link']
+                        'user_name', 'user_email', 'user_affiliation',]
 
     fieldsets = [
         (None,               {'fields': ['title', ('status', 'has_prediction')]}),
         ('Description',               {'fields': ['description']}),
         ('User',               {'fields': [('user', 'user_affiliation'), ('user_name', 'user_email')]}),
         ('Files',               {'fields': ['dropbox_url', 'file_directory',]}),
-        ('Run Script!', {'fields': ['run_script_link']}),
+        #('Run Script!', {'fields': ['run_script_link']}),
         ('Timestamps/md5', {'fields': [('created', 'modified'), 'md5']}),
     ]
     '''  user = models.ForeignKey(TBUser)

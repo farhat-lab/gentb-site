@@ -32,9 +32,9 @@ DATASET_STATUS_FILE_RETRIEVAL_STARTED = 3
 DATASET_STATUS_FILE_RETRIEVAL_ERROR = 4
 DATASET_STATUS_FILE_RETRIEVAL_COMPLETE = 5
 
-#DATASET_STATUS_PROCESSING_STARTED_ID = 4
-#DATASET_STATUS_PROCESSED_SUCCESS = 5
-#DATASET_STATUS_PROCESSED_FAILED = 6
+DATASET_STATUS_PROCESSING_STARTED_ID = 6
+DATASET_STATUS_PROCESSED_SUCCESS = 7
+DATASET_STATUS_PROCESSED_FAILED = 8
 
 
 class PredictDatasetStatus(models.Model):
@@ -81,14 +81,6 @@ class PredictDataset(TimeStampedModel):
 
     def __str__(self):
         return self.title
-
-    def run_script_link(self):
-        if not self.id:
-            return 'n/a'
-
-        url = reverse('view_run_dataset_script', kwargs=dict(dataset_md5=self.md5))
-        return '<a href="%s" target="_blank" style="display:block; border:1px solid #333; padding:10px; width:70px;">Run Script!</a>' % (url)
-    run_script_link.allow_tags = True
 
 
     def user_name(self):
@@ -167,7 +159,7 @@ class PredictDataset(TimeStampedModel):
         admin_url = '{0}{1}'.format(site_url, url_to_dataset)
         callback_url = '{0}{1}'.format(site_url, reverse('view_dataset_run_notification', kwargs={}))
 
-        d = dict(#file1_path=self.file1.path,
+        d = dict(file_directory=self.file_directory.path,
                  dataset_id=self.id,
                  callback_url=callback_url,
                  user_email=self.user.user.email,
@@ -175,51 +167,50 @@ class PredictDataset(TimeStampedModel):
                  run_md5=run_md5
                  )
 
-        #if self.file2:
-        #    d['file2_path'] = self.file2.path
-
         if as_list:
             return [ json.dumps(d)]
             #return [ '\'%s\'' % json.dumps(d)]
         return json.dumps(d)
 
-    def set_status_not_ready(self, save_status=True):
-        self.status = PredictDatasetStatus.objects.get(pk=DATASET_STATUS_NOT_READY_ID)
+    def set_status(self, status_type, save_status=True):
+        try:
+            new_status = PredictDatasetStatus.objects.get(pk=status_type)
+        except PredictDatasetStatus.DoesNotExist:
+            return
+
+        self.status = new_status
         if save_status:
             self.save()
 
+    # Initial information statuses
+    #
+    def set_status_not_ready(self, save_status=True):
+        self.set_status(DATASET_STATUS_NOT_READY_ID, save_status)
+
+    def set_status_confirmed(self, save_status=True):
+        self.set_status(DATASET_STATUS_CONFIRMED_ID, save_status)
+
+    # File Retrieval statuses
+    #
     def set_status_file_retrieval_started(self, save_status=True):
-        self.status = PredictDatasetStatus.objects.get(pk=DATASET_STATUS_FILE_RETRIEVAL_STARTED)
-        if save_status:
-            self.save()
+        self.set_status(DATASET_STATUS_FILE_RETRIEVAL_STARTED, save_status)
 
     def set_status_file_retrieval_error(self, save_status=True):
-        self.status = PredictDatasetStatus.objects.get(pk=DATASET_STATUS_FILE_RETRIEVAL_ERROR)
-        if save_status:
-            self.save()
+        self.set_status(DATASET_STATUS_FILE_RETRIEVAL_ERROR, save_status)
 
     def set_status_file_retrieval_complete(self, save_status=True):
-        self.status = PredictDatasetStatus.objects.get(pk=DATASET_STATUS_FILE_RETRIEVAL_COMPLETE)
-        if save_status:
-            self.save()
+        self.set_status(DATASET_STATUS_FILE_RETRIEVAL_COMPLETE, save_status)
 
+    # Pipeline processing statuses
+    #
     def set_status_processing_started(self, save_status=True):
-        self.status = PredictDatasetStatus.objects.get(pk=DATASET_STATUS_PROCESSING_STARTED_ID)
-        if save_status:
-            self.save()
+        self.set_status(DATASET_STATUS_PROCESSING_STARTED_ID, save_status)
 
+    def set_status_processing_success(self, save_status=True):
+        self.set_status(DATASET_STATUS_PROCESSED_SUCCESS, save_status)
 
-    def set_status_process_failed(self, save_status=True):
-        self.status = PredictDatasetStatus.objects.get(pk=DATASET_STATUS_PROCESSED_FAILED)
-        self.has_prediction = False
-        if save_status:
-            self.save()
-
-    def set_status_process_success(self, save_status=True):
-        self.status = PredictDatasetStatus.objects.get(pk=DATASET_STATUS_PROCESSED_SUCCESS)
-        self.has_prediction = True
-        if save_status:
-            self.save()
+    def set_status_processing_failed(self, save_status=True):
+        self.set_status(DATASET_STATUS_PROCESSED_FAILED, save_status)
 
 
     class Meta:
