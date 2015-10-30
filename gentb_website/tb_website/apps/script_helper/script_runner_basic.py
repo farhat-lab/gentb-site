@@ -8,8 +8,16 @@ def run_script(cmd_args, run_test=False):
     print('run_script: ', cmd_args)
     if run_test:
         cmd_args = ['ls', '-la']
-    p = Popen(cmd_args)#, stdout=PIPE, stderr=PIPE)
 
+    # Run command and don't wait for the result
+    p = Popen(cmd_args,
+            shell=False,
+            stdin=None,
+            stdout=None,
+            stderr=None,
+            close_fds=True)
+
+    #, stdout=PIPE, stderr=PIPE)
     #print (p.communicate())
 
 """

@@ -29,6 +29,8 @@ from apps.utils.site_url_util import get_site_url
 DATASET_STATUS_NOT_READY_ID = 1
 DATASET_STATUS_CONFIRMED_ID = 2
 DATASET_STATUS_FILE_RETRIEVAL_STARTED = 3
+DATASET_STATUS_FILE_RETRIEVAL_ERROR = 4
+DATASET_STATUS_FILE_RETRIEVAL_COMPLETE = 5
 
 #DATASET_STATUS_PROCESSING_STARTED_ID = 4
 #DATASET_STATUS_PROCESSED_SUCCESS = 5
@@ -186,6 +188,21 @@ class PredictDataset(TimeStampedModel):
         if save_status:
             self.save()
 
+    def set_status_file_retrieval_started(self, save_status=True):
+        self.status = PredictDatasetStatus.objects.get(pk=DATASET_STATUS_FILE_RETRIEVAL_STARTED)
+        if save_status:
+            self.save()
+
+    def set_status_file_retrieval_error(self, save_status=True):
+        self.status = PredictDatasetStatus.objects.get(pk=DATASET_STATUS_FILE_RETRIEVAL_ERROR)
+        if save_status:
+            self.save()
+
+    def set_status_file_retrieval_complete(self, save_status=True):
+        self.status = PredictDatasetStatus.objects.get(pk=DATASET_STATUS_FILE_RETRIEVAL_COMPLETE)
+        if save_status:
+            self.save()
+
     def set_status_processing_started(self, save_status=True):
         self.status = PredictDatasetStatus.objects.get(pk=DATASET_STATUS_PROCESSING_STARTED_ID)
         if save_status:
@@ -240,18 +257,43 @@ class DropboxRetrievalLog(TimeStampedModel):
 
     # system attempts to download files
     retrieval_start = models.DateTimeField(null=True, blank=True)
+    retrieval_end = models.DateTimeField(null=True, blank=True)
     retrieval_error = models.TextField(blank=True)
 
     # success
     files_retrieved = models.BooleanField(default=False)
 
+    # md5
+    md5 = models.CharField(max_length=40, blank=True, db_index=True, help_text='auto-filled on save')
+
     def __str__(self):
         return '{0}'.format(self.dataset)
+
+    def save(self, *args, **kwargs):
+        if not self.id:
+            super(DropboxRetrievalLog, self).save(*args, **kwargs)
+
+        self.md5 = md5('%s%s' % (self.id, self.created)).hexdigest()
+
+        super(DropboxRetrievalLog, self).save(*args, **kwargs)
 
     class Meta:
         ordering = ('-created', 'dataset')
         #verbose_name = 'Dropbox Data Source'
         #verbose_name_plural = '{0}s'.format(verbose_name)
+
+    def set_retrieval_start_time(self):
+        self.retrieval_start = datetime.now()
+
+    def set_retrieval_end_time(self):
+        self.retrieval_end = datetime.now()
+
+    def get_dropbox_retrieval_script_params(self):
+        assert self.id is not None, "This function cannot be called for an unsaved object.  (The id field is required)"
+        return dict(dropbox_url=self.dataset.dropbox_url,
+                destination_directory=self.dataset.file_directory,
+                callback_url=reverse('record_file_retrieval_results', args=()),
+                callback_md5=self.md5)
 
 
 class PredictDatasetNote(TimeStampedModel):

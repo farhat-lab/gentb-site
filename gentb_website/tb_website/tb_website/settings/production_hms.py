@@ -117,3 +117,11 @@ if not os.path.isdir(TB_SHARED_DATAFILE_DIRECTORY):
     raise Exception('Directory for uploaded TB files doesn\'t exist: %s' % TB_SHARED_DATAFILE_DIRECTORY)
 
 ########## END TB UPLOADED DATAFILE DIRECTORY
+
+########## DROPBOX_ACCESS_TOKEN
+
+DROPBOX_ACCESS_TOKEN = JSON_SECRETS['DROPBOX_ACCESS_TOKEN']
+# see This functionality uses the Dropbox Core API to retrieve metadata from a shared link.
+#    https://blogs.dropbox.com/developers/2015/08/new-api-endpoint-shared-link-metadata/
+
+########## END DROPBOX_ACCESS_TOKEN

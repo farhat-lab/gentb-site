@@ -280,6 +280,14 @@ TB_SHARED_DATAFILE_DIRECTORY = 'directory to store shared files -- off of the ww
 
 ########## END TB UPLOADED DATAFILE DIRECTORY
 
+########## DROPBOX_ACCESS_TOKEN
+
+DROPBOX_ACCESS_TOKEN = 'linked to a Dropbox app for retrieving files from shared links'
+# see This functionality uses the Dropbox Core API to retrieve metadata from a shared link.
+#    https://blogs.dropbox.com/developers/2015/08/new-api-endpoint-shared-link-metadata/
+
+########## END DROPBOX_ACCESS_TOKEN
+
 ########## EMAIL SETTINGS
 EMAIL_BACKEND = ''  #'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = '' # 'mail.hmdc.harvard.edu''

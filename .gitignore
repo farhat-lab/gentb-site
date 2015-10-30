@@ -82,3 +82,5 @@ scratch-work/test-files/008.1.fastq.txt
 shinyapps.io/genTB/rsconnect/shinyapps.io/hmdc/genTB.dcf
 
 shinyapps.io/genTB/.Rhistory
+
+gentb_website/tb_website/tb_website/settings/secret_settings_local.json
