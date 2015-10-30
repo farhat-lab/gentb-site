@@ -14,8 +14,13 @@ def run_script_on_dataset(dataset):
     try:
         chosen_script = ScriptToRun.objects.get(is_chosen_script=True)
     except ScriptToRun.DoesNotExist:
+        print("No ScriptToRun found!  Add a ScriptToRun through the admin. See apps/predict/script_run_helper.py")
+        # Run failed, set status
+        dataset.set_status_processing_failed()
+
         err_title='No chosen script'
         err_note = """Please go into the admin control panel and add a 'ScriptToRun'.  Talk to your administrator for details."""
+
         note = PredictDatasetNote(dataset=dataset,
                               title=err_title,
                               note=err_note)

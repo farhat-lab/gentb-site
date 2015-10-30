@@ -9,6 +9,7 @@ workon gentb
 #
 export DJANGO_SETTINGS_MODULE=tb_website.settings.local
 
-# run the script
-cd /Users/rmp553/Documents/iqss-git/gentb-site/gentb_website/tb_website/apps/dropbox_helper/
-python dropbox_retrieval_runner.py
+# Run the pipeline for the next available PredictDataset
+#
+cd /Users/rmp553/Documents/iqss-git/gentb-site/gentb_website/tb_website/apps/predict/
+python pipeline_script_runner.py

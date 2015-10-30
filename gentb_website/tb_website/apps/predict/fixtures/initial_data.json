@@ -2,46 +2,73 @@
 {
     "fields": {
         "sort_order": 1,
-        "name": "UPLOADED - Not Ready for Processing",
-        "slug": "uploaded-not-ready-for-processing"
+        "name": "DATASET_STATUS_NOT_READY_ID",
+        "slug": "dataset_status_not_ready_id"
     },
-    "model": "predict.PredictDatasetStatus",
+    "model": "predict.predictdatasetstatus",
     "pk": 1
 },
 {
     "fields": {
         "sort_order": 2,
-        "name": "READY for Processing",
-        "slug": "ready-for-processing"
+        "name": "DATASET_STATUS_CONFIRMED_ID",
+        "slug": "dataset_status_confirmed_id"
     },
-    "model": "predict.PredictDatasetStatus",
+    "model": "predict.predictdatasetstatus",
     "pk": 2
 },
 {
     "fields": {
         "sort_order": 3,
-        "name": "PROCESSING - STARTED",
-        "slug": "processing-started"
+        "name": "DATASET_STATUS_FILE_RETRIEVAL_STARTED",
+        "slug": "dataset_status_file_retrieval_started"
     },
-    "model": "predict.PredictDatasetStatus",
+    "model": "predict.predictdatasetstatus",
     "pk": 3
 },
 {
     "fields": {
         "sort_order": 4,
-        "name": "PROCESSED - SUCCESS",
-        "slug": "processed-success"
+        "name": "DATASET_STATUS_FILE_RETRIEVAL_ERROR",
+        "slug": "dataset_status_file_retrieval_error"
     },
-    "model": "predict.PredictDatasetStatus",
+    "model": "predict.predictdatasetstatus",
     "pk": 4
 },
 {
     "fields": {
         "sort_order": 5,
-        "name": "PROCESSED - FAILED",
-        "slug": "processed-failed"
+        "name": "DATASET_STATUS_FILE_RETRIEVAL_COMPLETE",
+        "slug": "dataset_status_file_retrieval_complete"
     },
-    "model": "predict.PredictDatasetStatus",
+    "model": "predict.predictdatasetstatus",
     "pk": 5
+},
+{
+    "fields": {
+        "sort_order": 6,
+        "name": "DATASET_STATUS_PROCESSING_STARTED_ID",
+        "slug": "dataset_status_processing_started_id"
+    },
+    "model": "predict.predictdatasetstatus",
+    "pk": 6
+},
+{
+    "fields": {
+        "sort_order": 7,
+        "name": "DATASET_STATUS_PROCESSED_SUCCESS",
+        "slug": "dataset_status_processed_success"
+    },
+    "model": "predict.predictdatasetstatus",
+    "pk": 7
+},
+{
+    "fields": {
+        "sort_order": 8,
+        "name": "DATASET_STATUS_PROCESSED_FAILED",
+        "slug": "dataset_status_processed_failed"
+    },
+    "model": "predict.predictdatasetstatus",
+    "pk": 8
 }
 ]
