@@ -5,7 +5,7 @@ from os.path import dirname, realpath
 if __name__=='__main__':
     django_dir = dirname(dirname(dirname(realpath(__file__))))
     sys.path.append(django_dir)
-    os.environ['DJANGO_SETTINGS_MODULE'] = 'tb_website.settings.local'
+    #os.environ['DJANGO_SETTINGS_MODULE'] = 'tb_website.settings.local'
 
     # Allows the working environ to get set-up, apps registered, etc
     #
@@ -19,6 +19,8 @@ from apps.predict.models import PredictDataset,\
             DATASET_STATUS_FILE_RETRIEVAL_COMPLETE
 from apps.predict.script_run_helper import run_script_on_dataset
 
+import logging
+logger = logging.getLogger('apps.predict.pipeline_script_runner')
 
 class PipelineScriptRunner:
 
@@ -34,9 +36,16 @@ class PipelineScriptRunner:
         """
         qset = PredictDataset.objects.filter(status=DATASET_STATUS_FILE_RETRIEVAL_COMPLETE)
 
-        print ('Found {0} dataset(s) to run through pipeline'.format(qset.count()))
+        num_datasets = qset.count()
+        log_msg = 'Found {0} dataset(s) to run through pipeline.'.format(qset.count())
+        logger.error(log_msg)
+        logger.debug(log_msg)
+        print (log_msg)
 
+        cnt = 0
         for pd in qset:
+            cnt+=1
+            logger.debug('Running {0} of {1} dataset(s) to run through pipeline. (PredictDataset id: {2})'.format(cnt, num_datasets, pd.id))
             run_script_on_dataset(pd)
 
     @staticmethod
@@ -53,7 +62,9 @@ class PipelineScriptRunner:
             print('No dataset found to run through pipeline')
             return
 
+        logging.info('Running next dataset through the run through the pipeline. (PredictDataset id: {0})'.format(pd.id))
         run_script_on_dataset(pd)
+
 
     @staticmethod
     def run_specific_dataset(dataset_id):
@@ -75,6 +86,8 @@ class PipelineScriptRunner:
         if dataset.status < DATASET_STATUS_FILE_RETRIEVAL_COMPLETE:
             print ('Failed.  Files not yet available for this "PredictDataset" db id: {0}'.format(dataset_id))
             return False
+
+        logging.info('Running dataset through the run through the pipeline. (PredictDataset id: {0})'.format(dataset_id))
 
         run_script_on_dataset(dataset)
 

@@ -10,11 +10,13 @@ from apps.predict.forms import UploadPredictionDataForm, SimpleConfirmationForm
 from apps.predict.models import PredictDataset, PredictDatasetStatus,\
                                 PredictDatasetNote, DatasetScriptRun
 from apps.dropbox_helper.models import DropboxRetrievalLog
-from apps.shared_data.process_file_helper import get_process_file_results
 from apps.utils.view_util import get_common_dict
 from apps.predict.message_helper import send_new_dataset_message_to_tb_admins
 from django.contrib.auth.decorators import login_required
 from subprocess import Popen
+
+import logging
+logger = logging.getLogger(__name__)
 
 @login_required
 def view_predict_upload_delete(request):
@@ -22,6 +24,10 @@ def view_predict_upload_delete(request):
 
 
 def view_predict_page(request, previous_attempt_deleted=False):
+
+    logger.info("view_predict_page: info")
+    logger.error('ahhh!')
+    logger.debug('debug!')
 
     d = get_common_dict(request, 'Predict', predict_page=True)
 
@@ -34,7 +40,12 @@ def view_predict_page(request, previous_attempt_deleted=False):
                              d,
                              context_instance=RequestContext(request))
 
+    print('yes')
+    logging.info("view_predict_page")
+
     if request.POST:
+        logging.info("view_predict_page")
+
         f = UploadPredictionDataForm(request.POST)
         if f.is_valid():
             new_dataset = f.get_dataset(request.user.tbuser)

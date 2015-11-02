@@ -10,11 +10,12 @@ from apps.predict.forms import UploadPredictionDataForm, SimpleConfirmationForm
 from apps.predict.models import PredictDataset, PredictDatasetStatus,\
                                 PredictDatasetNote, DatasetScriptRun
 from apps.dropbox_helper.models import DropboxRetrievalLog
-from apps.shared_data.process_file_helper import get_process_file_results
 from apps.utils.view_util import get_common_dict
 from apps.predict.message_helper import send_new_dataset_message_to_tb_admins
 from django.contrib.auth.decorators import login_required
 
+import logging
+logger = logging.getLogger(__name__)
 
 @login_required
 def view_single_dataset(request, dataset_md5):

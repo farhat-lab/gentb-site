@@ -274,7 +274,19 @@ Test ```ScriptToRun``` object to add via the admin:
 /www/gentb.hms.harvard.edu/code/gentb-site/gentb_website/venv_tb/bin/python  /www/gentb.hms.harvard.edu/code/gentb-site/gentb_website/tb_website/apps/script_helper/test_script.py
 ```
 
-Example of command line run:
+#### Example of remote test of callback:
+    - called HMS serve from local machine
+```
+>>> url = 'https://gentb.hms.harvard.edu/predict/pipeline-run-results-notice/'
+>>> p = {'result_data': '{"amk":{"r":[0.7683],"s":[0.2317]},"cap":{"r":[0.5202],"s":[0.4798]},"cip":{"r":[0.6477],"s":[0.3523]},"emb":{"r":[0.09],"s":[0.91]},"gai":{"r":[0.2632],"s":[0.7368]},"inh":{"r":[0.8933],"s":[0.1067]},"kan":{"r":[0.9487],"s":[0.0513]},"levo":{"r":[0.0042],"s":[0.9958]},"moxi":{"r":[0.3219],"s":[0.6781]},"oflx":{"r":[0.0091],"s":[0.9909]},"pas":{"r":[0.5854],"s":[0.4146]},"pza":{"r":[0.163],"s":[0.837]},"rif":{"r":[0.7605],"s":[0.2395]},"str":{"r":[0.8175],"s":[0.1825]}}', 'success': True, 'run_md5': u'2af2023f8c6103dbe00803929de54c28'}
+>>> import requests
+>>> requests.post(url, data=p)
+<Response [200]>
+>>>
+```
+
+#### check this:
+
 ```
 /www/gentb.hms.harvard.edu/code/gentb-site/gentb_website/venv_tb/bin/python  /www/gentb.hms.harvard.edu/code/gentb-site/gentb_website/tb_website/apps/script_helper/test_script.py '{"file_directory": "/home/rp188/gentb_test/tbdata_00000001", "run_md5": "2af2023f8c6103dbe00803929de54c28", "admin_url": "https://gentb.hms.harvard.edu/gentb-admin/predict/predictdataset/1/", "callback_url": "https://gentb.hms.harvard.edu/predict/pipeline-run-results-notice/", "dataset_id": 1, "user_email": "raman_prasad@harvard.edu"}'
 ```
