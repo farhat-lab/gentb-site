@@ -24,7 +24,7 @@
         <td>
             {% if dbox_log %}
                 {% if dbox_log.file_metadata %}
-                The following file were identified from the
+                The following file{{ dbox_log.file_metadata|pluralize:" was,s were"}} identified from the
                 <a href="{{ dataset.dropbox_url }}" target="_blank">Dropbox link</a>:
                     <ol>
                     {% for file_info in dbox_log.file_metadata %}
