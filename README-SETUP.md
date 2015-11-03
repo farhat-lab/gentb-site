@@ -46,8 +46,14 @@ git clone git@github.com:IQSS/gentb-site.git
 
 ```
 mkdir /www/gentb.hms.harvard.edu/logging
-#chown ...
 ```
+
+- check out the log
+
+```
+tail /www/gentb.hms.harvard.edu/logging/gentb.log
+```
+
 
 ### Set up virtualenv
 
@@ -221,10 +227,11 @@ python manage.py shell
 Next, from the django shell, try the ```send_mail``` command:
 
 ```
-from django.conf import settings
-from django.core.mail import send_mail
 # !! put your email address in the line below
 to_email = "--YOUR EMAIL ADDRESS HERE--"
+#
+from django.conf import settings
+from django.core.mail import send_mail
 send_mail(subject='genTB test email',
         message='test the email settings',
         from_email=settings.DEFAULT_FROM_EMAIL,

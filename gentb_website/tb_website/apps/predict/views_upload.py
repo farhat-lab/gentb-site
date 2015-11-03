@@ -25,9 +25,9 @@ def view_predict_upload_delete(request):
 
 def view_predict_page(request, previous_attempt_deleted=False):
 
-    logger.info("view_predict_page: info")
-    logger.error('ahhh!')
-    logger.debug('debug! + {0}'.format(' some words' * 1000))
+    #logger.info("view_predict_page: info")
+    #logger.error('ahhh!')
+    logging.debug("view_predict_page")
 
     d = get_common_dict(request, 'Predict', predict_page=True)
 
@@ -41,7 +41,6 @@ def view_predict_page(request, previous_attempt_deleted=False):
                              context_instance=RequestContext(request))
 
     if request.POST:
-        logging.debug("view_predict_page")
 
         f = UploadPredictionDataForm(request.POST)
         if f.is_valid():
