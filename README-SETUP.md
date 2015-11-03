@@ -35,8 +35,18 @@ chmod 755 -R docroot/tb
 - Make sure you have an ssh key set up on the HMS server: https://help.github.com/articles/generating-ssh-keys/
 
 ```
+# created the "code" directory if it doesn't exist
 cd /www/gentb.hms.harvard.edu/code
 git clone git@github.com:IQSS/gentb-site.git
+```
+
+### Set up a directory for Django logging
+
+- fyi: the log file params are set in ```production_hms.py```.  At the time of this writing, logs are set to rotate, with the last 5 being kept.  Each log has a max size of 5mb.
+
+```
+mkdir /www/gentb.hms.harvard.edu/logging
+#chown ...
 ```
 
 ### Set up virtualenv
@@ -178,7 +188,8 @@ RewriteCond %{REQUEST_URI} !^/tb/
 # Send other requests to the Django app on flexatone
 # -------------------------------
 #ReWriteRule ^(.*)$ http://flexatone.orchestra:9001/$1 [P]
-ReWriteRule ^(.*)$ http://gentb-app-prod01.orchestra:9001/$1 [P]
+#ReWriteRule ^(.*)$ http://gentb-app-prod01.orchestra:9001/$1 [P]
+ReWriteRule ^(.*)$ http://rc-app-shared01.orchestra:9001/$1 [P]
 # -------------------------------
 #
 # Temp redirect, if needed

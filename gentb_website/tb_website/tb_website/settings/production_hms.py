@@ -52,7 +52,7 @@ TB_ADMINS = JSON_SECRETS['TB_ADMINS']
 
 ########## HOST CONFIGURATION
 # See: https://docs.djangoproject.com/en/1.5/releases/1.5/#allowed-hosts-required-in-production
-ALLOWED_HOSTS = ['gentb.hms.harvard.edu', 'gentb-app-prod01.orchestra', 'orchestraweb.hms.harvard.edu', '134.174.150.16']
+ALLOWED_HOSTS = ['gentb.hms.harvard.edu', 'gentb-app-prod01.orchestra', 'orchestraweb.hms.harvard.edu', '134.174.150.16', 'gentb-app-shared01.orchestra']
 ########## END HOST CONFIGURATION
 
 ########## EMAIL CONFIGURATION
@@ -128,3 +128,64 @@ DROPBOX_ACCESS_TOKEN = JSON_SECRETS['DROPBOX_ACCESS_TOKEN']
 #    https://blogs.dropbox.com/developers/2015/08/new-api-endpoint-shared-link-metadata/
 
 ########## END DROPBOX_ACCESS_TOKEN
+
+ERROR_LOG_FILEPATH = '/www/gentb.hms.harvard.edu/logging/gentb.log'
+########## LOGGING CONFIGURATION
+# See: https://docs.djangoproject.com/en/dev/ref/settings/#logging
+# A sample logging configuration. The only tangible logging
+# performed by this configuration is to send an email to
+# the site admins on every HTTP 500 error when DEBUG=False.
+# See http://docs.djangoproject.com/en/dev/topics/logging for
+# more details on how to customize your logging configuration.
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'filters': {
+        'require_debug_false': {
+            '()': 'django.utils.log.RequireDebugFalse'
+        }
+    },
+    'handlers': {
+        'mail_admins': {
+            'level': 'ERROR',
+            'filters': ['require_debug_false'],
+            'class': 'django.utils.log.AdminEmailHandler'
+        },
+        'file': {
+            'level': 'DEBUG',
+            #'class': 'logging.FileHandler',
+            'class':'logging.handlers.RotatingFileHandler',
+            'filename': ERROR_LOG_FILEPATH,
+            'maxBytes': 1024*1024*5, # 5 MB
+            'backupCount': 5,
+            'formatter': 'verbose'
+        },
+    },
+    'loggers': {
+        'django.request': {
+            'handlers': ['mail_admins'],
+            'level': 'ERROR',
+            'propagate': True,
+        },
+        'django': {
+            'handlers':['file'],
+            'propagate': True,
+            'level':'ERROR',
+        },
+        'apps': {
+            'handlers': ['file'],
+            'propagate': True,
+            'level': 'DEBUG',
+        },
+    },
+    'formatters': {
+        'verbose': {
+            'format' : "[%(asctime)s] %(levelname)s [%(name)s:%(lineno)s] %(message)s",
+            'datefmt' : "%d/%b/%Y %H:%M:%S"
+        },
+        'simple': {
+            'format': '%(levelname)s %(message)s'
+        },
+    },
+}
+########## END LOGGING CONFIGURATION

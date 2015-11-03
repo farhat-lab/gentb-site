@@ -27,7 +27,7 @@ def view_predict_page(request, previous_attempt_deleted=False):
 
     logger.info("view_predict_page: info")
     logger.error('ahhh!')
-    logger.debug('debug!')
+    logger.debug('debug! + {0}'.format(' some words' * 1000))
 
     d = get_common_dict(request, 'Predict', predict_page=True)
 
@@ -40,11 +40,8 @@ def view_predict_page(request, previous_attempt_deleted=False):
                              d,
                              context_instance=RequestContext(request))
 
-    print('yes')
-    logging.info("view_predict_page")
-
     if request.POST:
-        logging.info("view_predict_page")
+        logging.debug("view_predict_page")
 
         f = UploadPredictionDataForm(request.POST)
         if f.is_valid():

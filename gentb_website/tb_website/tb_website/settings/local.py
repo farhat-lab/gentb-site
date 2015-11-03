@@ -104,8 +104,11 @@ LOGGING = {
         },
         'file': {
             'level': 'DEBUG',
-            'class': 'logging.FileHandler',
+            #'class': 'logging.FileHandler',
+            'class':'logging.handlers.RotatingFileHandler',
             'filename': normpath(join(TEST_SETUP_DIR, 'gentb.log')),
+            'maxBytes': 1024*1024*5, # 5 MB
+            'backupCount': 5,
             'formatter': 'verbose'
         },
     },
@@ -119,7 +122,7 @@ LOGGING = {
             'handlers':['file'],
             'propagate': True,
             'level':'ERROR',
-        },        
+        },
         'apps': {
             'handlers': ['file'],
             'propagate': True,

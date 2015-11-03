@@ -13,6 +13,8 @@ from apps.utils.site_url_util import get_site_url
 from apps.dropbox_helper.forms import DropboxRetrievalParamsForm
 from apps.predict.models import PredictDataset
 
+import logging
+logger = logging.getLogger('apps.dropbox_helper.models')
 
 class DropboxRetrievalLog(TimeStampedModel):
 
@@ -91,5 +93,7 @@ class DropboxRetrievalLog(TimeStampedModel):
         if f.is_valid():
             return f.cleaned_data
 
+
+        logger.severe("Failed to create dropbox retrieve params for dataset id {0}. Errors from form: {1}".format(self.id, f.errors.items()))
         # Log a major error
         raise KeyError(f.errors)

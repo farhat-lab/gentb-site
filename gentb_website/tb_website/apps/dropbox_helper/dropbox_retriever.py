@@ -7,16 +7,23 @@ import requests
 import urllib2
 import zipfile
 
+import logging
+logger = logging.getLogger(__name__)
+
 if __name__=='__main__':
     # For local testing....
     django_dir = dirname(dirname(dirname(realpath(__file__))))
     sys.path.append(django_dir)
-    os.environ['DJANGO_SETTINGS_MODULE'] = 'tb_website.settings.local'
+    #os.environ['DJANGO_SETTINGS_MODULE'] = 'tb_website.settings.local'
 
 from django.conf import settings
 
 GENTB_FILE_PATTERNS = ['\.fastq$', '\.fastq\.', '\.vcf$', '\.vcf\.', ]
 #GENTB_FILE_PATTERNS = ['\.fastq$', '\.fastq\.', '\.vcf$', '\.vcf\.', '\.txt$']
+
+import logging
+logger = logging.getLogger('apps.dropbox_helper.dropbox_retriever')
+
 
 class DropboxRetriever:
     """
@@ -119,10 +126,31 @@ class DropboxRetriever:
 
         # Make the request
         #
-        r = requests.post('https://api.dropbox.com/1/metadata/link',
-                        data=params,
-                        headers=headers
-                        )
+        logger.info('request metadata: %s' % params)
+        try:
+            r = requests.post('https://api.dropbox.com/1/metadata/link',
+                            data=params,
+                            headers=headers
+                            )
+        except requests.exceptions.Timeout:
+            err_msg = "The attempt to retrieve Dropbox information failed.  (metadata/Timeout)"
+            logger.error('%s Params: %s' % (err_msg, params))
+            self.add_err_msg(err_msg)
+            return False
+        except requests.exceptions.TooManyRedirects:
+            err_msg = "The attempt to retrieve Dropbox information failed.  (metadata/TooManyRedirects)"
+            logger.error('%s Params: %s' % (err_msg, params))
+            self.add_err_msg(err_msg)
+            return False
+        except requests.exceptions.RequestException as e:
+            err_msg = "The attempt to retrieve Dropbox information failed.  (metadata/Exception)"
+            logger.error('%s\nException: %s' % (err_msg, e))
+            self.add_err_msg(err_msg)
+            return False
+
+
+        logger.info('request metadata status code: %s' % r.status_code)
+
         if r.status_code != 200:
             dbox_err_msg = None
             try:
@@ -136,13 +164,16 @@ class DropboxRetriever:
             except:
                 dbox_err_msg = 'The dropbox link returned an error. Status code: {0}\n{1}'.format(r.status_code, emsg)
 
+            logger.error('{0} \nText: {1}' % (dbox_err_msg, r.text))
             self.add_err_msg(dbox_err_msg)
             return False
 
         try:
             rjson = r.json()
         except:
-            self.add_err_msg("Failed to turn link metadata from dropbox to JSON: {0}".format(r.text))
+            err_msg = "Failed to turn link metadata from dropbox to JSON: {0}".format(r.text)
+            self.add_err_msg(err_msg)
+            logger.error(err_msg)
             return False
 
         # Set object variable
@@ -151,7 +182,9 @@ class DropboxRetriever:
 
         # Does this look correct?
         if not "is_dir" in self.dropbox_link_metadata:
+            err_msg = "Metadata doesn't look good. Missing key 'is_dir': {0}".format(r.text)
             self.add_err_msg("Metadata doesn't look good. Missing key 'is_dir': {0}".format(r.text))
+            logger.error(err_msg)
             return False
 
         #pprint(self.dropbox_link_metadata, depth=4)
