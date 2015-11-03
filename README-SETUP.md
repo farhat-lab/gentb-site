@@ -11,7 +11,7 @@ The directory structure is as follows:
 1. ```/www/gentb.hms.harvard.edu/code/```
   - Repository with Django app
   - Contains Virtualenv running python 2.7.x
-  - Gunicorn is run from ```flexatone.orchestra:9001```
+  - Gunicorn is run from ```rc-app-shared01.orchestra:9001```
 
 ## Set-up steps
 
@@ -178,8 +178,8 @@ vim /www/gentb.hms.harvard.edu/docroot/.htaccess
 Add the following content:
 ```
 # ----------------------------------
-# Redirect requests to the Django app running on flexatone
-# Gunicorn is being used to serve Django on http://flexatone.orchestra:9001
+# Redirect requests to the Django app running on rc-app-shared01
+# Gunicorn is being used to serve Django on http://rc-app-shared01.orchestra:9001
 # -----------------------------------
 RewriteEngine On
 RewriteBase /
@@ -191,7 +191,7 @@ RewriteBase /
 RewriteCond %{REQUEST_URI} !^/tb/
 # -------------------------------
 #
-# Send other requests to the Django app on flexatone
+# Send other requests to the Django app on rc-app-shared01
 # -------------------------------
 #ReWriteRule ^(.*)$ http://flexatone.orchestra:9001/$1 [P]
 #ReWriteRule ^(.*)$ http://gentb-app-prod01.orchestra:9001/$1 [P]
@@ -249,7 +249,7 @@ If it works, you should receive an email shortly.  An error message will appear 
 cd /www/gentb.hms.harvard.edu/code/gentb-site/gentb_website
 source venv_tb/bin/activate
 cd tb_website
-gunicorn --log-file=- --workers=1 -b 0.0.0.0:9001 tb_website.wsgi:application
+gunicorn --log-file=- --workers=1 -b 0.0.0.0:9001 tb_website.wsgi:application &
 ```
 
 - view processes (if needed)
