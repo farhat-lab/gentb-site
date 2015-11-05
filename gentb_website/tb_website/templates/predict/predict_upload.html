@@ -45,74 +45,15 @@ Predict - genTB
 
             <div class="col-md-6 portfolio-item">
 
-                <p>
-                <h4>What is a Variant Call Format file (VCF)? </h4>
-                A Variant Call Format (VCF) file is used by the 1000 Genomes project to encode SNPs and other structural genetic variants. The format is currently maintained by The Global Alliance Data Working Group File Formats Task Team (<a href="http://ga4gh.org/#/fileformats-team">http://ga4gh.org/#/fileformats-team</a>) and is further described <a href="http://samtools.github.io/hts-specs/VCFv4.2.pdf">here</a>.
-                </p>
-
-                <br>
-
-                <p>
-                    <div class="panel-group" id="accordion">
-                        <div class="panel panel-default">
-                            <div class="panel-heading">
-                              <h4 class="panel-title">
-                                <a data-toggle="collapse" data-parent="#accordion" href="#collapseOne">
-                                  Genotypic Information for Accurate Resistance Predictions
-                                </a>
-                              </h4>
-                            </div>
-
-                            <div id="collapseOne" class="panel-collapse collapse">
-                                <div class="panel-body">
-                                    <table class="table">
-                                    <tr>
-                                        <th align = "center">Drug</th>
-                                        <th align = "cetner">Genes</th>
-                                    </tr>
-                                    <tr>
-                                        <td>Isoniazid</td>
-                                        <td>katG, fabG1/inhA promoter, inhA, embB, iniB, kasA, embA/B promoter, ahpC and promoter</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Rifampicin</td>
-                                        <td>rpoB</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Pyrazinamide</td>
-                                        <td>pncA</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Ethambutol</td>
-                                        <td>embB, iniB, embAB promoter, embC</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Kanamycin*</td>
-                                        <td>rrs, tlyA*</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Capreomycin</td>
-                                        <td>rrs</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Amikacin</td>
-                                        <td>rrs</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Fluoroquinolones</td>
-                                        <td>gyrA, gyrB</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Para&#8209;aminosalicylic&nbsp;acid</td>
-                                        <td>thyA</td>
-                                    </tr>
-                                    </table>
-                                    *Gene eis is a predictor of Kanamycin resistance, but data for this gene was not available when the predictive model was built.
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </p>
+<p>We recommend uploading two separate files for phenotype and genotype data through dataverse.</p>
+<p>Genotype data formats accepted are FASTQ or VCF files. If you upload a VCF please describe in your dataverse upload how your VCF was generated, what software was used and which thresholds were applied and if the variants are filtered and how this was performed.</p>
+<p>Phenotype data files:</p>
+<ul>
+    <li>We recommend formatting your file as a tab delimited or a comma delimited file. Excel files are also acceptable.</li>
+    <li>Please include an ID field that links directly to the names of the FASTQ or VCF files that you upload.</li>
+    <li>Drug resistance results should include information on what concentration of the drug was tested. For example if isoniazid drug resistance was tested at a concentration of 0.2 then the field containing the resistance status should be called inh_0.2 and so forth for other drugs. Please indicate the concentration units and method of testing in the description of your file during the dataverse upload.</li>
+    <li>Please include data on when, month & year, and where the sample was collected including city & country. If GIS or longitude/latitude coordinates are available please include these as well. Please do not list postal or zip codes due to privacy concerns.</li>
+    <li>Adding data on traditional fingerprint (RFLP, MIRU-VNTR, Spoligotype) is also helpful, and any completely de-identified data on the host is also acceptable.</li>
             </div>
         </div>
 
