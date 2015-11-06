@@ -51,6 +51,8 @@ DATABASES = {
         'PORT': '',
     }
 }
+print 'TEST_SETUP_DIR', TEST_SETUP_DIR
+print DATABASES['default']['NAME']
 ########## END DATABASE CONFIGURATION
 
 
@@ -153,24 +155,43 @@ if not isdir(TB_SHARED_DATAFILE_DIRECTORY):
 ########## END TB UPLOADED DATAFILE DIRECTORY
 
 
-########## EMAIL SETTINGS
+########## SETTINGS
 
-JSON_SETTINGS_SECRETS_FNAME = join(dirname(abspath(__file__)), "secret_settings_local.json")
+JSON_SETTINGS_SECRETS_FNAME = join(dirname(abspath(__file__)), "local_secret_settings.json")
 if not isfile(JSON_SETTINGS_SECRETS_FNAME):
     raise Exception('JSON_SETTINGS_SECRETS_FNAME JSON file not found: %s' % JSON_SETTINGS_SECRETS_FNAME)
 
 try:
     JSON_SETTINGS_SECRETS = json.loads(open(JSON_SETTINGS_SECRETS_FNAME, 'r').read())
 except:
-    raise Exception('Could not parse worldmap_secrets_fname JSON file: %s' % JSON_SETTINGS_SECRETS_FNAME)
+    raise Exception('Could not parse JSON file: %s' % JSON_SETTINGS_SECRETS_FNAME)
 
-EMAIL_HOST = JSON_SETTINGS_SECRETS['EMAIL_HOST']
-EMAIL_PORT = JSON_SETTINGS_SECRETS['EMAIL_PORT']
-EMAIL_HOST_USER = JSON_SETTINGS_SECRETS['EMAIL_HOST_USER']
-EMAIL_HOST_PASSWORD = JSON_SETTINGS_SECRETS['EMAIL_HOST_PASSWORD']
-DEFAULT_FROM_EMAIL = JSON_SETTINGS_SECRETS['DEFAULT_FROM_EMAIL']
-EMAIL_USE_TLS = JSON_SETTINGS_SECRETS['EMAIL_USE_TLS']
-########## END EMAIL SETTINGS
+########## EMAIL CONFIGURATION
+# See: https://docs.djangoproject.com/en/dev/ref/settings/#email-backend
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+
+# See: https://docs.djangoproject.com/en/dev/ref/settings/#email-host
+EMAIL_HOST = JSON_SETTINGS_SECRETS['EMAIL_SETTINGS']['EMAIL_HOST']
+
+# See: https://docs.djangoproject.com/en/dev/ref/settings/#email-host-user
+EMAIL_HOST_USER = JSON_SETTINGS_SECRETS['EMAIL_SETTINGS']['EMAIL_HOST_USER']
+
+# See: https://docs.djangoproject.com/en/dev/ref/settings/#email-host-password
+EMAIL_HOST_PASSWORD = JSON_SETTINGS_SECRETS['EMAIL_SETTINGS']['EMAIL_HOST_PASSWORD']
+
+# See: https://docs.djangoproject.com/en/dev/ref/settings/#email-port
+EMAIL_PORT = JSON_SETTINGS_SECRETS['EMAIL_SETTINGS']['EMAIL_PORT']
+
+# See: https://docs.djangoproject.com/en/dev/ref/settings/#email-subject-prefix
+EMAIL_SUBJECT_PREFIX = '[%s] ' % SITE_NAME
+
+DEFAULT_FROM_EMAIL = JSON_SETTINGS_SECRETS['EMAIL_SETTINGS']['DEFAULT_FROM_EMAIL']
+# See: https://docs.djangoproject.com/en/dev/ref/settings/#email-use-tls
+EMAIL_USE_TLS = JSON_SETTINGS_SECRETS['EMAIL_SETTINGS']['EMAIL_USE_TLS']
+
+# See: https://docs.djangoproject.com/en/dev/ref/settings/#server-email
+SERVER_EMAIL = EMAIL_HOST_USER
+########## END EMAIL CONFIGURATION
 
 ########## DROPBOX_ACCESS_TOKEN
 

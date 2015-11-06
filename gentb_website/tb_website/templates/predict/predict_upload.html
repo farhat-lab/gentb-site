@@ -10,7 +10,9 @@ Predict - genTB
 
         <div class="row">
             <div class="col-lg-12">
-                <h1 class="page-header">Predict <small> upload your data and make predictions about resistances by drug.</small><h1>
+                <h1 class="page-header">Predict
+                <small>Upload your genetic data to make drug resistance prediction.
+                </small><h1>
             </div>
         </div>
 
@@ -18,10 +20,14 @@ Predict - genTB
             <div class="col-md-6 portfolio-item">
 
                 {% if not IS_LOGGED_IN %}
+                <h3>Upload your genetic data as:</h3>
+                    <ul style="font-size: 140%;">
+                        <li>a FASTQ file or</li>
+                        <li>a variant call file (vcf file)</li>
+                    </ul>
+                <p>To examine the frequency of individual mutations by drug resistance you can consult the <a href="{% url 'view_map_page' %}">Map</a> function for country specific data, and the <a href="{% url 'view_explore_page' %}">Explore</a> function to examine these frequency in all of the data.</p>
+
                 <div class="panel panel-info">
-                    <div class="panel-heading">
-                        <h3 class="panel-title">Send Your FASTQ or VCF Data</h3>
-                    </div>
                   <div class="panel-body">
                     <p>To contribute a file for prediction, please:
                         {% include "login_signup_links.html" %}
@@ -44,18 +50,66 @@ Predict - genTB
             </div>
 
             <div class="col-md-6 portfolio-item">
+<h3>vcf file</h3>
+<p>VCF stands for Variant Call Format and was used by the 1000 Genomes project to encode SNPs and other structural genetic variants. The format is currently maintained by <a href="http://ga4gh.org/#/fileformats-team">The Global Alliance Data Working Group File Formats Task Team</a>. This is further described <a href="http://samtools.github.io/hts-specs/VCFv4.2.pdf">here</a>.</p>
 
-<p>We recommend uploading two separate files for phenotype and genotype data through dataverse.</p>
-<p>Genotype data formats accepted are FASTQ or VCF files. If you upload a VCF please describe in your dataverse upload how your VCF was generated, what software was used and which thresholds were applied and if the variants are filtered and how this was performed.</p>
-<p>Phenotype data files:</p>
-<ul>
-    <li>We recommend formatting your file as a tab delimited or a comma delimited file. Excel files are also acceptable.</li>
-    <li>Please include an ID field that links directly to the names of the FASTQ or VCF files that you upload.</li>
-    <li>Drug resistance results should include information on what concentration of the drug was tested. For example if isoniazid drug resistance was tested at a concentration of 0.2 then the field containing the resistance status should be called inh_0.2 and so forth for other drugs. Please indicate the concentration units and method of testing in the description of your file during the dataverse upload.</li>
-    <li>Please include data on when, month & year, and where the sample was collected including city & country. If GIS or longitude/latitude coordinates are available please include these as well. Please do not list postal or zip codes due to privacy concerns.</li>
-    <li>Adding data on traditional fingerprint (RFLP, MIRU-VNTR, Spoligotype) is also helpful, and any completely de-identified data on the host is also acceptable.</li>
-            </div>
+<p>Minimal genotypic information for accurate resistance predictions: genetic regions are listed in order of decreasing importance: (for more detailed list of genetic variants see reference Farhat MR, Sultana R et al. under review)</p>
+
+    <table class="table">
+       <tr>
+           <th align = "center">Drug</th>
+           <th align = "cetner">Genes</th>
+       </tr>
+       <tr>
+           <td>Isoniazid</td>
+           <td><i>katG</i>, <i>inhA</i> promoter, <i>inhA</i>, <i>embB</i>,
+               <i>iniB</i>, <i>kasA</i>, <i>embAB</i> promoter, and <i>ahpC</i>
+           </td>
+       </tr>
+       <tr>
+           <td>Rifampicin</td>
+           <td><i>rpoB</i></td>
+       </tr>
+       <tr>
+           <td>Pyrazinamide</td>
+           <td><i>pncA</i> and <i>pncA</i> promoter</td>
+       </tr>
+       <tr>
+           <td>Ethambutol</td>
+           <td><i>embB</i>, <i>iniB</i>, <i>embAB</i> promoter, <i>embAB</i>, and <i>embC</i></td>
+       </tr>
+       <tr>
+           <td>Streptomycin</td>
+           <td><i>rpsL</i>, <i>rrs</i>, <i>gid</i>, and <i>rrs-rrl</i> intergenic region</td>
+       </tr>
+       <tr>
+           <td>Ethionamide</td>
+           <td><i>inhA promoter</i>, <i>ethA</i>, and <i>inhA</i></td>
+       </tr>
+       <tr>
+           <td>Kanamycin*</td>
+           <td><i>rrs</i>, <i>tlyA</i>*</td>
+       </tr>
+       <tr>
+           <td>Capreomycin</td>
+           <td><i>rrs</i></td>
+       </tr>
+       <tr>
+           <td>Amikacin</td>
+           <td><i>rrs</i></td>
+       </tr>
+       <tr>
+           <td>Fluoroquinolones</td>
+           <td><i>gyrA</i>, <i>gyrB</i></td>
+       </tr>
+       <tr>
+           <td>Para-aminosalicylic acid</td>
+           <td><i>thyA</i></td>
+       </tr>
+       </table>
+       * Note: Gene <i>eis</i> is a predictor of kanamycin resistance, but data for this gene was not available when the predictive model was built.
         </div>
+    </div>
 
 
         <div class="col-md-6" id="d3-target-div" style="padding-left:60px;">

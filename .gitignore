@@ -84,3 +84,5 @@ shinyapps.io/genTB/rsconnect/shinyapps.io/hmdc/genTB.dcf
 shinyapps.io/genTB/.Rhistory
 
 gentb_website/tb_website/tb_website/settings/secret_settings_local.json
+
+gentb_website/tb_website/tb_website/settings/local_secret_settings.json
