@@ -19,13 +19,15 @@ Predict - genTB
         <div class = "row">
             <div class="col-md-6 portfolio-item">
 
-                {% if not IS_LOGGED_IN %}
                 <h3>Upload your genetic data as:</h3>
                     <ul style="font-size: 140%;">
                         <li>a FASTQ file or</li>
                         <li>a variant call file (vcf file)</li>
                     </ul>
                 <p>To examine the frequency of individual mutations by drug resistance you can consult the <a href="{% url 'view_map_page' %}">Map</a> function for country specific data, and the <a href="{% url 'view_explore_page' %}">Explore</a> function to examine these frequency in all of the data.</p>
+                
+                {% if not IS_LOGGED_IN %}
+
 
                 <div class="panel panel-info">
                   <div class="panel-body">
@@ -36,7 +38,7 @@ Predict - genTB
                 </div>
 
                 {% else %}
-                    <h4><i>Upload VCF OR FASTQ Files:</i></h4>
+                    <h4><i>Upload VCF or FASTQ Files:</i></h4>
 
                     {% if PREVIOUS_ATTEMPT_DELETED %}
                         <div class="alert alert-success" role="alert">
