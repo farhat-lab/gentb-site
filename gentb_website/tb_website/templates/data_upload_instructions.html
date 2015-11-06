@@ -1,4 +1,17 @@
-<h3>Upload Instructions</h3>
+{% extends "base.html" %}
+{% load staticfiles %}
+
+{% block title %}
+Data Upload Instructions - genTB
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-12">
+        <h1 class="page-header">Data Upload Instructions<h1>
+    </div>
+</div>
+
 <p>We recommend uploading two separate files for phenotype and genotype data through dataverse.</p>
 
 <h4>Genotype data files</h4>
@@ -16,3 +29,4 @@
     <li>Please include data on when, month &amp; year, and where the sample was collected including city &amp; country. If GIS or longitude/latitude coordinates are available please include these as well. Please do not list postal or zip codes due to privacy concerns.</li>
     <li>Adding data on traditional fingerprint (RFLP, MIRU-VNTR, Spoligotype) is also helpful, and any completely de-identified data on the host is also acceptable.</li>
 </ul>
+{% endblock %}

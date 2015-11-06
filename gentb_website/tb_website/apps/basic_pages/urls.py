@@ -12,6 +12,8 @@ urlpatterns = patterns('apps.basic_pages.views',
 
     url(r'^share/$', 'view_share_page', name="view_share_page"),
 
+    url(r'^data-upload-information/$', 'view_data_upload_information', name="view_data_upload_information"),
+
     url(r'^explore/$', 'view_explore_page', name="view_explore_page"),
 
     url(r'^/?$', 'view_homepage', name="default_homepage"),

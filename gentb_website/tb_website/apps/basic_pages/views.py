@@ -48,3 +48,11 @@ def view_explore_page(request):
     return render_to_response('explore.html'\
                             , d\
                             , context_instance=RequestContext(request))
+
+
+def view_data_upload_information(request):
+    d = get_common_dict(request, 'Data Upload', share_page=True)
+
+    return render_to_response('data_upload_instructions.html'\
+                            , d\
+                            , context_instance=RequestContext(request))
