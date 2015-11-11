@@ -103,8 +103,14 @@ def view_dataset_run_notification(request):
                             message="Dataset run updated")
                           )
 
+    # send a notification to the user
+    send_dataset_run_message_to_user(dataset_run)
+
     # Send a notification email
     send_dataset_run_message_to_tb_admins(dataset_run)
+
+
+
 
     return HttpResponse(data, content_type='application/json')
 

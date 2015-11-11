@@ -23,6 +23,7 @@ def send_new_dataset_message_to_tb_admins(dataset):
     send_email_to_admins(subject, text_message, html_message)
 
 
+
 def send_dataset_run_message_to_tb_admins(dataset_script_run):
 
     assert isinstance(dataset_script_run, DatasetScriptRun), "dataset_script_run must be a DatasetScriptRun instance"
@@ -40,7 +41,11 @@ def send_dataset_run_message_to_tb_admins(dataset_script_run):
              subject=subject,
              SITE_URL=get_site_url())
 
-    text_message = render_to_string('predict/email/notify_file_processed.txt', d)
-    html_message = render_to_string('predict/email/notify_file_processed.html', d)
+    if dataset_script_run.result_success:
+        text_message = render_to_string('predict/email/pipeline_success_run.txt', d)
+        html_message = render_to_string('predict/email/pipeline_success_run.html', d)
+    else:
+        text_message = render_to_string('predict/email/pipeline_fail_run.txt', d)
+        html_message = render_to_string('predict/email/pipeline_fail_run.html', d)
 
     send_mail_to_user_and_admins(subject, user_email, text_message, html_message)

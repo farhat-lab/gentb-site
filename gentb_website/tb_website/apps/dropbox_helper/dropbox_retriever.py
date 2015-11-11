@@ -1,5 +1,11 @@
+"""
+Given a Dropbox shared link, scan it for matching files and retrieve these files.
+
+This functionality uses the Dropbox Core API to retrieve metadata from a shared link.
+    https://blogs.dropbox.com/developers/2015/08/new-api-endpoint-shared-link-metadata/
+This requires a Dataverse app (either app_key + secret OR or access_token)
+"""
 from datetime import datetime
-import json
 import os, sys, shutil
 from os.path import basename, dirname, join, isdir, isfile, realpath
 import re
@@ -8,26 +14,27 @@ import urllib2
 import zipfile
 
 import logging
-logger = logging.getLogger(__name__)
+LOGGER = logging.getLogger(__name__)
 
-if __name__=='__main__':
+if __name__ == '__main__':
     # For local testing....
-    django_dir = dirname(dirname(dirname(realpath(__file__))))
-    sys.path.append(django_dir)
+    DJANGO_DIR = dirname(dirname(dirname(realpath(__file__))))
+    sys.path.append(DJANGO_DIR)
     #os.environ['DJANGO_SETTINGS_MODULE'] = 'tb_website.settings.local'
 
 from django.conf import settings
+from apps.utils.file_patterns import GENTB_FILE_PATTERNS
 
-GENTB_FILE_PATTERNS = ['\.fastq$', '\.fastq\.', '\.vcf$', '\.vcf\.', ]
 #GENTB_FILE_PATTERNS = ['\.fastq$', '\.fastq\.', '\.vcf$', '\.vcf\.', '\.txt$']
 
-import logging
-logger = logging.getLogger('apps.dropbox_helper.dropbox_retriever')
+LOGGER = logging.getLogger('apps.dropbox_helper.dropbox_retriever')
 
 
-class DropboxRetriever:
+class DropboxRetriever(object):
+
+    # pylint: disable=too-many-instance-attributes
     """
-    Given a Dropbox shared link, scan it for matching files and retrieve them.
+    Given a Dropbox shared link, scan it for matching files and retrieve these files.
 
     This functionality uses the Dropbox Core API to retrieve metadata from a shared link.
         https://blogs.dropbox.com/developers/2015/08/new-api-endpoint-shared-link-metadata/
@@ -58,15 +65,16 @@ class DropboxRetriever:
 
         self.initial_check()
 
-    def add_err_msg(self, m):
+    def add_err_msg(self, message):
+        """Add error message"""
         self.err_found = True
-        self.err_msg = m
+        self.err_msg = message
 
     #def get_err_msg_as_dict(self):
     #    return dict(error_message=self.err_msg)
 
     def initial_check(self):
-
+        """Check that the dropbox link, destination_dir and file patterns are valid"""
         if not self.is_valid_dropbox_link():
             return False
 
@@ -75,7 +83,8 @@ class DropboxRetriever:
             return False
 
         if not isdir(self.destination_dir):
-            self.add_err_msg("The destination directory does not exist: {0}".format(self.destination_dir))
+            self.add_err_msg("The destination directory does not exist:\
+             {0}".format(self.destination_dir))
             return False
 
         if self.file_patterns is None:
@@ -94,21 +103,22 @@ class DropboxRetriever:
             self.add_err_msg("dbox_link cannot be None")
             return False
 
-        d = self.dbox_link.lower()
+        dbox_url = self.dbox_link.lower()
 
         dbox_start = 'https://www.dropbox.com'
-        if not d.startswith(dbox_start):
+        if not dbox_url.startswith(dbox_start):
             self.add_err_msg("Not a dropbox url.  Doesn't start with '%s'" % dbox_start)
             return False
 
-        if d.endswith('?dl=0'):
+        if dbox_url.endswith('?dl=0'):
             self.dbox_link = self.dbox_link.replace('?dl=0', '?dl=1')
             return True
 
-        if d.endswith('?dl=1'):
+        if dbox_url.endswith('?dl=1'):
             return True
 
-        self.add_err_msg('Does not appear to be a valid download link.  Should end with "?dl=0" or "?dl=1"')
+        self.add_err_msg('Does not appear to be a valid download link.\
+          Should end with "?dl=0" or "?dl=1"')
         return False
 
 
@@ -126,30 +136,30 @@ class DropboxRetriever:
 
         # Make the request
         #
-        logger.info('request metadata: %s' % params)
+        LOGGER.info('request metadata: %s', params)
         try:
-            r = requests.post('https://api.dropbox.com/1/metadata/link',
-                            data=params,
-                            headers=headers
-                            )
+            r = requests.post('https://api.dropbox.com/1/metadata/link',\
+                            data=params,\
+                            headers=headers)
         except requests.exceptions.Timeout:
             err_msg = "The attempt to retrieve Dropbox information failed.  (metadata/Timeout)"
-            logger.error('%s Params: %s' % (err_msg, params))
+            LOGGER.error('%s Params: %s', err_msg, params)
             self.add_err_msg(err_msg)
             return False
         except requests.exceptions.TooManyRedirects:
-            err_msg = "The attempt to retrieve Dropbox information failed.  (metadata/TooManyRedirects)"
-            logger.error('%s Params: %s' % (err_msg, params))
+            err_msg = "The attempt to retrieve Dropbox information failed.\
+              (metadata/TooManyRedirects)"
+            LOGGER.error('%s Params: %s', err_msg, params)
             self.add_err_msg(err_msg)
             return False
         except requests.exceptions.RequestException as e:
             err_msg = "The attempt to retrieve Dropbox information failed.  (metadata/Exception)"
-            logger.error('%s\nException: %s' % (err_msg, e))
+            LOGGER.error('%s\nException: %s', err_msg, e)
             self.add_err_msg(err_msg)
             return False
 
 
-        logger.info('request metadata status code: %s' % r.status_code)
+        LOGGER.info('request metadata status code: %s', r.status_code)
 
         if r.status_code != 200:
             dbox_err_msg = None
@@ -158,13 +168,16 @@ class DropboxRetriever:
                 if 'error' in rjson:
                     emsg = 'Error: {0}'.format(rjson.get('error'))
                     if r.status_code == 403:
-                        dbox_err_msg = 'The dropbox link did not work.  Please check the url. ({0})'.format(emsg)
+                        dbox_err_msg = 'The dropbox link did not work.\
+                          Please check the url. ({0})'.format(emsg)
                     else:
-                        dbox_err_msg = 'The dropbox link returned an error. Status code: {0}\n{1}'.format(r.status_code, emsg)
+                        dbox_err_msg = 'The dropbox link returned an error. Status code:\
+                         {0}\n{1}'.format(r.status_code, emsg)
             except:
-                dbox_err_msg = 'The dropbox link returned an error. Status code: {0}\n{1}'.format(r.status_code, emsg)
+                dbox_err_msg = 'The dropbox link returned an error. Status code:\
+                 {0}\n{1}'.format(r.status_code, emsg)
 
-            logger.error('{0} \nText: {1}' % (dbox_err_msg, r.text))
+            LOGGER.error('%s \nText: %s', dbox_err_msg, r.text)
             self.add_err_msg(dbox_err_msg)
             return False
 
@@ -173,7 +186,7 @@ class DropboxRetriever:
         except:
             err_msg = "Failed to turn link metadata from dropbox to JSON: {0}".format(r.text)
             self.add_err_msg(err_msg)
-            logger.error(err_msg)
+            LOGGER.error(err_msg)
             return False
 
         # Set object variable
@@ -184,11 +197,11 @@ class DropboxRetriever:
         if not "is_dir" in self.dropbox_link_metadata:
             err_msg = "Metadata doesn't look good. Missing key 'is_dir': {0}".format(r.text)
             self.add_err_msg("Metadata doesn't look good. Missing key 'is_dir': {0}".format(r.text))
-            logger.error(err_msg)
+            LOGGER.error(err_msg)
             return False
 
         #pprint(self.dropbox_link_metadata, depth=4)
-        print json.dumps(self.dropbox_link_metadata, indent=4, sort_keys=True)
+        LOGGER.info('dropbox_link_metadata: %s', self.dropbox_link_metadata)
         return True
 
 
@@ -201,7 +214,8 @@ class DropboxRetriever:
         assert isinstance(self.dropbox_link_metadata, dict),\
             "Do not call this unless step 1, retrieval of Dropbox metadata is successful"
         assert "is_dir" in self.dropbox_link_metadata,\
-            "Do not call this unless step 1, retrieval of Dropbox metadata is successful. (Metadata doesn't look good. Missing key 'is_dir')"
+            "Do not call this unless step 1, retrieval of Dropbox metadata is successful.\
+             (Metadata doesn't look good. Missing key 'is_dir')"
 
         # -------------------------------------
         # Handle a Dropbox link to a file?
@@ -240,7 +254,8 @@ class DropboxRetriever:
                 self.matching_files_metadata.append(fpath)
 
         if len(self.matching_files_metadata) == 0:
-            self.add_err_msg('No files match what we are looking for. Please make sure you have at least one ".fastq" or ".vcf" file.')
+            self.add_err_msg('No files match what we are looking for. \
+            Please make sure you have at least one ".fastq" or ".vcf" file.')
             return False
 
         # We've got something
@@ -277,7 +292,8 @@ class DropboxRetriever:
         assert isinstance(self.matching_files_metadata, list), \
             "Do not call this unless dropbox metadata (step 2) has files that we want"
         assert len(self.matching_files_metadata) > 0, \
-            "No matching files. Do not call this unless dropbox metadata (step 2) has files that we want"
+            "No matching files. Do not call this unless dropbox metadata\
+             (step 2) has files that we want"
 
         if self.is_directory_link:
             if self.step4a_download_directory_as_zip():
@@ -289,6 +305,10 @@ class DropboxRetriever:
         return False
 
     def step3a_download_single_file(self):
+        """
+        The dropbox link metadata only shows a single file.
+        Download this file
+        """
 
         if self.err_found:
             return False
@@ -296,9 +316,13 @@ class DropboxRetriever:
         # -------------------------------------
         # Set the .zip name and destination
         # -------------------------------------
-        target_fname = 'dropbox_download_{0}.zip'.format(datetime.now().strftime('%Y-%m-%d_%H-%M-%S'))
+        #target_fname = 'dropbox_download_{0}.zip'.format(\
+        #                datetime.now().strftime('%Y-%m-%d_%H-%M-%S')\
+        #                )
 
-        self.target_fullname = join(self.destination_dir, basename(self.dropbox_link_metadata['path'][1:]))
+        target_fullname = join(self.destination_dir,\
+                    basename(self.dropbox_link_metadata['path'][1:])\
+                    )
 
         chunk_size = 16 * 1024
         req = urllib2.urlopen(self.dbox_link)
@@ -307,13 +331,13 @@ class DropboxRetriever:
         # Download it!
         # -------------------------------------
         print 'pre download: {0} @ {1}'.format(self.dbox_link, datetime.now())
-        with open(self.target_fullname, 'wb') as fp:
+        with open(target_fullname, 'wb') as fp:
             print 'downloading...'
             shutil.copyfileobj(req, fp, chunk_size)
 
-        self.final_file_paths.append(self.target_fullname)
+        self.final_file_paths.append(target_fullname)
 
-        print 'file written: {0} @ {1}'.format(self.target_fullname, datetime.now())
+        print 'file written: {0} @ {1}'.format(target_fullname, datetime.now())
         return True
 
 
@@ -324,8 +348,11 @@ class DropboxRetriever:
         # -------------------------------------
         # Set the .zip name and destination
         # -------------------------------------
-        target_fname = 'dropbox_download_{0}.zip'.format(datetime.now().strftime('%Y-%m-%d_%H-%M-%S'))
-        self.target_zip_fullname = join(self.destination_dir, target_fname)
+        target_fname = 'dropbox_download_{0}.zip'.format(\
+                            datetime.now().strftime('%Y-%m-%d_%H-%M-%S')\
+                        )
+        self.target_zip_fullname = join(self.destination_dir,\
+                        target_fname)
 
         chunk_size = 16 * 1024
         req = urllib2.urlopen(self.dbox_link)
@@ -350,7 +377,8 @@ class DropboxRetriever:
     def step4b_organize_files(self):
 
         if not isfile(self.target_zip_fullname):
-            self.add_err_msg("The dropbox .zip file was not found: {0}".format(self.target_zip_fullname))
+            self.add_err_msg("The dropbox .zip file was not found:\
+                        {0}".format(self.target_zip_fullname))
             return False
 
         # -------------------------------------
@@ -405,7 +433,7 @@ class DropboxRetriever:
 
         return True
 
-if __name__=='__main__':
+if __name__ == '__main__':
     # For local testing....see sys.path at top if using this non-locally
 
     #example_dlink = 'https://www.dropbox.com/s/4tqczonkaeakvua/001.txt?dl=0'
@@ -416,9 +444,10 @@ if __name__=='__main__':
     example_dlink = 'https://www.dropbox.com/s/tipb48hahtmbk05/008.1.fastq.txt?dl=0'
     dest_dir = '/Users/rmp553/Documents/iqss-git/gentb-site/scratch-work/test-files'
 
+
     # Initialize
     #
-    dr = DropboxRetriever(example_dlink, dest_dir, GENTB_FILE_PATTERNS)
+    dr = DropboxRetriever(example_dlink, dest_dir)
     if dr.err_found:
         print dr.err_msg
         sys.exit(1)

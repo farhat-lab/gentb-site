@@ -14,6 +14,18 @@ def get_tb_admin_emails():
     """
     return [ info[1] for info in settings.TB_ADMINS ]
 
+def send_mail_to_users(subject, to_email_list, text_msg, html_message=None):
+    assert to_email_list is not None and len(to_email_list) > 0, 'to_email_list must have at least 1 entry'
+    assert subject is not None, 'subject cannot be None'
+    assert text_msg is not None, 'text_msg cannot be None'
+
+    send_mail(subject,
+              text_msg,
+              settings.DEFAULT_FROM_EMAIL,
+              to_emails,
+              fail_silently=False,
+              html_message=html_message)
+
 def send_mail_to_user_and_admins(subject, user_email, text_msg, html_message=None):
     assert user_email is not None, 'user_email cannot be None'
     assert subject is not None, 'subject cannot be None'

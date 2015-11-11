@@ -1,5 +1,5 @@
 from __future__ import print_function
-import os, sys
+import sys
 from os.path import dirname, realpath
 
 if __name__=='__main__':
@@ -12,15 +12,11 @@ if __name__=='__main__':
     import django
     django.setup()
 
-from datetime import datetime
-import requests
 
 from apps.predict.models import PredictDataset
 
 from apps.dropbox_helper.models import DropboxRetrievalLog
 from apps.dropbox_helper.dropbox_retriever import DropboxRetriever
-from apps.script_helper.script_runner_basic import run_script
-from apps.dropbox_helper.forms import DropboxRetrievalParamsForm
 
 
 class DropboxRetrievalRunner:

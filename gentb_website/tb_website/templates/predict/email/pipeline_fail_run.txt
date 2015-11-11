@@ -1,0 +1,55 @@
+{% load predict_extras %}
+
+======= TO DO =======
+
+The processing of your file has failed here is out best guess as to why?"
+
+if mapping failed --> "The read mapping failed. If your fastq files are paired please verify that they are names following one of these two formats
+(1) id_R1.fastq & id_R2.fastq
+(2) id.1.fastq & id.2.fastq
+
+If the fastq files are single ended please make sure the name contains no periods except at the extension, i.e. id.fastq"
+
+if the variant calling failed --> "The variant calling failed"
+if annotation failed --> "The annotation failed"
+if prediction failed --> "The resistance prediction failed"
+
+"We are sorry for any inconvenience, we are looking into the error and will email you about next steps shortly"
+
+Sorry! Your dataset has been processed.  The details are below:
+
+Link to the details page: {{ SITE_URL }}{% url 'view_single_dataset' dataset.md5 %}
+
+-----------
+Processing Run
+-----------
+
+* Complete: {% if script_run.result_success %}SUCCESS{% else %}FAIL{% endif %}
+
+* Command sent: {{ script_run.notes|safe }}
+
+{% if script_run.result_received %}* Result Data:
+{{ script_run.result_data|safe }}{% endif %}
+
+-----------
+Dataset
+-----------
+* Title: {{ dataset.title }}
+
+* Description:
+
+{{ dataset.description }}
+
+* File 1: {{ dataset.filename1 }} ({{ dataset.file1.file.size|readable_filesize }})
+
+{% if dataset.file2 %}* File 2: {{ dataset.filename2 }} ({{ dataset.file2.file.size|readable_filesize }})
+{% endif %}
+-----------
+Contact
+-----------
+* Name: {{ tb_user }}
+* Affiliation: {{ tb_user.affiliation }}
+* Email: {{ tb_user.user.email }}
+
+
+({% now "F jS, Y f:s a" %})
