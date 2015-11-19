@@ -1,5 +1,6 @@
-import sys
-sys.path.append('/www/gentb.hms.harvard.edu/code/gentb-site/gentb_website')
+import os, sys
+os.chdir('/www/gentb.hms.harvard.edu/code/gentb-site/gentb_website/tb_website')
+#sys.path.append('/www/gentb.hms.harvard.edu/code/gentb-site/gentb_website')
 
 bind = '0.0.0.0:9001'
 pidfile=None #'gunicorn_pid'
