@@ -129,7 +129,7 @@ DROPBOX_ACCESS_TOKEN = JSON_SECRETS['DROPBOX_ACCESS_TOKEN']
 
 ########## END DROPBOX_ACCESS_TOKEN
 
-ERROR_LOG_FILEPATH = '/www/gentb.hms.harvard.edu/logging/gentb.log'
+ERROR_LOG_FILEPATH = '/www/gentb.hms.harvard.edu/logging/gentb-django/gentb.log'
 ########## LOGGING CONFIGURATION
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#logging
 # A sample logging configuration. The only tangible logging

@@ -40,19 +40,34 @@ cd /www/gentb.hms.harvard.edu/code
 git clone git@github.com:IQSS/gentb-site.git
 ```
 
-### Set up a directory for Django logging
+### Logging
 
-- fyi: the log file params are set in ```production_hms.py```.  At the time of this writing, logs are set to rotate, with the last 5 being kept.  Each log has a max size of 5mb.
+#### Set up logging directories
 
 ```
 mkdir /www/gentb.hms.harvard.edu/logging
+mkdir /www/gentb.hms.harvard.edu/logging/gentb-django
+mkdir /www/gentb.hms.harvard.edu/logging/supervisor
+mkdir /www/gentb.hms.harvard.edu/logging/gunicorn
 ```
 
-- check out the log
+#### Where are the log settings?
 
-```
-tail /www/gentb.hms.harvard.edu/logging/gentb.log
-```
+1. *Django*:
+    - Log settings: ```settings/production_hms.py```.  
+        - At the time of this writing, logs are set to rotate, with the last 5 being kept.  Each log has a max size of 5mb.
+    - Tailing the log:
+        - ```tail /www/gentb.hms.harvard.edu/logging/gentb-django/gentb.log```
+2. *Gunicorn*:
+    - Log settings: ```settings/hms_gunicorn_config.py```
+    - Tailing the logs:
+        - Access: ```tail /www/gentb.hms.harvard.edu/logging/gunicorn_access.log```
+        - Error: ```tail /www/gentb.hms.harvard.edu/logging/gunicorn_error.log```
+3. *Supervisor*:
+    - Log settings: ```settings/hms_supervisord.conf```
+        - At the time of this writing, logs are set to rotate, with the last 5 being kept.  Each log has a max size of 10mb.
+    - Tailing the log:
+        - ```/www/gentb.hms.harvard.edu/logging/supervisor/supervisord.log```
 
 
 ### Set up virtualenv
@@ -241,15 +256,30 @@ send_mail(subject='genTB test email',
 
 If it works, you should receive an email shortly.  An error message will appear on failure.
 
-### Run gunicorn
+### Run gunicorn/supervisord
 
 
+#### Run supervisord
+```
+# start the virtualenv
+cd /www/gentb.hms.harvard.edu/code/gentb-site/gentb_website
+source venv_tb/bin/activate
+# run supervisord
+cd tb_website
+gunicorn -c tb_website/settings/hms_gunicorn_config.py tb_website.wsgi:application
+
+```
+
+#### Debug: Running gunicorn without supervisord
 ```
 # start the virtualenv
 cd /www/gentb.hms.harvard.edu/code/gentb-site/gentb_website
 source venv_tb/bin/activate
 cd tb_website
-gunicorn --log-file=- --workers=1 -b 0.0.0.0:9001 tb_website.wsgi:application &
+gunicorn -c tb_website/settings/hms_gunicorn_config.py tb_website.wsgi:application
+
+#gunicorn --log-file=- --workers=1 -b 0.0.0.0:9001 tb_website.wsgi:application &
+
 ```
 
 - view processes (if needed)
