@@ -1,0 +1,16 @@
+
+# Check for new PredictDatasets with dropbox links every 10 minutes
+# -------------------------------------
+*/10 * * * * /www/gentb.hms.harvard.edu/code/gentb-site/gentb_website/cron_scripts/get_dropbox_files_prod_hms.sh
+# --------------------------------------
+#
+# Check to see if files are ready for pipeline runs every 12 minutes
+# -------------------------------------
+*/12 * * * * /www/gentb.hms.harvard.edu/code/gentb-site/gentb_website/cron_scripts/run_pipeline_prod_hms.sh
+# --------------------------------------
+#
+# --------------------------------------
+# On reboot, get supervisor running the genTB site again
+# --------------------------------------
+@reboot /www/gentb.hms.harvard.edu/code/gentb-site/gentb_website/scripts/start_hms_supervisor.sh
+# --------------------------------------
