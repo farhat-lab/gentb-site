@@ -264,6 +264,7 @@ If it works, you should receive an email shortly.  An error message will appear 
 # start the virtualenv
 cd /www/gentb.hms.harvard.edu/code/gentb-site/gentb_website
 source venv_tb/bin/activate
+source venv_tb/bin/postactivate
 # run supervisord
 cd tb_website
 gunicorn -c tb_website/settings/hms_gunicorn_config.py tb_website.wsgi:application
@@ -275,6 +276,7 @@ gunicorn -c tb_website/settings/hms_gunicorn_config.py tb_website.wsgi:applicati
 # start the virtualenv
 cd /www/gentb.hms.harvard.edu/code/gentb-site/gentb_website
 source venv_tb/bin/activate
+source venv_tb/bin/postactivate
 cd tb_website
 gunicorn -c tb_website/settings/hms_gunicorn_config.py tb_website.wsgi:application
 
