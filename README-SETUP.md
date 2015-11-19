@@ -261,17 +261,24 @@ If it works, you should receive an email shortly.  An error message will appear 
 
 #### Run supervisord
 ```
-# start the virtualenv
+# Run a script that kicks off supervisord
+/www/gentb.hms.harvard.edu/code/gentb-site/gentb_website/scripts/start_hms_supervisor.sh
+```
+
+The ```start_hms_supervisor.sh``` script above contains these commands:
+```
+# Set up the virtualenv
 cd /www/gentb.hms.harvard.edu/code/gentb-site/gentb_website
 source venv_tb/bin/activate
 source venv_tb/bin/postactivate
-# run supervisord
-cd tb_website
-gunicorn -c tb_website/settings/hms_gunicorn_config.py tb_website.wsgi:application
 
+cd /www/gentb.hms.harvard.edu/code/gentb-site/gentb_website/tb_website
+
+# Start supervisor
+supervisord -c /www/gentb.hms.harvard.edu/code/gentb-site/gentb_website/tb_website/tb_website/settings/hms_supervisord.conf
 ```
 
-#### Debug: Running gunicorn without supervisord
+#### Running gunicorn without supervisord
 ```
 # start the virtualenv
 cd /www/gentb.hms.harvard.edu/code/gentb-site/gentb_website
@@ -302,7 +309,7 @@ python manage.py loaddata apps/explore/fixtures/initial_data.json --settings=tb_
 ### Crontabs
 
 - Edit the crontab: ```crontab -e```
-- Add these lines
+- Add the lines below, also found in the file ```gentb_website/cron_scripts/crontab```
 
 ```
 # ------------------------------------------------
@@ -314,6 +321,11 @@ python manage.py loaddata apps/explore/fixtures/initial_data.json --settings=tb_
 # See if there are files ready for pipeline processing (every 15 minutes)
 # ------------------------------------------------
 */15 * * * * /www/gentb.hms.harvard.edu/code/gentb-site/gentb_website/cron_scripts/run_pipeline_prod_hms.sh
+#
+# --------------------------------------
+# On reboot, get supervisor running the genTB site again
+# --------------------------------------
+@reboot /www/gentb.hms.harvard.edu/code/gentb-site/gentb_website/scripts/start_hms_supervisor.sh
 #
 ```
 
