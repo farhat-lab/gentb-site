@@ -1,6 +1,7 @@
 import os, sys
+sys.path.append('/www/gentb.hms.harvard.edu/code/gentb-site/gentb_website')
+sys.path.append('/www/gentb.hms.harvard.edu/code/gentb-site/gentb_website/tb_website')
 os.chdir('/www/gentb.hms.harvard.edu/code/gentb-site/gentb_website/tb_website')
-#sys.path.append('/www/gentb.hms.harvard.edu/code/gentb-site/gentb_website')
 
 bind = '0.0.0.0:9001'
 pidfile=None #'gunicorn_pid'
@@ -14,7 +15,7 @@ keepalive = 2
 #logfile=/www/gentb.hms.harvard.edu/logging/gunicorn
 #errorlog = '-'
 loglevel = 'info'
-accesslog = '/www/gentb.hms.harvard.edu/logging/gunicorn_access.log'
-errorlog = '/www/gentb.hms.harvard.edu/logging/gunicorn_error.log'
+accesslog = '/www/gentb.hms.harvard.edu/logging/gunicorn/gunicorn_access.log'
+errorlog = '/www/gentb.hms.harvard.edu/logging/gunicorn/gunicorn_error.log'
 
 proc_name = 'gunicorn_gentb' # default: None

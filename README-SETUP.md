@@ -61,8 +61,8 @@ mkdir /www/gentb.hms.harvard.edu/logging/gunicorn
 2. *Gunicorn*:
     - Log settings: ```settings/hms_gunicorn_config.py```
     - Tailing the logs:
-        - Access: ```tail /www/gentb.hms.harvard.edu/logging/gunicorn_access.log```
-        - Error: ```tail /www/gentb.hms.harvard.edu/logging/gunicorn_error.log```
+        - Access: ```tail /www/gentb.hms.harvard.edu/logging/gunicorn/gunicorn_access.log```
+        - Error: ```tail /www/gentb.hms.harvard.edu/logging/gunicorn/gunicorn_error.log```
 3. *Supervisor*:
     - Log settings: ```settings/hms_supervisord.conf```
         - At the time of this writing, logs are set to rotate, with the last 5 being kept.  Each log has a max size of 10mb.
