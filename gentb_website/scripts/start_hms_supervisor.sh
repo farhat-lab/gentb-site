@@ -8,6 +8,12 @@ source venv_tb/bin/postactivate
 cd /www/gentb.hms.harvard.edu/code/gentb-site/gentb_website/tb_website
 
 # Start supervisor (not happening yet....)
-supervisord -c tb_website/settings/hms_supervisord.conf
+supervisord -c /www/gentb.hms.harvard.edu/code/gentb-site/gentb_website/tb_website/tb_website/settings/hms_supervisord.conf
 
-#/www/gentb.hms.harvard.edu/code/gentb-site/gentb_website/venv_tb/bin/gunicorn -c tb_website/settings/hms_gunicorn_config.py tb_website.wsgi:application
+# Stop supervisor
+# supervisorctl -c /www/gentb.hms.harvard.edu/code/gentb-site/gentb_website/tb_website/tb_website/settings/hms_supervisord.conf
+
+# For crontab
+#
+#@reboot /www/gentb.hms.harvard.edu/code/gentb-site/gentb_website/scripts/start_hms_supervisor.sh
+ 
