@@ -38,6 +38,13 @@ class SimpleConfirmationForm(forms.Form):
 
         return self.cleaned_data
 
+"""
+UI reference for hiding fastq type
+# hide the fastq type on load
+https://github.com/raprasad/MCB-Graphics-Printer-Scheduler/blob/master/templates/reservation_signup/standard_signup_form.html
+# jquery to show/hide fastq choice
+https://github.com/raprasad/MCB-Graphics-Printer-Scheduler/blob/master/templates/reservation_signup/standard_signup_page.html
+"""
 
 class UploadPredictionDataForm(forms.ModelForm):
     """
@@ -49,7 +56,7 @@ class UploadPredictionDataForm(forms.ModelForm):
 
     class Meta:
         model = PredictDataset
-        fields = ('title', 'dropbox_url', 'description', )
+        fields = ('title', 'file_type', 'fastq_type', 'dropbox_url', 'description', )
         widgets = {
             'dropbox_url': forms.Textarea(attrs={'rows': '4'}),
         }

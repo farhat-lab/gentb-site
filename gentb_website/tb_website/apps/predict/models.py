@@ -60,13 +60,23 @@ class PredictDatasetStatus(models.Model):
         verbose_name_plural = 'Predict Dataset Statuses'
 
 
+FILE_TYPES = [('vcf', 'VCF'), ('fastq', 'FastQ')]
+FASTQ_FILE_TYPES = [('pair-ended', 'Pair-ended'),\
+    ('single-ended', 'Single-ended')]
+
 class PredictDataset(TimeStampedModel):
     """
-    Information from API call: https://api.github.com/repos/iqss/dataverse/milestones
+    
     """
     user = models.ForeignKey(TBUser)
 
     title = models.CharField('Dataset title', max_length=255)
+
+    file_type = models.ChoiceField(choices=FILE_TYPES)
+
+    fastq_type = models.ChoiceField(choices=FASTQ_FILE_TYPES,\
+        required=False,\
+        help_text='Only used for FastQ files')
 
     dropbox_url = models.URLField()
 
