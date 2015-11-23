@@ -1,0 +1,4 @@
+#!/bin/bash
+# This hook is run after this virtualenv is activated.
+export DJANGO_SETTINGS_MODULE=tb_website.settings.production_hms
+. /opt/lsf/conf/profile.lsf

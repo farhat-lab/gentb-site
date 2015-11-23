@@ -106,6 +106,7 @@ vim venv_tb/bin/postactivate
 #!/bin/bash
 # This hook is run after this virtualenv is activated.
 export DJANGO_SETTINGS_MODULE=tb_website.settings.production_hms
+. /opt/lsf/conf/profile.lsf
 ```
 1.  Run the ```postactivate``` script
 ```
@@ -276,6 +277,9 @@ cd /www/gentb.hms.harvard.edu/code/gentb-site/gentb_website/tb_website
 
 # Start supervisor
 supervisord -c /www/gentb.hms.harvard.edu/code/gentb-site/gentb_website/tb_website/tb_website/settings/hms_supervisord.conf
+
+# Stop supervisor ctl, e.g. to issue 'status' or 'shutdown', etc.
+# suvervisorctl -c /www/gentb.hms.harvard.edu/code/gentb-site/gentb_website/tb_website/tb_website/settings/hms_supervisord.conf
 ```
 
 #### Running gunicorn without supervisord
