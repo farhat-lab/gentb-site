@@ -23,7 +23,7 @@ if __name__ == '__main__':
     #os.environ['DJANGO_SETTINGS_MODULE'] = 'tb_website.settings.local'
 
 from django.conf import settings
-from apps.utils.file_patterns import GENTB_FILE_PATTERNS
+from apps.utils.file_patterns import GENTB_FILE_PATTERNS, FilePatternHelper
 
 #GENTB_FILE_PATTERNS = ['\.fastq$', '\.fastq\.', '\.vcf$', '\.vcf\.', '\.txt$']
 
@@ -229,12 +229,7 @@ class DropboxRetriever(object):
                 self.matching_files_metadata.append(fpath)
                 return True
             else:
-                if self.file_patterns is None:
-                    file_msg = 'Please make sure you have at least one ".fastq" or ".vcf" file.'
-                elif ', '.join(self.file_patterns).find('fastq') >  -1:
-                    file_msg = 'Please make sure you have at least one ".fastq" file.'
-                elif ', '.join(self.file_patterns).find('vcf') >  -1:
-                    file_msg = 'Please make sure you have at least one ".vcf" file.'
+                file_msg = FilePatternHelper.get_file_patterns_err_msg(self.file1_pattterns)
 
                 self.add_err_msg('No files match what we are looking for. %s' % file_msg)
                 return False

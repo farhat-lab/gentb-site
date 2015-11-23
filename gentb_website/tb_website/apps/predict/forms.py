@@ -1,6 +1,7 @@
 from django import forms
 from apps.dropbox_helper.models import DropboxRetrievalLog
-from apps.predict.models import PredictDataset, FILE_TYPE_VCF, FILE_TYPE_FASTQ
+from apps.predict.models import PredictDataset
+from apps.utils.file_patterns import FILE_TYPE_VCF, FILE_TYPE_FASTQ, FilePatternHelper
 from apps.dropbox_helper.dropbox_util import get_dropbox_metadata_from_link
 import json
 
@@ -75,7 +76,7 @@ class UploadPredictionDataForm(forms.ModelForm):
         # Check the dropbox metadata
         # (This should be moved to an async or ajax call in another part of the code )
         # -----------------------------------------
-        file_patterns = PredictDataset.get_file_patterns_for_dropbox(self.cleaned_data['file_type'])
+        file_patterns = FilePatternHelper.get_file_patterns_for_dropbox(self.cleaned_data['file_type'])
         (success, dbox_metadata_or_err_msg) = get_dropbox_metadata_from_link(\
                                 self.cleaned_data['dropbox_url'],\
                                 file_patterns=file_patterns)
