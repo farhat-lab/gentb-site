@@ -70,7 +70,8 @@ class DropboxRetrievalRunner:
         self.dbox_log.dataset.set_status_file_retrieval_started()
 
         dr = DropboxRetriever(self.predict_dataset.dropbox_url,
-                        self.predict_dataset.file_directory)
+                        self.predict_dataset.file_directory,
+                        file_patterns=self.predict_dataset.get_file_patterns())
 
         if dr.err_found:
             self.record_retrieval_error(dr.err_msg)

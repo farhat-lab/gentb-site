@@ -18,7 +18,9 @@ def get_dropbox_metadata(predict_dataset):
     # Initialize
     #
     dr = DropboxRetriever(predict_dataset.dropbox_url,
-                          destination_dir=predict_dataset.file_directory)
+                          destination_dir=predict_dataset.file_directory,
+                          file_patterns=self.predict_dataset.get_file_patterns())
+
 
     db_log = DropboxRetrievalLog(dataset=predict_dataset)
 
@@ -47,7 +49,7 @@ def get_dropbox_metadata(predict_dataset):
     return (True, dr)
 
 
-def get_dropbox_metadata_from_link(dropbox_link):
+def get_dropbox_metadata_from_link(dropbox_link, file_patterns=None):
     """
     Wrap the DropboxRetriever function
     - (True, metadata-selected files)
@@ -64,7 +66,13 @@ def get_dropbox_metadata_from_link(dropbox_link):
 
     # Initialize
     #
-    dr = DropboxRetriever(dropbox_link,
+    if file_patterns:
+        dr = DropboxRetriever(dropbox_link,\
+                  destination_dir=tmp_dir,\
+                  file_patterns=file_patterns)
+
+    else:
+        dr = DropboxRetriever(dropbox_link,\
                           destination_dir=tmp_dir)
 
     if dr.err_found:

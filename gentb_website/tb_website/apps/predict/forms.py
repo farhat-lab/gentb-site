@@ -1,6 +1,6 @@
 from django import forms
 from apps.dropbox_helper.models import DropboxRetrievalLog
-from apps.predict.models import PredictDataset
+from apps.predict.models import PredictDataset, FILE_TYPE_VCF, FILE_TYPE_FASTQ
 from apps.dropbox_helper.dropbox_util import get_dropbox_metadata_from_link
 import json
 
@@ -38,13 +38,6 @@ class SimpleConfirmationForm(forms.Form):
 
         return self.cleaned_data
 
-"""
-UI reference for hiding fastq type
-# hide the fastq type on load
-https://github.com/raprasad/MCB-Graphics-Printer-Scheduler/blob/master/templates/reservation_signup/standard_signup_form.html
-# jquery to show/hide fastq choice
-https://github.com/raprasad/MCB-Graphics-Printer-Scheduler/blob/master/templates/reservation_signup/standard_signup_page.html
-"""
 
 class UploadPredictionDataForm(forms.ModelForm):
     """
@@ -66,30 +59,46 @@ class UploadPredictionDataForm(forms.ModelForm):
         #self.fields['dropbox_url'].widget.attrs.update({'size' : '40'})
 
     def clean(self):
-
         file_type = self.cleaned_data['file_type']
         fastq_type = self.cleaned_data.get('fastq_type')
-        if file_type == 'fastq' and not fastq_type:
+
+        # -----------------------------------------
+        # If this is a FastQ file, make sure the user
+        # has chosen a FastQ type
+        # -----------------------------------------
+        if file_type == FILE_TYPE_FASTQ and not fastq_type:
             msg = "For FastQ files, please choose a FastQ type"
             self.add_error('fastq_type', msg)
-
             raise forms.ValidationError(msg)
 
+        # -----------------------------------------
+        # Check the dropbox metadata
+        # (This should be moved to an async or ajax call in another part of the code )
+        # -----------------------------------------
+        file_patterns = PredictDataset.get_file_patterns_for_dropbox(self.cleaned_data['file_type'])
+        (success, dbox_metadata_or_err_msg) = get_dropbox_metadata_from_link(\
+                                self.cleaned_data['dropbox_url'],\
+                                file_patterns=file_patterns)
+        if success:
+            self.dropbox_metadata_info = dbox_metadata_or_err_msg
+        else:
+            self.add_error('dropbox_url', dbox_metadata_or_err_msg)
+            raise forms.ValidationError(dbox_metadata_or_err_msg)
+
+        return self.cleaned_data
 
     def clean_dropbox_url(self):
         """
         This should be an async or ajax call in another part of the code.
         For prototype, we're relying on dropbox uptime, etc.
         """
-        (success, dbox_metadata_or_err_msg) = get_dropbox_metadata_from_link(self.cleaned_data['dropbox_url'])
+        #(success, dbox_metadata_or_err_msg) = get_dropbox_metadata_from_link(self.cleaned_data['dropbox_url'])
 
-        if not success:
-            raise forms.ValidationError(dbox_metadata_or_err_msg)
+        #if not success:
+        #   raise forms.ValidationError(dbox_metadata_or_err_msg)
 
-        # see if the dropbox error is similar to this
+        #self.dropbox_metadata_info = dbox_metadata_or_err_msg
 
-
-        self.dropbox_metadata_info = dbox_metadata_or_err_msg
         return self.cleaned_data['dropbox_url']
 
     def get_dataset(self, tb_user):

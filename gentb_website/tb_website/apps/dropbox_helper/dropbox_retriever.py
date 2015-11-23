@@ -229,8 +229,14 @@ class DropboxRetriever(object):
                 self.matching_files_metadata.append(fpath)
                 return True
             else:
-                self.add_err_msg('No files match what we are looking for.\
-                        Please make sure you have at least one ".fastq" or ".vcf" file.')
+                if self.file_patterns is None:
+                    file_msg = 'Please make sure you have at least one ".fastq" or ".vcf" file.'
+                elif ', '.join(self.file_patterns).find('fastq') >  -1:
+                    file_msg = 'Please make sure you have at least one ".fastq" file.'
+                elif ', '.join(self.file_patterns).find('vcf') >  -1:
+                    file_msg = 'Please make sure you have at least one ".vcf" file.'
+
+                self.add_err_msg('No files match what we are looking for. %s' % file_msg)
                 return False
 
         # -------------------------------------

@@ -18,6 +18,7 @@ from jsonfield import JSONField # https://github.com/bradjasper/django-jsonfield
 
 from apps.tb_users.models import TBUser
 from apps.utils.site_url_util import get_site_url
+from apps.utils.file_patterns import GENTB_FASTQ_FILE_PATTERNS, GENTB_VCF_FILE_PATTERNS
 
 #tb_file_system_storage = FileSystemStorage(location=settings.TB_SHARED_DATAFILE_DIRECTORY)
 
@@ -36,6 +37,13 @@ DATASET_STATUS_FILE_RETRIEVAL_COMPLETE = 5
 DATASET_STATUS_PROCESSING_STARTED_ID = 6
 DATASET_STATUS_PROCESSED_SUCCESS = 7
 DATASET_STATUS_PROCESSED_FAILED = 8
+
+FILE_TYPE_VCF = 'vcf'
+FILE_TYPE_FASTQ = 'fastq'
+FILE_TYPES = [(FILE_TYPE_VCF, 'VCF'), (FILE_TYPE_FASTQ, 'FastQ')]
+
+FASTQ_FILE_TYPES = [('pair-ended', 'Pair-ended'),\
+    ('single-ended', 'Single-ended')]
 
 
 class PredictDatasetStatus(models.Model):
@@ -59,10 +67,6 @@ class PredictDatasetStatus(models.Model):
         #verbose_name = 'VCF Dataset Status'
         verbose_name_plural = 'Predict Dataset Statuses'
 
-
-FILE_TYPES = [('vcf', 'VCF'), ('fastq', 'FastQ')]
-FASTQ_FILE_TYPES = [('pair-ended', 'Pair-ended'),\
-    ('single-ended', 'Single-ended')]
 
 class PredictDataset(TimeStampedModel):
     """
@@ -93,6 +97,25 @@ class PredictDataset(TimeStampedModel):
 
     def __str__(self):
         return self.title
+
+    @staticmethod
+    def get_file_patterns_for_dropbox(file_type):
+        """
+        Based on the filetype, return regex search patterns used to
+        check the dropbox link metadata
+        """
+        if file_type is None:
+            return None
+
+        if file_type == FILE_TYPE_VCF:
+            return GENTB_VCF_FILE_PATTERNS
+        elif file_type == FILE_TYPE_FASTQ:
+            return GENTB_FASTQ_FILE_PATTERNS
+        else:
+            return None
+
+    def get_file_patterns(self):
+        return PredictDataset.get_file_patterns_for_dropbox(self.file_type)
 
 
     def user_name(self):
