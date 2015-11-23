@@ -1,3 +1,9 @@
+"""
+Examine existing PredictDataset objects.
+
+- Retrieve files from confirmed dropbox links
+"""
+
 from __future__ import print_function
 import sys
 from os.path import dirname, realpath

@@ -12,6 +12,7 @@ import re
 import requests
 import urllib2
 import zipfile
+import itertools
 
 import logging
 LOGGER = logging.getLogger(__name__)
@@ -356,6 +357,8 @@ class DropboxRetriever(object):
                         target_fname)
 
         chunk_size = 16 * 1024
+
+        print 'dbox_link: ', self.dbox_link
         req = urllib2.urlopen(self.dbox_link)
 
         # -------------------------------------
@@ -373,6 +376,19 @@ class DropboxRetriever(object):
             print fp
 
         return True
+
+
+    def flatten_directory(self, destination):
+        """
+        Flatten directory structure
+        """
+        all_files = []
+        for root, _dirs, files in itertools.islice(os.walk(destination), 1, None):
+            for filename in files:
+                all_files.append(os.path.join(root, filename))
+        for filename in all_files:
+            # will overwrite any files with duplicate names!
+            shutil.copy(filename, destination)
 
 
     def step4b_organize_files(self):
@@ -395,11 +411,17 @@ class DropboxRetriever(object):
                                 self.target_zip_fullname, self.destination_dir))
             return False
 
+        # ----------------------
+        # flatten directories
+        # ----------------------
+        self.flatten_directory(self.destination_dir)
+
+
         # -------------------------------------
         # Remove directories and unwanted files
         # -------------------------------------
-        for item in os.listdir(unzip_dir):
-            full_item = join(unzip_dir, item)
+        for item in os.listdir(self.destination_dir):
+            full_item = join(self.destination_dir, item)
 
             # -------------------------------------
             # The files must be at the first level
@@ -415,7 +437,7 @@ class DropboxRetriever(object):
             # -------------------------------------
             needed_file = False
             for fname in self.matching_files_metadata:
-                if full_item.endswith(fname):
+                if full_item.endswith(basename(fname)):
                     needed_file = True
             if not needed_file:
                 os.remove(full_item)
@@ -431,6 +453,8 @@ class DropboxRetriever(object):
         print '-' * 50
         for fp in self.final_file_paths:
             print fp
+
+        print os.listdir(self.destination_dir)
 
         return True
 
