@@ -2,7 +2,7 @@ import collections
 from hashlib import md5
 import json
 from os.path import basename, join, isdir
-from os import makedirs
+import os
 
 from datetime import datetime
 
@@ -93,6 +93,13 @@ class PredictDataset(TimeStampedModel):
         return self.title
 
 
+    def is_vcf_file(self):
+        return FilePatternHelper.is_vcf_file(self.file_type)
+
+    def is_fastq_file(self):
+        return FilePatternHelper.is_fastq_file(self.file_type)
+
+
     def get_file_patterns(self):
         return FilePatternHelper.get_file_patterns_for_dropbox(self.file_type)
 
@@ -133,7 +140,7 @@ class PredictDataset(TimeStampedModel):
 
         # create the new directory (if it doesn't exist)
         if not isdir(dirname):
-            makedirs(dirname)
+            os.makedirs(dirname)
 
         return dirname
 
@@ -259,6 +266,30 @@ class PredictDatasetFile(TimeStampedModel):
     class Meta:
         ordering = ('-created', 'dataset', 'name')
 
+class PipelineScriptsDirectory(TimeStampedModel):
+    """
+    Give the directory containinng Perls scripts: analyseNGS.pl and analyseVCF.pl
+    """
+    name = models.CharField(max_length=100, help_text='helpful user name')
+    script_directory = models.TextField(help_text='Full path to the directory \
+    containing the analyseNGS.pl and analyseVCF.pl pipeline scripts')
+    is_chosen_directory = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ('is_chosen_directory', '-modified')
+        verbose_name = 'Pipeline Scripts Directory'
+        verbose_name_plural = verbose_name
+
+    def __str__(self):
+        return self.name
+
+    def save(self, *args, **kwargs):
+
+        # Strip the directory name and, if needed, remove ending file separator
+        self.script_directory = self.script_directory.strip()
+        
+        super(PipelineScriptsDirectory, self).save(*args, **kwargs)
+
 class ScriptToRun(TimeStampedModel):
 
     name = models.CharField(max_length=100)
@@ -270,7 +301,6 @@ class ScriptToRun(TimeStampedModel):
 
     def __str__(self):
         return self.name
-
 
     def get_script_args_as_list(self):
         return self.script.split()

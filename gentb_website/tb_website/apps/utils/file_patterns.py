@@ -20,6 +20,19 @@ GENTB_FILE_PATTERNS = GENTB_FASTQ_FILE_PATTERNS + GENTB_VCF_FILE_PATTERNS
 
 class FilePatternHelper(object):
 
+
+    @staticmethod
+    def is_vcf_file(file_type):
+        if file_type == FILE_TYPE_VCF:
+            return True
+        return False
+
+    @staticmethod
+    def is_fastq_file(file_type):
+        if file_type == FILE_TYPE_FASTQ:
+            return True
+        return False
+
     @staticmethod
     def get_file_patterns_for_dropbox(file_type):
         """
