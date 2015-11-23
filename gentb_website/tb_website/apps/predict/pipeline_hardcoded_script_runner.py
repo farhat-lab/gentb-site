@@ -23,7 +23,7 @@ FASTQ_ANALYSIS_SCRIPT = 'analyseNGS.pl'
 class PipelineScriptRunner(object):
 
     def __init__(self, dataset):
-        assert isintance(dataset, PredictDataset),\
+        assert isinstance(dataset, PredictDataset),\
             'The dataset must be an instance of PredictDataset'
 
         self.dataset = dataset
@@ -59,11 +59,24 @@ class PipelineScriptRunner(object):
         return ErrMsg(self.err_message_title,\
                     self.err_message)
 
-    def get_script_directory_info(self):
+    def run_script_on_dataset(self):
+
+        script_directory = self.step1_get_script_directory_info()
+        if script_directory is None:
+            return (False, self.get_err_msg_obj())
+
+        script_command = self.step2_get_script_command(script_directory)
+        if script_command is None:
+            return (False, self.get_err_msg_obj())
+
+        return self.step3_run_command(script_command)
+
+
+    def step1_get_script_directory_info(self):
         """
         Retrieve PipelineScriptsDirectory object from the database
         """
-        script_directory_info = PipelineScriptsDirectory.objects.filter(is_chosen_script=True).first()
+        script_directory_info = PipelineScriptsDirectory.objects.filter(is_chosen_directory=True).first()
         if script_directory_info is None:
             err_title='No pipeline directory specified'
             err_note = """'You must set a 'Pipeline Scripts Directory' to run the\
@@ -74,41 +87,64 @@ class PipelineScriptRunner(object):
 
         return script_directory_info
 
-    def run_script_on_dataset(self):
+    def step2_get_script_command(self, script_directory_info):
         """
-        Using dataset information, decide whether to run:
-            (1)
-            (2)
+        Using dataset information, to decide whether to run:
+            (1) script for a VCF file
+            (2) script for FastQ files
         """
-
-        # (1) Get the script directory
-        #
-        script_directory_info = self.get_script_directory_info()
         if script_directory_info is None:
-            return (False, self.get_err_msg_obj())
+            return None
 
-        # (2) Run either the VCF or FastQ script
+        # Formate either a VCF or FastQ pipeline command
         #
         if self.dataset.is_vcf_file():     # (2a) bsub command for a VCF file
-            return self.run_vcf_file_script(script_directory_info)
-        elif self.dataset.is_fastq_file():
-            return self.run_fastq_file_script(script_directory_info)
+            command_to_run = self.get_vcf_script_command(script_directory_info)
 
-        err_title='Not VCF or FastQ file'
-        err_note = 'Could not determine the file type.\
-         Database contained: "%s"' % (dataset.file_type)
-        err_msg_obj = self.record_error(err_title, err_note)
-        return (False, err_msg_obj)
+        elif self.dataset.is_fastq_file(): # (2b) bsub command for FastQ files
+            command_to_run = self.get_fastq_script_command(script_directory_info)
+
+        else:
+            err_title='Not VCF or FastQ file'
+            err_note = 'Could not determine the file type.\
+             Database contained: "%s"' % (dataset.file_type)
+            err_msg_obj = self.record_error(err_title, err_note)
+            return None
+
+        return command_to_run
 
 
+    def step3_run_command(self, command_to_run):
 
-    def run_fastq_file_script(self, script_directory_info):
+        if command_to_run is None:
+            return (False, self.get_err_msg_obj())
+
+        # (1) Create a run object and save the command being run
+        #
+        dsr = DatasetScriptRun(dataset=self.dataset)
+        dsr.notes = command_to_run
+        dsr.save()
+
+        # (2) Update the dataset status to 'in process'
+        #
+        self.dataset.set_status_processing_started()
+
+        # (3) Run the script -- not waiting for output
+        #
+        full_args = command_to_run.split()
+        print ('full_args', full_args)
+        run_script(full_args)
+
+        return (True, dsr)
+
+
+    def get_fastq_script_command(self, script_directory_info):
         """
         Run the bsub command for FastQ files.
         e.g. bsub perl analyseNGS.pl (directory name)
         """
         if self.err_found:
-            return (False, self.get_err_msg_obj())
+            return None
 
         # (1) Make sure the 'analyseVCF.pl' command is in the
         #   specified 'Pipeline Scripts Directory'
@@ -121,7 +157,7 @@ class PipelineScriptRunner(object):
              panel and modify the 'Pipeline Scripts Directory'.\n\
             Talk to your administrator for details.""" % (FASTQ_ANALYSIS_SCRIPT, script_cmd)
             err_msg_obj = self.record_error(err_title, err_note)
-            return (False, err_msg_obj)
+            return None
 
         # Format the full bsub command with target containing
         #   input files
@@ -129,7 +165,7 @@ class PipelineScriptRunner(object):
         if self.dataset.is_fastq_single_ended():
             command_str = 'bsub perl {0} 0 . {1}'.format(script_cmd,\
                 dataset.file_directory)
-        elif:
+        elif self.dataset.is_fastq_pair_ended():
             command_str = 'bsub perl {0} 1 . {1}'.format(script_cmd,\
                 dataset.file_directory)
         else:
@@ -137,35 +173,19 @@ class PipelineScriptRunner(object):
             err_note = 'Could not determine single-ended or pair-ended FastQ type.\
              Database contained: "%s"' % (dataset.fastq_type)
             err_msg_obj = self.record_error(err_title, err_note)
-            return (False, err_msg_obj)
+            return None
+
+        return command_str
 
 
-        # (2) Create a run object and save the command being run
-        #
-        dsr = DatasetScriptRun(dataset=dataset)
-        dsr.notes = command_str
-        dsr.save()
 
-        # (3) Update the dataset status to 'in process'
-        #
-        dataset.set_status_processing_started()
-
-        # (4) Run the script -- not waiting for output
-        #
-        full_args = command_str.split()
-        print ('full_args', full_args)
-        run_script(full_args)
-
-        return (True, dsr)
-
-
-    def run_vcf_file_script(self, script_directory_info):
+    def get_vcf_script_command(self, script_directory_info):
         """
         Run the bsub command for a VCF file.
         e.g. bsub perl analyseVCF.pl (directory name)
         """
         if self.err_found:
-            return (False, self.get_err_msg_obj())
+            return None
 
         # (1) Make sure the 'analyseVCF.pl' command is in the
         #   specified 'Pipeline Scripts Directory'
@@ -178,29 +198,34 @@ class PipelineScriptRunner(object):
              panel and modify the 'Pipeline Scripts Directory'.\n\
             Talk to your administrator for details.""" % (VCF_ANALYSIS_SCRIPT, script_cmd)
             err_msg_obj = self.record_error(err_title, err_note)
-            return (False, err_msg_obj)
+            return None
 
         # Format the full bsub command with target containing
         #   input files
         #
         command_str = 'bsub perl {0} {1}'.format(script_cmd,\
-                dataset.file_directory)
+                self.dataset.file_directory)
+
+        return command_str
+
+if __name__ == '__main__':
+    pass
+    """
+    dataset = PredictDataset.objects.first()
+
+    # get some Dataset
+    pipeline_runner = PipelineScriptRunner(dataset)
 
 
-        # (2) Create a run object and save the command being run
-        #
-        dsr = DatasetScriptRun(dataset=dataset)
-        dsr.notes = command_str
-        dsr.save()
+    pipeline_runner.run_script_on_dataset()
 
-        # (3) Update the dataset status to 'in process'
-        #
-        dataset.set_status_processing_started()
+    # OR
 
-        # (4) Run the script -- not waiting for output
-        #
-        full_args = command_str.split()
-        print ('full_args', full_args)
-        run_script(full_args)
+    script_directory = pipeline_runner.step1_get_script_directory_info()
+    if script_directory is not None:
+        script_command = pipeline_runner.step2_get_script_command(script_directory)
+        if script_command is not NOne:
+            pipeline_runner.step3_run_command(script_command)
 
-        return (True, dsr)
+
+    """
