@@ -43,9 +43,6 @@ Predict - genTB
 
                 {% else %}
                     <h4><i>Upload VCF or FASTQ Files:</i></h4>
-
-
-
                     {% include "predict/predict_form.html" %}
                {% endif %}
 
@@ -118,4 +115,27 @@ Predict - genTB
         </div>
         <script type="text/javascript" src="{{ STATIC_URL }}{% static 'd3/d3.v3.min.js' %}"></script>
         <script type="text/javascript" src="{{ STATIC_URL }}js/app.js"></script>
+{% endblock %}
+
+{% block extra_footer_js %}
+<script language="javascript" type="text/javascript">
+<!--
+
+function show_hide_fastq_types(){
+    var file_type = $('#id_file_type').val();
+    if (file_type=='fastq'){
+        $('#row_id_fastq_type').show();
+    }else{
+        $('#id_tr_poster_tube').hide();
+   }
+}
+$(document).ready(function(){
+       show_hide_fastq_types();
+       // bind file type dropdown
+       $( "#id_file_type" ).change(function() {
+          show_hide_fastq_types();
+       });
+});
+//-->
+</script>
 {% endblock %}

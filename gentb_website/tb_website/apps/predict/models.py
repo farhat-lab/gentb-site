@@ -66,16 +66,17 @@ FASTQ_FILE_TYPES = [('pair-ended', 'Pair-ended'),\
 
 class PredictDataset(TimeStampedModel):
     """
-    
+
     """
     user = models.ForeignKey(TBUser)
 
     title = models.CharField('Dataset title', max_length=255)
 
-    file_type = models.ChoiceField(choices=FILE_TYPES)
+    file_type = models.CharField(choices=FILE_TYPES, max_length=25)
 
-    fastq_type = models.ChoiceField(choices=FASTQ_FILE_TYPES,\
-        required=False,\
+    fastq_type = models.CharField(max_length=50,\
+        choices=FASTQ_FILE_TYPES,\
+        blank=True,\
         help_text='Only used for FastQ files')
 
     dropbox_url = models.URLField()

@@ -65,6 +65,17 @@ class UploadPredictionDataForm(forms.ModelForm):
         #self.fields['dropbox_url'].widget = forms.TextInput(attrs={'size':'40'}))
         #self.fields['dropbox_url'].widget.attrs.update({'size' : '40'})
 
+    def clean(self):
+
+        file_type = self.cleaned_data['file_type']
+        fastq_type = self.cleaned_data.get('fastq_type')
+        if file_type == 'fastq' and not fastq_type:
+            msg = "For FastQ files, please choose a FastQ type"
+            self.add_error('fastq_type', msg)
+
+            raise forms.ValidationError(msg)
+
+
     def clean_dropbox_url(self):
         """
         This should be an async or ajax call in another part of the code.
