@@ -99,6 +99,15 @@ class PredictDataset(TimeStampedModel):
     def is_fastq_file(self):
         return FilePatternHelper.is_fastq_file(self.file_type)
 
+    def is_fastq_single_ended(self):
+        if not self.is_fastq_file():
+            return False
+        return FilePatternHelper.is_fastq_single_ended(self.fastq_type)
+
+    def is_fastq_pair_ended(self):
+        if not self.is_fastq_file():
+            return False
+        return FilePatternHelper.is_fastq_pair_ended(self.fastq_type)
 
     def get_file_patterns(self):
         return FilePatternHelper.get_file_patterns_for_dropbox(self.file_type)
@@ -287,7 +296,7 @@ class PipelineScriptsDirectory(TimeStampedModel):
 
         # Strip the directory name and, if needed, remove ending file separator
         self.script_directory = self.script_directory.strip()
-        
+
         super(PipelineScriptsDirectory, self).save(*args, **kwargs)
 
 class ScriptToRun(TimeStampedModel):

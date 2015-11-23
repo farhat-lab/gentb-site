@@ -16,6 +16,10 @@ class ErrMsg:
         self.title = title
         self.note = note
 
+VCF_ANALYSIS_SCRIPT = 'analyseVCF.pl'
+FASTQ_ANALYSIS_SCRIPT = 'analyseNGS.pl'
+
+
 class PipelineScriptRunner(object):
 
     def __init__(self, dataset):
@@ -83,9 +87,77 @@ class PipelineScriptRunner(object):
         if script_directory_info is None:
             return (False, self.get_err_msg_obj())
 
-
+        # (2) Run either the VCF or FastQ script
+        #
         if self.dataset.is_vcf_file():     # (2a) bsub command for a VCF file
             return self.run_vcf_file_script(script_directory_info)
+        elif self.dataset.is_fastq_file():
+            return self.run_fastq_file_script(script_directory_info)
+
+        err_title='Not VCF or FastQ file'
+        err_note = 'Could not determine the file type.\
+         Database contained: "%s"' % (dataset.file_type)
+        err_msg_obj = self.record_error(err_title, err_note)
+        return (False, err_msg_obj)
+
+
+
+    def run_fastq_file_script(self, script_directory_info):
+        """
+        Run the bsub command for FastQ files.
+        e.g. bsub perl analyseNGS.pl (directory name)
+        """
+        if self.err_found:
+            return (False, self.get_err_msg_obj())
+
+        # (1) Make sure the 'analyseVCF.pl' command is in the
+        #   specified 'Pipeline Scripts Directory'
+        #
+        script_cmd = join(script_directory_info.script_directory, FASTQ_ANALYSIS_SCRIPT)
+        if not isfile(script_cmd):
+            err_title='The "%s" file was not found' % (FASTQ_ANALYSIS_SCRIPT)
+            err_note = """The "%s" file was not found at this location: \n%s\n
+            To change the path to the script, please go into the admin control\
+             panel and modify the 'Pipeline Scripts Directory'.\n\
+            Talk to your administrator for details.""" % (FASTQ_ANALYSIS_SCRIPT, script_cmd)
+            err_msg_obj = self.record_error(err_title, err_note)
+            return (False, err_msg_obj)
+
+        # Format the full bsub command with target containing
+        #   input files
+        #
+        if self.dataset.is_fastq_single_ended():
+            command_str = 'bsub perl {0} 0 . {1}'.format(script_cmd,\
+                dataset.file_directory)
+        elif:
+            command_str = 'bsub perl {0} 1 . {1}'.format(script_cmd,\
+                dataset.file_directory)
+        else:
+            err_title = 'FastQ: single-ended or pair-ended?'
+            err_note = 'Could not determine single-ended or pair-ended FastQ type.\
+             Database contained: "%s"' % (dataset.fastq_type)
+            err_msg_obj = self.record_error(err_title, err_note)
+            return (False, err_msg_obj)
+
+
+        # (2) Create a run object and save the command being run
+        #
+        dsr = DatasetScriptRun(dataset=dataset)
+        dsr.notes = command_str
+        dsr.save()
+
+        # (3) Update the dataset status to 'in process'
+        #
+        dataset.set_status_processing_started()
+
+        # (4) Run the script -- not waiting for output
+        #
+        full_args = command_str.split()
+        print ('full_args', full_args)
+        run_script(full_args)
+
+        return (True, dsr)
+
 
     def run_vcf_file_script(self, script_directory_info):
         """
@@ -98,13 +170,13 @@ class PipelineScriptRunner(object):
         # (1) Make sure the 'analyseVCF.pl' command is in the
         #   specified 'Pipeline Scripts Directory'
         #
-        script_cmd = join(script_directory_info.script_directory, 'analyseVCF.pl' )
+        script_cmd = join(script_directory_info.script_directory, VCF_ANALYSIS_SCRIPT )
         if not isfile(script_cmd):
-            err_title='The "analyseVCF.pl" file was not found'
-            err_note = """The "analyseVCF.pl" file was not found at this location: \n%s\n
+            err_title='The "%s" file was not found' % (VCF_ANALYSIS_SCRIPT)
+            err_note = """The "%s" file was not found at this location: \n%s\n
             To change the path to the script, please go into the admin control\
              panel and modify the 'Pipeline Scripts Directory'.\n\
-            Talk to your administrator for details.""" % (script_cmd)
+            Talk to your administrator for details.""" % (VCF_ANALYSIS_SCRIPT, script_cmd)
             err_msg_obj = self.record_error(err_title, err_note)
             return (False, err_msg_obj)
 

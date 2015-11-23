@@ -34,6 +34,19 @@ class FilePatternHelper(object):
         return False
 
     @staticmethod
+    def is_fastq_single_ended(fastq_type):
+        if fastq_type == FASTQ_SINGLE_ENDED:
+            return True
+        return False
+
+    @staticmethod
+    def is_fastq_pair_ended(fastq_type):
+        if fastq_type == FASTQ_SINGLE_ENDED:
+            return True
+        return False
+
+
+    @staticmethod
     def get_file_patterns_for_dropbox(file_type):
         """
         Based on the filetype, return regex search patterns used to
