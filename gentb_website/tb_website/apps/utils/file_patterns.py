@@ -1,6 +1,7 @@
 """
 Accepted File patterns for GenTB.  Used with dropbox links.
 """
+import re
 
 # Used by apps/predict/models.py
 #
@@ -13,6 +14,18 @@ FASTQ_SINGLE_ENDED = 'single-end'
 FASTQ_FILE_TYPES = [(FASTQ_PAIR_ENDED, 'Pair-end'),\
     (FASTQ_SINGLE_ENDED, 'Single-end')]
 
+FASTQ_PAIR_END_EXTENSION_R = '_R'
+FASTQ_PAIR_END_EXTENSION_DOT = '.'
+
+
+# e.g. teststrain_R1.fastq & teststrain_R2.fastq
+FASTQ_PAIR_END_EXTENSION_R_PATTERNS = [r'_R\d{1,9}\.fastq$', r'_R\d{1,9}\.fastq\.']
+
+# e.g. teststrain.1.fastq & teststarin.2.fastq
+FASTQ_PAIR_END_EXTENSION_DOT_PATTERNS = [r'\.\d{1,9}\.fastq$', r'\.\d{1,9}\.fastq\.']
+
+FASTQ_PAIR_END_EXTENSION_TYPES = [(FASTQ_PAIR_END_EXTENSION_R, FASTQ_PAIR_END_EXTENSION_R),\
+                    (FASTQ_PAIR_END_EXTENSION_DOT, FASTQ_PAIR_END_EXTENSION_DOT)]
 
 GENTB_FASTQ_FILE_PATTERNS = [r'\.fastq$', r'\.fastq\.']
 GENTB_VCF_FILE_PATTERNS = [r'\.vcf$', r'\.vcf\.']
@@ -44,6 +57,49 @@ class FilePatternHelper(object):
         if fastq_type == FASTQ_PAIR_ENDED:
             return True
         return False
+
+
+    @staticmethod
+    def get_fastq_extension_type(list_of_filenames):
+        """
+        For pair-ended FastQ files, figure out
+        if the extension type is "_R" or "."
+        """
+        if not list_of_filenames or len(list_of_filenames) == 0:
+            return None
+
+        # First make sure there are some FastQ files
+        #
+        found_fastq = False
+        for fname in list_of_filenames:
+            for pat in GENTB_FASTQ_FILE_PATTERNS:
+                if re.search(pat, fname, re.IGNORECASE):
+                    found_fastq = True
+
+        if found_fastq is False:
+            return None
+
+
+        # Now look for the _R pattern as in:
+        #   - teststrain_R1.fastq
+        #   - teststrain_R2.fastq
+        #
+        for fname in list_of_filenames:
+            for pat in FASTQ_PAIR_END_EXTENSION_R_PATTERNS:
+                if re.search(pat, fname, re.IGNORECASE):
+                    # Found it, return R pattern
+                    return FASTQ_PAIR_END_EXTENSION_R
+
+        # Default to "." pattern
+        #
+        #  Example: teststrain.1.fastq, teststarin.2.fastq
+        for fname in list_of_filenames:
+            for pat in FASTQ_PAIR_END_EXTENSION_DOT_PATTERNS:
+                if re.search(pat, fname, re.IGNORECASE):
+                    # Found it, return R pattern
+                    return FASTQ_PAIR_END_EXTENSION_DOT
+
+        return None
 
 
     @staticmethod

@@ -12,13 +12,16 @@ from jsonfield import JSONField # https://github.com/bradjasper/django-jsonfield
 from apps.utils.site_url_util import get_site_url
 from apps.dropbox_helper.forms import DropboxRetrievalParamsForm
 from apps.predict.models import PredictDataset
+from apps.utils.file_patterns import FilePatternHelper,\
+                        FASTQ_PAIR_END_EXTENSION_TYPES
 
 import logging
 logger = logging.getLogger('apps.dropbox_helper.models')
 
+
 class DropboxRetrievalLog(TimeStampedModel):
 
-    dataset = models.ForeignKey(PredictDataset, unique=True)
+    dataset = models.OneToOneField(PredictDataset)
 
     # retrieved from dropbox
     file_metadata = JSONField(load_kwargs={'object_pairs_hook': collections.OrderedDict}, blank=True)
@@ -31,6 +34,12 @@ class DropboxRetrievalLog(TimeStampedModel):
     retrieval_start = models.DateTimeField(null=True, blank=True)
     retrieval_end = models.DateTimeField(null=True, blank=True)
     retrieval_error = models.TextField(blank=True)
+
+    # Blank unless files are FastQ pair-end extensions
+    fastq_pair_end_extension = models.CharField(max_length=20,\
+                                    blank=True,\
+                                    choices=FASTQ_PAIR_END_EXTENSION_TYPES,\
+                                    help_text='For FastQ pair-end extensions. Either "_R" or "."')
 
     # success
     files_retrieved = models.BooleanField(default=False)
@@ -47,7 +56,15 @@ class DropboxRetrievalLog(TimeStampedModel):
 
         self.md5 = md5('%s%s' % (self.id, self.created)).hexdigest()
 
+        self.fastq_pair_end_extension = self.get_fastq_extension_type()
+
         super(DropboxRetrievalLog, self).save(*args, **kwargs)
+
+    def get_fastq_extension_type(self):
+        """
+        For pair-ended FastQ files, figure out the extension
+        """
+        return FilePatternHelper.get_fastq_extension_type(self.selected_files)
 
     class Meta:
         ordering = ('-created', 'dataset')
@@ -97,3 +114,11 @@ class DropboxRetrievalLog(TimeStampedModel):
         logger.severe("Failed to create dropbox retrieve params for dataset id {0}. Errors from form: {1}".format(self.id, f.errors.items()))
         # Log a major error
         raise KeyError(f.errors)
+
+"""
+python manage.py shell
+from apps.dropbox_helper.models import *
+dlog = DropboxRetrievalLog.objects.first()
+dlog.get_fastq_extension_type()
+
+"""

@@ -166,7 +166,16 @@ class PipelineScriptRunner(object):
             command_str = 'bsub perl {0} 0 . {1}'.format(script_cmd,\
                 self.dataset.file_directory)
         elif self.dataset.is_fastq_pair_ended():
-            command_str = 'bsub perl {0} 1 . {1}'.format(script_cmd,\
+            pair_extension = self.dataset.get_fastq_pair_end_extension()
+            if pair_extension is None:
+                err_title = 'FastQ could not find pair-ended extensin type'
+                err_note = 'Could not determine pair-ended extension type.\
+                 Database contained: "%s"' % (self.dataset.fastq_type)
+                err_msg_obj = self.record_error(err_title, err_note)
+                return None
+
+            command_str = 'bsub perl {0} 1 {1} {2}'.format(script_cmd,\
+                pair_extension,\
                 self.dataset.file_directory)
         else:
             err_title = 'FastQ: single-ended or pair-ended?'

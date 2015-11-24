@@ -4,6 +4,8 @@ from django.contrib import admin
 from apps.predict.models import PredictDatasetStatus, PredictDataset,\
             PredictDatasetNote, DatasetScriptRun,\
             ScriptToRun, PipelineScriptsDirectory
+from apps.dropbox_helper.models import DropboxRetrievalLog
+
 from apps.predict.admin_forms import PipelineScriptsDirectoryForm
 
 
@@ -55,8 +57,13 @@ class DropboxDataSourceInline(admin.StackedInline):
     extra = 0
 """
 
+class DropboxDataSourceInline(admin.StackedInline):
+    model = DropboxRetrievalLog
+    can_delete = False
+    extra = 0
+
 class PredictDatasetAdmin(admin.ModelAdmin):
-    inlines = (PredictDatasetNoteInline, DatasetScriptRunInline)# PredictDatasetNoteInline, )
+    inlines = (DropboxDataSourceInline, PredictDatasetNoteInline, DatasetScriptRunInline)# PredictDatasetNoteInline, )
     save_on_top = True
     search_fields = ('title', 'user__first_name', 'user__last_name',)
     list_display = ('title', 'user', 'status', 'has_prediction', 'created', 'modified')
@@ -65,21 +72,14 @@ class PredictDatasetAdmin(admin.ModelAdmin):
                         'user_name', 'user_email', 'user_affiliation',]
 
     fieldsets = [
-        (None,               {'fields': ['title', ('status', 'has_prediction')]}),
+        (None,               {'fields': ['title', 'status', 'has_prediction']}),
         ('Description',               {'fields': ['description']}),
+        ('Files',               {'fields': ['file_type', 'fastq_type', 'dropbox_url', 'file_directory',]}),
         ('User',               {'fields': [('user', 'user_affiliation'), ('user_name', 'user_email')]}),
-        ('Files',               {'fields': ['dropbox_url', 'file_directory',]}),
         #('Run Script!', {'fields': ['run_script_link']}),
         ('Timestamps/md5', {'fields': [('created', 'modified'), 'md5']}),
     ]
-    '''  user = models.ForeignKey(TBUser)
 
-
-    has_prediction = models.BooleanField('Has prediction results?',default=False, help_text='auto-filled on save')
-
-    prediction_results = models.TextField( blank=True)
-
-    md5 = models.'''
 admin.site.register(PredictDataset, PredictDatasetAdmin)
 
 

@@ -122,14 +122,14 @@ class DropboxRetrievalRunner:
         try:
             dataset = PredictDataset.objects.get(pk=dataset_id)
         except PredictDataset.DoesNotExist:
-            print ('Failed.  There is not "PredictDataset" with db id: {0}'.format(dataset_id))
+            print ('Failed.  There is no "PredictDataset" with db id: {0}'.format(dataset_id))
             return False
 
         # Get DropboxRetrievalLog object
         #
         dbox_log = DropboxRetrievalLog.objects.filter(dataset=dataset).first()
         if dbox_log is None:
-            print ('Failed.  There is not "DropboxRetrievalLog" for the PredictDataset')
+            print ('Failed.  There is no "DropboxRetrievalLog" for the PredictDataset')
             return False
 
         # Run it

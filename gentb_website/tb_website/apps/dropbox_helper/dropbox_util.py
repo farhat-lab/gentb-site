@@ -44,7 +44,8 @@ def get_dropbox_metadata(predict_dataset):
         return (False, dr.err_msg)
 
     # Yes!
-    db_log.file_metadata = dr.matching_files_metadata
+    db_log.file_metadata = dr.dropbox_link_metadata
+    db_log.selected_files = dr.matching_files_metadata
     db_log.save()
     return (True, dr)
 
@@ -52,7 +53,7 @@ def get_dropbox_metadata(predict_dataset):
 def get_dropbox_metadata_from_link(dropbox_link, file_patterns=None):
     """
     Wrap the DropboxRetriever function
-    - (True, metadata-selected files)
+    - (True, DropboxRetriever object) 
     - (False, error message string)
     """
     if dropbox_link is None:
@@ -89,4 +90,4 @@ def get_dropbox_metadata_from_link(dropbox_link, file_patterns=None):
         return (False, dr.err_msg)
 
     # Yes!
-    return (True, dr.matching_files_metadata)
+    return (True, dr)

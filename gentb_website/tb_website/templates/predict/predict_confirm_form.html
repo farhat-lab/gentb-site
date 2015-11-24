@@ -23,7 +23,7 @@
                     </ul>
                 <b>File{{ dbox_log.file_metadata|pluralize }}</b>:
                     <ol>
-                    {% for file_info in dbox_log.file_metadata %}
+                    {% for file_info in dbox_log.selected_files %}
                         <li>{{ file_info }}</li>
                     {% endfor %}
                     </ol>

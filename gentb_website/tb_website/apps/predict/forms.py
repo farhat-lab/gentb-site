@@ -1,3 +1,7 @@
+"""
+Django forms for adding PredictDataset objects as well as a Confirmation form
+
+"""
 from django import forms
 from apps.dropbox_helper.models import DropboxRetrievalLog
 from apps.predict.models import PredictDataset
@@ -46,7 +50,7 @@ class UploadPredictionDataForm(forms.ModelForm):
 
     The dropbox_url is used to retrieve dropbox metadata
     """
-    dropbox_metadata_info = None
+    dropbox_retriever_object = None
 
     class Meta:
         model = PredictDataset
@@ -71,17 +75,22 @@ class UploadPredictionDataForm(forms.ModelForm):
             msg = "For FastQ files, please choose a FastQ type"
             self.add_error('fastq_type', msg)
             raise forms.ValidationError(msg)
-        
+
         # -----------------------------------------
         # Check the dropbox metadata
         # (This should be moved to an async or ajax call in another part of the code )
         # -----------------------------------------
         file_patterns = FilePatternHelper.get_file_patterns_for_dropbox(file_type)
-        (success, dbox_metadata_or_err_msg) = get_dropbox_metadata_from_link(\
+
+        # Use the dropbox API to look at the files under this dropbox_url
+        #
+        (success, dbox_retriever_obj_or_err_msg) = get_dropbox_metadata_from_link(\
                                 self.cleaned_data.get('dropbox_url'),\
                                 file_patterns=file_patterns)
         if success:
-            self.dropbox_metadata_info = dbox_metadata_or_err_msg
+            self.dropbox_retriever_object = dbox_retriever_obj_or_err_msg
+            #self.dropbox_metadata_info = dbox_retriever_obj_or_err_msg.matching_files_metadata
+
         else:
             #self.add_error('dropbox_url', dbox_metadata_or_err_msg)
             raise forms.ValidationError(dbox_metadata_or_err_msg)
@@ -117,10 +126,13 @@ class UploadPredictionDataForm(forms.ModelForm):
         predict_dataset.save()      # save the object
 
         db_log = DropboxRetrievalLog(dataset=predict_dataset)
-        db_log.file_metadata = self.dropbox_metadata_info
+        db_log.file_metadata = self.dropbox_retriever_object.dropbox_link_metadata
+        db_log.selected_files = self.dropbox_retriever_object.matching_files_metadata
+
         db_log.save()
 
-        print 'self.dropbox_metadata_info', self.dropbox_metadata_info
+        print 'elf.dropbox_retriever_object.dropbox_link_metadata', self.dropbox_retriever_object.dropbox_link_metadata
+        print 'self.dropbox_retriever_object.matching_files_metadata', self.dropbox_retriever_object.matching_files_metadata
         #(success, dinfo_or_err_msg) = get_dropbox_metadata(ds)
 
         return predict_dataset

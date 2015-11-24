@@ -109,6 +109,14 @@ class PredictDataset(TimeStampedModel):
             return False
         return FilePatternHelper.is_fastq_pair_ended(self.fastq_type)
 
+    def get_fastq_pair_end_extension(self):
+        try:
+            dlog = self.dropboxretrievallog
+        except:
+            return None
+
+        return dlog.fastq_pair_end_extension
+
     def get_file_patterns(self):
         return FilePatternHelper.get_file_patterns_for_dropbox(self.file_type)
 
