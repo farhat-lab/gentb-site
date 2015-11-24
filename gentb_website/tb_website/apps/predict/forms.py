@@ -60,7 +60,7 @@ class UploadPredictionDataForm(forms.ModelForm):
         #self.fields['dropbox_url'].widget.attrs.update({'size' : '40'})
 
     def clean(self):
-        file_type = self.cleaned_data['file_type']
+        file_type = self.cleaned_data.get('file_type', None)
         fastq_type = self.cleaned_data.get('fastq_type')
 
         # -----------------------------------------
@@ -71,23 +71,24 @@ class UploadPredictionDataForm(forms.ModelForm):
             msg = "For FastQ files, please choose a FastQ type"
             self.add_error('fastq_type', msg)
             raise forms.ValidationError(msg)
-
+        
         # -----------------------------------------
         # Check the dropbox metadata
         # (This should be moved to an async or ajax call in another part of the code )
         # -----------------------------------------
-        file_patterns = FilePatternHelper.get_file_patterns_for_dropbox(self.cleaned_data['file_type'])
+        file_patterns = FilePatternHelper.get_file_patterns_for_dropbox(file_type)
         (success, dbox_metadata_or_err_msg) = get_dropbox_metadata_from_link(\
-                                self.cleaned_data['dropbox_url'],\
+                                self.cleaned_data.get('dropbox_url'),\
                                 file_patterns=file_patterns)
         if success:
             self.dropbox_metadata_info = dbox_metadata_or_err_msg
         else:
-            self.add_error('dropbox_url', dbox_metadata_or_err_msg)
+            #self.add_error('dropbox_url', dbox_metadata_or_err_msg)
             raise forms.ValidationError(dbox_metadata_or_err_msg)
 
         return self.cleaned_data
 
+    '''
     def clean_dropbox_url(self):
         """
         This should be an async or ajax call in another part of the code.
@@ -101,7 +102,7 @@ class UploadPredictionDataForm(forms.ModelForm):
         #self.dropbox_metadata_info = dbox_metadata_or_err_msg
 
         return self.cleaned_data['dropbox_url']
-
+    '''
     def get_dataset(self, tb_user):
 
         assert hasattr(self, 'cleaned_data'), "Do not call this method on an invalid form. (call is_valid() first)"

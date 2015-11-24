@@ -8,10 +8,10 @@ FILE_TYPE_VCF = 'vcf'
 FILE_TYPE_FASTQ = 'fastq'
 FILE_TYPES = [(FILE_TYPE_VCF, 'VCF'), (FILE_TYPE_FASTQ, 'FastQ')]
 
-FASTQ_PAIR_ENDED = 'pair-ended'
-FASTQ_SINGLE_ENDED = 'single-ended'
-FASTQ_FILE_TYPES = [(FASTQ_PAIR_ENDED, 'Pair-ended'),\
-    (FASTQ_SINGLE_ENDED, 'Single-ended')]
+FASTQ_PAIR_ENDED = 'pair-end'
+FASTQ_SINGLE_ENDED = 'single-end'
+FASTQ_FILE_TYPES = [(FASTQ_PAIR_ENDED, 'Pair-end'),\
+    (FASTQ_SINGLE_ENDED, 'Single-end')]
 
 
 GENTB_FASTQ_FILE_PATTERNS = [r'\.fastq$', r'\.fastq\.']
@@ -41,7 +41,7 @@ class FilePatternHelper(object):
 
     @staticmethod
     def is_fastq_pair_ended(fastq_type):
-        if fastq_type == FASTQ_SINGLE_ENDED:
+        if fastq_type == FASTQ_PAIR_ENDED:
             return True
         return False
 

@@ -111,10 +111,12 @@ Predict - genTB
     </div>
 
 
+        {% comment %}
         <div class="col-md-6" id="d3-target-div" style="padding-left:60px;">
         </div>
         <script type="text/javascript" src="{{ STATIC_URL }}{% static 'd3/d3.v3.min.js' %}"></script>
         <script type="text/javascript" src="{{ STATIC_URL }}js/app.js"></script>
+        {% endcomment %}
 {% endblock %}
 
 {% block extra_footer_js %}
@@ -122,11 +124,11 @@ Predict - genTB
 <!--
 
 function show_hide_fastq_types(){
-    var file_type = $('#id_file_type').val();
-    if (file_type=='fastq'){
+    var file_type_val = $('#id_file_type').val();
+    if (file_type_val=='fastq'){
         $('#row_id_fastq_type').show();
     }else{
-        $('#id_tr_poster_tube').hide();
+        $('#row_id_fastq_type').hide();
    }
 }
 $(document).ready(function(){

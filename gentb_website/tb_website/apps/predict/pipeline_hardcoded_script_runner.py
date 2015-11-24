@@ -46,8 +46,8 @@ class PipelineScriptRunner(object):
         # Write to the database
         #
         note = PredictDatasetNote(dataset=self.dataset,\
-                      title=err_title,\
-                      note=err_note)
+                      title=self.err_message_title,\
+                      note=self.err_message)
         note.save()
 
         return self.get_err_msg_obj()
@@ -105,7 +105,7 @@ class PipelineScriptRunner(object):
             command_to_run = self.get_fastq_script_command(script_directory_info)
 
         else:
-            err_title='Not VCF or FastQ file'
+            err_title = 'Not VCF or FastQ file'
             err_note = 'Could not determine the file type.\
              Database contained: "%s"' % (dataset.file_type)
             err_msg_obj = self.record_error(err_title, err_note)
@@ -164,14 +164,14 @@ class PipelineScriptRunner(object):
         #
         if self.dataset.is_fastq_single_ended():
             command_str = 'bsub perl {0} 0 . {1}'.format(script_cmd,\
-                dataset.file_directory)
+                self.dataset.file_directory)
         elif self.dataset.is_fastq_pair_ended():
             command_str = 'bsub perl {0} 1 . {1}'.format(script_cmd,\
-                dataset.file_directory)
+                self.dataset.file_directory)
         else:
             err_title = 'FastQ: single-ended or pair-ended?'
             err_note = 'Could not determine single-ended or pair-ended FastQ type.\
-             Database contained: "%s"' % (dataset.fastq_type)
+             Database contained: "%s"' % (self.dataset.fastq_type)
             err_msg_obj = self.record_error(err_title, err_note)
             return None
 

@@ -125,3 +125,38 @@ print(r.status_code)
 print(r.text)
 
 '''
+
+
+"""
+(1) call the gentb site:
+    http://gentb-site/predict/my-dataset-run-notification/
+    {success=True, # did the run succeed
+    run_md5='afde133c98aac9657e318de2774e687e', # id
+    result_data='not bad'}
+
+----------------------
+
+----------------------
+analyseVCF.pl
+  - at end:
+  - know: job directory
+   - assume this file exists: "gentb_status_feedback.py"
+
+----------------------
+- Job directory
+----------------------
+    - .fastq, .vcf
+    - /output/
+        - result.json
+        - matrix.csv
+        -
+        - intermediary files (.var and .vcf if fastq generated)
+
+    - gentb_status_feedback.py
+        - if output/result.json exists and is not empty, we're ok
+        - send feedback
+
+
+PIPELINE -> PREDICT -> GRAPHS/HTML SNIPPET -> STATUS CHECK
+
+"""

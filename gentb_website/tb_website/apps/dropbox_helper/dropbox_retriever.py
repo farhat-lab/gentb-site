@@ -230,7 +230,7 @@ class DropboxRetriever(object):
                 self.matching_files_metadata.append(fpath)
                 return True
             else:
-                file_msg = FilePatternHelper.get_file_patterns_err_msg(self.file1_pattterns)
+                file_msg = FilePatternHelper.get_file_patterns_err_msg(self.file_patterns)
 
                 self.add_err_msg('No files match what we are looking for. %s' % file_msg)
                 return False
