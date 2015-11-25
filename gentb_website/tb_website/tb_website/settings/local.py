@@ -51,8 +51,8 @@ DATABASES = {
         'PORT': '',
     }
 }
-print 'TEST_SETUP_DIR', TEST_SETUP_DIR
-print DATABASES['default']['NAME']
+#print 'TEST_SETUP_DIR', TEST_SETUP_DIR
+#print DATABASES['default']['NAME']
 ########## END DATABASE CONFIGURATION
 
 

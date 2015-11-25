@@ -11,8 +11,8 @@ from apps.predict.admin_forms import PipelineScriptsDirectoryForm
 
 class PredictDatasetStatusAdmin(admin.ModelAdmin):
     save_on_top = True
-    list_display = ['name', 'sort_order', 'slug']
-    search_fields = ['name']
+    list_display = ['name', 'human_name', 'sort_order', 'slug']
+    search_fields = ['name', 'human_name']
 admin.site.register(PredictDatasetStatus, PredictDatasetStatusAdmin)
 
 

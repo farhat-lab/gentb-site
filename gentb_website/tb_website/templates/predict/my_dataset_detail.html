@@ -40,23 +40,40 @@ My Datasets - Phthisis Ravens
         <th class="text-primary">Description</th>
         <td>{{ dataset.description|linebreaks }}</td>
     </tr>
-    <tr>
-        <th class="text-primary">File 1<br />(Size)</th>
+    <tr>        
+        <th class="text-primary">File Type</th>
         <td>
-            {{ dataset.filename1 }}
-
-            <br />({{ dataset.file1.file.size|readable_filesize }})
+            {{ dataset.file_type|upper }},
+            {% if dataset.is_fastq_pair_ended %}
+                Pair-end<br />
+            {% else %}
+                Single-end<br />
+            {% endif %}
         </td>
     </tr>
-    {% if dataset.file2 %}
+    {% if dataset.is_fastq_pair_ended and dataset.dropboxretrievallog %}
     <tr>
-        <th class="text-primary">File 2 (Size)</th>
+        <th class="text-primary">Pair-end Extension</th>
         <td>
-            {{ dataset.filename2 }}
-            ({{ dataset.file2.file.size|readable_filesize }})
+            {{ dataset.dropboxretrievallog.fastq_pair_end_extension }}
         </td>
     </tr>
     {% endif %}
+    <tr>
+        <th class="text-primary">File Names from Dropbox</th>
+        <td>
+            {% if dataset.dropboxretrievallog %}
+                <ul>
+                {% for fname in dataset.dropboxretrievallog.selected_files %}
+                    <li>({{ forloop.counter }}) {{ fname }}</li>
+                {% endfor %}
+                </ul>
+            {% else %}
+                N/A
+            {% endif %}
+        </td>
+
+    </tr>
     <tr>
         <th class="text-primary">Created</th>
         <td>{{ dataset.created }}</td>

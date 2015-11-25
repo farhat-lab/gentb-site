@@ -42,6 +42,7 @@ DATASET_STATUS_PROCESSED_FAILED = 8
 
 class PredictDatasetStatus(models.Model):
     name = models.CharField(max_length=50)
+    human_name = models.CharField(max_length=100)
     slug = models.SlugField(blank=True)
     sort_order = models.IntegerField()
 

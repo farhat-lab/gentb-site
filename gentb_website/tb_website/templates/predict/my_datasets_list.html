@@ -7,6 +7,7 @@
         <tr>
             <th class="text-center">&nbsp;</th>
             <th class="text-center">Title</th>
+            <th class="text-center">File Type</th>
             <th class="text-center">Status</th>
             <th class="text-center">Description</th>
             <th class="text-center">File(s)</th>
@@ -18,6 +19,7 @@
     <tr>
         <td>{{ forloop.counter }}</td>
         <td><a href="{% url 'view_single_dataset' ds.md5 %}">{{ ds.title }}</a></td>
+        <td>{{ ds.file_type }}</td>
         <td{% if ds.has_prediction %} class="success"{% endif %}>{{ ds.status.name }}</td>
         <td>{{ ds.description|truncatewords:20 }}</td>
         <td>{{ ds.filename1 }} ({{ ds.file1.file.size|readable_filesize }})
