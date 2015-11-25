@@ -2,6 +2,7 @@
 {
     "fields": {
         "human_name": "Dataset NOT CONFIRMED for Dropbox file retrieval",
+        "is_error": false,
         "sort_order": 1,
         "name": "DATASET_STATUS_NOT_READY_ID",
         "slug": "dataset_status_not_ready_id"
@@ -12,6 +13,7 @@
 {
     "fields": {
         "human_name": "Dataset CONFIRMED for Dropbox file retrieval",
+        "is_error": false,
         "sort_order": 2,
         "name": "DATASET_STATUS_CONFIRMED_ID",
         "slug": "dataset_status_confirmed_id"
@@ -22,6 +24,7 @@
 {
     "fields": {
         "human_name": "Dropbox file retrieval STARTED",
+        "is_error": false,
         "sort_order": 3,
         "name": "DATASET_STATUS_FILE_RETRIEVAL_STARTED",
         "slug": "dataset_status_file_retrieval_started"
@@ -32,6 +35,7 @@
 {
     "fields": {
         "human_name": "Dropbox file retrieval ERROR",
+        "is_error": true,
         "sort_order": 4,
         "name": "DATASET_STATUS_FILE_RETRIEVAL_ERROR",
         "slug": "dataset_status_file_retrieval_error"
@@ -42,6 +46,7 @@
 {
     "fields": {
         "human_name": "Dropbox file retrieval COMPLETE",
+        "is_error": false,
         "sort_order": 5,
         "name": "DATASET_STATUS_FILE_RETRIEVAL_COMPLETE",
         "slug": "dataset_status_file_retrieval_complete"
@@ -52,6 +57,7 @@
 {
     "fields": {
         "human_name": "Pipeline processing STARTED",
+        "is_error": false,
         "sort_order": 6,
         "name": "DATASET_STATUS_PROCESSING_STARTED_ID",
         "slug": "dataset_status_processing_started_id"
@@ -62,6 +68,7 @@
 {
     "fields": {
         "human_name": "Pipeline processing SUCCESS",
+        "is_error": false,
         "sort_order": 7,
         "name": "DATASET_STATUS_PROCESSED_SUCCESS",
         "slug": "dataset_status_processed_success"
@@ -72,6 +79,7 @@
 {
     "fields": {
         "human_name": "Pipeline processing ERROR",
+        "is_error": true,
         "sort_order": 8,
         "name": "DATASET_STATUS_PROCESSED_FAILED",
         "slug": "dataset_status_processed_failed"

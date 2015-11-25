@@ -34,7 +34,14 @@ My Datasets - Phthisis Ravens
     </tr>
     <tr>
         <th class="text-primary">Status</th>
-        <td>{{ dataset.status.id }} - {{ dataset.status.human_name }}</td>
+        <td>
+            {% if dataset.status.is_error %}
+                <span class="label label-warning">Fail</span> &nbsp;
+            {% else %}
+                <span class="label label-info">OK</span> &nbsp;
+            {% endif %}
+            {{ dataset.status.human_name }} (id: {{ dataset.status.id }})
+        </td>
     </tr>
     <tr>
         <th class="text-primary">Description</th>
@@ -85,7 +92,8 @@ My Datasets - Phthisis Ravens
         <th class="text-primary">Pipeline Command</th>
         <td>
             {% if pipeline_command_found %}
-                {{ pipeline_command }}
+                <span class="label label-info">OK</span> &nbsp;
+                <br />{{ pipeline_command }}
             {% else %}
                 <span class="label label-danger">Error</span>
                 {{ pipeline_command_err|linebreaks }}
