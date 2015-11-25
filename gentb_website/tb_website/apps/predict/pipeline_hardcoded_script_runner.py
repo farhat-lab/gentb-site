@@ -1,5 +1,5 @@
 """
-This fires off the "bsub" command to kick off the pipeline for either
+This fires off the perl script to kick off the pipeline for either
 FastQ or VCF file analysis.
 
 """
@@ -98,10 +98,10 @@ class PipelineScriptRunner(object):
 
         # Formate either a VCF or FastQ pipeline command
         #
-        if self.dataset.is_vcf_file():     # (2a) bsub command for a VCF file
+        if self.dataset.is_vcf_file():     # (2a) command for a VCF file
             command_to_run = self.get_vcf_script_command(script_directory_info)
 
-        elif self.dataset.is_fastq_file(): # (2b) bsub command for FastQ files
+        elif self.dataset.is_fastq_file(): # (2b) command for FastQ files
             command_to_run = self.get_fastq_script_command(script_directory_info)
 
         else:
@@ -140,8 +140,8 @@ class PipelineScriptRunner(object):
 
     def get_fastq_script_command(self, script_directory_info):
         """
-        Run the bsub command for FastQ files.
-        e.g. bsub perl analyseNGS.pl (directory name)
+        Run the command for FastQ files.
+        e.g. perl analyseNGS.pl (directory name)
         """
         if self.err_found:
             return None
@@ -159,11 +159,11 @@ class PipelineScriptRunner(object):
             err_msg_obj = self.record_error(err_title, err_note)
             return None
 
-        # Format the full bsub command with target containing
+        # Format the full command with target containing
         #   input files
         #
         if self.dataset.is_fastq_single_ended():
-            command_str = 'bsub perl {0} 0 . {1}'.format(script_cmd,\
+            command_str = 'perl {0} 0 . {1}'.format(script_cmd,\
                 self.dataset.file_directory)
         elif self.dataset.is_fastq_pair_ended():
             pair_extension = self.dataset.get_fastq_pair_end_extension()
@@ -174,7 +174,7 @@ class PipelineScriptRunner(object):
                 err_msg_obj = self.record_error(err_title, err_note)
                 return None
 
-            command_str = 'bsub perl {0} 1 {1} {2}'.format(script_cmd,\
+            command_str = 'perl {0} 1 {1} {2}'.format(script_cmd,\
                 pair_extension,\
                 self.dataset.file_directory)
         else:
@@ -190,8 +190,8 @@ class PipelineScriptRunner(object):
 
     def get_vcf_script_command(self, script_directory_info):
         """
-        Run the bsub command for a VCF file.
-        e.g. bsub perl analyseVCF.pl (directory name)
+        Run the command for a VCF file.
+        e.g. perl analyseVCF.pl (directory name)
         """
         if self.err_found:
             return None
@@ -209,13 +209,31 @@ class PipelineScriptRunner(object):
             err_msg_obj = self.record_error(err_title, err_note)
             return None
 
-        # Format the full bsub command with target containing
+        # Format the full command with target containing
         #   input files
         #
-        command_str = 'bsub perl {0} {1}'.format(script_cmd,\
+        command_str = 'perl {0} {1}'.format(script_cmd,\
                 self.dataset.file_directory)
 
         return command_str
+
+    @staticmethod
+    def get_pipeline_command(dataset):
+        if dataset is None:
+            return (False, 'The dataset is None')
+
+        pipeline_runner = PipelineScriptRunner(dataset)
+        script_directory = pipeline_runner.step1_get_script_directory_info()
+        if script_directory is None:
+            return (False, pipeline_runner.err_message)
+
+        script_command = pipeline_runner.step2_get_script_command(script_directory)
+        if script_command is None:
+            return (False, pipeline_runner.err_message)
+
+        return (True, script_command)
+
+
 
 if __name__ == '__main__':
     pass

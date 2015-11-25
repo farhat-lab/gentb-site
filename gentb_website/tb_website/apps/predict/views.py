@@ -13,6 +13,7 @@ from apps.dropbox_helper.models import DropboxRetrievalLog
 from apps.utils.view_util import get_common_dict
 from apps.predict.message_helper import send_new_dataset_message_to_tb_admins
 from django.contrib.auth.decorators import login_required
+from apps.predict.pipeline_hardcoded_script_runner import PipelineScriptRunner
 
 import logging
 logger = logging.getLogger(__name__)
@@ -38,6 +39,15 @@ def view_single_dataset(request, dataset_md5):
     d['dataset_notes'] = PredictDatasetNote.objects.filter(dataset=dataset).all()
     d['script_runs'] = DatasetScriptRun.objects.filter(dataset=dataset).all()
     d['tb_user'] = dataset.user
+
+    # Pipeline command
+    (pipeline_command_found, pipeline_command_or_err) = PipelineScriptRunner.get_pipeline_command(dataset)
+    d['pipeline_command_found'] = pipeline_command_found
+
+    if pipeline_command_found:
+        d['pipeline_command'] = pipeline_command_or_err
+    else:
+        d['pipeline_command_err'] = pipeline_command_or_err
 
     return render_to_response('predict/my_dataset_detail.html',
                              d,

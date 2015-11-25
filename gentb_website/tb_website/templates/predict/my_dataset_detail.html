@@ -34,13 +34,13 @@ My Datasets - Phthisis Ravens
     </tr>
     <tr>
         <th class="text-primary">Status</th>
-        <td>{{ dataset.status }}</td>
+        <td>{{ dataset.status.id }} - {{ dataset.status.human_name }}</td>
     </tr>
     <tr>
         <th class="text-primary">Description</th>
         <td>{{ dataset.description|linebreaks }}</td>
     </tr>
-    <tr>        
+    <tr>
         <th class="text-primary">File Type</th>
         <td>
             {{ dataset.file_type|upper }},
@@ -53,9 +53,10 @@ My Datasets - Phthisis Ravens
     </tr>
     {% if dataset.is_fastq_pair_ended and dataset.dropboxretrievallog %}
     <tr>
-        <th class="text-primary">Pair-end Extension</th>
+        <th class="text-primary">Pair-end Extension
+            <br>"." or "_R"</th>
         <td>
-            {{ dataset.dropboxretrievallog.fastq_pair_end_extension }}
+            "{{ dataset.dropboxretrievallog.fastq_pair_end_extension }}"
         </td>
     </tr>
     {% endif %}
@@ -75,8 +76,25 @@ My Datasets - Phthisis Ravens
 
     </tr>
     <tr>
-        <th class="text-primary">Created</th>
-        <td>{{ dataset.created }}</td>
+        <th class="text-primary">Local Dataset Directory</th>
+        <td>
+            {{ dataset.file_directory }}
+        </td>
+    </tr>
+    <tr>
+        <th class="text-primary">Pipeline Command</th>
+        <td>
+            {% if pipeline_command_found %}
+                {{ pipeline_command }}
+            {% else %}
+                <span class="label label-danger">Error</span>
+                {{ pipeline_command_err|linebreaks }}
+            {% endif %}
+        </td>
+    </tr>
+    <tr>
+        <th class="text-primary">Modified<br />Created</th>
+        <td>{{ dataset.modified }}<br />{{ dataset.created }}</td>
     </tr>
 </table>
 {% for script_run in script_runs %}
