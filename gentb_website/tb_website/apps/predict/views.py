@@ -44,6 +44,12 @@ def view_single_dataset(request, dataset_md5):
     (pipeline_command_found, pipeline_command_or_err) = PipelineScriptRunner.get_pipeline_command(dataset)
     d['pipeline_command_found'] = pipeline_command_found
 
+    try:
+        local_directory_contents = os.listdir(dataset.file_directory)
+        d['local_directory_contents'] = local_directory_contents
+    except:
+        d['local_directory_err'] = "Could not list directory contents"
+
     if pipeline_command_found:
         d['pipeline_command'] = pipeline_command_or_err
     else:

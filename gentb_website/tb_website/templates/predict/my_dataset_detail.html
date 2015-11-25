@@ -71,11 +71,9 @@ My Datasets - Phthisis Ravens
         <th class="text-primary">File Names from Dropbox</th>
         <td>
             {% if dataset.dropboxretrievallog %}
-                <ul>
                 {% for fname in dataset.dropboxretrievallog.selected_files %}
-                    <li>({{ forloop.counter }}) {{ fname }}</li>
+                ({{ forloop.counter }}) {{ fname }}<br />
                 {% endfor %}
-                </ul>
             {% else %}
                 N/A
             {% endif %}
@@ -88,6 +86,33 @@ My Datasets - Phthisis Ravens
             {{ dataset.file_directory }}
         </td>
     </tr>
+    <tr>
+        <th class="text-primary">Local Dataset Directory Contents</th>
+        <td>
+            {% if local_directory_err %}
+                <span class="label label-warning">Fail</span> &nbsp;
+                {{ local_directory_err }}
+            {% else %}
+                {% for item in local_directory_contents %}
+                    {% if forloop.first %}
+                        <span class="label label-success">OK</span> &nbsp;<br />
+                    {% endif %}
+                    ({{ forloop.counter }}) {{ item }}<br />
+                {% empty %}
+                    <span class="label label-info">No files</span> &nbsp;
+                    The directory is currently empty.  Have the Dropbox files been
+                    retrieved?
+                {% endfor %}
+            {% endif %}
+        </td>
+    </tr>
+    {% if }
+    try:
+        d['local_directory_contents'] = os.listdir(dataset.file_directory)
+        d['local_directory_err'] = None
+    else:
+        d['local_directory_err'] = "Could not list directory contents"
+
     <tr>
         <th class="text-primary">Pipeline Command</th>
         <td>
