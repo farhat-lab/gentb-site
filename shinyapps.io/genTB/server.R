@@ -253,7 +253,7 @@ shinyServer(function(input, output, session) {
       addLegend(
             position = 'bottomright',
             layerId = ids2,
-            colors = c("#7CC4B9", "#983D35"),
+            colors = c(color_resistant_strains(), color_total_strains()),
             labels = c("Total Strains", "Resistant Strains"), opacity = 0.9)
     
   })
