@@ -1,0 +1,13 @@
+[
+{
+    "fields": {
+        "script_directory": "/groups/murray/run_pipeline/",
+        "is_chosen_directory": true,
+        "modified": "2015-11-30T19:48:14Z",
+        "name": "genTB on HMS server",
+        "created": "2015-11-30T19:48:07Z"
+    },
+    "model": "predict.pipelinescriptsdirectory",
+    "pk": 1
+}
+]

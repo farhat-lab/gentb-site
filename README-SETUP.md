@@ -186,6 +186,18 @@ s.domain = 'gentb.hms.harvard.edu'
 s.save()
 ```
 
+### Load initial status settings + pipeline script directory
+
+```
+# status settings
+python manage.py loaddata apps/predict/predict_statuses.json
+
+# location of pipeline scripts (HMS)
+python manage.py loaddata apps/predict/hms_pipeline_scripts_dir.json
+```
+
+
+
 ### Set up the .htaccess file
 
 Create an .htaccess file
@@ -380,6 +392,13 @@ git pull
 ## Update static files
 
 ```
-cd tb_website/
+cd /www/gentb.hms.harvard.edu/code/gentb-site/gentb_website/tb_website
 python manage.py collectstatic
+```
+
+## Run database schema updates
+
+```
+cd /www/gentb.hms.harvard.edu/code/gentb-site/gentb_website/tb_website
+python manage.py migrate
 ```
