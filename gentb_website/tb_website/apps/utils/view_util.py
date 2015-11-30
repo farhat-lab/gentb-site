@@ -6,7 +6,7 @@ USERNAME_KEY = 'username'
 IS_LOGGED_IN_KEY = 'IS_LOGGED_IN'
 IS_ACTIVE_STAFF = 'IS_ACTIVE_STAFF'
 GENTB_CONTACT_EMAIL = 'TBpredict@gmail.com'
-GENTB_CONTACT_EMAIL_HTML = '<a href="{0}">{0}</a>'.format(GENTB_CONTACT_EMAIL)
+GENTB_CONTACT_EMAIL_HTML = '<a href="mailto:{0}">{0}</a>'.format(GENTB_CONTACT_EMAIL)
 
 def get_common_dict(request, title, **kwargs):
 
@@ -14,7 +14,8 @@ def get_common_dict(request, title, **kwargs):
     d = dict(title=title,
              IS_LOGGED_IN=False,
              SITE_URL=get_site_url(),
-             GENTB_CONTACT_EMAIL_HTML=GENTB_CONTACT_EMAIL_HTML)
+             GENTB_CONTACT_EMAIL_HTML=GENTB_CONTACT_EMAIL_HTML,
+             GENTB_CONTACT_EMAIL=GENTB_CONTACT_EMAIL)
 
     # Add other arguments
     for k, v in kwargs.items():

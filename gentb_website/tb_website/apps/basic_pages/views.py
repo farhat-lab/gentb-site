@@ -36,6 +36,13 @@ def view_data_page(request):
                             , context_instance=RequestContext(request))
 
 
+def view_terms_of_use(request):
+    d = get_common_dict(request, 'Terms of Use')
+
+    return render_to_response('terms_of_use/terms-of-use-page.html'\
+                            , d\
+                            , context_instance=RequestContext(request))
+
 
 
 def view_explore_page(request):

@@ -115,7 +115,7 @@
                     </div>
                     <div id="collapseTwo" class="panel-collapse collapse">
                       <div class="panel-body">
-                          {% include 'citation-for-project.html' %}                        
+                          {% include 'citation-for-project.html' %}
                       </div>
                     </div>
                   </div>
@@ -142,7 +142,7 @@
             <div class="col-md-6 portfolio-item">
                 <p><b>Terms of Use:</b></p>
 
-                <p>This project is developed and maintained by researchers and clinicians as a benefit to the research and education community. Although this website is curated, it is also provided in an "as is" basis only, without warranty or representation as to its accuracy or reliability.<!-- <br>(read more) --></p>
+                {% include "terms_of_use/terms-of-use.html" %}
 
 
             </div>
@@ -151,8 +151,8 @@
             <div class="col-md-3 col-sm-6 hero-feature">
                     <p>
                         Supported with funding by:
-                        <br><br>
-                        <a href="http://www.lung.org"><img src="{% static 'images/lung.png' %}" alt="American Lung Association" /></a>
+                        {% include "funding/lung.html" %}
+                        {% include "funding/nih_bd2k.html" %}
                     </p>
                 </div>
             </div>

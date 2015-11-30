@@ -16,6 +16,8 @@ urlpatterns = patterns('apps.basic_pages.views',
 
     url(r'^explore/$', 'view_explore_page', name="view_explore_page"),
 
+    url(r'^terms-of-use/$', 'view_terms_of_use', name="view_terms_of_use"),
+
     url(r'^/?$', 'view_homepage', name="default_homepage"),
 
     #url(r'^milestone-history/(?P<chosen_year>(\d){4})/$', 'view_milestone_history', name="view_milestone_history_by_year"),

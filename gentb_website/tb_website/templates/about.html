@@ -68,12 +68,10 @@ About - Phthisis Ravens
                 <h3><i>Funding</i></h3>
                 <div class="row">
                     <div class="col-md-6">
-                        <a href="http://www.lung.org"><img src="{% static 'images/lung.png' %}" alt="American Lung Association" /></a>
-                        <p><small>&copy; {% now "Y" %}</small></p>
+                        {% include "funding/lung.html" %}
                     </div>
                     <div class="col-md-6">
-                        <a href="https://datascience.nih.gov/bd2k"><img src="{% static 'images/nih-bd2k.png' %}" alt="NIH Big Data to Knowledge (BD2K)" /></a>
-                        <p><small>&copy; {% now "Y" %}</small></p>
+                        {% include "funding/nih_bd2k.html" %}
                     </div>
                 </div>
             </div>
