@@ -119,6 +119,8 @@ source venv_tb/bin/postactivate
 cd /www/gentb.hms.harvard.edu/code/gentb-site/gentb_website
 source venv_tb/bin/activate
 source venv_tb/bin/postactivate
+# If profile not set to run bsub
+ . /opt/lsf/conf/profile.lsf
 ```
 
 ### Add production settings
@@ -355,4 +357,29 @@ Test ```ScriptToRun``` object to add via the admin:
 
 ```
 /www/gentb.hms.harvard.edu/code/gentb-site/gentb_website/venv_tb/bin/python  /www/gentb.hms.harvard.edu/code/gentb-site/gentb_website/tb_website/apps/script_helper/test_script.py '{"file_directory": "/home/rp188/gentb_test/tbdata_00000001", "run_md5": "2af2023f8c6103dbe00803929de54c28", "admin_url": "https://gentb.hms.harvard.edu/gentb-admin/predict/predictdataset/1/", "callback_url": "https://gentb.hms.harvard.edu/predict/pipeline-run-results-notice/", "dataset_id": 1, "user_email": "raman_prasad@harvard.edu"}'
+```
+
+# Code updates
+
+## Reuse the virtualenv -- after setup
+
+```
+cd /www/gentb.hms.harvard.edu/code/gentb-site/gentb_website
+source venv_tb/bin/activate
+source venv_tb/bin/postactivate
+# If profile not set to run bsub
+ . /opt/lsf/conf/profile.lsf
+```
+
+## Pull from github
+
+```
+git pull
+```
+
+## Update static files
+
+```
+cd tb_website/
+python manage.py collectstatic
 ```

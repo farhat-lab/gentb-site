@@ -10,7 +10,7 @@ import model_utils.fields
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('predict', '0004_auto_20151124_1543'),
+        ('predict', '0001_initial'),
     ]
 
     operations = [

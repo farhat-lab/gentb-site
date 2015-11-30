@@ -9,7 +9,7 @@ import model_utils.fields
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('tb_users', '0003_auto_20150820_1345'),
+        ('tb_users', '0001_initial'),
     ]
 
     operations = [
@@ -30,13 +30,31 @@ class Migration(migrations.Migration):
             },
         ),
         migrations.CreateModel(
+            name='PipelineScriptsDirectory',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('created', model_utils.fields.AutoCreatedField(default=django.utils.timezone.now, verbose_name='created', editable=False)),
+                ('modified', model_utils.fields.AutoLastModifiedField(default=django.utils.timezone.now, verbose_name='modified', editable=False)),
+                ('name', models.CharField(help_text=b'helpful user name', max_length=100)),
+                ('script_directory', models.TextField(help_text=b'Full path to the directory     containing the analyseNGS.pl and analyseVCF.pl pipeline scripts')),
+                ('is_chosen_directory', models.BooleanField(default=True)),
+            ],
+            options={
+                'ordering': ('is_chosen_directory', '-modified'),
+                'verbose_name': 'Pipeline Scripts Directory',
+                'verbose_name_plural': 'Pipeline Scripts Directory',
+            },
+        ),
+        migrations.CreateModel(
             name='PredictDataset',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('created', model_utils.fields.AutoCreatedField(default=django.utils.timezone.now, verbose_name='created', editable=False)),
                 ('modified', model_utils.fields.AutoLastModifiedField(default=django.utils.timezone.now, verbose_name='modified', editable=False)),
                 ('title', models.CharField(max_length=255, verbose_name=b'Dataset title')),
-                ('dropbox_url', models.URLField()),
+                ('file_type', models.CharField(max_length=25, choices=[(b'vcf', b'VCF'), (b'fastq', b'FastQ')])),
+                ('fastq_type', models.CharField(blank=True, help_text=b'Only used for FastQ files', max_length=50, choices=[(b'pair-end', b'Pair-end'), (b'single-end', b'Single-end')])),
+                ('dropbox_url', models.URLField(help_text=b'https://www.dropbox.com/help/274', verbose_name=b'Dropbox link')),
                 ('description', models.TextField(verbose_name=b'Dataset description')),
                 ('file_directory', models.CharField(max_length=255, blank=True)),
                 ('has_prediction', models.BooleanField(default=False)),
@@ -80,6 +98,8 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('name', models.CharField(max_length=50)),
+                ('human_name', models.CharField(max_length=100)),
+                ('is_error', models.BooleanField()),
                 ('slug', models.SlugField(blank=True)),
                 ('sort_order', models.IntegerField()),
             ],
