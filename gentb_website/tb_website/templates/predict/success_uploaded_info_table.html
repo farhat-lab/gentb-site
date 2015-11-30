@@ -23,11 +23,11 @@
         <th class="text-primary">Files</th>
         <td>
             {% if dbox_log %}
-                {% if dbox_log.file_metadata %}
-                The following file{{ dbox_log.file_metadata|pluralize:" was,s were"}} identified from the
+                {% if dbox_log.selected_files %}
+                The following file{{ dbox_log.selected_files|pluralize:" was,s were"}} identified from the
                 <a href="{{ dataset.dropbox_url }}" target="_blank">Dropbox link</a>:
                     <ol>
-                    {% for file_info in dbox_log.file_metadata %}
+                    {% for file_info in dbox_log.selected_files %}
                         <li>{{ file_info }}</li>
                     {% endfor %}
                     </ol>
