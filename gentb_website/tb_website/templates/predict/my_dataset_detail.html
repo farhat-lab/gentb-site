@@ -50,8 +50,7 @@ My Datasets - Phthisis Ravens
     <tr>
         <th class="text-primary">File Type</th>
         <td>
-            {{ dataset.file_type|upper }},
-            {% if dataset.is_fastq_file %}
+            {{ dataset.file_type|upper }}{% if dataset.is_fastq_file %},
                 {% if dataset.is_fastq_pair_ended %}
                     Pair-end<br />
                 {% else %}
