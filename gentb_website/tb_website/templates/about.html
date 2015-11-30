@@ -20,13 +20,13 @@ About - Phthisis Ravens
             <div class="col-md-6 portfolio-item">
                 <img src="{% static 'images/predict.png' %}" align="right">
             	<h3>Predict DR</h3>
-            	<p>Clinicians and researchers can make predictions about a strain's resistance based on its genotype using a random forest classifier, trained using a 1400 strain bank of clinical <i>Mycobacterium tuberculosis</i>. This classifier will be updated and retrained with the contribution of new high quality genotype and drug resistance data from the research community.</p>
+            	<p>Clinicians and researchers can make predictions about an isolate’s resistance based on its genotype using a random forest classifier, trained using a 1400 isolate bank of clinical <i>Mycobacterium tuberculosis</i>. This classifier will be updated and retrained with the contribution of new high quality genotype and drug resistance data from the research community.</p>
             </div>
 
             <div class="col-md-6 portfolio-item">
                 <img src="{% static 'images/share.png' %}" align="right">
             	<h3>Share</h3>
-            	<p>Clinicians and researchers can also store and share TB genetic and phenotypic data, allowing for the expansion of the current dataset. Every additional dataset that is uploaded is given a persistent and citable identifier using the broadly supported <a href="http://www.doi.org/">Digital Object Identifier (DOI)</a> system, an ISO standard which provides an actionable, interpretable, and persistent link.</p>
+                <p>Clinicians and researchers can also store and share TB genetic and phenotypic data, allowing for the expansion of the current dataset. Every additional dataset that is uploaded is given a persistent and citable identifier using the broadly supported <a href="http://www.doi.org/">Digital Object Identifier (DOI)</a> system, an ISO standard which provides an actionable, interpretable, and persistent link.</p>
             </div>
         </div>
 
@@ -34,14 +34,13 @@ About - Phthisis Ravens
             <div class="col-md-6 portfolio-item">
                 <img src="{% static 'images/map.png' %}" align="right">
             	<h3>Map</h3>
-                	<p>The tool also makes mapping TB genetic and phenotypic data as well as resistances easy. In particular, the tool, as it stands, allows for the mapping of resistance frequencies by different geographies through an interactive interface.
-                </p>
+                    <p>The tool also makes mapping TB genetic and phenotypic data as well as resistances easy. In particular, the tool, as it stands, allows for the mapping of resistance frequencies by different geographies through an interactive interface.</p>
             </div>
 
             <div class="col-md-6 portfolio-item">
                 <img src="{% static 'images/explore.png' %}" align="right">
                 <h3>Explore</h3>
-            	<p>Finally the tool allows clinicians and researchers with limited statistical experience to explore the data using a point and click interface that can generate summary statistics and a graphical or tabular data display. This feature is powered by the <a href="https://github.com/IQSS/TwoRavens/">TwoRavens</a> application.</p>
+            	<p>Finally the tool allows clinicians and researchers with limited statistical experience to explore the data using a point and click interface that can generate summary statistics and a graphical or tabular data display. This feature is powered by the <a href="https://github.com/IQSS/TwoRavens/">TwoRavens</a>.</p>
             </div>
         </div>
 
@@ -50,7 +49,7 @@ About - Phthisis Ravens
 		<div class="row">
             <div class="col-md-6 portfolio-item">
                 <h3><i>Features and Tools in Development</i></h3>
-                <p>Stay tuned for additional analysis features as we have several in progress. If you would like to receive updates on these features please email us at <b>tbpredict</b> @ <b>gmail.com</b>.</p>
+                <p>Stay tuned for additional analysis features as we have several in progress. If you would like to receive updates on these features please email us at {{ GENTB_CONTACT_EMAIL_HTML|safe }}.</p>
             </div>
 
             <div class="col-md-6 portfolio-item">
@@ -63,20 +62,28 @@ About - Phthisis Ravens
             </div>
             <div class="col-md-6 portfolio-item">
                 <h3><i>Contact</i></h3>
-                <p> Maha Farhat, tbpredict @ gmail.com</p>
+                <p> Maha Farhat, {{ GENTB_CONTACT_EMAIL_HTML|safe }}</p>
             </div>
             <div class="col-md-6 portfolio-item">
                 <h3><i>Funding</i></h3>
-                <p style="padding-left:30px;"><a href="http://www.lung.org"><img src="{% static 'images/lung.png' %}" alt="American Lung Association" /></a>
-                <br /><small>&copy; {% now "Y" %}</small></p>
+                <div class="row">
+                    <div class="col-md-6">
+                        <a href="http://www.lung.org"><img src="{% static 'images/lung.png' %}" alt="American Lung Association" /></a>
+                        <p><small>&copy; {% now "Y" %}</small></p>
+                    </div>
+                    <div class="col-md-6">
+                        <a href="https://datascience.nih.gov/bd2k"><img src="{% static 'images/nih-bd2k.png' %}" alt="NIH Big Data to Knowledge (BD2K)" /></a>
+                        <p><small>&copy; {% now "Y" %}</small></p>
+                    </div>
+                </div>
             </div>
             <div class="col-md-6 portfolio-item">
                 <h3><i>Terms of use statement</i></h3>
-                <p>This database is maintained as a benefit to the research and education community. This website is provided in an "as is" basis only and without warranty or representation, whether express or implied, (including warranties of merchantability and fitness for a particular purpose) as to its accuracy or reliability. The developers and the American Lung Association are neither responsible for nor accept any liability for any direct or indirect loss or damages arising from or connected to the use of this website. The information provided on this website is intended for research and educational purposes and is not intended to substitute for care by a licensed healthcare professional.</p>
+                <p>This database is maintained as a benefit to the research and education community. This website is provided in an "as is" basis only and without warranty or representation, whether express or implied, (including warranties of merchantability and fitness for a particular purpose) as to its accuracy or reliability. The developers, the National Institute of Health and the American Lung Association are neither responsible for nor accept any liability for any direct or indirect loss or damages arising from or connected to the use of this website. The information provided on this website is intended for research and educational purposes and is not intended to substitute for care by a licensed healthcare professional.</p>
             </div>
             <div class="col-md-6 portfolio-item">
                 <h3><i>Citing the project</i></h3>
-                <p>Farhat MR, Murray M, Choirat C, Prasad R, Honaker J, Durbin P, Idris MY, Crosas M, King G, Murray M. <b>genTB: Translational Genomics of Tuberculosis.</b> 2015.</p>
+                <p>{% include 'citation-for-project.html' %}</p>
             </div>
         </div>
 

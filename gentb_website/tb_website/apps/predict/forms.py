@@ -58,8 +58,12 @@ class UploadPredictionDataForm(forms.ModelForm):
         widgets = {
             'dropbox_url': forms.Textarea(attrs={'rows': '4'}),
         }
+
     def __init__(self, *args, **kwargs):
         super(UploadPredictionDataForm, self).__init__(*args, **kwargs)
+
+        self.fields['dropbox_url'].help_text = 'For help, see \
+        <a href="{0}" target="_blank">{0}</a>'.format(self.fields['dropbox_url'].help_text) 
         #self.fields['dropbox_url'].widget = forms.TextInput(attrs={'size':'40'}))
         #self.fields['dropbox_url'].widget.attrs.update({'size' : '40'})
 

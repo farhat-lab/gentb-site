@@ -79,7 +79,7 @@ class PredictDataset(TimeStampedModel):
         blank=True,\
         help_text='Only used for FastQ files')
 
-    dropbox_url = models.URLField()
+    dropbox_url = models.URLField("Dropbox link", help_text='https://www.dropbox.com/help/274')
 
     description = models.TextField('Dataset description')
 

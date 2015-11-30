@@ -52,10 +52,10 @@
             <div class="col-md-3 col-sm-6 hero-feature">
                 <div class="thumbnail">
                     <center><h4>Contribute your data <br>to this project</h4></center>
-                    <a href="{#% url 'view_share_page' %#}"><img src="{% static 'images/share.png' %}" alt=""></a>
+                    <a href="{#% url 'view_data_page' %#}"><img src="{% static 'images/share.png' %}" alt=""></a>
                     <div class="caption">
                         <p class="text-center">
-                            <a href="{#% url 'view_share_page' %#}" class="btn btn-primary">Share Your Data</a>
+                            <a href="{#% url 'view_data_page' %#}" class="btn btn-primary">Share Your Data</a>
                         </p>
                     </div>
                 </div>
@@ -100,7 +100,7 @@
                     </div>
                     <div id="collapseOne" class="panel-collapse collapse">
                       <div class="panel-body">
-                        Maha Farhat, MD <br> <a href="mailto:TBpredict@gmail.com">genTB@gmail.com</a>
+                        Maha Farhat, MD <br> {{ GENTB_CONTACT_EMAIL_HTML|safe }}
                       </div>
                     </div>
                   </div>
@@ -115,7 +115,7 @@
                     </div>
                     <div id="collapseTwo" class="panel-collapse collapse">
                       <div class="panel-body">
-                        Farhat MR, Murray M, Honaker J, Choirat C, Durbin P, Idris MY. <b>genTB: Translational Genomics of Tuberculosis.</b> 2014.
+                          {% include 'citation-for-project.html' %}                        
                       </div>
                     </div>
                   </div>

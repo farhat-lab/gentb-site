@@ -28,10 +28,10 @@ def view_about_page(request):
                               , context_instance=RequestContext(request))
 
 
-def view_share_page(request):
-    d = get_common_dict(request, 'Share', share_page=True)
+def view_data_page(request):
+    d = get_common_dict(request, 'Data', data_page=True)
 
-    return render_to_response('share.html'\
+    return render_to_response('data_page.html'\
                             , d\
                             , context_instance=RequestContext(request))
 
@@ -51,7 +51,7 @@ def view_explore_page(request):
 
 
 def view_data_upload_information(request):
-    d = get_common_dict(request, 'Data Upload', share_page=True)
+    d = get_common_dict(request, 'Data Upload', data_page=True)
 
     return render_to_response('data_upload_instructions.html'\
                             , d\

@@ -10,7 +10,7 @@ urlpatterns = patterns('apps.basic_pages.views',
 
     #url(r'^predict/$', 'view_predict_page', name="view_predict_page"),
 
-    url(r'^share/$', 'view_share_page', name="view_share_page"),
+    url(r'^share/$', 'view_data_page', name="view_data_page"),
 
     url(r'^data-upload-information/$', 'view_data_upload_information', name="view_data_upload_information"),
 

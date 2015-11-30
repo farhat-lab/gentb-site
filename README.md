@@ -22,12 +22,12 @@ A basic view/template combination
 
 This pages requires the user to be logged in.  
 
-### Share
+### Data Page
 
 A basic view/template combination.  The template includes embedded [Dataverse Widgets](http://datascience.iq.harvard.edu/blog/dataverse-40-theme-widgets) in the form of javascript snippets
 
-  - View: "view_share_page" [gentb_website/tb_website/apps/basic_pages/views.py](gentb_website/tb_website/apps/basic_pages/views.py)
-  - Template: [gentb_website/tb_website/templates/share.html](gentb_website/tb_website/templates/share.html)
+  - View: "view_data_page" [gentb_website/tb_website/apps/basic_pages/views.py](gentb_website/tb_website/apps/basic_pages/views.py)
+  - Template: [gentb_website/tb_website/templates/data_page.html](gentb_website/tb_website/templates/data_page.html)
 
 ![Share Page screenshot](screen-shots/genTB-share.png?raw=true "genTB Share page")
 
@@ -38,7 +38,7 @@ A basic view/template combination.  The maps are actually hosted by a Shiny appl
 
   - View: "view_map_page" [gentb_website/tb_website/apps/maps/views.py](gentb_website/tb_website/apps/maps/views.py)
   - Template: [gentb_website/tb_website/templates/maps/basic_map.html](gentb_website/tb_website/templates/maps/basic_map.html)
-  
+
 ![Map Page screenshot](screen-shots/genTB-map.png?raw=true "genTB Map page")
 
 - Note: The Shiny app url is currently ```https://hmdc.shinyapps.io/genTB``` and part of the IQSS Shinyapps.io service
