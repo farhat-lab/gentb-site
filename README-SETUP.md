@@ -190,10 +190,10 @@ s.save()
 
 ```
 # status settings
-python manage.py loaddata apps/predict/predict_statuses.json
+python manage.py loaddata apps/predict/fixtures/predict_statuses.json
 
 # location of pipeline scripts (HMS)
-python manage.py loaddata apps/predict/hms_pipeline_scripts_dir.json
+python manage.py loaddata apps/predict/fixtures/hms_pipeline_scripts_dir.json
 ```
 
 
