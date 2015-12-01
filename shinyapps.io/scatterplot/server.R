@@ -4,10 +4,6 @@ library(tidyr)
 
 shinyServer(function(input, output) {
   
-  selectInput("select", label = h3("Select box"), 
-              choices = list("Choice 1" = 1, "Choice 2" = 2, "Choice 3" = 3), 
-              selected = 1)
-  
   output$distPlot <- renderPlot({
     x    <- faithful[, 2]
     bins <- seq(min(x), max(x), length.out = input$bins + 1)
