@@ -51,12 +51,15 @@ class DropboxRetrievalLog(TimeStampedModel):
         return '{0}'.format(self.dataset)
 
     def save(self, *args, **kwargs):
+        self.fastq_pair_end_extension = FilePatternHelper.get_fastq_extension_type(self.selected_files)
+        if self.fastq_pair_end_extension is None:
+            self.self.fastq_pair_end_extension = ''
+
         if not self.id:
             super(DropboxRetrievalLog, self).save(*args, **kwargs)
 
         self.md5 = md5('%s%s' % (self.id, self.created)).hexdigest()
 
-        self.fastq_pair_end_extension = self.get_fastq_extension_type()
 
         super(DropboxRetrievalLog, self).save(*args, **kwargs)
 
