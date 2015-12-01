@@ -236,18 +236,17 @@ class PipelineScriptRunner(object):
 
 
 if __name__ == '__main__':
-    pass
-    """
+    #pass
+
     dataset = PredictDataset.objects.first()
 
     # get some Dataset
     pipeline_runner = PipelineScriptRunner(dataset)
-
-
+    # Run script
     pipeline_runner.run_script_on_dataset()
 
-    # OR
-
+    """
+    # Alternative run method
     script_directory = pipeline_runner.step1_get_script_directory_info()
     if script_directory is not None:
         script_command = pipeline_runner.step2_get_script_command(script_directory)
