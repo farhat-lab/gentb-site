@@ -10,16 +10,17 @@ from os.path import dirname, join, isdir, isfile, getsize, realpath
 import os, sys
 import urllib
 
-"""
+
 # example CALLBACK_INFO_DICT
-{"file_directory": "/home/gentb_test/tbdata_00000112",
-"run_md5": "2af2023f8c6103dbe00803929de54c28",
+CALLBACK_INFO_DICT = {"file_directory": "/home/gentb_test/tbdata_00000112",
+"run_md5": "bb897a28f59f93ad115a6faa42f4918d",
 "admin_url": "https://gentb.hms.harvard.edu/gentb-admin/predict/predictdataset/1/",
-"callback_url": "https://gentb.hms.harvard.edu/predict/pipeline-run-results-notice/",
+"callback_url": "http://127.0.0.1:8000/predict/pipeline-run-results-notice/",
+#"callback_url": "https://gentb.hms.harvard.edu/predict/pipeline-run-results-notice/",
 "dataset_id": 112,
-"user_email": "raman_prasad@harvard.edu"}
-"""
-CALLBACK_INFO_DICT = {{ callback_info_dict }}
+"user_email": "tbuser@harvard.edu"}
+
+#CALLBACK_INFO_DICT = {{ callback_info_dict }}
 
 
 class GenTBStatusFeedback:
@@ -30,12 +31,13 @@ class GenTBStatusFeedback:
     MATRIX_FILE_NAME = join(OUTPUT_DIRECTORY, 'matrix.csv')
 
     def __init__(self):
-        job_checked = False
-        success = False
-        error_message = None
+        self.job_checked = False
+        self.success = False
+        self.error_message = None
 
-        check_if_job_succeeded()
-        send_feedback()
+        self.check_if_job_succeeded()
+        print 'did_job_succceed', self.did_job_succceed()
+        self.send_feedback_to_gentb()
 
     def add_error(self, msg):
         """
@@ -53,6 +55,7 @@ class GenTBStatusFeedback:
 
         return self.success
 
+
     def get_callback_params(self):
         """
         Format the callback parameters
@@ -67,7 +70,7 @@ class GenTBStatusFeedback:
         # --------------------
         # Job Failed
         # --------------------
-        if not self.did_job_succceed:
+        if not self.did_job_succceed():
             callback_params['success'] = False
             callback_params['result_data'] = self.error_message
             return callback_params
@@ -115,9 +118,9 @@ class GenTBStatusFeedback:
 
         # Does the output directory exist:
         #
-        is not isdir(self.OUTPUT_DIRECTORY):
+        if not isdir(self.OUTPUT_DIRECTORY):
             self.add_error("The output directory does not exist: %s"\
-                % OUTPUT_DIRECTORY)
+                % self.OUTPUT_DIRECTORY)
             return
 
         # ------------------------
@@ -151,3 +154,6 @@ class GenTBStatusFeedback:
             return
 
         self.success = True
+
+if __name__ == '__main__':
+    gentb_status = GenTBStatusFeedback()

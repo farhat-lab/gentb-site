@@ -64,7 +64,9 @@ class DropboxRetrievalLog(TimeStampedModel):
         """
         For pair-ended FastQ files, figure out the extension
         """
-        return FilePatternHelper.get_fastq_extension_type(self.selected_files)
+        ext_type = FilePatternHelper.get_fastq_extension_type(self.selected_files)
+        if ext_type is None:
+            return ''
 
     class Meta:
         ordering = ('-created', 'dataset')
