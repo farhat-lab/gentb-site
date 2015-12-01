@@ -293,7 +293,19 @@ cd /www/gentb.hms.harvard.edu/code/gentb-site/gentb_website/tb_website
 supervisord -c /www/gentb.hms.harvard.edu/code/gentb-site/gentb_website/tb_website/tb_website/settings/hms_supervisord.conf
 
 # Stop supervisor ctl, e.g. to issue 'status' or 'shutdown', etc.
-# suvervisorctl -c /www/gentb.hms.harvard.edu/code/gentb-site/gentb_website/tb_website/tb_website/settings/hms_supervisord.conf
+#supervisorctl -c /www/gentb.hms.harvard.edu/code/gentb-site/gentb_website/tb_website/tb_website/settings/hms_supervisord.conf
+```
+
+##### Stop supervisord
+
+```
+# Assumes in virtualenv above
+
+cd /www/gentb.hms.harvard.edu/code/gentb-site/gentb_website/tb_website
+
+# Activate the supervisor command line control
+supervisorctl -c /www/gentb.hms.harvard.edu/code/gentb-site/gentb_website/tb_website/tb_website/settings/hms_supervisord.conf
+shutdown
 ```
 
 #### Running gunicorn without supervisord
