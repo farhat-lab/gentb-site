@@ -414,3 +414,7 @@ python manage.py collectstatic
 cd /www/gentb.hms.harvard.edu/code/gentb-site/gentb_website/tb_website
 python manage.py migrate
 ```
+
+## Restart server
+
+- See [Running supervisord](#run-gunicornsupervisord)
