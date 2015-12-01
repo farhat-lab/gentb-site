@@ -3,6 +3,20 @@ This fires off the perl script to kick off the pipeline for either
 FastQ or VCF file analysis.
 
 """
+#from __future__ import print_function
+
+if __name__=='__main__':
+    import os, sys
+    from os.path import dirname, realpath
+    django_dir = dirname(dirname(dirname(realpath(__file__))))
+    sys.path.append(django_dir)
+    #os.environ['DJANGO_SETTINGS_MODULE'] = 'tb_website.settings.local'
+
+    # Allows the working environ to get set-up, apps registered, etc
+    #
+    import django
+    django.setup()
+
 from apps.predict.models import PredictDatasetStatus, PredictDataset,\
             PredictDatasetNote, DatasetScriptRun,\
             PipelineScriptsDirectory
