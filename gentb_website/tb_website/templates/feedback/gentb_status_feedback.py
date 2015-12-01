@@ -1,16 +1,20 @@
 """
+(generated {% now "F jS, Y f:s a" %})
+
 This script checks the local "output" directory and sends feedback to the server
 about the job.
 
-/output/
-    - result.json
-    - matrix.csv
+Dataset file diretory/
+        - gentb_status_feedback.py (this script)
+        - /output/
+            - result.json
+            - matrix.csv
 """
 from os.path import dirname, join, isdir, isfile, getsize, realpath
 import os, sys
 import urllib
 
-
+"""
 # example CALLBACK_INFO_DICT
 CALLBACK_INFO_DICT = {"file_directory": "/home/gentb_test/tbdata_00000112",
 "run_md5": "bb897a28f59f93ad115a6faa42f4918d",
@@ -19,8 +23,8 @@ CALLBACK_INFO_DICT = {"file_directory": "/home/gentb_test/tbdata_00000112",
 #"callback_url": "https://gentb.hms.harvard.edu/predict/pipeline-run-results-notice/",
 "dataset_id": 112,
 "user_email": "tbuser@harvard.edu"}
-
-#CALLBACK_INFO_DICT = {{ callback_info_dict }}
+"""
+CALLBACK_INFO_DICT = {{ callback_info_dict|safe }}
 
 
 class GenTBStatusFeedback:

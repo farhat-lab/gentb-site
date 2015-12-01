@@ -191,7 +191,10 @@ class PredictDataset(TimeStampedModel):
         return serializers.serialize('json', PredictDataset.objects.filter(id=self.id))
 
 
-    def get_script_args_json(self, run_md5, as_list=False):
+    def get_script_args_json(self, run_md5, **kwargs):
+
+        as_list = kwargs.get('as_list', False)
+        as_dict = kwargs.get('as_dict', False)
 
         site_url = get_site_url()
 
@@ -206,6 +209,9 @@ class PredictDataset(TimeStampedModel):
                  admin_url=admin_url,
                  run_md5=run_md5
                  )
+
+        if as_dict:
+            return d
 
         if as_list:
             return [ json.dumps(d)]
