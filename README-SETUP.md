@@ -418,3 +418,15 @@ python manage.py migrate
 ## Restart server
 
 - See [Running supervisord](#run-gunicornsupervisord)
+
+## Run dropbox retrieval script 
+
+```
+/www/gentb.hms.harvard.edu/code/gentb-site/gentb_website/cron_scripts/get_dropbox_files_prod_hms.sh
+```
+
+## Run pipeline script
+
+```
+/www/gentb.hms.harvard.edu/code/gentb-site/gentb_website/cron_scripts/run_pipeline_prod_hms.sh
+```
