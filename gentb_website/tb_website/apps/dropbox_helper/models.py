@@ -53,7 +53,7 @@ class DropboxRetrievalLog(TimeStampedModel):
     def save(self, *args, **kwargs):
         self.fastq_pair_end_extension = FilePatternHelper.get_fastq_extension_type(self.selected_files)
         if self.fastq_pair_end_extension is None:
-            self.self.fastq_pair_end_extension = ''
+            self.fastq_pair_end_extension = ''
 
         if not self.id:
             super(DropboxRetrievalLog, self).save(*args, **kwargs)
