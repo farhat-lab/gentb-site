@@ -97,7 +97,7 @@ class UploadPredictionDataForm(forms.ModelForm):
 
         else:
             #self.add_error('dropbox_url', dbox_metadata_or_err_msg)
-            raise forms.ValidationError(dbox_metadata_or_err_msg)
+            raise forms.ValidationError(dbox_retriever_obj_or_err_msg)
 
         return self.cleaned_data
 
