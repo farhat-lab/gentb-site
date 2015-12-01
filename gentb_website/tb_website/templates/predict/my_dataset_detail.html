@@ -120,8 +120,12 @@ My Datasets - Phthisis Ravens
         </td>
     </tr>
     <tr>
-        <th class="text-primary">Modified<br />Created</th>
-        <td>{{ dataset.modified }}<br />{{ dataset.created }}</td>
+        <th class="text-primary">Created</th>
+        <td>{{ dataset.created }}</td>
+    </tr>
+    <tr>
+        <th class="text-primary">Modified</th>
+        <td>{{ dataset.modified }}</td>
     </tr>
 </table>
 {% for script_run in script_runs %}
