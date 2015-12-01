@@ -196,11 +196,13 @@ class PredictDataset(TimeStampedModel):
         as_list = kwargs.get('as_list', False)
         as_dict = kwargs.get('as_dict', False)
 
-        site_url = get_site_url(for_internal_callback=True)
+        site_url = get_site_url()
+        site_url_callback = get_site_url(for_internal_callback=True)
 
         url_to_dataset = reverse('admin:predict_predictdataset_change', args=(self.id,))
         admin_url = '{0}{1}'.format(site_url, url_to_dataset)
-        callback_url = '{0}{1}'.format(site_url, reverse('view_dataset_run_notification', kwargs={}))
+
+        callback_url = '{0}{1}'.format(site_url_callback, reverse('view_dataset_run_notification', kwargs={}))
 
         d = dict(file_directory=self.file_directory,
                  dataset_id=self.id,
