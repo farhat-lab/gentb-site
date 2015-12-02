@@ -74,6 +74,7 @@ summary_gen_phen_country <- table_gen_phen_country %>%
   group_by(code) %>%
   summarize(
     country = country,
+    snpname = snpname,
     resistant = sum(drtype %in% c("MDR", "XDR")),
     sub.ins.del = sub.ins.del,
     coding.silent = coding.silent,
@@ -81,7 +82,8 @@ summary_gen_phen_country <- table_gen_phen_country %>%
     genetic.change = genetic.change,
     locus = locus,
     amino.acid.change = amino.acid.change,
-    variant = variant
+    variant = snpname # force snpname instead of variant in 'Mutations' tab
+    # variant = variant
   )
 
 
@@ -92,7 +94,7 @@ gen_phen_country_by_strain <- gen_phen_country_by_strain2[, list(
               strain = strain,
               drtype = ResistanceType,             
               rinh = IsoniazidDST,                
-              reth =EthionamideDST,  
+              reth = EthionamideDST,  
               rrif = RifampicinDST,                 
               rrfb = RifabutinDST,
               remb = EthambutolDST,                 
