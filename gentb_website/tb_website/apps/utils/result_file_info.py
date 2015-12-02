@@ -6,7 +6,7 @@ Dataset file diretory/
         - gentb_status_feedback.py
             (customized for each run, uses variables from this page)
         - /output/
-            - result.json   (pipeline analyze result)
+            - result.json   (predict script result)
             - matrix.csv    (pipeline analyze result)
             - heatmap.html  (predict script result)
 """
