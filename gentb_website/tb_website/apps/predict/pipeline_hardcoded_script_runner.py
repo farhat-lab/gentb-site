@@ -5,7 +5,7 @@ FastQ or VCF file analysis.
 """
 #from __future__ import print_function
 
-if __name__=='__main__':
+if __name__ == '__main__':
     import os, sys
     from os.path import dirname, realpath
     django_dir = dirname(dirname(dirname(realpath(__file__))))
@@ -18,6 +18,9 @@ if __name__=='__main__':
     django.setup()
 
 from django.template.loader import render_to_string
+from apps.utils.result_file_info import RESULT_FILE_NAME_DICT,\
+            EXPECTED_FILE_DESCRIPTIONS,\
+            RESULT_OUTPUT_DIRECTORY_NAME
 from apps.predict.models import PredictDatasetStatus, PredictDataset,\
             PredictDatasetNote, DatasetScriptRun,\
             PipelineScriptsDirectory
@@ -26,7 +29,10 @@ from os.path import isfile, isdir, join
 import logging
 LOGGER = logging.getLogger('apps.predict.pipeline_hardcoded_script_runner')
 
-class ErrMsg:
+class ErrMsg(object):
+    """
+    Class to hold an error message title and note
+    """
     def __init__(self, title, note):
         self.title = title
         self.note = note
@@ -36,12 +42,15 @@ FASTQ_ANALYSIS_SCRIPT = 'analyseNGS.pl'
 
 
 class PipelineScriptRunner(object):
-
-    def __init__(self, dataset):
-        assert isinstance(dataset, PredictDataset),\
+    """
+    Given a PredictDataset, run the appropriate
+    cluster pipeline script to process it.
+    """
+    def __init__(self, selected_dataset):
+        assert isinstance(selected_dataset, PredictDataset),\
             'The dataset must be an instance of PredictDataset'
 
-        self.dataset = dataset
+        self.dataset = selected_dataset
 
         self.err_found = False
         self.err_message_title = None
@@ -49,6 +58,12 @@ class PipelineScriptRunner(object):
 
 
     def record_error(self, msg_title, msg):
+        """
+        Record an error:
+            - within this non-persistnt object
+            - in the log files
+            - in the database in a PredictDatasetNote object
+        """
         self.err_found = True
         self.err_message_title = msg_title
         self.err_message = msg
@@ -68,14 +83,20 @@ class PipelineScriptRunner(object):
         return self.get_err_msg_obj()
 
     def get_err_msg_obj(self):
-        # Create an object for sending a message
-        # back to the calling function
-        #
+        """
+        Create an object for sending a message
+        back to the calling function
+        """
         return ErrMsg(self.err_message_title,\
                     self.err_message)
 
     def run_script_on_dataset(self):
-
+        """
+        Overarching method to excecute:
+        - Step 1:  Get script directory information
+        - Step 2:  Create/Format the pipeline script command
+        - Step 3:  Run the pipeline script!
+        """
         script_directory = self.step1_get_script_directory_info()
         if script_directory is None:
             return (False, self.get_err_msg_obj())
@@ -91,9 +112,10 @@ class PipelineScriptRunner(object):
         """
         Retrieve PipelineScriptsDirectory object from the database
         """
-        script_directory_info = PipelineScriptsDirectory.objects.filter(is_chosen_directory=True).first()
+        script_directory_info = PipelineScriptsDirectory.objects.filter(\
+                                is_chosen_directory=True).first()
         if script_directory_info is None:
-            err_title='No pipeline directory specified'
+            err_title = 'No pipeline directory specified'
             err_note = """'You must set a 'Pipeline Scripts Directory' to run the\
              pipeline Perl scripts. Please go into the admin control panel and add\
              a 'Pipeline Scripts Directory'.  Talk to your administrator for details."""
@@ -122,15 +144,22 @@ class PipelineScriptRunner(object):
         else:
             err_title = 'Not VCF or FastQ file'
             err_note = 'Could not determine the file type.\
-             Database contained: "%s"' % (dataset.file_type)
-            err_msg_obj = self.record_error(err_title, err_note)
+             Database contained: "%s"' % (self.dataset.file_type)
+            #err_msg_obj =
+            self.record_error(err_title, err_note)
             return None
 
         return command_to_run
 
 
-    def step3_run_command(self, command_to_run):
 
+    def step3_run_command(self, command_to_run):
+        """
+        - (1) Create a DatasetScriptRun object
+        - (2) Make a custom callback script and put it in the dataset file directory
+        - (3) Update the Dataset status
+        - (4) Run the script
+        """
         if command_to_run is None:
             return (False, self.get_err_msg_obj())
 
@@ -141,7 +170,7 @@ class PipelineScriptRunner(object):
         dsr.save()
 
         # ---------------------------------------------------------
-        # (1a) Place a callback script with the Dataset directory
+        # (2) Place a callback script with the Dataset directory
         #   - contains callback url + md5
         #   - called after the analyse scripts are Run
         # ---------------------------------------------------------
@@ -149,6 +178,13 @@ class PipelineScriptRunner(object):
         # Get callback args
         callback_info_dict = self.dataset.get_script_args_json(dsr.md5, as_dict=True)
         d = dict(callback_info_dict=callback_info_dict)
+        d.update(RESULT_FILE_NAME_DICT)
+        d['RESULT_OUTPUT_DIRECTORY_NAME'] = RESULT_OUTPUT_DIRECTORY_NAME
+        d['EXPECTED_FILE_DESCRIPTIONS'] = EXPECTED_FILE_DESCRIPTIONS
+
+        print '-' * 40
+        print d
+        print '-' * 40
 
         # Use args to create a custom python script
         py_callback_script = render_to_string('feedback/gentb_status_feedback.py', d)
@@ -159,11 +195,11 @@ class PipelineScriptRunner(object):
         fh.write(py_callback_script)
         fh.close()
 
-        # (2) Update the dataset status to 'in process'
+        # (3) Update the dataset status to 'in process'
         #
         self.dataset.set_status_processing_started()
 
-        # (3) Run the script -- not waiting for output
+        # (4) Run the script -- not waiting for output
         #
         full_args = command_to_run.split()
         print ('full_args', full_args)
@@ -185,12 +221,13 @@ class PipelineScriptRunner(object):
         #
         script_cmd = join(script_directory_info.script_directory, FASTQ_ANALYSIS_SCRIPT)
         if not isfile(script_cmd):
-            err_title='The "%s" file was not found' % (FASTQ_ANALYSIS_SCRIPT)
+            err_title = 'The "%s" file was not found' % (FASTQ_ANALYSIS_SCRIPT)
             err_note = """The "%s" file was not found at this location: \n%s\n
             To change the path to the script, please go into the admin control\
              panel and modify the 'Pipeline Scripts Directory'.\n\
             Talk to your administrator for details.""" % (FASTQ_ANALYSIS_SCRIPT, script_cmd)
-            err_msg_obj = self.record_error(err_title, err_note)
+            #err_msg_obj = self.record_error(err_title, err_note)
+            self.record_error(err_title, err_note)
             return None
 
         # Format the full command with target containing
@@ -205,7 +242,8 @@ class PipelineScriptRunner(object):
                 err_title = 'FastQ could not find pair-ended extensin type'
                 err_note = 'Could not determine pair-ended extension type.\
                  Database contained: "%s"' % (self.dataset.fastq_type)
-                err_msg_obj = self.record_error(err_title, err_note)
+                #err_msg_obj = self.record_error(err_title, err_note)
+                self.record_error(err_title, err_note)
                 return None
 
             command_str = 'perl {0} 1 {1} {2}'.format(script_cmd,\
@@ -233,14 +271,15 @@ class PipelineScriptRunner(object):
         # (1) Make sure the 'analyseVCF.pl' command is in the
         #   specified 'Pipeline Scripts Directory'
         #
-        script_cmd = join(script_directory_info.script_directory, VCF_ANALYSIS_SCRIPT )
+        script_cmd = join(script_directory_info.script_directory, VCF_ANALYSIS_SCRIPT)
         if not isfile(script_cmd):
-            err_title='The "%s" file was not found' % (VCF_ANALYSIS_SCRIPT)
+            err_title = 'The "%s" file was not found' % (VCF_ANALYSIS_SCRIPT)
             err_note = """The "%s" file was not found at this location: \n%s\n
             To change the path to the script, please go into the admin control\
              panel and modify the 'Pipeline Scripts Directory'.\n\
             Talk to your administrator for details.""" % (VCF_ANALYSIS_SCRIPT, script_cmd)
-            err_msg_obj = self.record_error(err_title, err_note)
+            #err_msg_obj = self.record_error(err_title, err_note)
+            self.record_error(err_title, err_note)
             return None
 
         # Format the full command with target containing
@@ -252,18 +291,22 @@ class PipelineScriptRunner(object):
         return command_str
 
     @staticmethod
-    def get_pipeline_command(dataset):
-        if dataset is None:
-            return (False, 'The dataset is None')
+    def get_pipeline_command(selected_dataset):
+        """
+        Return the full pipeline command to run the
+        appropriate analyze script for this dataset's files
+        """
+        if selected_dataset is None:
+            return (False, 'The selected_dataset is None')
 
-        pipeline_runner = PipelineScriptRunner(dataset)
+        pipeline_runner = PipelineScriptRunner(selected_dataset)
         script_directory = pipeline_runner.step1_get_script_directory_info()
         if script_directory is None:
-            return (False, pipeline_runner.err_message)
+            return (False, prunner.err_message)
 
         script_command = pipeline_runner.step2_get_script_command(script_directory)
         if script_command is None:
-            return (False, pipeline_runner.err_message)
+            return (False, prunner.err_message)
 
         return (True, script_command)
 
@@ -272,10 +315,10 @@ class PipelineScriptRunner(object):
 if __name__ == '__main__':
     #pass
 
-    dataset = PredictDataset.objects.first()
+    dataset_from_db = PredictDataset.objects.first()
 
     # get some Dataset
-    pipeline_runner = PipelineScriptRunner(dataset)
+    pipeline_runner = PipelineScriptRunner(dataset_from_db)
     # Run script
     pipeline_runner.run_script_on_dataset()
 

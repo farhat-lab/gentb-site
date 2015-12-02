@@ -21,7 +21,27 @@ My Datasets - Phthisis Ravens
              <p>Please <a href="{% url 'view_login_page' %}">Log In</a> to see your Datasets.</p>
         {% endif %}
 
-        {% if dataset %}
+{% if dataset %}
+
+{% comment %}
+        {% if heatmap_error %}
+        <div class="row">
+            <div class="col-md-12">
+                <div class="alert alert-danger" role="alert">Heatmap Error
+                    <p>{{ heatmap_error|safe }}</p>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if heatmap_html %}
+        <div class="row">
+            <div class="col-md-12">
+                {{ heatmap_html|safe }}
+            </div>
+        </div>
+        {% endif %}
+{% endcomment %}
 
 
 <table class="table table-condensed table-bordered">
@@ -39,20 +59,9 @@ My Datasets - Phthisis Ravens
             {% if dataset.status.is_error %}
                 <span class="label label-warning">Fail</span> &nbsp;
             {% else %}
-                {% if dataset.has_prediction %}
-                    <span class="label label-success">OK</span> &nbsp;
-                {% else %}
-                    <span class="label label-info">OK</span> &nbsp;
-                {% endif %}
+                <span class="label label-info">OK</span> &nbsp;
             {% endif %}
             {{ dataset.status.human_name }} (id: {{ dataset.status.id }})
-            {% if dataset.has_prediction %}
-                <br /><br /><a class="btn btn-info btn-xs" href="{% url 'view_prediction_heatmap' dataset.md5 %}" target="_blank">View Heatmap</a>
-                {% comment %}
-                <br /><a id="lnk_show_hide_heatmap">show prediction heatmap</a>
-                <!--<iframe id="id_heatmap_iframe" width="100%" height="600" src="{% url 'view_prediction_heatmap' dataset.md5 %}" style="display:none;"></iframe>-->
-                {% endcomment %}
-            {% endif %}
         </td>
     </tr>
     <tr>
@@ -204,29 +213,10 @@ My Datasets - Phthisis Ravens
 </table>
 {% endcomment %}
 
-{% endif %}
-
+        {% endif %}
     </div>
 </div>
-{% block extra_footer_js %}
-<script>
-$(document).ready(function () {
-    console.log('what?');
-});
-// show/hide heatmap
-//$( document ).ready(function() {
-    if ( $("#lnk_show_hide_heatmap").length ) {
-        $("#lnk_show_hide_heatmap").click(function(){
-            if ($("#id_heatmap_iframe").is(":visible")){
-                $("#id_heatmap_iframe").hide();
-            }else{
-                $("#id_heatmap_iframe").show();
-            };
-        });
-    }
-//});
-</script>
-{% endblock %}
+
 
 
 {% endblock %}

@@ -14,6 +14,9 @@ from apps.predict.forms import DatasetRunNotificationForm
 
 from apps.predict.message_helper import send_dataset_run_message_to_tb_admins_and_user
 
+import logging
+LOGGER = logging.getLogger(__name__)
+
 """
 def view_run_dataset_script(request, dataset_md5):
 
@@ -58,7 +61,7 @@ def view_dataset_run_notification(request):
                             message=f.errors))
         return HttpResponse(data, content_type='application/json')
 
-    print (f.cleaned_data)
+    LOGGER.debug('cleaned data: %s', f.cleaned_data)
     # --------------------------------------
     # Get the dataset run
     # --------------------------------------
@@ -87,6 +90,9 @@ def view_dataset_run_notification(request):
     # --------------------------------------
     dataset_run.result_received = True  # result received
     dataset_run.result_success = f.was_run_successful() # success?
+
+    LOGGER.debug('f.get_result_data: %s', f.get_result_data())
+
     if f.get_result_data():
         dataset_run.result_data = f.get_result_data()   # result data if available
     dataset_run.save()  # save the DatasetScriptRun
