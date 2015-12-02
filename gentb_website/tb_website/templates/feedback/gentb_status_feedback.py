@@ -10,6 +10,7 @@ Dataset file diretory/
             - result.json
             - matrix.csv
 """
+from __future__ import print_function
 from os.path import dirname, join, isdir, isfile, getsize, realpath
 import os, sys
 import urllib
@@ -31,16 +32,30 @@ class GenTBStatusFeedback:
 
     CURRENT_DIRECTORY = dirname(realpath(__file__))
     OUTPUT_DIRECTORY = join(CURRENT_DIRECTORY, 'output')
-    RESULTS_FILE_NAME = join(OUTPUT_DIRECTORY, 'result.json')
-    MATRIX_FILE_NAME = join(OUTPUT_DIRECTORY, 'matrix.csv')
+
+    # note file names originate in utils.result_file_info.py
+    #
+    RESULTS_FILE_FULLPATH = join(OUTPUT_DIRECTORY, '{{ RESULT_JSON_FILE_NAME }}')
+    MATRIX_FILE_FULLPATH = join(OUTPUT_DIRECTORY, '{{ MATRIX_CSV_FILE_NAME }}')
+    HEATMAP_FILE_FULLPATH = join(OUTPUT_DIRECTORY, '{{ HEATMAP_HTML_FILE_NAME }}')
+
+    FILE_FULLPATH_NAMES = [RESULTS_FILE_FULLPATH,\
+                MATRIX_FILE_FULLPATH,\
+                HEATMAP_FILE_FULLPATH]
+
+    # Ex: ('results file', 'matrix file', 'heatmap file')
+    #
+    EXPECTED_FILE_NAME_LIST = {{ EXPECTED_FILE_DESCRIPTIONS|safe }}
+
+    EXPECTED_FILE_DESCRIPTIONS = zip(FILE_FULLPATH_NAMES, EXPECTED_FILE_NAME_LIST)
 
     def __init__(self):
         self.job_checked = False
         self.success = False
         self.error_message = None
 
-        self.check_if_job_succeeded()
-        print 'did_job_succceed', self.did_job_succceed()
+        self.run_job_result_check()
+        print ('did_job_succceed', self.did_job_succceed())
         self.send_feedback_to_gentb()
 
     def add_error(self, msg):
@@ -55,7 +70,7 @@ class GenTBStatusFeedback:
         Was the expected output found?
         """
         assert self.job_checked is True,\
-            "Do not call this before running 'check_if_job_succeeded()'"
+            "Do not call this before running 'run_job_result_check()'"
 
         return self.success
 
@@ -86,7 +101,7 @@ class GenTBStatusFeedback:
 
         # Send back results.json data
         #
-        fh = open(self.RESULTS_FILE_NAME, 'r')
+        fh = open(self.RESULTS_FILE_FULLPATH, 'r')
         result_info = fh.read()
         fh.close()
         callback_params['result_data'] = result_info
@@ -105,13 +120,16 @@ class GenTBStatusFeedback:
 
         callback_dict = self.get_callback_params()
 
+        print ('Callback url: {0}\nParams: {1}'.format(\
+                    callback_url, callback_dict))
+
         callback_params = urllib.urlencode(callback_dict)
         f = urllib.urlopen(callback_url, callback_params)
-        print f.read()
+        print ('Callback result: {0}'.format(f.read()))
 
 
 
-    def check_if_job_succeeded(self):
+    def run_job_result_check(self):
         """
         Check if the expected directory/file output is found
         """
@@ -128,34 +146,21 @@ class GenTBStatusFeedback:
             return
 
         # ------------------------
-        # Check results file
+        # Check each result file
         #   - Does it exist?
         #   - Does it have data?
         # ------------------------
-        if not isfile(self.RESULTS_FILE_NAME):
-            self.add_error("The results file was not found: %s"\
-                % self.RESULTS_FILE_NAME)
-            return
+        for fullname, human_name in self.EXPECTED_FILE_DESCRIPTIONS:
 
-        if getsize(self.RESULTS_FILE_NAME) == 0:
-            self.add_error("The results file was empty: %s"\
-                % self.RESULTS_FILE_NAME)
-            return
+            if not isfile(fullname):
+                self.add_error("The %s was not found: %s"\
+                        % (human_name, fullname))
+                return
 
-        # ------------------------
-        # Check matrix file
-        #   - Does it exist?
-        #   - Does it have data?
-        # ------------------------
-        if not isfile(self.MATRIX_FILE_NAME):
-            self.add_error("The matrix file was not found: %s"\
-                % self.MATRIX_FILE_NAME)
-            return
-
-        if getsize(self.MATRIX_FILE_NAME) == 0:
-            self.add_error("The matrix file was empty: %s"\
-                % self.MATRIX_FILE_NAME)
-            return
+            if getsize(fullname) == 0:
+                self.add_error("The %s was empty: %s"\
+                        %  (human_name, fullname))
+                return
 
         self.success = True
 
