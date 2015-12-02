@@ -293,7 +293,19 @@ cd /www/gentb.hms.harvard.edu/code/gentb-site/gentb_website/tb_website
 supervisord -c /www/gentb.hms.harvard.edu/code/gentb-site/gentb_website/tb_website/tb_website/settings/hms_supervisord.conf
 
 # Stop supervisor ctl, e.g. to issue 'status' or 'shutdown', etc.
-# suvervisorctl -c /www/gentb.hms.harvard.edu/code/gentb-site/gentb_website/tb_website/tb_website/settings/hms_supervisord.conf
+#supervisorctl -c /www/gentb.hms.harvard.edu/code/gentb-site/gentb_website/tb_website/tb_website/settings/hms_supervisord.conf
+```
+
+##### Stop supervisord
+
+```
+# Assumes in virtualenv above
+
+cd /www/gentb.hms.harvard.edu/code/gentb-site/gentb_website/tb_website
+
+# Activate the supervisor command line control
+supervisorctl -c /www/gentb.hms.harvard.edu/code/gentb-site/gentb_website/tb_website/tb_website/settings/hms_supervisord.conf
+shutdown
 ```
 
 #### Running gunicorn without supervisord
@@ -401,4 +413,20 @@ python manage.py collectstatic
 ```
 cd /www/gentb.hms.harvard.edu/code/gentb-site/gentb_website/tb_website
 python manage.py migrate
+```
+
+## Restart server
+
+- See [Running supervisord](#run-gunicornsupervisord)
+
+## Run dropbox retrieval script 
+
+```
+/www/gentb.hms.harvard.edu/code/gentb-site/gentb_website/cron_scripts/get_dropbox_files_prod_hms.sh
+```
+
+## Run pipeline script
+
+```
+/www/gentb.hms.harvard.edu/code/gentb-site/gentb_website/cron_scripts/run_pipeline_prod_hms.sh
 ```

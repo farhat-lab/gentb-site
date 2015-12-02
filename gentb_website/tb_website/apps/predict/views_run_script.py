@@ -12,7 +12,7 @@ from apps.utils.view_util import get_common_dict, IS_ACTIVE_STAFF
 from apps.predict.script_run_helper import run_script_on_dataset
 from apps.predict.forms import DatasetRunNotificationForm
 
-from apps.predict.message_helper import send_dataset_run_message_to_tb_admins
+from apps.predict.message_helper import send_dataset_run_message_to_tb_admins_and_user
 
 """
 def view_run_dataset_script(request, dataset_md5):
@@ -104,10 +104,10 @@ def view_dataset_run_notification(request):
                           )
 
     # send a notification to the user
-    send_dataset_run_message_to_user(dataset_run)
+    send_dataset_run_message_to_tb_admins_and_user(dataset_run)
 
     # Send a notification email
-    send_dataset_run_message_to_tb_admins(dataset_run)
+    #send_dataset_run_message_to_tb_admins(dataset_run)
 
 
 

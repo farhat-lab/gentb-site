@@ -63,7 +63,7 @@ class UploadPredictionDataForm(forms.ModelForm):
         super(UploadPredictionDataForm, self).__init__(*args, **kwargs)
 
         self.fields['dropbox_url'].help_text = 'For help, see \
-        <a href="{0}" target="_blank">{0}</a>'.format(self.fields['dropbox_url'].help_text) 
+        <a href="{0}" target="_blank">{0}</a>'.format(self.fields['dropbox_url'].help_text)
         #self.fields['dropbox_url'].widget = forms.TextInput(attrs={'size':'40'}))
         #self.fields['dropbox_url'].widget.attrs.update({'size' : '40'})
 
@@ -97,7 +97,7 @@ class UploadPredictionDataForm(forms.ModelForm):
 
         else:
             #self.add_error('dropbox_url', dbox_metadata_or_err_msg)
-            raise forms.ValidationError(dbox_metadata_or_err_msg)
+            raise forms.ValidationError(dbox_retriever_obj_or_err_msg)
 
         return self.cleaned_data
 
@@ -132,7 +132,6 @@ class UploadPredictionDataForm(forms.ModelForm):
         db_log = DropboxRetrievalLog(dataset=predict_dataset)
         db_log.file_metadata = self.dropbox_retriever_object.dropbox_link_metadata
         db_log.selected_files = self.dropbox_retriever_object.matching_files_metadata
-
         db_log.save()
 
         print 'elf.dropbox_retriever_object.dropbox_link_metadata', self.dropbox_retriever_object.dropbox_link_metadata

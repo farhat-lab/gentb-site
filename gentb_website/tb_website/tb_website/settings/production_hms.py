@@ -189,3 +189,7 @@ LOGGING = {
     },
 }
 ########## END LOGGING CONFIGURATION
+
+########## INTERNAL CALLBACK URL
+INTERNAL_CALLBACK_SITE_URL = 'http://rc-app-shared01.orchestra:9001'
+########## END INTERNAL_CALLBACK_URL

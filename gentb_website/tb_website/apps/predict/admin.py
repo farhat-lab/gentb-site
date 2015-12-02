@@ -91,9 +91,12 @@ class DatasetScriptRunAdmin(admin.ModelAdmin):
     readonly_fields = [ 'created', 'modified', 'md5']
 admin.site.register(DatasetScriptRun, DatasetScriptRunAdmin)
 
+"""
+# Not being used. RP 12/1
 class ScriptToRunAdmin(admin.ModelAdmin):
     save_on_top = True
     list_display = ('name', 'is_chosen_script', 'script', 'modified')
     readonly_fields = ['created', 'modified', 'script_args']
     list_filter = ['is_chosen_script']
 admin.site.register(ScriptToRun, ScriptToRunAdmin)
+"""

@@ -24,7 +24,7 @@ def send_new_dataset_message_to_tb_admins(dataset):
 
 
 
-def send_dataset_run_message_to_tb_admins(dataset_script_run):
+def send_dataset_run_message_to_tb_admins_and_user(dataset_script_run):
 
     assert isinstance(dataset_script_run, DatasetScriptRun), "dataset_script_run must be a DatasetScriptRun instance"
 

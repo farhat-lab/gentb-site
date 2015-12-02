@@ -17,6 +17,7 @@ if __name__=='__main__':
     import django
     django.setup()
 
+from django.template.loader import render_to_string
 from apps.predict.models import PredictDatasetStatus, PredictDataset,\
             PredictDatasetNote, DatasetScriptRun,\
             PipelineScriptsDirectory
@@ -138,6 +139,25 @@ class PipelineScriptRunner(object):
         dsr = DatasetScriptRun(dataset=self.dataset)
         dsr.notes = command_to_run
         dsr.save()
+
+        # ---------------------------------------------------------
+        # (1a) Place a callback script with the Dataset directory
+        #   - contains callback url + md5
+        #   - called after the analyse scripts are Run
+        # ---------------------------------------------------------
+
+        # Get callback args
+        callback_info_dict = self.dataset.get_script_args_json(dsr.md5, as_dict=True)
+        d = dict(callback_info_dict=callback_info_dict)
+
+        # Use args to create a custom python script
+        py_callback_script = render_to_string('feedback/gentb_status_feedback.py', d)
+
+        # Place script in dataset file_directory
+        script_fullname = join(self.dataset.file_directory, 'gentb_status_feedback.py')
+        fh = open(script_fullname, 'w')
+        fh.write(py_callback_script)
+        fh.close()
 
         # (2) Update the dataset status to 'in process'
         #
