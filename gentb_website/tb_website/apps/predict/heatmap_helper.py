@@ -83,7 +83,8 @@ class HeatmapHelper(object):
         #
         try:
             fh = open(heatmap_file_fullname, 'r')
-            self.heatmap_html_lines = fh.readlines()
+            self.heatmap_html = fh.read()
+            #self.heatmap_html_lines = fh.readlines()
             fh.close()
         except Exception as e:
             LOGGER.error("Error trying to open the heatmap file for dataset id %d: %s\n\n%s"\
@@ -91,12 +92,18 @@ class HeatmapHelper(object):
             err_msg = "Sorry, an error was found when opening the heatmap file."
             return
 
-        if self.heatmap_html_lines is None or len(self.heatmap_html_lines) == 0:
+        if self.heatmap_html is None or len(self.heatmap_html) == 0:
             LOGGER.error("Error no content was read from the heatmap file for dataset id %d: %s\n\n%s"\
                         % (self.dataset.id, heatmap_file_fullname, e))
             err_msg = "Sorry, no content was read from the heatmap file."
 
-        self.format_heatmap()
+        """
+        if self.heatmap_html_lines is None or len(self.heatmap_html_lines) == 0:
+            LOGGER.error("Error no content was read from the heatmap file for dataset id %d: %s\n\n%s"\
+                        % (self.dataset.id, heatmap_file_fullname, e))
+            err_msg = "Sorry, no content was read from the heatmap file."
+        """
+        #self.format_heatmap()
 
     def is_line_to_remove(self, heatmap_line):
         if heatmap_line is None:
@@ -116,9 +123,6 @@ class HeatmapHelper(object):
         if self.has_error:
             return
 
-        self.heatmap_html = '\n'.join(self.heatmap_html_lines)
-
-        """
         formatted_lines = []
         for hline in self.heatmap_html_lines:
             print hline
@@ -129,4 +133,3 @@ class HeatmapHelper(object):
             formatted_lines.append(hline)
 
         self.heatmap_html = '\n'.join(formatted_lines)
-        """
