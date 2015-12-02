@@ -42,7 +42,7 @@ My Datasets - Phthisis Ravens
             {% endif %}
             {{ dataset.status.human_name }} (id: {{ dataset.status.id }})
             {% if dataset.has_prediction %}
-                <br /><a href="{% url 'view_prediction_heatmap' dataset.md5 %}">prediction results</a>
+                <br /><a href="{% url 'view_prediction_heatmap' dataset.md5 %}">prediction heatmap</a>
             {% endif %}
         </td>
     </tr>
