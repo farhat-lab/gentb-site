@@ -21,7 +21,28 @@ My Datasets - Phthisis Ravens
              <p>Please <a href="{% url 'view_login_page' %}">Log In</a> to see your Datasets.</p>
         {% endif %}
 
-        {% if dataset %}
+{% if dataset %}
+
+{% comment %}
+        {% if heatmap_error %}
+        <div class="row">
+            <div class="col-md-12">
+                <div class="alert alert-danger" role="alert">Heatmap Error
+                    <p>{{ heatmap_error|safe }}</p>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if heatmap_html %}
+        <div class="row">
+            <div class="col-md-12">
+                {{ heatmap_html|safe }}
+            </div>
+        </div>
+        {% endif %}
+{% endcomment %}
+
 
 <table class="table table-condensed table-bordered">
 
@@ -41,9 +62,6 @@ My Datasets - Phthisis Ravens
                 <span class="label label-info">OK</span> &nbsp;
             {% endif %}
             {{ dataset.status.human_name }} (id: {{ dataset.status.id }})
-            {% if dataset.has_prediction %}
-                <br /><a href="{% url 'view_prediction_heatmap' dataset.md5 %}">prediction results</a>
-            {% endif %}
         </td>
     </tr>
     <tr>

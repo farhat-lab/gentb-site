@@ -19,7 +19,8 @@ if __name__ == '__main__':
 
 from django.template.loader import render_to_string
 from apps.utils.result_file_info import RESULT_FILE_NAME_DICT,\
-            EXPECTED_FILE_DESCRIPTIONS
+            EXPECTED_FILE_DESCRIPTIONS,\
+            RESULT_OUTPUT_DIRECTORY_NAME
 from apps.predict.models import PredictDatasetStatus, PredictDataset,\
             PredictDatasetNote, DatasetScriptRun,\
             PipelineScriptsDirectory
@@ -178,7 +179,8 @@ class PipelineScriptRunner(object):
         callback_info_dict = self.dataset.get_script_args_json(dsr.md5, as_dict=True)
         d = dict(callback_info_dict=callback_info_dict)
         d.update(RESULT_FILE_NAME_DICT)
-        d.update(dict(EXPECTED_FILE_DESCRIPTIONS=EXPECTED_FILE_DESCRIPTIONS))
+        d['RESULT_OUTPUT_DIRECTORY_NAME'] = RESULT_OUTPUT_DIRECTORY_NAME
+        d['EXPECTED_FILE_DESCRIPTIONS'] = EXPECTED_FILE_DESCRIPTIONS
 
         print '-' * 40
         print d

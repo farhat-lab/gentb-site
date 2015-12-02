@@ -15,8 +15,46 @@ from apps.predict.message_helper import send_new_dataset_message_to_tb_admins
 from django.contrib.auth.decorators import login_required
 from apps.predict.pipeline_hardcoded_script_runner import PipelineScriptRunner
 
+from apps.predict.heatmap_helper import HeatmapHelper
+
 import logging
-logger = logging.getLogger(__name__)
+LOGGER = logging.getLogger(__name__)
+
+
+@login_required
+def view_prediction_heatmap(request, dataset_md5):
+    """
+    This works as an iframe.  The heatmp itself is generated from R
+    with lots of inline javascript, etc.
+    """
+    d = get_common_dict(request, 'Dataset Prediction Result', view_my_datasets=True)
+
+    # Not logged in, show login message
+    #
+    if not request.user.is_authenticated():
+        return render_to_response('predict/my_dataset_detail.html',
+                             d,
+                             context_instance=RequestContext(request))
+
+    try:
+        dataset = PredictDataset.objects.get(md5=dataset_md5,\
+                                        has_prediction=True)
+    except PredictDataset.DoesNotExist:
+        raise Http404('PredictDataset with results not found')
+
+
+    hm_helper = HeatmapHelper(dataset)
+    if hm_helper.has_error:
+        d['heatmap_error'] = hm_helper.error_message
+    else:
+        d['heatmap_html'] = hm_helper.heatmap_html
+
+
+    return render_to_response('predict/my_dataset_heatmap.html',
+                             d,
+                             context_instance=RequestContext(request))
+
+
 
 @login_required
 def view_single_dataset(request, dataset_md5):
@@ -55,6 +93,7 @@ def view_single_dataset(request, dataset_md5):
     else:
         d['pipeline_command_err'] = pipeline_command_or_err
 
+
     return render_to_response('predict/my_dataset_detail.html',
                              d,
                              context_instance=RequestContext(request))
@@ -75,34 +114,3 @@ def view_my_datasets(request):
     return render_to_response('predict/my_datasets.html',
                              d,
                              context_instance=RequestContext(request))
-    """
-    # has the script already been run successfully?
-    if shared_file_info.prediction_results:
-        # Yes, use those results
-        #
-        msg_or_data = shared_file_info.get_prediction_results()
-        if msg_or_data:
-            success = True
-        else:
-            success = False
-    else:
-        # No, then run the prediction R script
-        #
-        (success, msg_or_data) = get_process_file_results(shared_file_info.file_obj.file.name)
-        if success is True:
-            shared_file_info.set_prediction_results(msg_or_data)
-            shared_file_info.save()
-
-    #print ('msg_or_data', type(msg_or_data))
-    d['UPLOAD_SUCCESS'] = True
-
-    d['FILE_PROCESS_SUCCESS'] = success
-    d['FILE_PROCESS_ERR_OR_DATA'] = msg_or_data
-
-    d['shared_file_info'] = shared_file_info
-
-
-    return render_to_response('predict/predict_upload_success.html',
-                             d,
-                             context_instance=RequestContext(request))
-    """

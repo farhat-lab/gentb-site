@@ -10,7 +10,7 @@ Dataset file diretory/
             - matrix.csv    (pipeline analyze result)
             - heatmap.html  (predict script result)
 """
-
+RESULT_OUTPUT_DIRECTORY_NAME = 'output'    # local directory within the Dataset file directory
 RESULT_JSON_FILE_NAME = 'result.json'
 MATRIX_CSV_FILE_NAME = 'matrix.csv'
 HEATMAP_HTML_FILE_NAME = 'matrix_heatmap.html'

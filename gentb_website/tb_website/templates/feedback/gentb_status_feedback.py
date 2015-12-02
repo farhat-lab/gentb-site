@@ -31,7 +31,7 @@ CALLBACK_INFO_DICT = {{ callback_info_dict|safe }}
 class GenTBStatusFeedback:
 
     CURRENT_DIRECTORY = dirname(realpath(__file__))
-    OUTPUT_DIRECTORY = join(CURRENT_DIRECTORY, 'output')
+    OUTPUT_DIRECTORY = join(CURRENT_DIRECTORY, '{{ RESULT_OUTPUT_DIRECTORY_NAME }}')
 
     # note file names originate in utils.result_file_info.py
     #
