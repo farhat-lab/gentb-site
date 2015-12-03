@@ -46,15 +46,17 @@ My Datasets - Phthisis Ravens
                 {% endif %}
             {% endif %}
             {{ dataset.status.human_name }} (id: {{ dataset.status.id }})
-            {% if dataset.has_prediction %}
-                <br /><br /><a class="btn btn-info btn-xs" href="{% url 'view_prediction_heatmap' dataset.md5 %}" target="_blank">View Heatmap</a>
-                {% comment %}
-                <br /><a id="lnk_show_hide_heatmap">show prediction heatmap</a>
-                <!--<iframe id="id_heatmap_iframe" width="100%" height="600" src="{% url 'view_prediction_heatmap' dataset.md5 %}" style="display:none;"></iframe>-->
-                {% endcomment %}
-            {% endif %}
         </td>
     </tr>
+    {% if dataset.has_prediction %}
+    <tr>
+        <th class="text-primary">Heat Map</th>
+        <td><a id="lnk_show_hide_heatmap" class="btn btn-default btn-xs">
+            Show prediction heatmap (takes a second or two)</a>
+        <iframe id="id_heatmap_iframe" width="100%" height="600" src="{% url 'view_prediction_heatmap' dataset.md5 %}" style="display:none;cursor:pointer;border:none;" ></iframe></td>
+    </tr>
+
+    {% endif %}
     <tr>
         <th class="text-primary">Description</th>
         <td>{{ dataset.description|linebreaks }}</td>
@@ -208,25 +210,25 @@ My Datasets - Phthisis Ravens
 
     </div>
 </div>
+{% endblock %}
+
 {% block extra_footer_js %}
-<script>
-$(document).ready(function () {
-    console.log('what?');
-});
+<script type="text/javascript">
+
 // show/hide heatmap
-//$( document ).ready(function() {
+$( document ).ready(function() {
     if ( $("#lnk_show_hide_heatmap").length ) {
         $("#lnk_show_hide_heatmap").click(function(){
             if ($("#id_heatmap_iframe").is(":visible")){
+
                 $("#id_heatmap_iframe").hide();
+                $("#lnk_show_hide_heatmap").text('Show Prediction Heat Map (takes a second or two)');
             }else{
                 $("#id_heatmap_iframe").show();
+                $("#lnk_show_hide_heatmap").text('Hide Prediction Heat Map');
             };
         });
     }
-//});
+});
 </script>
-{% endblock %}
-
-
 {% endblock %}
