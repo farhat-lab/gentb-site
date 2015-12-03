@@ -38,22 +38,14 @@ devtools::install_github("rstudio/shinyapps")
 devtools::install_github('rstudio/rsconnect')
 library(rsconnect)
 ```
-1. Set working directory
+3. Set working directory using this github repository
   - Menu: Session -> Set working directory -> Choose directory
-    - choose "(path to)/gentb-site/shinyapps.io/genTB"
+    - choose ```(your local dir)/gentb-site/shinyapps.io/genTB```
 
 
-### Package installs (for local)
+### Install packages for local runs
 
-
-- Deploy commands
-
-```R
-library(rsconnect)
-deployApp()
-```
-
-### Install list for local runs:
+Run these commands via the R console:
 
 ```R
 install.packages('shiny')
@@ -70,25 +62,16 @@ install.packages('stringr')
 install.packages('countrycode')
 ```
 
-## RStudio on the Mac
-
-### Set working directory
-    - Start R Studio
-    - Menu: Session -> Set working directory -> Choose directory
-        - choose "(path to)/gentb-site/shinyapps.io/genTB"
-### Install packages
-
-  - Run the "Install list for local runs" above
-
 ### Run/Test it locally
 
-  - Open the "ui.R" file under "...shinyapps.io/genTB"
+  - Open the "ui.R" file
+    - location: ```(your local dir)/gentb-site/shinyapps.io/genTB/ui.R```
   - Click "Run App" (top right of file editor)
   - Does it work?
 
-### Deploy (same as above)
+### Deploy to server!
 
-  - Run these in the R studio console
+  - Run these two commands in the R studio console
 
 ```R
 library(rsconnect)
