@@ -62,16 +62,18 @@ install.packages('countrycode')
     - Menu: Session -> Set working directory -> Choose directory
         - choose "(path to)/gentb-site/shinyapps.io/genTB"
 ### Install packages
-    - Run the "Install list for local runs" above
+
+  - Run the "Install list for local runs" above
 
 ### Run/Test it locally
-    - Open the "ui.R" file under "...shinyapps.io/genTB"
-    - Click "Run App" (top right of file editor)
-    - Does it work?
+
+  - Open the "ui.R" file under "...shinyapps.io/genTB"
+  - Click "Run App" (top right of file editor)
+  - Does it work?
 
 ### Deploy (same as above)
 
-- Run these in the R studio console
+  - Run these in the R studio console
 
 ```R
 library(rsconnect)
