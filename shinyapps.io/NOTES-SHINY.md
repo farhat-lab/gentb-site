@@ -1,22 +1,34 @@
-# notes on shinyapps.io
+Notes on shinyapps.io
+=====================
 
-- current url: https://hmdc.shinyapps.io/genTB
+## Links
 
-### Log in for shinyapps.io
-```
-https://www.shinyapps.io/admin/#/login
-```
+### Viewing
+  - Current url: https://hmdc.shinyapps.io/genTB
+  - genTB iframed view: https://gentb.hms.harvard.edu/maps/tb-map/
 
-- **Note**: The application instance size should be: ```X-Large (2GB)```
-  - With the default 1GB, the maps were *not* showing up
+### Login/Config in for shinyapps.io
 
+  - https://www.shinyapps.io/admin/#/login
+  - **Note**: The application instance size should be: ```X-Large (2GB)```
+    - With the default 1GB, the maps were *not* showing up
 
-### Followed these instructions:
+## Update/Deploy
+
+Note, this was done on a Mac using RStudio.
+  - RStudio, version 0.99.486
+  - R, version 3.2.2
+
+### Official RStudio instructions:
 ```
 http://shiny.rstudio.com/articles/shinyapps.html
 ```
 
-- They include (in R console):
+### Initial Setup
+
+1. Start R Studio
+1. In the R console, run preliminaries from instructions above.  
+  - This includes installing rstudio packages:
 ```R
 if (!require("devtools"))
   install.packages("devtools")
@@ -26,6 +38,9 @@ devtools::install_github("rstudio/shinyapps")
 devtools::install_github('rstudio/rsconnect')
 library(rsconnect)
 ```
+1. Set working directory
+  - Menu: Session -> Set working directory -> Choose directory
+    - choose "(path to)/gentb-site/shinyapps.io/genTB"
 
 
 ### Package installs (for local)
