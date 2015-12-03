@@ -10,7 +10,7 @@ Notes on shinyapps.io
 ### Login/Config in for shinyapps.io
 
   - https://www.shinyapps.io/admin/#/login
-  - **Note**: The application instance size should be: ```X-Large (2GB)```
+  - **Note**: Make sure the application instance size is: ```X-Large (2GB)```
     - With the default 1GB, the maps were *not* showing up
 
 ## Update/Deploy
@@ -26,10 +26,10 @@ http://shiny.rstudio.com/articles/shinyapps.html
 
 ### Initial Setup
 
-1. Start R Studio
+1. Start RStudio
 1. In the R console, run preliminaries from instructions above.  
-  - This includes installing rstudio packages:
-```R
+  - This includes installing RStudio packages:
+  ```R
 if (!require("devtools"))
   install.packages("devtools")
 devtools::install_github("rstudio/shinyapps")
@@ -101,3 +101,5 @@ Application successfully deployed to https://hmdc.shinyapps.io/genTB
 Warning message:
 invalid uid value replaced by that for user 'nobody'
 ```
+
+- View the output: https://hmdc.shinyapps.io/genTB
