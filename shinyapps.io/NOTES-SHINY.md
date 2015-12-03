@@ -54,3 +54,50 @@ install.packages('DT')
 install.packages('stringr')
 install.packages('countrycode')
 ```
+
+## RStudio on the Mac
+
+### Set working directory
+    - Start R Studio
+    - Menu: Session -> Set working directory -> Choose directory
+        - choose "(path to)/gentb-site/shinyapps.io/genTB"
+### Install packages
+    - Run the "Install list for local runs" above
+
+### Run/Test it locally
+    - Open the "ui.R" file under "...shinyapps.io/genTB"
+    - Click "Run App" (top right of file editor)
+    - Does it work?
+
+### Deploy (same as above)
+
+- Run these in the R studio console
+
+```R
+library(rsconnect)
+deployApp()
+```
+
+- Example output:
+    - Note: The warning message at the end is ok
+
+```R
+> deployApp()
+> deployApp()
+Preparing to deploy application...DONE
+Uploading bundle for application: 65318...DONE
+Deploying bundle: 323997 for application: 65318 ...
+Waiting for task: 111256348
+  building: Parsing manifest
+  building: Building image: 318328
+  building: Fetching packages
+  building: Installing packages
+  building: Installing files
+  building: Pushing image: 318328
+  deploying: Starting instances
+  rollforward: Activating new instances
+  terminating: Stopping old instances
+Application successfully deployed to https://hmdc.shinyapps.io/genTB
+Warning message:
+invalid uid value replaced by that for user 'nobody'
+```
