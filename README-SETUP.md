@@ -339,6 +339,7 @@ python manage.py loaddata apps/explore/fixtures/initial_data.json --settings=tb_
 ### Crontabs
 
 - Edit the crontab: ```crontab -e```
+    - If on ```cron.orchestra```, use ```env EDITOR=vim crontab -e```
 - Add the lines below, also found in the file ```gentb_website/cron_scripts/crontab```
 
 ```
@@ -419,7 +420,7 @@ python manage.py migrate
 
 - See [Running supervisord](#run-gunicornsupervisord)
 
-## Run dropbox retrieval script 
+## Run dropbox retrieval script
 
 ```
 /www/gentb.hms.harvard.edu/code/gentb-site/gentb_website/cron_scripts/get_dropbox_files_prod_hms.sh
