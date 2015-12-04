@@ -159,6 +159,7 @@ class DropboxRetrievalRunner:
         Alternate: **kwargs={ 'retry_files_with_errors' : True}
             Try to download files where the process encountered an error
         """
+        LOGGER.debug("retrieve_new_dropbox_files")
 
         retry_files_with_errors = kwargs.get('retry_files_with_errors', True)
         if retry_files_with_errors is True:
@@ -177,7 +178,9 @@ class DropboxRetrievalRunner:
 
         cnt = dbox_logs_to_check.count()
         if cnt == 0:
-            print('All set.  Nothing to check')
+            status_msg = 'All set.  Nothing to check'
+            print(status_msg)
+            LOGGER.debug("retrieve_new_dropbox_files")
             return
 
         print('Checking {0} link(s)'.format(cnt))
