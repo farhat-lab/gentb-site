@@ -10,4 +10,4 @@ source /www/gentb.hms.harvard.edu/code/gentb-site/gentb_website/venv_tb/bin/post
 
 # Download files from newly loaded dropbox links
 #
-python /www/gentb.hms.harvard.edu/code/gentb-site/gentb_website/tb_website/apps/dropbox_helper/dropbox_retrieval_runner.py
+/www/gentb.hms.harvard.edu/code/gentb-site/gentb_website/venv_tb/bin/python /www/gentb.hms.harvard.edu/code/gentb-site/gentb_website/tb_website/apps/dropbox_helper/dropbox_retrieval_runner.py

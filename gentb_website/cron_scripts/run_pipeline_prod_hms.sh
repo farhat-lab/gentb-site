@@ -9,4 +9,4 @@ source venv_tb/bin/postactivate
 # Run the pipeline for the next available PredictDataset
 #
 cd /www/gentb.hms.harvard.edu/code/gentb-site/gentb_website/tb_website/apps/predict/
-python pipeline_hardcoded_script_runner.py --next
+/www/gentb.hms.harvard.edu/code/gentb-site/gentb_website/venv_tb/bin/python pipeline_hardcoded_script_runner.py --next

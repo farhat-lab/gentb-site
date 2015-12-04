@@ -24,11 +24,17 @@ from apps.predict.models import PredictDataset
 from apps.dropbox_helper.models import DropboxRetrievalLog
 from apps.dropbox_helper.dropbox_retriever import DropboxRetriever
 
+import logging
+LOGGER = logging.getLogger('apps.dropbox_helper.dropbox_retrieval_runner')
 
 class DropboxRetrievalRunner:
 
     def __init__(self, dbox_log):
         assert isinstance(dbox_log, DropboxRetrievalLog), "dbox_log must be an instance of DropboxRetrievalLog"
+
+        LOGGER.debug("Initiate dropbox retrieval for: %s", dbox_log.dataset)
+        LOGGER.debug(" - dropbox_url:  dropbox retrieval for: %s",\
+            dbox_log.dataset.dropbox_url)
 
         self.dbox_log = dbox_log
         self.predict_dataset = self.dbox_log.dataset
@@ -41,6 +47,11 @@ class DropboxRetrievalRunner:
         self.run_dropbox_retrieval()
 
     def set_error_message(self, m):
+        """
+        Set internal error flag and store the message within this object
+        """
+        LOGGER.error("Error found during dropbox file retrieval: %s", m)
+
         self.err_found = True
         self.err_msg = m
 
