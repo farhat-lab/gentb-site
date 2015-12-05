@@ -24,6 +24,14 @@ class DropboxPipelineWorkaround(object):
         num_seconds = num_minutes * 60
         time.sleep(num_seconds)
 
+    def run_workaround(self):
+
+        self.run_dropbox_retrieval_command()
+        self.pause(10)
+
+        self.run_pipeline_command()
+        self.pause(10)
+
     def run_dropbox_retrieval_command(self):
         print 'Run Dropbox retrieval command'
 
@@ -37,7 +45,6 @@ class DropboxPipelineWorkaround(object):
                 stderr=None,
                 close_fds=True)
 
-        self.pause(10)
 
     def run_pipeline_command(self):
         print 'Run pipeline command'
@@ -52,8 +59,6 @@ class DropboxPipelineWorkaround(object):
                 stdout=None,
                 stderr=None,
                 close_fds=True)
-
-        self.pause(10)
 
 
 
