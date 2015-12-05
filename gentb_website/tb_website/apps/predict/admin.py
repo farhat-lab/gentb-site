@@ -67,7 +67,7 @@ class PredictDatasetAdmin(admin.ModelAdmin):
     inlines = (DropboxDataSourceInline, PredictDatasetNoteInline, DatasetScriptRunInline)# PredictDatasetNoteInline, )
     save_on_top = True
     search_fields = ('title', 'user__first_name', 'user__last_name',)
-    list_display = ('title', 'user', 'status', 'has_prediction', 'created', 'modified')
+    list_display = ('title', 'user', 'status__human_name', 'has_prediction', 'file_directory', 'created', 'modified')
     list_filter = ['status', 'has_prediction']
     readonly_fields = [ 'created', 'modified', 'md5', 'file_directory',
                         'user_name', 'user_email', 'user_affiliation',]
