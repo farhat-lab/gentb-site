@@ -427,59 +427,6 @@ shinyServer(function(input, output, session) {
         })
       }
     
-    # Populating user choices for Mutations charts
-    observe({
-      updateSelectizeInput(session, 'selected_locus',
-                           'Select a locus', 
-                           choices = sort(unique(subset(data.frame(summary_gen_phen_country),
-                                                        country == as.character(selected_country$country[[1]][1]))$locus)),
-                           options = list(
-                             placeholder = 'Select a locus',
-                             onInitialize = I('function() { this.setValue(""); }')))
-    })
-
-# @asiegmann: Need a Ninja to figure out how to make this work, and then implement the actual filtering in mutation_function
-    observe({
-        updateSelectizeInput(session, 'selected_variant',
-                             'Select a variant', 
-                             choices = sort(unique(subset(data.frame(summary_gen_phen_country),
-                                                          country == as.character(selected_country$country[[1]][1]))$variant)),
-                             options = list(
-                                 placeholder = 'Select a variant',
-                                 onInitialize = I('function() { this.setValue(""); }')))
-    })
-    
-    observe({
-      updateSelectizeInput(session, 'selected_drug',
-                           'Select a drug',
-                           choices = sort(c("inh - Isoniazid" = "rinh",    
-                                       "eth - Ethionamide" = "reth",
-                                       "rif - Rifampicin"= "rrif",
-                                       "rfb - Rifabutin" = "rrfb",   
-                                       "emb - Ethambutol" = "remb",
-                                       "pza - Pyrazinamide"= "rpza",
-                                       "str - Streptomycin" = "rstr",
-                                       "amk - Amikacin" = "ramk",
-                                       "cap - Capreomycin" = "rcap",
-                                       "kan - Kanamycin" = "rkan",
-                                       "oflx - Ofloxacin" = "roflx",
-                                       "cip - Ciprofloxacin" = "rcip",
-                                       "levo - Levofloxacin" = "rlevo",
-                                       "pas - Para-Aminosalicylic Acid" = "rpas",
-                                       "cys - Cycloserine" = "rcys",
-                                       "tha - Thioacetazone" = "rtha",
-                                       "pro - Prothionamide" = "rpro",
-                                       "clof - Clofazimine" = "rclof",
-                                       "moxi - Moxifloxacin" = "rmoxi",
-                                       "clar - Clarithromycin" = "rclar",
-                                       "gati - Gatifloxacin" = "rgati",
-                                       "amoxclav - Amoxicillin Clavulanate" = "ramoxclav",
-                                       "lin - Linezolid" = "rlin")),
-                           options = list(
-                             placeholder = 'Select a drug',
-                             onInitialize = I('function() { this.setValue(""); }')))
-    })
-    
     # Fetching the country-specific mutation data
     selected_country_mutations <- reactive({ 
       country_name_holder <- NULL
@@ -492,109 +439,10 @@ shinyServer(function(input, output, session) {
         country_name_holder <- NULL
         selected_country_mutations <- gen_phen_country_by_strain
       }
-      data.frame(selected_country_mutations)
+      data.frame(na.omit(selected_country_mutations[, c("locus", "snpname", "resistance", "country")]))
     })
     
-    fill_domain <- c("r", 
-                     "s", 
-                     "i") 
-    
-    # Hover Content for Mutations Charts
-    hover_mutations <- function(x) { 
-      if(is.null(x)){
-        return(NULL)
-      }
-      paste0("<strong>", c("Resistance Type", "Count"), ": </strong>", 
-             format(x)[c(1, 4)], collapse = "<br/>") 
-    }
-    
-    
-    # Set default message for pre-select panel
-    output$mutations_indicator <- renderText({
-      "  "
-    })
-    output$error_message2 <- renderText({
-      "Select a locus, variant, and drug above - then press 'GO'"
-    })
-    
-    
-    # Function to trigger when user presses 'GO' action button
-    mutation_func <- function(mutations_data, selected_locus, selected_drug) {
-      
-        # Filtering selected_country_mutations by user inputted locus/variant/drug + removing blanks/NAs
-        mutations_data <- selected_country_mutations() %>% 
-          filter(locus == selected_locus)
-        
-        if (nrow(mutations_data) == 0) {
-          output$mutations_indicator <- renderText({
-            "  "
-          })
-          
-          progress <- shiny::Progress$new()
-          progress$set(message = "Fetching data", value = 0)
-          # Close the progress when this reactive exits (even if there's an error)
-          on.exit(progress$close())
-          
-          output$error_message2 <- renderText({
-            "No locus-specific mutation data - please choose another combination and press 'GO'"
-          })
-        } else {
-          mutations_data <- mutations_data %>%  filter(drug == selected_drug)
-          
-          if (nrow(mutations_data) == 0) {
-            output$mutations_indicator <- renderText({
-              "  "
-            })
-            
-            progress <- shiny::Progress$new()
-            progress$set(message = "Fetching data", value = 0)
-            # Close the progress when this reactive exits (even if there's an error)
-            on.exit(progress$close())
-            
-            output$error_message2 <- renderText({
-              "No drug-specific mutation data - please choose another combination and press 'GO'"
-            })
-          } else {
-            mutations_data <- mutations_data %>%
-                              data.frame() %>% 
-                              subset(!is.na(resistance) & resistance != "" & resistance != "NA")
-            if (nrow(mutations_data) == 0) {
-              output$mutations_indicator <- renderText({
-                "  "
-              })
-              
-              progress <- shiny::Progress$new()
-              progress$set(message = "Fetching data", value = 0)
-              # Close the progress when this reactive exits (even if there's an error)
-              on.exit(progress$close())
-              
-              output$error_message2 <- renderText({
-                  "No drug specific mutation data - please choose another combination and press 'GO'"
-              })
-            } else {
-              output$mutations_indicator <- renderText({
-                " "
-              })
-              mutations_data %>% 
-                ggvis(~resistance) %>% 
-                layer_bars(fill = ~resistance) %>%  
-                scale_ordinal("fill", domain = fill_domain, range = fill_range) %>% 
-                add_axis("x", title = "Resistance Type") %>%
-                add_tooltip(hover_mutations, "hover") %>% 
-                bind_shiny("mutations_plot", "mutations_plot_ui")
-
-              progress <- shiny::Progress$new()
-              progress$set(message = "Fetching data", value = 0)
-              # Close the progress when this reactive exits (even if there's an error)
-              on.exit(progress$close())
-              
-              output$error_message2 <- renderText({
-                ""
-              })
-            }
-          }
-        }
-    }
+    output$mutation_table <- renderDataTable(selected_country_mutations(), options = list(pageLength = 10))
     
     observeEvent(input$mutation_button, {
       mutation_func(mutations_data, input$selected_locus, input$selected_drug)

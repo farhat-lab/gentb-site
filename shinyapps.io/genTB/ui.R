@@ -1,7 +1,6 @@
 library(leaflet)
 library(shiny)
 library(ggvis)
-library(DT)
 library(ggplot2)
 
 shinyUI(
@@ -37,18 +36,7 @@ shinyUI(
 
           tabPanel("Mutations",
                    h4(textOutput("country3")),
-                   fluidRow(
-                     column(2,
-                            selectizeInput('selected_locus', 'Select a locus', choices = NULL)),
-                     column(3,
-                            selectizeInput('selected_variant', 'Select a variant', choices = NULL)),
-                     column(4,
-                            selectizeInput('selected_drug', 'Select a drug', choices = NULL)),
-                     column(5, actionButton("mutation_button", "GO"))),
-                   textOutput("mutations_indicator"),
-                   conditionalPanel(condition="output.mutations_indicator == ' '", ggvisOutput("mutations_plot")),
-                   conditionalPanel(condition="output.mutations_indicator == ' '", uiOutput("mutations_plot_ui")),
-                   conditionalPanel(condition="output.mutations_indicator == '  '", textOutput("error_message2"))
+                   dataTableOutput('mutation_table')
           ),
 
           tabPanel("Map setup",
