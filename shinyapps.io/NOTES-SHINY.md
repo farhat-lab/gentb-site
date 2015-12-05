@@ -57,7 +57,6 @@ install.packages('dplyr')
 install.packages('ggvis')
 install.packages('tidyr')
 install.packages('ggplot2')
-install.packages('DT')
 install.packages('stringr')
 install.packages('countrycode')
 ```
