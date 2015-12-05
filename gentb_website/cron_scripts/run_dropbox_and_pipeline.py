@@ -20,6 +20,7 @@ class DropboxPipelineWorkaround(object):
             self.run_workaround()
 
     def pause(self, num_minutes=10):
+        num_minutes = 2
         print 'Pausing for %s minutes' % num_minutes
         num_seconds = num_minutes * 60
         time.sleep(num_seconds)
