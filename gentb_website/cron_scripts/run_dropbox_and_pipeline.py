@@ -6,7 +6,7 @@ this is a hackish workaround.
 
 Supervisor will be used to keep this script alive--at least for the weekend.
 """
-import subprocess
+from subprocess import Popen
 import time
 
 class DropboxPipelineWorkaround(object):
