@@ -27,10 +27,10 @@ class DropboxPipelineWorkaround(object):
     def run_workaround(self):
 
         self.run_dropbox_retrieval_command()
-        self.pause(10)
+        self.pause(num_minutes=1)
 
         self.run_pipeline_command()
-        self.pause(10)
+        self.pause(num_minutes=1)
 
     def run_dropbox_retrieval_command(self):
         print 'Run Dropbox retrieval command'
