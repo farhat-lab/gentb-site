@@ -314,13 +314,15 @@ class PipelineScriptRunner(object):
 
 if __name__ == '__main__':
     #pass
-
-    dataset_from_db = PredictDataset.objects.first()
+    LOGGER.debug("Run pipeline check")
 
     # get some Dataset
-    pipeline_runner = PipelineScriptRunner(dataset_from_db)
-    # Run script
-    pipeline_runner.run_script_on_dataset()
+    dataset_from_db = PredictDataset.objects.first()
+    if dataset_from_db:
+        LOGGER.debug("Nothing to check")
+        # Run script
+        pipeline_runner = PipelineScriptRunner(dataset_from_db)
+        pipeline_runner.run_script_on_dataset()
 
     """
     # Alternative run method
