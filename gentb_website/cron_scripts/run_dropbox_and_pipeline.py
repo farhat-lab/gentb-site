@@ -35,7 +35,7 @@ class DropboxPipelineWorkaround(object):
     def run_dropbox_retrieval_command(self):
         print 'Run Dropbox retrieval command'
 
-        cmd_dropbox_retrieval = '/www/gentb.hms.harvard.edu/code/gentb-site/gentb_website/cron_scripts/get_dropbox_files_prod_hms.sh'.
+        cmd_dropbox_retrieval = '/www/gentb.hms.harvard.edu/code/gentb-site/gentb_website/cron_scripts/get_dropbox_files_prod_hms.sh'
         cmd_args = cmd_dropbox_retrieval.split()
 
         p = Popen(cmd_args,
