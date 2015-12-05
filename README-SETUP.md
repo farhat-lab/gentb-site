@@ -67,7 +67,7 @@ mkdir /www/gentb.hms.harvard.edu/logging/gunicorn
     - Log settings: ```settings/hms_supervisord.conf```
         - At the time of this writing, logs are set to rotate, with the last 5 being kept.  Each log has a max size of 10mb.
     - Tailing the log:
-        - ```/www/gentb.hms.harvard.edu/logging/supervisor/supervisord.log```
+        - ```tail /www/gentb.hms.harvard.edu/logging/supervisor/supervisord.log```
 
 
 ### Set up virtualenv
