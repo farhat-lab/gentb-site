@@ -439,7 +439,7 @@ shinyServer(function(input, output, session) {
         country_name_holder <- NULL
         selected_country_mutations <- gen_phen_country_by_strain
       }
-      data.frame(na.omit(selected_country_mutations[, c("locus", "snpname", "resistance", "country")]))
+      data.frame(na.omit(selected_country_mutations[, c("locus", "snpname", "drug", "resistance", "country")]))
     })
     
     output$mutation_table <- renderDataTable(selected_country_mutations(), options = list(pageLength = 10))
