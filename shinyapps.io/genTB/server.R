@@ -439,6 +439,7 @@ shinyServer(function(input, output, session) {
         country_name_holder <- NULL
         selected_country_mutations <- gen_phen_country_by_strain
       }
+      selected_country_mutations$drug <- substring(selected_country_mutations$drug, 2)
       data.frame(na.omit(selected_country_mutations[, c("locus", "snpname", "drug", "resistance", "country")]))
     })
     
