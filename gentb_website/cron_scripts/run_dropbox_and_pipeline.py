@@ -47,8 +47,8 @@ class DropboxPipelineWorkaround(object):
                 shell=True,\
                 stdin=None,\
                 stdout=None,\
-                stderr=None,\
-                )#close_fds=True)
+                stderr=None)
+                #close_fds=True)
 
 
     def run_pipeline_command(self):
@@ -62,8 +62,8 @@ class DropboxPipelineWorkaround(object):
                 shell=True,\
                 stdin=None,\
                 stdout=None,\
-                stderr=None,\
-                )#close_fds=True)
+                stderr=None)
+                #close_fds=True)
 
 
 
