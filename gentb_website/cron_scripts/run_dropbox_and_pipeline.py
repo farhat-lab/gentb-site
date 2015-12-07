@@ -8,6 +8,7 @@ Supervisor will be used to keep this script alive--at least for the weekend.
 """
 import subprocess
 import time
+import os
 
 class DropboxPipelineWorkaround(object):
 
@@ -43,7 +44,7 @@ class DropboxPipelineWorkaround(object):
 
         cmd_args = cmd_dropbox_retrieval.split()
 
-        p = subprocess.Popen(True,\
+        p = subprocess.Popen(cmd_dropbox_retrieval,\
                 shell=True,\
                 stdin=None,\
                 stdout=None,\
