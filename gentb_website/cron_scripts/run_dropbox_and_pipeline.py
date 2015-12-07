@@ -37,12 +37,12 @@ class DropboxPipelineWorkaround(object):
         """
         Run what should usually be a cron job to retrieve Dropbox files
         """
-        print 'Run Dropbox retrieval command'
+        print 'Run Dropbox retrieval command--and not waiting for results'
 
         cmd_dropbox_retrieval = ' . /opt/lsf/conf/profile.lsf;\
          /www/gentb.hms.harvard.edu/code/gentb-site/gentb_website/cron_scripts/get_dropbox_files_prod_hms.sh'
 
-        cmd_args = cmd_dropbox_retrieval.split()
+        #cmd_args = cmd_dropbox_retrieval.split()
 
         p = subprocess.Popen(cmd_dropbox_retrieval,\
                 shell=True,\
@@ -53,7 +53,7 @@ class DropboxPipelineWorkaround(object):
 
 
     def run_pipeline_command(self):
-        print 'Run pipeline command'
+        print 'Run pipeline command--and not waiting for results'
 
         cmd_pipeline = ' . /opt/lsf/conf/profile.lsf; /www/gentb.hms.harvard.edu/code/gentb-site/gentb_website/cron_scripts/run_pipeline_prod_hms.sh'
 
