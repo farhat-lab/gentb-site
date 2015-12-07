@@ -6,7 +6,7 @@ this is a hackish workaround.
 
 Supervisor will be used to keep this script alive--at least for the weekend.
 """
-from subprocess import Popen
+import subprocess
 import time
 
 class DropboxPipelineWorkaround(object):
@@ -39,10 +39,11 @@ class DropboxPipelineWorkaround(object):
         print 'Run Dropbox retrieval command'
 
         cmd_dropbox_retrieval = ' . /opt/lsf/conf/profile.lsf; /www/gentb.hms.harvard.edu/code/gentb-site/gentb_website/cron_scripts/get_dropbox_files_prod_hms.sh'
+
         cmd_args = cmd_dropbox_retrieval.split()
 
-        p = Popen(cmd_args,
-                shell=False,
+        p = subprocess.Popen(True,
+                shell=True,
                 stdin=None,
                 stdout=None,
                 stderr=None,
@@ -54,10 +55,10 @@ class DropboxPipelineWorkaround(object):
 
         cmd_pipeline = ' . /opt/lsf/conf/profile.lsf; /www/gentb.hms.harvard.edu/code/gentb-site/gentb_website/cron_scripts/run_pipeline_prod_hms.sh'
 
-        cmd_args = cmd_pipeline.split()
+        #cmd_args = cmd_pipeline.split()
 
-        p = Popen(cmd_args,
-                shell=False,
+        p = subprocess.Popen(cmd_pipeline,
+                shell=True,
                 stdin=None,
                 stdout=None,
                 stderr=None,
