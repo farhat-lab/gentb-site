@@ -33,6 +33,9 @@ class DropboxPipelineWorkaround(object):
         self.pause(num_minutes=10)
 
     def run_dropbox_retrieval_command(self):
+        """
+        Run what should usually be a cron job to retrieve Dropbox files
+        """
         print 'Run Dropbox retrieval command'
 
         cmd_dropbox_retrieval = ' . /opt/lsf/conf/profile.lsf; /www/gentb.hms.harvard.edu/code/gentb-site/gentb_website/cron_scripts/get_dropbox_files_prod_hms.sh'
