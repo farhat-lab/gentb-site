@@ -10,7 +10,13 @@ import subprocess
 import time
 import os
 
+CMD_LOAD_ENVIRONMENT = ' . /etc/profile.d/Modules.sh'
+#CMD_LOAD_ENVIRONMENT = ' . /opt/lsf/conf/profile.lsf'
+
 class DropboxPipelineWorkaround(object):
+    """
+    Poor man's cron substitute.  Infinite looping script under supervisord
+    """
 
     def __init__(self, run_forever=True):
 
@@ -39,8 +45,9 @@ class DropboxPipelineWorkaround(object):
         """
         print 'Run Dropbox retrieval command--and not waiting for results'
 
-        cmd_dropbox_retrieval = ' . /opt/lsf/conf/profile.lsf;\
-         /www/gentb.hms.harvard.edu/code/gentb-site/gentb_website/cron_scripts/get_dropbox_files_prod_hms.sh'
+        cmd_dropbox_retrieval = '%s;\
+         /www/gentb.hms.harvard.edu/code/gentb-site/gentb_website/cron_scripts/get_dropbox_files_prod_hms.sh'\
+          % (CMD_LOAD_ENVIRONMENT)
 
         #cmd_args = cmd_dropbox_retrieval.split()
 
@@ -55,7 +62,7 @@ class DropboxPipelineWorkaround(object):
     def run_pipeline_command(self):
         print 'Run pipeline command--and not waiting for results'
 
-        cmd_pipeline = ' . /opt/lsf/conf/profile.lsf; /www/gentb.hms.harvard.edu/code/gentb-site/gentb_website/cron_scripts/run_pipeline_prod_hms.sh'
+        cmd_pipeline = '%s; /www/gentb.hms.harvard.edu/code/gentb-site/gentb_website/cron_scripts/run_pipeline_prod_hms.sh' % (CMD_LOAD_ENVIRONMENT)
 
         #cmd_args = cmd_pipeline.split()
 
