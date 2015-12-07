@@ -38,16 +38,17 @@ class DropboxPipelineWorkaround(object):
         """
         print 'Run Dropbox retrieval command'
 
-        cmd_dropbox_retrieval = ' . /opt/lsf/conf/profile.lsf; /www/gentb.hms.harvard.edu/code/gentb-site/gentb_website/cron_scripts/get_dropbox_files_prod_hms.sh'
+        cmd_dropbox_retrieval = ' . /opt/lsf/conf/profile.lsf;\
+         /www/gentb.hms.harvard.edu/code/gentb-site/gentb_website/cron_scripts/get_dropbox_files_prod_hms.sh'
 
         cmd_args = cmd_dropbox_retrieval.split()
 
-        p = subprocess.Popen(True,
-                shell=True,
-                stdin=None,
-                stdout=None,
-                stderr=None,
-                close_fds=True)
+        p = subprocess.Popen(True,\
+                shell=True,\
+                stdin=None,\
+                stdout=None,\
+                stderr=None,\
+                )#close_fds=True)
 
 
     def run_pipeline_command(self):
@@ -57,12 +58,12 @@ class DropboxPipelineWorkaround(object):
 
         #cmd_args = cmd_pipeline.split()
 
-        p = subprocess.Popen(cmd_pipeline,
-                shell=True,
-                stdin=None,
-                stdout=None,
-                stderr=None,
-                close_fds=True)
+        p = subprocess.Popen(cmd_pipeline,\
+                shell=True,\
+                stdin=None,\
+                stdout=None,\
+                stderr=None,\
+                )#close_fds=True)
 
 
 
