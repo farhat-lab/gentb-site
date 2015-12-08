@@ -29,7 +29,7 @@ A basic view/template combination.  The template includes embedded [Dataverse Wi
   - View: "view_data_page" [gentb_website/tb_website/apps/basic_pages/views.py](gentb_website/tb_website/apps/basic_pages/views.py)
   - Template: [gentb_website/tb_website/templates/data_page.html](gentb_website/tb_website/templates/data_page.html)
 
-![Share Page screenshot](screen-shots/genTB-share.png?raw=true "genTB Share page")
+![Share Page screenshot](screen-shots/genTB-data.png?raw=true "genTB Data page")
 
 
 ### Map
@@ -41,8 +41,8 @@ A basic view/template combination.  The maps are actually hosted by a Shiny appl
 
 ![Map Page screenshot](screen-shots/genTB-map.png?raw=true "genTB Map page")
 
-- Note: The Shiny app url is currently ```https://hmdc.shinyapps.io/genTB``` and part of the IQSS Shinyapps.io service
-
+- **Note**: The Shiny app url is currently ```https://hmdc.shinyapps.io/genTB``` and part of the IQSS Shinyapps.io service
+    - For more information, see (shinyapps.io/NOTES-SHINY.md)
 ### Explore (TwoRavens)
 
 [TwoRavens](https://github.com/IQSS/TwoRavens) is a system of interlocking statistical tools for data exploration, analysis, and meta-analysis.  This page uses TwoRavens via an iframe to analyze the genTB master data file.
