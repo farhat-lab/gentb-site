@@ -39,10 +39,10 @@ A basic view/template combination.  The maps are actually hosted by a Shiny appl
   - View: "view_map_page" [gentb_website/tb_website/apps/maps/views.py](gentb_website/tb_website/apps/maps/views.py)
   - Template: [gentb_website/tb_website/templates/maps/basic_map.html](gentb_website/tb_website/templates/maps/basic_map.html)
 
-![Map Page screenshot](screen-shots/genTB-map.png?raw=true "genTB Map page")
-
 - **Note**: The Shiny app url is currently ```https://hmdc.shinyapps.io/genTB``` and part of the IQSS Shinyapps.io service
     - For more information, see [shinyapps.io/NOTES-SHINY.md](shinyapps.io/NOTES-SHINY.md)
+
+![Map Page screenshot](screen-shots/genTB-map.png?raw=true "genTB Map page")
     
      
 ### Explore (TwoRavens)
