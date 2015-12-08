@@ -180,7 +180,7 @@ class DropboxRetrievalRunner:
         if cnt == 0:
             status_msg = 'All set.  Nothing to check'
             print(status_msg)
-            LOGGER.debug("retrieve_new_dropbox_files")
+            LOGGER.debug(status_msg)
             return
 
         print('Checking {0} link(s)'.format(cnt))
