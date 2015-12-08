@@ -42,7 +42,9 @@ A basic view/template combination.  The maps are actually hosted by a Shiny appl
 ![Map Page screenshot](screen-shots/genTB-map.png?raw=true "genTB Map page")
 
 - **Note**: The Shiny app url is currently ```https://hmdc.shinyapps.io/genTB``` and part of the IQSS Shinyapps.io service
-    - For more information, see (shinyapps.io/NOTES-SHINY.md)
+    - For more information, see [shinyapps.io/NOTES-SHINY.md](shinyapps.io/NOTES-SHINY.md)
+    
+     
 ### Explore (TwoRavens)
 
 [TwoRavens](https://github.com/IQSS/TwoRavens) is a system of interlocking statistical tools for data exploration, analysis, and meta-analysis.  This page uses TwoRavens via an iframe to analyze the genTB master data file.
