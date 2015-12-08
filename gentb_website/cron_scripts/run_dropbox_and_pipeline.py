@@ -8,7 +8,6 @@ Supervisor will be used to keep this script alive--at least for the weekend.
 """
 import subprocess
 import time
-import os
 
 CMD_LOAD_ENVIRONMENT = ' . /etc/profile.d/Modules.sh'
 #CMD_LOAD_ENVIRONMENT = ' . /opt/lsf/conf/profile.lsf'
@@ -27,12 +26,18 @@ class DropboxPipelineWorkaround(object):
             self.run_workaround()
 
     def pause(self, num_minutes=10):
+        """
+        Pause for several minutes
+        """
         print 'Pausing for %s minutes' % num_minutes
         num_seconds = num_minutes * 60
         time.sleep(num_seconds)
 
     def run_workaround(self):
-
+        """
+        Run dropbox retrieveal, pause
+        Run pipeline, pause
+        """
         self.run_dropbox_retrieval_command()
         self.pause(num_minutes=10)
 
@@ -51,7 +56,7 @@ class DropboxPipelineWorkaround(object):
 
         #cmd_args = cmd_dropbox_retrieval.split()
 
-        p = subprocess.Popen(cmd_dropbox_retrieval,\
+        cmd_process = subprocess.Popen(cmd_dropbox_retrieval,\
                 shell=True,\
                 stdin=None,\
                 stdout=None,\
@@ -60,13 +65,17 @@ class DropboxPipelineWorkaround(object):
 
 
     def run_pipeline_command(self):
+        """
+        Run the pipeline command
+        """
+
         print 'Run pipeline command--and not waiting for results'
 
         cmd_pipeline = '%s; /www/gentb.hms.harvard.edu/code/gentb-site/gentb_website/cron_scripts/run_pipeline_prod_hms.sh' % (CMD_LOAD_ENVIRONMENT)
 
         #cmd_args = cmd_pipeline.split()
 
-        p = subprocess.Popen(cmd_pipeline,\
+        cmd_process = subprocess.Popen(cmd_pipeline,\
                 shell=True,\
                 stdin=None,\
                 stdout=None,\
@@ -76,4 +85,4 @@ class DropboxPipelineWorkaround(object):
 
 
 if __name__ == '__main__':
-    temp_cmd_runner = DropboxPipelineWorkaround(run_forever=True)
+    DropboxPipelineWorkaround(run_forever=True)

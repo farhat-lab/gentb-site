@@ -3,13 +3,13 @@ This fires off the perl script to kick off the pipeline for either
 FastQ or VCF file analysis.
 
 """
-#from __future__ import print_function
+from __future__ import print_function
 
 if __name__ == '__main__':
-    import os, sys
+    import sys
     from os.path import dirname, realpath
-    django_dir = dirname(dirname(dirname(realpath(__file__))))
-    sys.path.append(django_dir)
+    DJANGO_PROJ_DIR = dirname(dirname(dirname(realpath(__file__))))
+    sys.path.append(DJANGO_PROJ_DIR)
     #os.environ['DJANGO_SETTINGS_MODULE'] = 'tb_website.settings.local'
 
     # Allows the working environ to get set-up, apps registered, etc
@@ -21,12 +21,15 @@ from django.template.loader import render_to_string
 from apps.utils.result_file_info import RESULT_FILE_NAME_DICT,\
             EXPECTED_FILE_DESCRIPTIONS,\
             RESULT_OUTPUT_DIRECTORY_NAME
-from apps.predict.models import PredictDatasetStatus, PredictDataset,\
+from apps.predict.models import PredictDataset,\
             PredictDatasetNote, DatasetScriptRun,\
-            PipelineScriptsDirectory
+            PipelineScriptsDirectory,\
+            DATASET_STATUS_FILE_RETRIEVAL_COMPLETE
+
 from apps.script_helper.script_runner_basic import run_script
-from os.path import isfile, isdir, join
+from os.path import isfile, join
 import logging
+
 LOGGER = logging.getLogger('apps.predict.pipeline_hardcoded_script_runner')
 
 class ErrMsg(object):
@@ -177,23 +180,23 @@ class PipelineScriptRunner(object):
 
         # Get callback args
         callback_info_dict = self.dataset.get_script_args_json(dsr.md5, as_dict=True)
-        d = dict(callback_info_dict=callback_info_dict)
-        d.update(RESULT_FILE_NAME_DICT)
-        d['RESULT_OUTPUT_DIRECTORY_NAME'] = RESULT_OUTPUT_DIRECTORY_NAME
-        d['EXPECTED_FILE_DESCRIPTIONS'] = EXPECTED_FILE_DESCRIPTIONS
+        template_dict = dict(callback_info_dict=callback_info_dict)
+        template_dict.update(RESULT_FILE_NAME_DICT)
+        template_dict['RESULT_OUTPUT_DIRECTORY_NAME'] = RESULT_OUTPUT_DIRECTORY_NAME
+        template_dict['EXPECTED_FILE_DESCRIPTIONS'] = EXPECTED_FILE_DESCRIPTIONS
 
-        print '-' * 40
-        print d
-        print '-' * 40
+        print('-' * 40)
+        print(template_dict)
+        print('-' * 40)
 
         # Use args to create a custom python script
-        py_callback_script = render_to_string('feedback/gentb_status_feedback.py', d)
+        py_callback_script = render_to_string('feedback/gentb_status_feedback.py', template_dict)
 
         # Place script in dataset file_directory
         script_fullname = join(self.dataset.file_directory, 'gentb_status_feedback.py')
-        fh = open(script_fullname, 'w')
-        fh.write(py_callback_script)
-        fh.close()
+        fhandler = open(script_fullname, 'w')
+        fhandler.write(py_callback_script)
+        fhandler.close()
 
         # (3) Update the dataset status to 'in process'
         #
@@ -253,7 +256,8 @@ class PipelineScriptRunner(object):
             err_title = 'FastQ: single-ended or pair-ended?'
             err_note = 'Could not determine single-ended or pair-ended FastQ type.\
              Database contained: "%s"' % (self.dataset.fastq_type)
-            err_msg_obj = self.record_error(err_title, err_note)
+            # err_msg_obj = self.record_error(err_title, err_note)
+            self.record_error(err_title, err_note)
             return None
 
         return command_str
@@ -302,27 +306,45 @@ class PipelineScriptRunner(object):
         pipeline_runner = PipelineScriptRunner(selected_dataset)
         script_directory = pipeline_runner.step1_get_script_directory_info()
         if script_directory is None:
-            return (False, prunner.err_message)
+            return (False, pipeline_runner.err_message)
 
         script_command = pipeline_runner.step2_get_script_command(script_directory)
         if script_command is None:
-            return (False, prunner.err_message)
+            return (False, pipeline_runner.err_message)
 
         return (True, script_command)
 
+    @staticmethod
+    def run_next_dataset():
+        """
+        (1) Retrieve the first PredictDataset with a status of:
+            DATASET_STATUS_FILE_RETRIEVAL_COMPLETE
+        (2) If such a dataset exists, run it through the pipeline
+        """
+        #pass
+        LOGGER.debug("Run pipeline check: next dataset")
+        print("Run pipeline check: next dataset")
+
+        # get some Dataset
+        dataset_from_db = PredictDataset.objects.filter(\
+                status=DATASET_STATUS_FILE_RETRIEVAL_COMPLETE).first()
+
+        if dataset_from_db is None:
+            LOGGER.debug("Nothing to check")
+            print('Nothing to check')
+            return
+
+        # Run script
+        LOGGER.debug("Run pipeline for dataset: %s (%s)",\
+            dataset_from_db, dataset_from_db.id)
+        print("Run pipeline for dataset: %s (%s)" %\
+            (dataset_from_db, dataset_from_db.id))
+        pipeline_runner = PipelineScriptRunner(dataset_from_db)
+        pipeline_runner.run_script_on_dataset()
 
 
 if __name__ == '__main__':
-    #pass
-    LOGGER.debug("Run pipeline check")
-
-    # get some Dataset
-    dataset_from_db = PredictDataset.objects.first()
-    if dataset_from_db:
-        LOGGER.debug("Nothing to check")
-        # Run script
-        pipeline_runner = PipelineScriptRunner(dataset_from_db)
-        pipeline_runner.run_script_on_dataset()
+    PipelineScriptRunner.run_next_dataset()
 
     """
     # Alternative run method
