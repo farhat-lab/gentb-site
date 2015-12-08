@@ -292,8 +292,9 @@ cd /www/gentb.hms.harvard.edu/code/gentb-site/gentb_website/tb_website
 # Start supervisor
 supervisord -c /www/gentb.hms.harvard.edu/code/gentb-site/gentb_website/tb_website/tb_website/settings/hms_supervisord.conf
 
-# Stop supervisor ctl, e.g. to issue 'status' or 'shutdown', etc.
-#supervisorctl -c /www/gentb.hms.harvard.edu/code/gentb-site/gentb_website/tb_website/tb_website/settings/hms_supervisord.conf
+# Start the supervisor control prompt
+# e.g. issue 'status', 'shutdown', 'help', etc.
+supervisorctl -c /www/gentb.hms.harvard.edu/code/gentb-site/gentb_website/tb_website/tb_website/settings/hms_supervisord.conf
 ```
 
 ##### Stop supervisord
