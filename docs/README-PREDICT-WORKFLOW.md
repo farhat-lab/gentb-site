@@ -14,7 +14,7 @@ Overall, the Predict workflow steps are as follows, with notices regarding gaps:
   - The Dropbox link Metadata is checked to see if it contains
     the chosen file types, VCF or FastQ. This is part of the Django forms's
     error check.
-    - Form name: [UploadPredictionDataForm](gentb_website/tb_website/apps/predict/forms.py)
+    - Form name: [UploadPredictionDataForm](../gentb_website/tb_website/apps/predict/forms.py#L47)
        - Method: clean() method, see ```get_dropbox_metadata_from_link```
          - from: ```from apps.dropbox_helper.dropbox_util import get_dropbox_metadata_from_link```
 - **Actions upon success**
