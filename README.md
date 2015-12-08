@@ -2,6 +2,12 @@
 
 Basic django site to facilitate the contribution and analysis of fastQ and VCF files.
 
+Docs:
+ - Basic informational web pages (this README.md)
+ - Set-up/Updates on Orchestra: [docs/README-SETUP-ORCHESTRA](docs/README-SETUP-ORCHESTRA.md)
+ - Shiny Maps (shinyapp.io): [Set-up/Updates](shinyapps.io/NOTES-SHINY.md)
+ - Predict workflow: [docs/README-PREDICT-WORKFLOW.md](docs/README-PREDICT-WORKFLOW.md)
+
 ---
 ## Authentication
 
@@ -43,8 +49,8 @@ A basic view/template combination.  The maps are actually hosted by a Shiny appl
     - For more information, see [shinyapps.io/NOTES-SHINY.md](shinyapps.io/NOTES-SHINY.md)
 
 ![Map Page screenshot](screen-shots/genTB-map.png?raw=true "genTB Map page")
-    
-     
+
+
 ### Explore (TwoRavens)
 
 [TwoRavens](https://github.com/IQSS/TwoRavens) is a system of interlocking statistical tools for data exploration, analysis, and meta-analysis.  This page uses TwoRavens via an iframe to analyze the genTB master data file.
