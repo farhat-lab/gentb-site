@@ -13,6 +13,7 @@ import requests
 import urllib2
 import zipfile
 import itertools
+from pprint import pprint
 
 import logging
 LOGGER = logging.getLogger(__name__)
@@ -21,7 +22,7 @@ if __name__ == '__main__':
     # For local testing....
     DJANGO_DIR = dirname(dirname(dirname(realpath(__file__))))
     sys.path.append(DJANGO_DIR)
-    #os.environ['DJANGO_SETTINGS_MODULE'] = 'tb_website.settings.local'
+    os.environ['DJANGO_SETTINGS_MODULE'] = 'tb_website.settings.local'
 
 from django.conf import settings
 from apps.utils.file_patterns import GENTB_FILE_PATTERNS, FilePatternHelper
@@ -138,6 +139,7 @@ class DropboxRetriever(object):
         # Make the request
         #
         LOGGER.info('request metadata: %s', params)
+        #print 'request metadata: ', params
         try:
             r = requests.post('https://api.dropbox.com/1/metadata/link',\
                             data=params,\
@@ -181,9 +183,11 @@ class DropboxRetriever(object):
             LOGGER.error('%s \nText: %s', dbox_err_msg, r.text)
             self.add_err_msg(dbox_err_msg)
             return False
+        #print 'rjson: ', r.text
 
         try:
             rjson = r.json()
+
         except:
             err_msg = "Failed to turn link metadata from dropbox to JSON: {0}".format(r.text)
             self.add_err_msg(err_msg)
@@ -321,7 +325,6 @@ class DropboxRetriever(object):
         #target_fname = 'dropbox_download_{0}.zip'.format(\
         #                datetime.now().strftime('%Y-%m-%d_%H-%M-%S')\
         #                )
-
         target_fullname = join(self.destination_dir,\
                     basename(self.dropbox_link_metadata['path'][1:])\
                     )
@@ -401,7 +404,14 @@ class DropboxRetriever(object):
         # -------------------------------------
         # Unzip the download
         # -------------------------------------
-        unzip_dir = join(self.destination_dir, self.dropbox_link_metadata['path'][1:])
+
+        dropbox_download_dir = self.dropbox_link_metadata.get('path', None)
+        if dropbox_download_dir is None:    # No directory indicated
+            dropbox_download_dir = ''
+        elif dropbox_download_dir.startswith('/'):  # Strip off initial '/'
+            dropbox_download_dir = dropbox_download_dir[1:]
+
+        unzip_dir = join(self.destination_dir, dropbox_download_dir)
         try:
             dbox_zip = zipfile.ZipFile(self.target_zip_fullname, 'r')
             dbox_zip.extractall(unzip_dir)
@@ -464,9 +474,11 @@ if __name__ == '__main__':
     #example_dlink = 'https://www.dropbox.com/s/4tqczonkaeakvua/001.txt?dl=0'
     #example_dlink = 'https://www.dropbox.com/sh/vbicdol2e8mn57r/AACeJzBhUpgxTNjj6jHL2UJoa?dl=0'
     # dir of files
-    example_dlink = 'https://www.dropbox.com/sh/19krhpbo4ph93rp/AAB6z3SpKs3w7jHy0bVi4JtPa?dl=0'
+    #example_dlink = 'https://www.dropbox.com/sh/19krhpbo4ph93rp/AAB6z3SpKs3w7jHy0bVi4JtPa?dl=0'
     # single file
-    example_dlink = 'https://www.dropbox.com/s/tipb48hahtmbk05/008.1.fastq.txt?dl=0'
+    #example_dlink = 'https://www.dropbox.com/s/tipb48hahtmbk05/008.1.fastq.txt?dl=0'
+    # maha's fastq
+    example_dlink = 'https://www.dropbox.com/sh/hidulnogsjmk685/AACpTnyhu0KXaD6XEc450R46a?dl=0'
     dest_dir = '/Users/rmp553/Documents/iqss-git/gentb-site/scratch-work/test-files'
 
 
