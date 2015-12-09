@@ -2,8 +2,8 @@
 from apps.predict.models import *
 
 statuses = [
-(False, 'DATASET_STATUS_NOT_READY_ID', 'Dataset NOT CONFIRMED for Dropbox file retrieval'),\
-(False, 'DATASET_STATUS_CONFIRMED_ID', 'Dataset CONFIRMED for Dropbox file retrieval'),\
+(False, 'DATASET_STATUS_NOT_READY', 'Dataset NOT CONFIRMED for Dropbox file retrieval'),\
+(False, 'DATASET_STATUS_CONFIRMED', 'Dataset CONFIRMED for Dropbox file retrieval'),\
 (False, 'DATASET_STATUS_FILE_RETRIEVAL_STARTED', 'Dropbox file retrieval STARTED'),\
 (True, 'DATASET_STATUS_FILE_RETRIEVAL_ERROR', 'Dropbox file retrieval ERROR'),\
 (False, 'DATASET_STATUS_FILE_RETRIEVAL_COMPLETE', 'Dropbox file retrieval COMPLETE'),\

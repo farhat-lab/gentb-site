@@ -4,8 +4,8 @@
         "human_name": "Dataset NOT CONFIRMED for Dropbox file retrieval",
         "is_error": false,
         "sort_order": 1,
-        "name": "DATASET_STATUS_NOT_READY_ID",
-        "slug": "dataset_status_not_ready_id"
+        "name": "DATASET_STATUS_NOT_READY",
+        "slug": "DATASET_STATUS_NOT_READY"
     },
     "model": "predict.predictdatasetstatus",
     "pk": 1
@@ -15,8 +15,8 @@
         "human_name": "Dataset CONFIRMED for Dropbox file retrieval",
         "is_error": false,
         "sort_order": 2,
-        "name": "DATASET_STATUS_CONFIRMED_ID",
-        "slug": "dataset_status_confirmed_id"
+        "name": "DATASET_STATUS_CONFIRMED",
+        "slug": "DATASET_STATUS_CONFIRMED"
     },
     "model": "predict.predictdatasetstatus",
     "pk": 2

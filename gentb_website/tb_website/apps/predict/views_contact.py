@@ -6,7 +6,6 @@ from django.http import HttpResponseRedirect, HttpResponse, Http404
 from django.template import RequestContext
 from django.contrib.auth.decorators import login_required
 
-from apps.predict.forms import UploadPredictionDataForm
 from apps.predict.models import PredictDataset, PredictDatasetStatus, PredictDatasetNote
 from apps.shared_data.process_file_helper import get_process_file_results
 from apps.utils.view_util import get_common_dict

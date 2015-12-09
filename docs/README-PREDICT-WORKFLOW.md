@@ -29,6 +29,8 @@ Overall, the Predict workflow steps are as follows, with notices regarding gaps:
     - Method: get_dataset(tb_user)
 
 ## 2. Confirmation of Predict Information
+ - ** Actions upon confirmation **
+    - Change PredictDataset status to ```DATASET_STATUS_CONFIRMED```
 
 ## 3. Download Dropbox Files ("cron job")
 

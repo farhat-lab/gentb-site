@@ -27,8 +27,8 @@ from apps.utils.file_patterns import *
 #    instance.original_filename = basename(filename)
 #    return join(instance.dataset.get_partial_path_for_datafile(), generate_storage_identifier())
 
-DATASET_STATUS_NOT_READY_ID = 1
-DATASET_STATUS_CONFIRMED_ID = 2
+DATASET_STATUS_NOT_READY = 1
+DATASET_STATUS_CONFIRMED = 2
 
 DATASET_STATUS_FILE_RETRIEVAL_STARTED = 3
 DATASET_STATUS_FILE_RETRIEVAL_ERROR = 4
@@ -233,10 +233,10 @@ class PredictDataset(TimeStampedModel):
     # Initial information statuses
     #
     def set_status_not_ready(self, save_status=True):
-        self.set_status(DATASET_STATUS_NOT_READY_ID, save_status)
+        self.set_status(DATASET_STATUS_NOT_READY, save_status)
 
     def set_status_confirmed(self, save_status=True):
-        self.set_status(DATASET_STATUS_CONFIRMED_ID, save_status)
+        self.set_status(DATASET_STATUS_CONFIRMED, save_status)
 
     # File Retrieval statuses
     #
