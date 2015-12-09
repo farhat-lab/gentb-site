@@ -5,7 +5,7 @@
         "is_error": false,
         "sort_order": 1,
         "name": "DATASET_STATUS_NOT_READY",
-        "slug": "DATASET_STATUS_NOT_READY"
+        "slug": "dataset_status_not_ready"
     },
     "model": "predict.predictdatasetstatus",
     "pk": 1
@@ -16,7 +16,7 @@
         "is_error": false,
         "sort_order": 2,
         "name": "DATASET_STATUS_CONFIRMED",
-        "slug": "DATASET_STATUS_CONFIRMED"
+        "slug": "dataset_status_confirmed"
     },
     "model": "predict.predictdatasetstatus",
     "pk": 2
@@ -59,8 +59,8 @@
         "human_name": "Pipeline processing STARTED",
         "is_error": false,
         "sort_order": 6,
-        "name": "DATASET_STATUS_PROCESSING_STARTED_ID",
-        "slug": "dataset_status_processing_started_id"
+        "name": "DATASET_STATUS_PROCESSING_STARTED",
+        "slug": "dataset_status_processing_started"
     },
     "model": "predict.predictdatasetstatus",
     "pk": 6

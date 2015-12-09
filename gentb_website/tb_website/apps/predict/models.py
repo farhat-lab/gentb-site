@@ -34,7 +34,7 @@ DATASET_STATUS_FILE_RETRIEVAL_STARTED = 3
 DATASET_STATUS_FILE_RETRIEVAL_ERROR = 4
 DATASET_STATUS_FILE_RETRIEVAL_COMPLETE = 5
 
-DATASET_STATUS_PROCESSING_STARTED_ID = 6
+DATASET_STATUS_PROCESSING_STARTED = 6
 DATASET_STATUS_PROCESSED_SUCCESS = 7
 DATASET_STATUS_PROCESSED_FAILED = 8
 
@@ -252,7 +252,7 @@ class PredictDataset(TimeStampedModel):
     # Pipeline processing statuses
     #
     def set_status_processing_started(self, save_status=True):
-        self.set_status(DATASET_STATUS_PROCESSING_STARTED_ID, save_status)
+        self.set_status(DATASET_STATUS_PROCESSING_STARTED, save_status)
 
     def set_status_processing_success(self, save_status=True):
         self.set_status(DATASET_STATUS_PROCESSED_SUCCESS, save_status)

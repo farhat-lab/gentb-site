@@ -7,7 +7,7 @@ statuses = [
 (False, 'DATASET_STATUS_FILE_RETRIEVAL_STARTED', 'Dropbox file retrieval STARTED'),\
 (True, 'DATASET_STATUS_FILE_RETRIEVAL_ERROR', 'Dropbox file retrieval ERROR'),\
 (False, 'DATASET_STATUS_FILE_RETRIEVAL_COMPLETE', 'Dropbox file retrieval COMPLETE'),\
-(False, 'DATASET_STATUS_PROCESSING_STARTED_ID', 'Pipeline processing STARTED'),\
+(False, 'DATASET_STATUS_PROCESSING_STARTED', 'Pipeline processing STARTED'),\
 (False, 'DATASET_STATUS_PROCESSED_SUCCESS', 'Pipeline processing SUCCESS'),\
 (True, 'DATASET_STATUS_PROCESSED_FAILED', 'Pipeline processing ERROR'),\
 ]
