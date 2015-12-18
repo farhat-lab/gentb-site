@@ -93,16 +93,20 @@ Preparation for this run includes the creation of a file named [gentb_status_fee
 
 
 The process is:
-  1. As a last step the cluster script runs this python program [gentb_status_feedback.py](https://github.com/IQSS/gentb-site/blob/master/gentb_website/tb_website/templates/feedback/gentb_status_feedback.py)
-    - Note: This program is created in the above step and placed in the file directory for the PredictDataset.  It includes information specific to the this pipeline.
+  1. As a last step the cluster script runs this python program:
+    - [gentb_status_feedback.py](https://github.com/IQSS/gentb-site/blob/master/gentb_website/tb_website/templates/feedback/gentb_status_feedback.py)
+    - Note: This program is created in the step 4 above and placed in the file directory for the PredictDataset.  It includes information specific to this pipeline run.
   2. This script does the following:
     1. Makes a simple (somewhat naive) check to see:
-       - (a) if the results files (result.json, matrix.csv, etc) exist and
-       - (b) that they are more than 0 bytes in size.
-    2. Makes an API call to the genTB server to indicate success (true/false) and either an error message or the data contained in result.json
-    3. These results are stored in [DatasetScriptRun objects](https://github.com/IQSS/gentb-site/blob/master/gentb_website/tb_website/apps/predict/models.py)
+       - If the results files (result.json, matrix.csv, etc) exist and
+       - That they are more than 0 bytes in size.
+    2. Makes an API call to the genTB server to indicate:
+      - Success (true/false) and
+      - Either an error message or the data contained in result.json
+    3. These results are stored in [DatasetScriptRun objects](https://github.com/IQSS/gentb-site/blob/master/gentb_website/tb_website/apps/predict/models.py#L349)
 
 ---
 
-fyi: This is a slightly dated diagram that captures the basic process--the numbering in the diagram __does not__ relate to the numbering in this document.
+Below is a slightly outdated diagram that captures the basic process.
+The numbering in the diagram __does not__ relate to the numbering in this document.
 ![predict workflow](images/predict-workflow.png?raw=true "Predict Workflow")
