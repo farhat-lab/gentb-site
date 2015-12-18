@@ -31,8 +31,25 @@ Overall, the Predict workflow steps are as follows, with notices regarding gaps:
 ## 2. Confirmation of Predict Information
  - ** Actions upon confirmation **
     - Change PredictDataset status to ```DATASET_STATUS_CONFIRMED```
+ - ** Actions upon canceling **
+    - Delete PredictDataset and the associated file directory
+    - File: [views_upload.py](https://github.com/IQSS/gentb-site/blob/master/gentb_website/tb_website/apps/predict/views_upload.py)
 
 ## 3. Download Dropbox Files ("cron job")
+  - This is activated re: a long running supervisord process -- e.g. it should be moved to a cron job once the cron server can use the needed libraries
+    -  (run_dropbox_and_pipeline.py)[https://github.com/IQSS/gentb-site/blob/master/gentb_website/cron_scripts/run_dropbox_and_pipeline.py]
+    - For supervisord, see [```[program:gentb_website]```]( https://github.com/IQSS/gentb-site/blob/master/gentb_website/tb_website/tb_website/settings/hms_supervisord.conf)
+
+  - **Additional dropbox info***    
+  - The download functionality requires the creation of a Dropbox app and associated access token: https://blogs.dropbox.com/developers/2015/08/new-api-endpoint-shared-link-metadata/
+    - The token may be found in the [settings file](https://github.com/IQSS/gentb-site/blob/master/gentb_website/tb_website/tb_website/settings/template_secret_settings.json) under ```DROPBOX_ACCESS_TOKEN```
+      - On production, the settings file is named [```secret_settings_prod_hms.json```](https://github.com/IQSS/gentb-site/blob/master/docs/README-SETUP-ORCHESTRA.md#add-production-settings)
+  - "Standalone" script that can be used to test the downloading of files from Dropbox links:
+    - [dropbox_retriever.py](https://github.com/IQSS/gentb-site/blob/master/gentb_website/tb_website/apps/dropbox_helper/dropbox_retriever.py)
+  - Wrapper for the standalone script above.  This "wrapper":
+    - Uses Dropbox links from ```PredictDataset``` objects and updates the ```PredictDataset``` object statuses appropriately
+    - Creates associated ```DropboxRetrievalLog``` objects--each one has an OneToOneField relationship with a  ```PredictDataset```
+
 
 ## 4. Run Pipeline ("cron job")
 
