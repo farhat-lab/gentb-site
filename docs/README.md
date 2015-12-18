@@ -1,8 +1,13 @@
 ### Site links:
 
-  - HMS genTB site: https://gentb.hms.harvard.edu/gentb-admin/
+  - HMS genTB site: https://gentb.hms.harvard.edu/
+    -  HMS genTB Django admin: https://gentb.hms.harvard.edu/gentb-admin/
   - Shiny Maps (not iframed): https://hmdc.shinyapps.io/genTB
      - Note: If this hasn't been accessed recently, it may take several seconds for the instance to boot up/run   
+
+### Github Repositories
+  - genTB Repository -- this one!: https://github.com/IQSS/gentb-site
+  - PhthisisRavens, has the pipeline scripts: https://github.com/IQSS/PhthisisRavens
 
 
 ### Document links:
@@ -28,3 +33,9 @@
     - [orchestra - python wsgi](https://wiki.med.harvard.edu/Orchestra/PythonWSGIHosting#Introduction)
     - [orchestra web](https://wiki.med.harvard.edu/Orchestra/WebHosting)
     - [orchestra, python, virtualenv](https://rc.hms.harvard.edu/training/python/)
+  
+  - [Dropbox metadata](https://blogs.dropbox.com/developers/2015/08/new-api-endpoint-shared-link-metadata/)
+  - [gunicorn with startup script](https://www.digitalocean.com/community/tutorials/how-to-serve-flask-applications-with-gunicorn-and-nginx-on-ubuntu-14-04)
+  - [gunicorn](https://gunicorn-docs.readthedocs.org/en/19.3/)
+  
+    
