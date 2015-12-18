@@ -6,6 +6,7 @@
      - Note: If this hasn't been accessed recently, it may take several seconds for the instance to boot up/run   
 
 ### Github Repositories
+
   - genTB Repository -- this one!: https://github.com/IQSS/gentb-site
   - PhthisisRavens, has the pipeline scripts: https://github.com/IQSS/PhthisisRavens
 
@@ -21,7 +22,7 @@
   - [R/Shiny Maps](../shinyapps.io/NOTES-SHINY.md)
      - The genTB Maps page is an iframe of a Shiny server--shinyapps.io.  These docs contain details on how to submit updates to shinyapps.io
 
-###Developer links: 
+### Developer links: 
 
   - Orchestra database
     - [phpMyAdmin - orchestra](https://orchestra-dbadmin.med.harvard.edu/phpMyAdmin/)
