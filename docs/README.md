@@ -1,11 +1,11 @@
-Site links:
+### Site links:
 
   - HMS genTB site: https://gentb.hms.harvard.edu/gentb-admin/
   - Shiny Maps (not iframed): https://hmdc.shinyapps.io/genTB
      - Note: If this hasn't been accessed recently, it may take several seconds for the instance to boot up/run   
 
 
-Document links:
+### Document links:
 
   - [Web pages](../README.md)
      - The contents sources for the main pages of the GenTB site
@@ -15,3 +15,16 @@ Document links:
      - High level view of the steps starting from submitting a dropbox link to running the pipeline script and receiving the results.
   - [R/Shiny Maps](../shinyapps.io/NOTES-SHINY.md)
      - The genTB Maps page is an iframe of a Shiny server--shinyapps.io.  These docs contain details on how to submit updates to shinyapps.io
+
+###Developer links: 
+
+  - Orchestra database
+    - [phpMyAdmin - orchestra](https://orchestra-dbadmin.med.harvard.edu/phpMyAdmin/)
+  	- [orchestra mysql docs](https://wiki.med.harvard.edu/Orchestra/MySQLHosting)
+  	- [credentials with web code](https://wiki.med.harvard.edu/Orchestra/WebHostingDatabaseCredentials)
+  - Orchestra docs
+    - [ecommons](https://ecommons.med.harvard.edu/)
+    - [orchestra wiki](https://wiki.med.harvard.edu/Orchestra)
+    - [orchestra - python wsgi](https://wiki.med.harvard.edu/Orchestra/PythonWSGIHosting#Introduction)
+    - [orchestra web](https://wiki.med.harvard.edu/Orchestra/WebHosting)
+    - [orchestra, python, virtualenv](https://rc.hms.harvard.edu/training/python/)
