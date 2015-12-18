@@ -1,3 +1,12 @@
+"""
+12/18/2015
+
+THIS IS CURRENTLY NOT IN USE!!
+
+e.g. To differentiate between different types of FastQ files, this is being used:
+    pipeline_hardcoded_script_runner.py
+"""
+
 from __future__ import print_function
 import os, sys
 from os.path import dirname, realpath

@@ -6,9 +6,9 @@ Overall, the Predict workflow steps are as follows, with notices regarding gaps:
 
   1. [Submission of Predict Form, including a Dropbox link](#1-submission-of-predict-form-including-a-dropbox-link)
   2. [Confirmation of Predict Information](#2-confirmation-of-predict-information)
-  3. Download Dropbox Files ("cron job")
-  4. Run Pipeline ("cron job")
-  5. Check for result files
+  3. [Download Dropbox Files ("cron job")](#3-download-dropbox-files-cron-job)
+  4. [Run Pipeline ("cron job")](#4-run-pipeline-cron-job)
+  5. [Check for result files](#5-check-for-result-files)
 
 
 ## 1. Submission of Predict Form, including a Dropbox link
@@ -36,6 +36,9 @@ Overall, the Predict workflow steps are as follows, with notices regarding gaps:
     - File: [views_upload.py](https://github.com/IQSS/gentb-site/blob/master/gentb_website/tb_website/apps/predict/views_upload.py)
 
 ## 3. Download Dropbox Files ("cron job")
+
+  **To do**: If this process fails, the PredictDataset receives a status of [DATASET_STATUS_FILE_RETRIEVAL_ERROR](https://github.com/IQSS/gentb-site/blob/master/gentb_website/tb_website/apps/predict/models.py#L34).  However, an email should also be sent to the administrator.
+
   - This is activated re: a long running supervisord process -- e.g. it should be moved to a cron job once the cron server can use the needed libraries
     -  [run_dropbox_and_pipeline.py](https://github.com/IQSS/gentb-site/blob/master/gentb_website/cron_scripts/run_dropbox_and_pipeline.py)
       - For supervisord, search for ```[program:gentb_website]``` in the file [hms_supervisord.conf]( https://github.com/IQSS/gentb-site/blob/master/gentb_website/tb_website/tb_website/settings/hms_supervisord.conf)
@@ -55,13 +58,20 @@ Overall, the Predict workflow steps are as follows, with notices regarding gaps:
 
 
 ## 4. Run Pipeline ("cron job")
+
+  - Similar to the dropbox functionality, this is activated re: a long running supervisord process -- e.g. it should be moved to a cron job once the cron server can use the needed libraries
+    -  [run_dropbox_and_pipeline.py](https://github.com/IQSS/gentb-site/blob/master/gentb_website/cron_scripts/run_dropbox_and_pipeline.py)
+    - For supervisord, search for ```[program:gentb_website]``` in the file [hms_supervisord.conf]( https://github.com/IQSS/gentb-site/blob/master/gentb_website/tb_website/tb_website/settings/hms_supervisord.conf)
+
   - Searches for PredictDataset objects with a status of [DATASET_STATUS_FILE_RETRIEVAL_COMPLETE](https://github.com/IQSS/gentb-site/blob/master/gentb_website/tb_website/apps/predict/models.py#L35)
-  - Kicks off the pipelines script using [pipeline_hardcoded_script_runner.py](https://github.com/IQSS/gentb-site/blob/master/gentb_website/tb_website/apps/predict/pipeline_hardcoded_script_runner.py)
+  - Kicks off the pipeline script using [pipeline_hardcoded_script_runner.py](https://github.com/IQSS/gentb-site/blob/master/gentb_website/tb_website/apps/predict/pipeline_hardcoded_script_runner.py)
     - Constructs the appropriate pipeline command to run (VCF, FastQ single-end, FastQ pair-end, etc)
       - These are dynamically created depending on the data type and file extensions
+  - This process is kicked off via a python Popen command--and then left to run without any further checking:
+    - [script_runner_basic.py](https://github.com/IQSS/gentb-site/blob/master/gentb_website/tb_website/apps/script_helper/script_runner_basic.py)
 
-      
 ## 5. Check for result files
 
 
+fyi: This is a slightly dated diagram that captures the basic process--the numbering in the diagram __does not__ relate to the numbering in this document.
 ![predict workflow](images/predict-workflow.png?raw=true "Predict Workflow")
