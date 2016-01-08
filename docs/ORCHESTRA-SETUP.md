@@ -389,6 +389,12 @@ Test ```ScriptToRun``` object to add via the admin:
 
 # Code updates
 
+## Login
+```
+ssh username@orchestra.med.harvard.edu
+ssh username@rc-app-shared01.orchestra
+```
+
 ## Reuse the virtualenv -- after setup
 
 ```
