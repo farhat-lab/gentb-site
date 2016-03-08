@@ -127,10 +127,11 @@ source venv_tb/bin/postactivate
 
 ### Add production settings
 
-Add these settings files:
+Add this settings file:
   - ```secret_settings_prod_hms.json```
 To this directory:
   - ```/www/gentb.hms.harvard.edu/code/gentb-site/gentb_website/tb_website/tb_website/settings```
+  - Full path: ```/www/gentb.hms.harvard.edu/code/gentb-site/gentb_website/tb_website/tb_website/settings/secret_settings_prod_hms.json```
 
 ### Check the settings
 
