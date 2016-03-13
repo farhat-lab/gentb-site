@@ -1,4 +1,5 @@
 gentb_website/test_setup/*
+pythonenv
 *.idea
 scratch-work/downloaded/*
 # Byte-compiled / optimized / DLL files
