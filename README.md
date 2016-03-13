@@ -19,8 +19,8 @@ Currently users the basic Django auth.
 
 A basic view/template combination
 
-  - View: "view_homepage" [gentb_website/tb_website/apps/basic_pages/views.py](gentb_website/tb_website/apps/basic_pages/views.py)
-  - Template: [gentb_website/tb_website/templates/homepage.html](gentb_website/tb_website/templates/homepage.html)
+  - View: "view_homepage" [tb_website/apps/basic_pages/views.py](tb_website/apps/basic_pages/views.py)
+  - Template: [tb_website/templates/homepage.html](tb_website/templates/homepage.html)
 
 ![homepage screenshot](screen-shots/genTB-home.png?raw=true "genTB Homepage")
 
@@ -32,8 +32,8 @@ This pages requires the user to be logged in.
 
 A basic view/template combination.  The template includes embedded [Dataverse Widgets](http://datascience.iq.harvard.edu/blog/dataverse-40-theme-widgets) in the form of javascript snippets
 
-  - View: "view_data_page" [gentb_website/tb_website/apps/basic_pages/views.py](gentb_website/tb_website/apps/basic_pages/views.py)
-  - Template: [gentb_website/tb_website/templates/data_page.html](gentb_website/tb_website/templates/data_page.html)
+  - View: "view_data_page" [tb_website/apps/basic_pages/views.py](tb_website/apps/basic_pages/views.py)
+  - Template: [tb_website/templates/data_page.html](tb_website/templates/data_page.html)
 
 ![Share Page screenshot](screen-shots/genTB-data.png?raw=true "genTB Data page")
 
@@ -42,8 +42,8 @@ A basic view/template combination.  The template includes embedded [Dataverse Wi
 
 A basic view/template combination.  The maps are actually hosted by a Shiny application and embedded in an iframe.  The url to the iframe is written directly into the template.
 
-  - View: "view_map_page" [gentb_website/tb_website/apps/maps/views.py](gentb_website/tb_website/apps/maps/views.py)
-  - Template: [gentb_website/tb_website/templates/maps/basic_map.html](gentb_website/tb_website/templates/maps/basic_map.html)
+  - View: "view_map_page" [tb_website/apps/maps/views.py](tb_website/apps/maps/views.py)
+  - Template: [tb_website/templates/maps/basic_map.html](tb_website/templates/maps/basic_map.html)
 
 - **Note**: The Shiny app url is currently https://hmdc.shinyapps.io/genTB and part of the IQSS Shinyapps.io service
     - For more information, see [shinyapps.io/NOTES-SHINY.md](shinyapps.io/NOTES-SHINY.md)
@@ -67,15 +67,15 @@ TwoRavens needs two values which are supplied via the genTB database:
 These values may be supplied via the Django admin:
 
     - Models.py file for the values above:
-        - [gentb_website/tb_website/apps/explore/models.py](gentb_website/tb_website/apps/explore/models.py)
+        - [tb_website/apps/explore/models.py](tb_website/apps/explore/models.py)
 
 ![Explore Admin Page screenshot](screen-shots/genTB-explore-admin.png?raw=true "genTB Explore Admin page")
 
 
 The view/template files may be found here:
 
-  - View: "view_explore_page" [gentb_website/tb_website/apps/basic_pages/views.py](gentb_website/tb_website/apps/basic_pages/views.py)
-  - Template: [gentb_website/tb_website/templates/explore.html](gentb_website/tb_website/templates/explore.html)
+  - View: "view_explore_page" [tb_website/apps/basic_pages/views.py](tb_website/apps/basic_pages/views.py)
+  - Template: [tb_website/templates/explore.html](tb_website/templates/explore.html)
 
 ![Explore Page screenshot](screen-shots/genTB-explore.png?raw=true "genTB Explore page")
 
@@ -83,7 +83,7 @@ The view/template files may be found here:
 
 A basic view/template combination
 
-  - View: "view_about_page" [gentb_website/tb_website/apps/basic_pages/views.py](gentb_website/tb_website/apps/basic_pages/views.py)
-  - Template: [gentb_website/tb_website/templates/about.html](gentb_website/tb_website/templates/about.html)
+  - View: "view_about_page" [tb_website/apps/basic_pages/views.py](tb_website/apps/basic_pages/views.py)
+  - Template: [tb_website/templates/about.html](tb_website/templates/about.html)
 
 ![about page screenshot](screen-shots/genTB-about.png?raw=true "genTB About Page")

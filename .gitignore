@@ -1,11 +1,11 @@
-gentb_website/test_setup/*
+test_setup
 pythonenv
+*/settings/local*
 *.idea
-scratch-work/downloaded/*
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
-gentb_website/tb_website/tb_website/settings/*production.json
 
 # C extensions
 *.so
@@ -60,30 +60,3 @@ docs/_build/
 
 # PyBuilder
 target/
-
-gentb_website/tb_website/tb_website/settings/mail_settings_production.json
-gentb_website/tb_website/tb_website/settings/mail_settings_local.json
-gentb_website/tb_website/tb_website/settings/secret_settings_prod.json
-gentb_website/tb_website/tb_website/settings/production.py
-
-scratch-work/server_access_log.2015-10-08.txt
-
-scratch-work/test-data/server_access_log.2015-10-08.txt
-
-gentb_website/tb_website/tb_website/settings/secret_settings_prod_hms.json
-
-scratch-work/dropbox_info.py
-
-gentb_website/tb_website/apps/predict/dropbox_info.py
-
-scratch-work/test-files/008.1.fastq.txt
-
-*.dcf
-
-shinyapps.io/genTB/rsconnect/shinyapps.io/hmdc/genTB.dcf
-
-shinyapps.io/genTB/.Rhistory
-
-gentb_website/tb_website/tb_website/settings/secret_settings_local.json
-
-gentb_website/tb_website/tb_website/settings/local_secret_settings.json
