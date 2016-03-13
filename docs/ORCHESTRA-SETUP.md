@@ -127,10 +127,11 @@ source venv_tb/bin/postactivate
 
 ### Add production settings
 
-Add these settings files:
+Add this settings file:
   - ```secret_settings_prod_hms.json```
 To this directory:
   - ```/www/gentb.hms.harvard.edu/code/gentb-site/gentb_website/tb_website/tb_website/settings```
+  - Full path: ```/www/gentb.hms.harvard.edu/code/gentb-site/gentb_website/tb_website/tb_website/settings/secret_settings_prod_hms.json```
 
 ### Check the settings
 
@@ -299,8 +300,9 @@ supervisord -c /www/gentb.hms.harvard.edu/code/gentb-site/gentb_website/tb_websi
 supervisorctl -c /www/gentb.hms.harvard.edu/code/gentb-site/gentb_website/tb_website/tb_website/settings/hms_supervisord.conf
 ```
 
-##### Stop supervisord
+##### Stop and Restart supervisord
 
+-  **Stop it**
 ```
 # Assumes in virtualenv above
 
@@ -309,6 +311,12 @@ cd /www/gentb.hms.harvard.edu/code/gentb-site/gentb_website/tb_website
 # Activate the supervisor command line control
 supervisorctl -c /www/gentb.hms.harvard.edu/code/gentb-site/gentb_website/tb_website/tb_website/settings/hms_supervisord.conf
 shutdown
+```
+
+-  **Start it**
+```
+# Run a script that kicks off supervisord
+/www/gentb.hms.harvard.edu/code/gentb-site/gentb_website/scripts/start_hms_supervisor.sh
 ```
 
 #### Running gunicorn without supervisord
