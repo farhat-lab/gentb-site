@@ -1,0 +1,148 @@
+
+from .base import *
+
+#
+# All these settings can be replaced (and should be)
+#
+
+########## TB UPLOADED DATAFILE DIRECTORY
+# directory to store shared files -- off of the www path
+TB_SHARED_DATAFILE_DIRECTORY = normpath(join(DATA_ROOT, 'tb_uploaded_files'))
+
+ADMINS = (
+    ('Your Name', 'your_email@example.com'),
+)
+TB_ADMINS = ADMINS
+
+########## DEBUG CONFIGURATION
+DEBUG = True
+TEMPLATE_DEBUG = DEBUG
+
+# See: http://django-debug-toolbar.readthedocs.org/en/latest/installation.html#explicit-setup
+if DEBUG:
+    INSTALLED_APPS += ('debug_toolbar',)
+    MIDDLEWARE_CLASSES += ('debug_toolbar.middleware.DebugToolbarMiddleware',)
+    DEBUG_TOOLBAR_PATCH_SETTINGS = False
+########## END DEBUG CONFIGURATION
+
+########## ADDRESS CONFIGURATION
+# Hosts/domain names that are valid for this site
+# See https://docs.djangoproject.com/en/1.5/ref/settings/#allowed-hosts
+ALLOWED_HOSTS = ['*']
+IS_HTTPS_SITE = False
+
+# Callback url when pipeline is complete
+INTERNAL_CALLBACK_SITE_URL = ''
+
+# http://django-debug-toolbar.readthedocs.org/en/latest/installation.html
+INTERNAL_IPS = ('127.0.0.1',)
+########## END ADDRESS CONFIGURATION
+
+########## SECRET CONFIGURATION
+# See: https://docs.djangoproject.com/en/dev/ref/settings/#secret-key
+# Note: This key should only be used for development and testing.
+SECRET_KEY = r"REPLACE_ME_ON_LIVE"
+
+# linked to a Dropbox app for retrieving files from shared links
+# see This functionality uses the Dropbox Core API to retrieve metadata from a shared link.
+#    https://blogs.dropbox.com/developers/2015/08/new-api-endpoint-shared-link-metadata/
+DROPBOX_ACCESS_TOKEN = ''
+########## END SECRET CONFIGURATION
+
+########## EMAIL CONFIGURATION
+# See: https://docs.djangoproject.com/en/dev/ref/settings/#email-backend
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+#EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = ''
+EMAIL_PORT = 587
+EMAIL_HOST_USER = ''
+EMAIL_HOST_PASSWORD = ''
+DEFAULT_FROM_EMAIL = ''
+EMAIL_USE_TLS = True
+# See: https://docs.djangoproject.com/en/dev/ref/settings/#server-email
+SERVER_EMAIL = EMAIL_HOST_USER
+########## END EMAIL CONFIGURATION
+
+########## DATABASE CONFIGURATION
+# See: https://docs.djangoproject.com/en/dev/ref/settings/#databases
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': normpath(join(DATA_ROOT, 'development.db')),
+        'USER': '',
+        'PASSWORD': '',
+        'HOST': '',
+        'PORT': '',
+    }
+}
+########## END DATABASE CONFIGURATION
+
+
+########## CACHE CONFIGURATION
+# See: https://docs.djangoproject.com/en/dev/ref/settings/#caches
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+    }
+}
+
+########## LOGGING CONFIGURATION
+# See: https://docs.djangoproject.com/en/dev/ref/settings/#logging
+# A sample logging configuration. The only tangible logging
+# performed by this configuration is to send an email to
+# the site admins on every HTTP 500 error when DEBUG=False.
+# See http://docs.djangoproject.com/en/dev/topics/logging for
+# more details on how to customize your logging configuration.
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'filters': {
+        'require_debug_false': {
+            '()': 'django.utils.log.RequireDebugFalse'
+        }
+    },
+    'handlers': {
+        'mail_admins': {
+            'level': 'ERROR',
+            'filters': ['require_debug_false'],
+            'class': 'django.utils.log.AdminEmailHandler'
+        },
+        'file': {
+            'level': 'DEBUG',
+            #'class': 'logging.FileHandler',
+            'class':'logging.handlers.RotatingFileHandler',
+            'filename': normpath(join(DATA_ROOT, 'logs', 'gentb.log')),
+            'maxBytes': 1024*1024*5, # 5 MB
+            'backupCount': 5,
+            'formatter': 'verbose'
+        },
+    },
+    'loggers': {
+        'django.request': {
+            'handlers': ['mail_admins'],
+            'level': 'ERROR',
+            'propagate': True,
+        },
+        'django': {
+            'handlers':['file'],
+            'propagate': True,
+            'level':'ERROR',
+        },
+        'apps': {
+            'handlers': ['file'],
+            'propagate': True,
+            'level': 'DEBUG',
+        },
+    },
+    'formatters': {
+        'verbose': {
+            'format' : "[%(asctime)s] %(levelname)s [%(name)s:%(lineno)s] %(message)s",
+            'datefmt' : "%d/%b/%Y %H:%M:%S"
+        },
+        'simple': {
+            'format': '%(levelname)s %(message)s'
+        },
+    },
+}
+########## END LOGGING CONFIGURATION
+
