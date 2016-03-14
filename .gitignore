@@ -1,7 +1,9 @@
 test_setup
 pythonenv
-*/settings/local*
-*.idea
+*/settings/local.py
+.data
+data
+*.swp
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -47,13 +49,6 @@ htmlcov/
 nosetests.xml
 coverage.xml
 *,cover
-
-# Translations
-*.mo
-*.pot
-
-# Django stuff:
-*.log
 
 # Sphinx documentation
 docs/_build/

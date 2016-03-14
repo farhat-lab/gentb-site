@@ -1,13 +1,11 @@
 """Common settings and globals."""
 
-
 from os.path import abspath, basename, dirname, join, normpath, isdir
 from sys import path
 
-
 ########## PATH CONFIGURATION
 # Absolute filesystem path to the Django project directory:
-DJANGO_ROOT = dirname(dirname(abspath(__file__)))
+DJANGO_ROOT = normpath(join(abspath(__file__), '..', '..'))
 
 # Absolute filesystem path to the top-level project folder:
 SITE_ROOT = dirname(DJANGO_ROOT)
@@ -15,10 +13,14 @@ SITE_ROOT = dirname(DJANGO_ROOT)
 # Site name:
 SITE_NAME = basename(DJANGO_ROOT)
 
+# Absolute path where all data (media, logs, etc) should go:
+DATA_ROOT = join(SITE_ROOT, 'data')
+
 # Add our project to our pythonpath, this way we don't need to type our project
 # name in our dotted import paths:
 path.append(DJANGO_ROOT)
 
+# Location of R_SCRIPTS XXX - Should be removed
 R_SCRIPTS_PATH = join(dirname(dirname(SITE_ROOT)), 'R')
 
 ########## END PATH CONFIGURATION
@@ -31,39 +33,6 @@ DEBUG = False
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#template-debug
 TEMPLATE_DEBUG = DEBUG
 ########## END DEBUG CONFIGURATION
-
-IS_HTTPS_SITE = False  # Used for callback urls when request object not available
-
-########## MANAGER CONFIGURATION
-# See: https://docs.djangoproject.com/en/dev/ref/settings/#admins
-ADMINS = (
-    ('Your Name', 'your_email@example.com'),
-)
-
-TB_ADMINS = (
-    ('Your Name', 'your_email@example.com'),
-
-)
-
-# See: https://docs.djangoproject.com/en/dev/ref/settings/#managers
-MANAGERS = ADMINS
-########## END MANAGER CONFIGURATION
-
-
-########## DATABASE CONFIGURATION
-# See: https://docs.djangoproject.com/en/dev/ref/settings/#databases
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.',
-        'NAME': '',
-        'USER': '',
-        'PASSWORD': '',
-        'HOST': '',
-        'PORT': '',
-    }
-}
-########## END DATABASE CONFIGURATION
-
 
 ########## GENERAL CONFIGURATION
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#time-zone
@@ -88,7 +57,7 @@ USE_TZ = True
 
 ########## MEDIA CONFIGURATION
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#media-root
-MEDIA_ROOT = normpath(join(SITE_ROOT, 'media'))
+MEDIA_ROOT = normpath(join(DATA_ROOT, 'media'))
 
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#media-url
 MEDIA_URL = '/media/'
@@ -97,15 +66,14 @@ MEDIA_URL = '/media/'
 
 ########## STATIC FILE CONFIGURATION
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#static-root
-STATIC_ROOT = normpath(join(SITE_ROOT, 'assets'))
+STATIC_ROOT = normpath(join(DATA_ROOT, 'static'))
 
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#static-url
 STATIC_URL = '/static/'
 
 # See: https://docs.djangoproject.com/en/dev/ref/contrib/staticfiles/#std:setting-STATICFILES_DIRS
-STATICFILES_DIRS = (
-    normpath(join(SITE_ROOT, 'static')),
-)
+# Should only contain static files not included in apps
+STATICFILES_DIRS = []
 
 # See: https://docs.djangoproject.com/en/dev/ref/contrib/staticfiles/#staticfiles-finders
 STATICFILES_FINDERS = (
@@ -113,21 +81,6 @@ STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
 )
 ########## END STATIC FILE CONFIGURATION
-
-
-########## SECRET CONFIGURATION
-# See: https://docs.djangoproject.com/en/dev/ref/settings/#secret-key
-# Note: This key should only be used for development and testing.
-SECRET_KEY = r"iq(hx+#3j=3%c)v^zmr0um26l27i&)gazd3zi9f83^fba3qany8)tb"  # test key / not for actual deployment
-########## END SECRET CONFIGURATION
-
-
-########## SITE CONFIGURATION
-# Hosts/domain names that are valid for this site
-# See https://docs.djangoproject.com/en/1.5/ref/settings/#allowed-hosts
-ALLOWED_HOSTS = []
-########## END SITE CONFIGURATION
-
 
 ########## FIXTURE CONFIGURATION
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#std:setting-FIXTURE_DIRS
@@ -198,6 +151,7 @@ MIDDLEWARE_CLASSES = (
 ########## URL CONFIGURATION
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#root-urlconf
 ROOT_URLCONF = '%s.urls' % SITE_NAME
+LOGIN_URL = 'view_login_page'
 ########## END URL CONFIGURATION
 
 
@@ -221,6 +175,7 @@ DJANGO_APPS = (
 
 # Apps specific for this project go here.
 LOCAL_APPS = (
+    'tb_website',
     'apps.tb_users',
     'apps.script_helper',
     'apps.predict',
@@ -240,6 +195,7 @@ INSTALLED_APPS = DJANGO_APPS + LOCAL_APPS
 # the site admins on every HTTP 500 error when DEBUG=False.
 # See http://docs.djangoproject.com/en/dev/topics/logging for
 # more details on how to customize your logging configuration.
+LOG_ROOT = normpath(join(DATA_ROOT, 'logs'))
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -256,8 +212,10 @@ LOGGING = {
         },
         'file': {
             'level': 'DEBUG',
-            'class': 'logging.FileHandler',
-            'filename': 'gentb.log',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': join(LOG_ROOT, 'gentb.log'),
+            'maxBytes': (2 ** 20) * 5, # 5 MB
+            'backupCount': 5,
             'formatter': 'verbose'
         },
     },
@@ -270,7 +228,7 @@ LOGGING = {
         'django': {
             'handlers':['file'],
             'propagate': True,
-            'level':'INFO',
+            'level':'ERROR',
         },
         'apps': {
             'handlers': ['file'],
@@ -290,42 +248,7 @@ LOGGING = {
 }
 ########## END LOGGING CONFIGURATION
 
-USE_TZ = True
-TIME_ZONE = 'America/New_York'
-
-
 ########## WSGI CONFIGURATION
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#wsgi-application
 WSGI_APPLICATION = '%s.wsgi.application' % SITE_NAME
 ########## END WSGI CONFIGURATION
-
-LOGIN_URL = 'view_login_page'
-
-########## TB UPLOADED DATAFILE DIRECTORY
-
-TB_SHARED_DATAFILE_DIRECTORY = 'directory to store shared files -- off of the www path'
-
-########## END TB UPLOADED DATAFILE DIRECTORY
-
-########## DROPBOX_ACCESS_TOKEN
-
-DROPBOX_ACCESS_TOKEN = 'linked to a Dropbox app for retrieving files from shared links'
-# see This functionality uses the Dropbox Core API to retrieve metadata from a shared link.
-#    https://blogs.dropbox.com/developers/2015/08/new-api-endpoint-shared-link-metadata/
-
-########## END DROPBOX_ACCESS_TOKEN
-
-########## EMAIL SETTINGS
-EMAIL_BACKEND = ''  #'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = '' # 'mail.hmdc.harvard.edu''
-EMAIL_PORT = 587
-EMAIL_HOST_USER = ''
-EMAIL_HOST_PASSWORD = ''
-DEFAULT_FROM_EMAIL = ''
-EMAIL_USE_TLS = True
-########## END EMAIL SETTTINGS
-
-
-########## INTERNAL CALLBACK URL
-INTERNAL_CALLBACK_SITE_URL = ''
-########## END INTERNAL_CALLBACK_URL
