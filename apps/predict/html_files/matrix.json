@@ -1,0 +1,89 @@
+[
+  [
+    ["01-R1466", "inh", "1", "4.95", "8.76"],
+    ["01-R1466", "rif", "0.994", "5.89", "4.89"],
+    ["01-R1466", "pza", "0", "33.36", "7.76"],
+    ["01-R1466", "emb", "0.998", "21.28", "16.64"],
+    ["01-R1466", "str", "0.052", "37.94", "11.44"],
+    ["01-R1466", "eth", "0", "40.31", "12.76"],
+    ["01-R1466", "kan", "0.001", "32.95", "3.01"],
+    ["01-R1466", "cap", "0", "61.07", "5.1"],
+    ["01-R1466", "amk", "0", "16.71", "2.54"],
+    ["01-R1466", "cip", "0", "44.68", "1.6"],
+    ["01-R1466", "levo", "0", "26.48", "0.92"],
+    ["01-R1466", "oflx", "0.003", "20.33", "11.53"],
+    ["01-R1466", "pas", "0", "84.64", "0.7"],
+    ["01-R1467", "inh", "0.989", "4.95", "8.76"],
+    ["01-R1467", "rif", "0.994", "5.89", "4.89"],
+    ["01-R1467", "pza", "0", "33.36", "7.76"],
+    ["01-R1467", "emb", "0.998", "21.28", "16.64"],
+    ["01-R1467", "str", "0.052", "37.94", "11.44"],
+    ["01-R1467", "eth", "0", "40.31", "12.76"],
+    ["01-R1467", "kan", "0.001", "32.95", "3.01"],
+    ["01-R1467", "cap", "0", "61.07", "5.1"],
+    ["01-R1467", "amk", "0", "16.71", "2.54"],
+    ["01-R1467", "cip", "0", "44.68", "1.6"],
+    ["01-R1467", "levo", "0", "26.48", "0.92"],
+    ["01-R1467", "oflx", "0.003", "20.33", "11.53"],
+    ["01-R1467", "pas", "0", "84.64", "0.7"],
+    ["01-R1469", "inh", "0", "4.95", "8.76"],
+    ["01-R1469", "rif", "0.994", "5.89", "4.89"],
+    ["01-R1469", "pza", "0", "33.36", "7.76"],
+    ["01-R1469", "emb", "0", "21.28", "16.64"],
+    ["01-R1469", "str", "0.052", "37.94", "11.44"],
+    ["01-R1469", "eth", "0", "40.31", "12.76"],
+    ["01-R1469", "kan", "0.001", "32.95", "3.01"],
+    ["01-R1469", "cap", "0", "61.07", "5.1"],
+    ["01-R1469", "amk", "0", "16.71", "2.54"],
+    ["01-R1469", "cip", "0", "44.68", "1.6"],
+    ["01-R1469", "levo", "0", "26.48", "0.92"],
+    ["01-R1469", "oflx", "0.003", "20.33", "11.53"],
+    ["01-R1469", "pas", "0", "84.64", "0.7"]
+  ],
+  {
+    "01-R1466": [
+      ["SNP_CN_2155168_C944G_S315T_katG", "SNP_CN_761110_A1304T_D435V_rpoB", null, "SNP_CN_4247431_G918A_M306I_embB", "SNP_CN_4408156_A47C_L16R_gid", null, null, null, null, null, null, null, null],
+      ["SNP_CN_4247431_G918A_M306I_embB", null, null, null, null, null, null, null, null, null, null, null, null],
+      [null, null, null, null, null, null, null, null, null, null, null, null, null],
+      [null, null, null, null, null, null, null, null, null, null, null, null, null],
+      [null, null, null, null, null, null, null, null, null, null, null, null, null]
+    ],
+    "01-R1467": [
+      ["SNP_CN_4247431_G918A_M306I_embB", "SNP_CN_761110_A1304T_D435V_rpoB", null, "SNP_CN_4247431_G918A_M306I_embB", "SNP_CN_4408156_A47C_L16R_gid", null, null, null, null, null, null, null, null],
+      [null, null, null, null, null, null, null, null, null, null, null, null, null],
+      [null, null, null, null, null, null, null, null, null, null, null, null, null],
+      [null, null, null, null, null, null, null, null, null, null, null, null, null],
+      [null, null, null, null, null, null, null, null, null, null, null, null, null]
+    ],
+    "01-R1469": [
+      [null, "SNP_CN_761110_A1304T_D435V_rpoB", null, null, "SNP_CN_4408156_A47C_L16R_gid", null, null, null, null, null, null, null, null],
+      [null, null, null, null, null, null, null, null, null, null, null, null, null],
+      [null, null, null, null, null, null, null, null, null, null, null, null, null],
+      [null, null, null, null, null, null, null, null, null, null, null, null, null],
+      [null, null, null, null, null, null, null, null, null, null, null, null, null]
+    ]
+  },
+  {
+    "01-R1466": [
+      [null, null, null, null, null, null, null, null, null, null, null, null, null],
+      [null, null, null, null, null, null, null, null, null, null, null, null, null],
+      [null, null, null, null, null, null, null, null, null, null, null, null, null],
+      [null, null, null, null, null, null, null, null, null, null, null, null, null],
+      [null, null, null, null, null, null, null, null, null, null, null, null, null]
+    ],
+    "01-R1467": [
+      [null, null, null, null, null, null, null, null, null, null, null, null, null],
+      [null, null, null, null, null, null, null, null, null, null, null, null, null],
+      [null, null, null, null, null, null, null, null, null, null, null, null, null],
+      [null, null, null, null, null, null, null, null, null, null, null, null, null],
+      [null, null, null, null, null, null, null, null, null, null, null, null, null]
+    ],
+    "01-R1469": [
+      [null, null, null, null, null, null, null, null, null, null, null, null, null],
+      [null, null, null, null, null, null, null, null, null, null, null, null, null],
+      [null, null, null, null, null, null, null, null, null, null, null, null, null],
+      [null, null, null, null, null, null, null, null, null, null, null, null, null],
+      [null, null, null, null, null, null, null, null, null, null, null, null, null]
+    ]
+  }
+] 
