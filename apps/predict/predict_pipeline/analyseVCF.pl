@@ -1,6 +1,9 @@
 use warnings;
 use strict;
 
+# Get path of this script.
+use FindBin qw($Bin);
+
 my $path=shift @ARGV; #path to where the input fastq files are
 system("mkdir ${path}/output");
 
@@ -16,6 +19,6 @@ closedir(DIR);
 foreach(@files)
 {
 	(my $name= $_) =~ s/\.vcf//g;
-	system("bsub -q short -W 2:00 -o ${path}/$name.error -J ".$name.' "'."source /groups/murray/run_pipeline/prepare_environment.sh ; perl /groups/murray/run_pipeline/bin/bsubAnalyseV.pl $name $path".'"');
+	system("bsub -q short -W 2:00 -o ${path}/$name.error -J ".$name.' "'."source $Bin/prepare_environment.sh ; perl $Bin/bin/bsubAnalyseV.pl $name $path".'"');
 }
 

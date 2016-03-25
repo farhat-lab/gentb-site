@@ -5,6 +5,8 @@ use warnings;
 ### script that takes in .vcf file and produces a .snp file. Filters and combines the mutation data in .vcf file with data from 2 genome coordinate files (with headers) #####(one for coding ###regions and one for non coding regions) to add functional data. Also requires h37rv.fasta file (there reference genome sequence file) and ###get_seq_coord.pl script to exist ###in the same folder
 
 ### example command ./flatAnnotatorVAR.pl test.vcf qual{0-255} hetero{0-1} platypusfilter{PASS|ALL} (output will be test.var) 
+use FindBin qw($Bin);
+
 
 $/="\n";
 $,="\t";
@@ -13,8 +15,8 @@ my %tt11;
 &create_translation_table11(\%tt11);
 
 my $reference = "h37rv"; #this may need to be changed in the future
-my $Creference = "/groups/murray/run_pipeline/bin/$reference"."_genome_summary.txt";
-my $Nreference = "/groups/murray/run_pipeline/bin/$reference"."_noncoding_summary.txt";
+my $Creference = "$Bin/$reference"."_genome_summary.txt";
+my $Nreference = "$Bin/$reference"."_noncoding_summary.txt";
 my $snpfile = shift @ARGV;
 #my $refPath= shift @ARGV;
 #my $dofiltering = shift @ARGV;
@@ -31,7 +33,6 @@ if ($platypusFilter =~ m/pass/i) {
 #print STDERR $platypusFilter;
 my $aasnp;
 (my $strain) = ($snpfile =~ m/(strain\d+)/);
-#my $prefix="/groups/murray/razvan_tb/gtbdr";
 my $DEBUG=1;
 
 #print STDERR "reading file $Creference\n";
@@ -349,7 +350,7 @@ sub annotcoding{
    $codpos = 3 unless $codpos; # 0->3;
    my $codonStart = int(($from - $txStart - 1)/3)*3 + $txStart + 1; #genomic coordinate of first base in the first codon affected (int truncates anything after the point)
    my $codonEnd = int(($from + (length($allele)-1) - $txStart - 1)/3)*3 + $txStart + 3; #genomic coordinate of last base in last codon affected was=$codonStart + 2;
-   $codon = `perl /groups/murray/run_pipeline/bin/get_seq_coord.pl -coord $codonStart-$codonEnd -nodefline /groups/murray/run_pipeline/bin/${reference}.fasta`; #h37rv.fasta is reference fasta file this and get_seq_coord.pl should be in the /groups/murray/run_pipeline/bin folder
+   $codon = `perl $Bin/get_seq_coord.pl -coord $codonStart-$codonEnd -nodefline $Bin/${reference}.fasta`; #h37rv.fasta is reference fasta file this and get_seq_coord.pl should be in the $Bin folder
    chomp $codon;
    $codon=~s/\n//g;
    my $ref_base = substr($codon,$codpos-1,1);
@@ -365,7 +366,7 @@ sub annotcoding{
    $codpos = 3 unless $codpos; # 0->3;
    my $codonStart = $txEnd - int(($txEnd - $from)/3)*3 -2;
    my $codonEnd = $txEnd - int(($txEnd - $from -length($allele)+1)/3)*3; #genomic coordinate of last base in last codon affected was=$codonStart + 2;
-   $codon = `perl /groups/murray/run_pipeline/bin/get_seq_coord.pl -coord $codonStart-$codonEnd -nodefline /groups/murray/run_pipeline/bin/${reference}.fasta`; #h37rv.fasta is reference fasta file this and get_seq_coord.pl should be in the /groups/murray/run_pipeline/bin/ folder
+   $codon = `perl $Bin/get_seq_coord.pl -coord $codonStart-$codonEnd -nodefline $Bin/${reference}.fasta`; #h37rv.fasta is reference fasta file this and get_seq_coord.pl should be in the $Bin folder
    chomp $codon;
    $codon = &revcomp($codon); #reverse complement
    my $codposrev;

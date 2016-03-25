@@ -293,29 +293,6 @@ class PredictDatasetFile(TimeStampedModel):
     class Meta:
         ordering = ('-created', 'dataset', 'name')
 
-class PipelineScriptsDirectory(TimeStampedModel):
-    """
-    Give the directory containinng Perls scripts: analyseNGS.pl and analyseVCF.pl
-    """
-    name = models.CharField(max_length=100, help_text='helpful user name')
-    script_directory = models.TextField(help_text='Full path to the directory \
-    containing the analyseNGS.pl and analyseVCF.pl pipeline scripts')
-    is_chosen_directory = models.BooleanField(default=True)
-
-    class Meta:
-        ordering = ('is_chosen_directory', '-modified')
-        verbose_name = 'Pipeline Scripts Directory'
-        verbose_name_plural = verbose_name
-
-    def __str__(self):
-        return self.name
-
-    def save(self, *args, **kwargs):
-
-        # Strip the directory name and, if needed, remove ending file separator
-        self.script_directory = self.script_directory.strip()
-
-        super(PipelineScriptsDirectory, self).save(*args, **kwargs)
 
 class ScriptToRun(TimeStampedModel):
 

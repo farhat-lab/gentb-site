@@ -5,8 +5,10 @@ import collections
 from collections import defaultdict
 import os
 
+SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
+
 variants=set()
-for line in open("/groups/murray/run_pipeline/bin/variant_name_list.csv"):
+for line in open(SCRIPT_DIR + "/variant_name_list.csv"):
     variants=line.rstrip().split(",")
 
 d = defaultdict(set)

@@ -2,13 +2,15 @@ use warnings;
 use strict;
 use Bio::SeqIO;
 
-my $refFile="/groups/murray/run_pipeline/bin/h37rv.fasta";
+use FindBin qw($Bin);
+
+my $refFile="$Bin/bin/h37rv.fasta";
 
 $refFile=transform($refFile);
 system("stampy.py -G $refFile $refFile.fasta");
 system("stampy.py -g $refFile -H $refFile");
 system("samtools faidx $refFile.fasta");
-system("cp $refFile* /groups/murray/run_pipeline/bin/");
+system("cp $refFile* $Bin/bin/");
 
 sub transform
 {

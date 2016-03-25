@@ -5,6 +5,9 @@ FastQ or VCF file analysis.
 """
 from __future__ import print_function
 
+import logging
+from os.path import isfile, join
+
 if __name__ == '__main__':
     import sys
     from os.path import dirname, realpath
@@ -17,18 +20,20 @@ if __name__ == '__main__':
     import django
     django.setup()
 
+from django.conf import settings
 from django.template.loader import render_to_string
+
 from apps.utils.result_file_info import RESULT_FILE_NAME_DICT,\
             EXPECTED_FILE_DESCRIPTIONS,\
             RESULT_OUTPUT_DIRECTORY_NAME
 from apps.predict.models import PredictDataset,\
             PredictDatasetNote, DatasetScriptRun,\
-            PipelineScriptsDirectory,\
             DATASET_STATUS_FILE_RETRIEVAL_COMPLETE
 
 from apps.script_helper.script_runner_basic import run_script
-from os.path import isfile, join
-import logging
+
+# We could use __file__ here instead
+SCRIPT_DIR = join(settings.SITE_ROOT, 'apps', 'predict', 'predict_pipeline')
 
 LOGGER = logging.getLogger('apps.predict.pipeline_hardcoded_script_runner')
 
@@ -100,49 +105,26 @@ class PipelineScriptRunner(object):
         - Step 2:  Create/Format the pipeline script command
         - Step 3:  Run the pipeline script!
         """
-        script_directory = self.step1_get_script_directory_info()
-        if script_directory is None:
-            return (False, self.get_err_msg_obj())
-
-        script_command = self.step2_get_script_command(script_directory)
+        script_command = self.get_script_command()
         if script_command is None:
             return (False, self.get_err_msg_obj())
 
-        return self.step3_run_command(script_command)
+        return self.run_command(script_command)
 
 
-    def step1_get_script_directory_info(self):
-        """
-        Retrieve PipelineScriptsDirectory object from the database
-        """
-        script_directory_info = PipelineScriptsDirectory.objects.filter(\
-                                is_chosen_directory=True).first()
-        if script_directory_info is None:
-            err_title = 'No pipeline directory specified'
-            err_note = """'You must set a 'Pipeline Scripts Directory' to run the\
-             pipeline Perl scripts. Please go into the admin control panel and add\
-             a 'Pipeline Scripts Directory'.  Talk to your administrator for details."""
-            self.record_error(err_title, err_note)
-            return None
-
-        return script_directory_info
-
-    def step2_get_script_command(self, script_directory_info):
+    def get_script_command(self):
         """
         Using dataset information, to decide whether to run:
             (1) script for a VCF file
             (2) script for FastQ files
         """
-        if script_directory_info is None:
-            return None
-
         # Formate either a VCF or FastQ pipeline command
         #
         if self.dataset.is_vcf_file():     # (2a) command for a VCF file
-            command_to_run = self.get_vcf_script_command(script_directory_info)
+            command_to_run = self.get_vcf_script_command()
 
         elif self.dataset.is_fastq_file(): # (2b) command for FastQ files
-            command_to_run = self.get_fastq_script_command(script_directory_info)
+            command_to_run = self.get_fastq_script_command()
 
         else:
             err_title = 'Not VCF or FastQ file'
@@ -156,7 +138,7 @@ class PipelineScriptRunner(object):
 
 
 
-    def step3_run_command(self, command_to_run):
+    def run_command(self, command_to_run):
         """
         - (1) Create a DatasetScriptRun object
         - (2) Make a custom callback script and put it in the dataset file directory
@@ -211,7 +193,7 @@ class PipelineScriptRunner(object):
         return (True, dsr)
 
 
-    def get_fastq_script_command(self, script_directory_info):
+    def get_fastq_script_command(self):
         """
         Run the command for FastQ files.
         e.g. perl analyseNGS.pl (directory name)
@@ -222,7 +204,7 @@ class PipelineScriptRunner(object):
         # (1) Make sure the 'analyseNGS.pl' command is in the
         #   specified 'Pipeline Scripts Directory'
         #
-        script_cmd = join(script_directory_info.script_directory, FASTQ_ANALYSIS_SCRIPT)
+        script_cmd = join(SCRIPT_DIR, FASTQ_ANALYSIS_SCRIPT)
         if not isfile(script_cmd):
             err_title = 'The "%s" file was not found' % (FASTQ_ANALYSIS_SCRIPT)
             err_note = """The "%s" file was not found at this location: \n%s\n
@@ -264,7 +246,7 @@ class PipelineScriptRunner(object):
 
 
 
-    def get_vcf_script_command(self, script_directory_info):
+    def get_vcf_script_command(self):
         """
         Run the command for a VCF file.
         e.g. perl analyseVCF.pl (directory name)
@@ -275,7 +257,7 @@ class PipelineScriptRunner(object):
         # (1) Make sure the 'analyseVCF.pl' command is in the
         #   specified 'Pipeline Scripts Directory'
         #
-        script_cmd = join(script_directory_info.script_directory, VCF_ANALYSIS_SCRIPT)
+        script_cmd = join(SCRIPT_DIR, VCF_ANALYSIS_SCRIPT)
         if not isfile(script_cmd):
             err_title = 'The "%s" file was not found' % (VCF_ANALYSIS_SCRIPT)
             err_note = """The "%s" file was not found at this location: \n%s\n
@@ -304,11 +286,8 @@ class PipelineScriptRunner(object):
             return (False, 'The selected_dataset is None')
 
         pipeline_runner = PipelineScriptRunner(selected_dataset)
-        script_directory = pipeline_runner.step1_get_script_directory_info()
-        if script_directory is None:
-            return (False, pipeline_runner.err_message)
 
-        script_command = pipeline_runner.step2_get_script_command(script_directory)
+        script_command = pipeline_runner.get_script_command()
         if script_command is None:
             return (False, pipeline_runner.err_message)
 
@@ -348,11 +327,9 @@ if __name__ == '__main__':
 
     """
     # Alternative run method
-    script_directory = pipeline_runner.step1_get_script_directory_info()
-    if script_directory is not None:
-        script_command = pipeline_runner.step2_get_script_command(script_directory)
-        if script_command is not NOne:
-            pipeline_runner.step3_run_command(script_command)
+    script_command = pipeline_runner.get_script_command()
+    if script_command is not NOne:
+        pipeline_runner.run_command(script_command)
 
 
     """

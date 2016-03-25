@@ -3,10 +3,8 @@ from django.contrib import admin
 # Register your models here.
 from apps.predict.models import PredictDatasetStatus, PredictDataset,\
             PredictDatasetNote, DatasetScriptRun,\
-            ScriptToRun, PipelineScriptsDirectory
+            ScriptToRun
 from apps.dropbox_helper.models import DropboxRetrievalLog
-
-from apps.predict.admin_forms import PipelineScriptsDirectoryForm
 
 
 class PredictDatasetStatusAdmin(admin.ModelAdmin):
@@ -21,14 +19,6 @@ class PredictDatasetNoteAdmin(admin.ModelAdmin):
     list_display = ('dataset', 'title', 'modified', 'created',)
     search_fields = ('title', 'note')
 admin.site.register(PredictDatasetNote, PredictDatasetNoteAdmin)
-
-
-class PipelineScriptsDirectoryAdmin(admin.ModelAdmin):
-    form = PipelineScriptsDirectoryForm
-    save_on_top = True
-    list_display = ['name', 'is_chosen_directory', 'modified', 'script_directory']
-    search_fields = ['name']
-admin.site.register(PipelineScriptsDirectory, PipelineScriptsDirectoryAdmin)
 
 
 class PredictDatasetNoteInline(admin.StackedInline):
