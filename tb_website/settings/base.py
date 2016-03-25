@@ -20,9 +20,6 @@ DATA_ROOT = join(SITE_ROOT, 'data')
 # name in our dotted import paths:
 path.append(DJANGO_ROOT)
 
-# Location of R_SCRIPTS XXX - Should be removed
-R_SCRIPTS_PATH = join(dirname(dirname(SITE_ROOT)), 'R')
-
 ########## END PATH CONFIGURATION
 
 
