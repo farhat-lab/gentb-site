@@ -6,7 +6,7 @@ cd ..
 
 # Set up the virtualenv
 source pythonenv/bin/activate
+export HOME="$PWD"
 
-# Start gunicorn
-pythonenv/bin/gunicorn -c "$PWD/scripts/gunicorn_config.py" tb_website.wsgi:application
- 
+supervisorctl -c "$HOME/scripts/supervisord.conf" $@
+

@@ -1,9 +1,17 @@
+#
+# Copyright 2016, see LICENSE.txt for details.
+#
+# pylint: disable=invalid-name
+"""
+Gunicorn python script, starts wsgi service with settings.
+"""
 import os, sys
 
 from os.path import normpath, dirname, join
 
 # Make sure we always know where we are when running
-ROOT = dirname(normpath(join(os.getenv('PWD'), __file__)))
+SCRIPT_DIR = dirname(normpath(join(os.getenv('PWD'), __file__)))
+ROOT = dirname(SCRIPT_DIR)
 
 DATA_DIR = join(ROOT, 'data')
 LOG_DIR = join(DATA_DIR, 'logs', 'gunicorn')
