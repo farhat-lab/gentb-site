@@ -54,8 +54,6 @@ def view_predict_page(request, previous_attempt_deleted=False):
                                   kwargs=dict(dataset_md5=new_dataset.md5)
                                 )
             return HttpResponseRedirect(success_url)
-        else:
-            d['ERROR_FOUND']  = True
     else:
         f = UploadPredictionDataForm(label_suffix='')
 

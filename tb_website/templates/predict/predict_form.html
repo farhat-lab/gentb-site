@@ -1,7 +1,9 @@
 {% load staticfiles %}
 
-{% if ERROR_FOUND %}
-    <div class="alert alert-danger" role="alert">Please check the errors below</div>
+{% if predict_form.errors %}
+  <div class="alert alert-danger" role="alert">Please check the errors below
+    {{ predict_form.non_field_errors }}
+  </div>
 {% endif %}
 
 <form action="{% url 'view_predict_page' %}" enctype="multipart/form-data" method="post">
