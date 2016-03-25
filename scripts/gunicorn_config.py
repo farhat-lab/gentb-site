@@ -22,7 +22,7 @@ if not os.path.isdir(LOG_DIR):
 # Add the root to the python path (so we can find mondules)
 sys.path.append(ROOT)
 
-bind = '0.0.0.0:9002'
+bind = '0.0.0.0:9001'
 pidfile = join(DATA_DIR, 'gunicorn.pid')
 
 keepalive = 2
