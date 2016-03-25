@@ -37,7 +37,7 @@ for n, v in globals().items():
             raise IOError("Setting %s should be an absolute path." % n)
         if not isdir(v):
             try:
-                sys.stderr.write("INFO: Making directory: %s for %s" % (v, n))
+                sys.stderr.write("INFO: Making directory: %s for %s\n" % (v, n))
                 os.makedirs(v)
             except:
                 raise IOError("Failed to make directory: %s" % v)

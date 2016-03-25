@@ -8,5 +8,5 @@ cd ..
 source pythonenv/bin/activate
 
 # Start gunicorn
-pythonenv/bin/gunicorn -c "$PWD/scripts/gunicorn_config.py" tb_website.wsgi:application
+gunicorn -c "$PWD/scripts/gunicorn_config.py" tb_website.wsgi:application
  

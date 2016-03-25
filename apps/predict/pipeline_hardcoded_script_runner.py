@@ -219,7 +219,7 @@ class PipelineScriptRunner(object):
         if self.err_found:
             return None
 
-        # (1) Make sure the 'analyseVCF.pl' command is in the
+        # (1) Make sure the 'analyseNGS.pl' command is in the
         #   specified 'Pipeline Scripts Directory'
         #
         script_cmd = join(script_directory_info.script_directory, FASTQ_ANALYSIS_SCRIPT)
@@ -242,7 +242,7 @@ class PipelineScriptRunner(object):
         elif self.dataset.is_fastq_pair_ended():
             pair_extension = self.dataset.get_fastq_pair_end_extension()
             if pair_extension is None:
-                err_title = 'FastQ could not find pair-ended extensin type'
+                err_title = 'FastQ could not find pair-ended extension type'
                 err_note = 'Could not determine pair-ended extension type.\
                  Database contained: "%s"' % (self.dataset.fastq_type)
                 #err_msg_obj = self.record_error(err_title, err_note)
