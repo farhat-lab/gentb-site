@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Make sure supervisord's stop command get's passed on to gunicorn
+trap "kill -- -$$" EXIT
+
 # Go to this directory (where the script is held)
 cd "$( dirname "${BASH_SOURCE[0]}" )"
 cd ..
