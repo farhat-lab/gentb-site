@@ -7,10 +7,8 @@ from django.contrib.auth.models import User
 from django.utils.crypto import get_random_string
 
 from apps.predict.models import PredictDataset, PredictDatasetStatus,\
-    PipelineScriptsDirectory,\
-    DATASET_STATUS_FILE_RETRIEVAL_COMPLETE
+    SCRIPT_DIR, DATASET_STATUS_FILE_RETRIEVAL_COMPLETE
 from apps.tb_users.models import TBUser
-from apps.predict.pipeline_hardcoded_script_runner import PipelineScriptRunner
 from apps.utils.file_patterns import FilePatternHelper,\
                                 GENTB_FASTQ_FILE_PATTERNS,\
                                 GENTB_VCF_FILE_PATTERNS,\
@@ -57,11 +55,6 @@ class PredictBasicTest(TestCase):
         self.dataset_fastq = PredictDataset(**test_params2)
         self.dataset_fastq.save()
 
-        script_dirname = join(dirname(realpath(__file__)), 'test_script_dir')
-        self.pipleline_scripts_info = PipelineScriptsDirectory(name='test dir',\
-                    script_directory=script_dirname)
-        self.pipleline_scripts_info.save()
-
     def tearDown(self):
         """
         Delete test objects
@@ -72,11 +65,8 @@ class PredictBasicTest(TestCase):
         self.test_user.delete()
         self.pipleline_scripts_info.delete()
 
-    def test_params_form(self):
-
-        # -------------------
-        # VCF file test
-        # -------------------
+    def test_vcf_file(self):
+        """VCF file test"""
         self.assertTrue(self.dataset_vcf.is_vcf_file(),
                         "Should be a VCF file")
 
@@ -86,21 +76,12 @@ class PredictBasicTest(TestCase):
         self.assertEqual(self.dataset_vcf.get_file_patterns(),\
                     GENTB_VCF_FILE_PATTERNS)
 
+        self.assertTrue(self.dataset_vcf.get_pipeline_command()[0])
 
-        pipeline_runner = PipelineScriptRunner(self.dataset_vcf)
+        self.dataset_vcf.run_command()
 
-        script_directory = pipeline_runner.step1_get_script_directory_info()
-        self.assertTrue(script_directory is not None)
-        script_command = pipeline_runner.step2_get_script_command(script_directory)
-        print script_command
-
-        self.assertTrue(script_command is not None)
-        #if script_command is not NOne:
-        #    pipeline_runner.step3_run_command(script_command)
-
-        # -------------------
-        # FastQ file test
-        # -------------------
+    def test_fastq_file(self):
+        """FastQ file test"""
         self.assertTrue(not self.dataset_fastq.is_vcf_file(),
                         "Should NOT be a VCF file")
 
@@ -109,14 +90,8 @@ class PredictBasicTest(TestCase):
 
         self.assertEqual(self.dataset_fastq.get_file_patterns(),\
                     GENTB_FASTQ_FILE_PATTERNS)
-        pipeline_runner = PipelineScriptRunner(self.dataset_fastq)
 
-        script_directory = pipeline_runner.step1_get_script_directory_info()
-        self.assertTrue(script_directory is not None)
+        self.assertTrue(self.dataset_fastq.get_pipeline_command()[0])
 
-        script_command = pipeline_runner.step2_get_script_command(script_directory)
-        print script_command
+        self.dataset_fastq.run_command()
 
-        self.assertTrue(script_command is not None)
-
-        # Add tests to get the bsub command

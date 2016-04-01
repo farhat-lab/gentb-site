@@ -3,7 +3,7 @@ Variables with expected file names from a successful run
 of the dataset pipeline as well as prediction scripts
 
 Dataset file diretory/
-        - gentb_status_feedback.py
+        - feedback.conf
             (customized for each run, uses variables from this page)
         - /output/
             - result.json   (predict script result)
@@ -23,6 +23,6 @@ RESULT_FILE_NAME_DICT = { 'RESULT_JSON_FILE_NAME' : RESULT_JSON_FILE_NAME,
 EXPECTED_FILE_NAME_LIST = (RESULT_JSON_FILE_NAME,
                             MATRIX_CSV_FILE_NAME,
                             HEATMAP_HTML_FILE_NAME)
-EXPECTED_FILE_DESCRIPTIONS = ('results file',
+EXPECTED_FILE_DESCRIPTIONS = ['results file',
                             'matrix file',
-                            'heatmap file')
+                            'heatmap file']

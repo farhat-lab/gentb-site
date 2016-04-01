@@ -1,10 +1,10 @@
-import collections
-from hashlib import md5
-import json
-from os.path import basename, join, isdir
 import os
+import json
+import collections
 
+from hashlib import md5
 from datetime import datetime
+from os.path import basename, join, isfile, isdir
 
 from model_utils.models import TimeStampedModel
 
@@ -20,12 +20,24 @@ from apps.tb_users.models import TBUser
 from apps.utils.site_url_util import get_site_url
 from apps.utils.file_patterns import *
 
+from apps.script_helper.script_runner_basic import run_script
+from apps.utils.result_file_info import RESULT_FILE_NAME_DICT,\
+            EXPECTED_FILE_DESCRIPTIONS, RESULT_OUTPUT_DIRECTORY_NAME
+
+
+import logging
+LOGGER = logging.getLogger('apps.predict.runner')
+
 #tb_file_system_storage = FileSystemStorage(location=settings.TB_SHARED_DATAFILE_DIRECTORY)
 
 #def generate_new_filename(instance, filename):
 #    #f, ext = os.path.splitext(filename)
 #    instance.original_filename = basename(filename)
 #    return join(instance.dataset.get_partial_path_for_datafile(), generate_storage_identifier())
+
+VCF_ANALYSIS_SCRIPT = 'analyseVCF.pl'
+FASTQ_ANALYSIS_SCRIPT = 'analyseNGS.pl'
+SCRIPT_DIR = join(settings.SITE_ROOT, 'apps', 'predict', 'predict_pipeline')
 
 DATASET_STATUS_NOT_READY = 1
 DATASET_STATUS_CONFIRMED = 2
@@ -51,7 +63,7 @@ class PredictDatasetStatus(models.Model):
         return '%s - %s' % (self.sort_order, self.name)
 
     def save(self, *args, **kwargs):
-        if not self.id:
+        if not self.pk:
             super(PredictDatasetStatus, self).save(*args, **kwargs)
 
         self.slug = slugify(self.name)
@@ -110,6 +122,183 @@ class PredictDataset(TimeStampedModel):
         if not self.is_fastq_file():
             return False
         return FilePatternHelper.is_fastq_pair_ended(self.fastq_type)
+
+    def get_script_command(self):
+        """
+        Using dataset information, to decide whether to run:
+            (1) script for a VCF file
+            (2) script for FastQ files
+        """
+        # Formate either a VCF or FastQ pipeline command
+        if self.is_vcf_file():     # (2a) command for a VCF file
+            command_to_run = self.get_vcf_script_command()
+
+        elif self.is_fastq_file(): # (2b) command for FastQ files
+            command_to_run = self.get_fastq_script_command()
+
+        else:
+            err_title = 'Not VCF or FastQ file'
+            err_note = 'Could not determine the file type.\
+             Database contained: "%s"' % (self.file_type)
+            #err_msg_obj =
+            self.record_error(err_title, err_note)
+            return None
+
+        return command_to_run
+
+    def get_pipeline_command(self):
+        """
+        Return the full pipeline command to run the appropriate analyze script
+        for this dataset's files
+        """
+        try:
+            return (True, self.get_script_command())
+        except Exception as err:
+            return (False, err.args[0])
+
+    def get_fastq_script_command(self):
+        """
+        Run the command for FastQ files.
+        e.g. perl analyseNGS.pl (directory name)
+        """
+        if self.err_found:
+            return None
+
+        # (1) Make sure the 'analyseNGS.pl' command is in the
+        #   specified 'Pipeline Scripts Directory'
+        #
+        script_cmd = join(SCRIPT_DIR, FASTQ_ANALYSIS_SCRIPT)
+        if not isfile(script_cmd):
+            err_title = 'The "%s" file was not found' % (FASTQ_ANALYSIS_SCRIPT)
+            err_note = """The "%s" file was not found at this location: \n%s\n
+            To change the path to the script, please go into the admin control\
+             panel and modify the 'Pipeline Scripts Directory'.\n\
+            Talk to your administrator for details.""" % (FASTQ_ANALYSIS_SCRIPT, script_cmd)
+            #err_msg_obj = self.record_error(err_title, err_note)
+            self.record_error(err_title, err_note)
+            return None
+
+        # Format the full command with target containing
+        #   input files
+        #
+        if self.is_fastq_single_ended():
+            command_str = 'perl {0} 0 . {1}'.format(script_cmd,\
+                self.file_directory)
+        elif self.is_fastq_pair_ended():
+            pair_extension = self.get_fastq_pair_end_extension()
+            if pair_extension is None:
+                err_title = 'FastQ could not find pair-ended extension type'
+                err_note = 'Could not determine pair-ended extension type.\
+                 Database contained: "%s"' % (self.fastq_type)
+                #err_msg_obj = self.record_error(err_title, err_note)
+                self.record_error(err_title, err_note)
+                return None
+
+            command_str = 'perl {0} 1 {1} {2}'.format(script_cmd,\
+                             pair_extension, self.file_directory)
+        else:
+            err_title = 'FastQ: single-ended or pair-ended?'
+            err_note = 'Could not determine single-ended or pair-ended FastQ type.\
+             Database contained: "%s"' % (self.fastq_type)
+            # err_msg_obj = self.record_error(err_title, err_note)
+            self.record_error(err_title, err_note)
+            return None
+
+        return command_str
+
+    def get_vcf_script_command(self):
+        """
+        Run the command for a VCF file.
+        e.g. perl analyseVCF.pl (directory name)
+        """
+        # (1) Make sure the 'analyseVCF.pl' command is in the
+        #   specified 'Pipeline Scripts Directory'
+        #
+        script_cmd = join(SCRIPT_DIR, VCF_ANALYSIS_SCRIPT)
+        if not isfile(script_cmd):
+            err_title = 'The "%s" file was not found' % (VCF_ANALYSIS_SCRIPT)
+            err_note = """The "%s" file was not found at this location: \n%s\n
+            To change the path to the script, please go into the admin control\
+             panel and modify the 'Pipeline Scripts Directory'.\n\
+            Talk to your administrator for details.""" % (VCF_ANALYSIS_SCRIPT, script_cmd)
+            #err_msg_obj = self.record_error(err_title, err_note)
+            self.record_error(err_title, err_note)
+            return None
+
+        # Format the full command with target containing
+        #   input files
+        #
+        command_str = 'perl {0} {1}'.format(script_cmd,\
+                self.file_directory)
+
+        return command_str
+
+    def run_command(self):
+        """
+        - (1) Create a DatasetScriptRun object
+        - (2) Make a custom callback script add the dataset file directory
+        - (3) Update the Dataset status
+        - (4) Run the script
+        """
+        ready, command_to_run = self.get_pipeline_command()
+        if not ready:
+            return (False, command_to_run)
+
+        # (1) Create a run object and save the command being run
+        #
+        dsr = DatasetScriptRun(dataset=self)
+        dsr.notes = command_to_run
+        dsr.save()
+
+        # ---------------------------------------------------------
+        # (2) Place a callback script with the Dataset directory
+        #   - contains callback url + md5
+        #   - called after the analyse scripts are Run
+        # ---------------------------------------------------------
+
+        # Get callback args
+        callback_info_dict = self.get_script_args(dsr.md5, as_dict=True)
+        template_dict = dict(callback_info_dict=callback_info_dict)
+        template_dict.update(RESULT_FILE_NAME_DICT)
+        template_dict['RESULT_OUTPUT_DIRECTORY_NAME'] = RESULT_OUTPUT_DIRECTORY_NAME
+        template_dict['EXPECTED_FILE_DESCRIPTIONS'] = EXPECTED_FILE_DESCRIPTIONS
+        
+
+        print('-' * 40)
+        print(template_dict)
+        print('-' * 40)
+
+        # Place script in dataset file_directory
+        script_fullname = join(self.file_directory, 'feedback.json')
+        fhandler = open(script_fullname, 'w')
+        fhandler.write(json.dumps(template_dict))
+        fhandler.close()
+
+        # (3) Update the dataset status to 'in process'
+        #
+        self.set_status_processing_started()
+
+        # (4) Run the script -- not waiting for output
+        #
+        full_args = command_to_run.split()
+        print ('full_args', full_args)
+        run_script(full_args)
+
+    def record_error(self, msg_title, msg):
+        """
+        Record an error:
+            - within this non-persistnt object
+            - in the log files
+            - in the database in a PredictDatasetNote object
+        """
+        # Write to the logs
+        #
+        LOGGER.error(msg_title)
+        LOGGER.error(msg)
+
+        # Write to the database
+        note = PredictDatasetNote(dataset=self, title=msg_title, note=msg)
+        note.save()
 
     def get_fastq_pair_end_extension(self):
         try:
@@ -191,7 +380,7 @@ class PredictDataset(TimeStampedModel):
         return serializers.serialize('json', PredictDataset.objects.filter(id=self.id))
 
 
-    def get_script_args_json(self, run_md5, **kwargs):
+    def get_script_args(self, run_md5, **kwargs):
 
         as_list = kwargs.get('as_list', False)
         as_dict = kwargs.get('as_dict', False)
@@ -218,7 +407,7 @@ class PredictDataset(TimeStampedModel):
         if as_list:
             return [ json.dumps(d)]
             #return [ '\'%s\'' % json.dumps(d)]
-        return json.dumps(d)
+        return d
 
     def set_status(self, status_type, save_status=True):
         try:

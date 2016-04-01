@@ -146,7 +146,7 @@ print(r.text)
 analyseVCF.pl
   - at end:
   - know: job directory
-   - assume this file exists: "gentb_status_feedback.py"
+   - assume this file exists: "feedback.conf"
 
 ----------------------
 - Job directory
@@ -158,7 +158,7 @@ analyseVCF.pl
         -
         - intermediary files (.var and .vcf if fastq generated)
 
-    - gentb_status_feedback.py
+    - feedback.conf
         - if output/result.json exists and is not empty, we're ok
         - send feedback
 

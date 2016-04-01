@@ -1,11 +1,9 @@
 """
-(generated {% now "F jS, Y f:s a" %})
-
 This script checks the local "output" directory and sends feedback to the server
 about the job.
 
 Dataset file diretory/
-        - gentb_status_feedback.py (this script)
+        - feedback.conf
         - /output/
             - result.json
             - matrix.csv
@@ -25,19 +23,22 @@ CALLBACK_INFO_DICT = {"file_directory": "/home/gentb_test/tbdata_00000112",
 "dataset_id": 112,
 "user_email": "tbuser@harvard.edu"}
 """
-CALLBACK_INFO_DICT = {{ callback_info_dict|safe }}
+with open(join(sys.argv[1], 'feedback.conf'), 'r') as fhl:
+    FEEDBACK_CONF = json.loads(fhl.read())
+
+CALLBACK_INFO_DICT = FEEBACK_CONF['callback_info_dict']
 
 
 class GenTBStatusFeedback:
 
     CURRENT_DIRECTORY = dirname(realpath(__file__))
-    OUTPUT_DIRECTORY = join(CURRENT_DIRECTORY, '{{ RESULT_OUTPUT_DIRECTORY_NAME }}')
+    OUTPUT_DIRECTORY = join(CURRENT_DIRECTORY, FEEDBACK_CONF['RESULT_OUTPUT_DIRECTORY_NAME'])
 
     # note file names originate in utils.result_file_info.py
     #
-    RESULTS_FILE_FULLPATH = join(OUTPUT_DIRECTORY, '{{ RESULT_JSON_FILE_NAME }}')
-    MATRIX_FILE_FULLPATH = join(OUTPUT_DIRECTORY, '{{ MATRIX_CSV_FILE_NAME }}')
-    HEATMAP_FILE_FULLPATH = join(OUTPUT_DIRECTORY, '{{ HEATMAP_HTML_FILE_NAME }}')
+    RESULTS_FILE_FULLPATH = join(OUTPUT_DIRECTORY, FEEDBACK_CONF['RESULT_JSON_FILE_NAME'])
+    MATRIX_FILE_FULLPATH = join(OUTPUT_DIRECTORY, FEEDBACK_CONF['MATRIX_CSV_FILE_NAME'])
+    HEATMAP_FILE_FULLPATH = join(OUTPUT_DIRECTORY, FEEDBACK_CONF['HEATMAP_HTML_FILE_NAME'])
 
     FILE_FULLPATH_NAMES = [RESULTS_FILE_FULLPATH,\
                 MATRIX_FILE_FULLPATH,\
@@ -45,7 +46,7 @@ class GenTBStatusFeedback:
 
     # Ex: ('results file', 'matrix file', 'heatmap file')
     #
-    EXPECTED_FILE_NAME_LIST = {{ EXPECTED_FILE_DESCRIPTIONS|safe }}
+    EXPECTED_FILE_NAME_LIST = FEEDBACK_CONF['EXPECTED_FILE_DESCRIPTIONS']
 
     EXPECTED_FILE_DESCRIPTIONS = zip(FILE_FULLPATH_NAMES, EXPECTED_FILE_NAME_LIST)
 

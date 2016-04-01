@@ -18,7 +18,11 @@ closedir(DIR);
 
 foreach(@files)
 {
-	(my $name= $_) =~ s/\.vcf//g;
-	system("bsub -q short -W 2:00 -o ${path}/$name.error -J ".$name.' "'."source $Bin/prepare_environment.sh ; perl $Bin/bin/bsubAnalyseV.pl $name $path".'"');
+    (my $name= $_) =~ s/\.vcf//g;
+    my $command = "bsub";
+    if(not `which bsub`) {
+        $command = "$Bin/no_bsub";
+    }
+    system("$command -q short -W 2:00 -o ${path}/$name.error -J ".$name.' "'."source $Bin/prepare_environment.sh ; perl $Bin/bin/bsubAnalyseV.pl $name $path".'"');
 }
 

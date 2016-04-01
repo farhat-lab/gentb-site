@@ -13,7 +13,6 @@ from apps.dropbox_helper.models import DropboxRetrievalLog
 from apps.utils.view_util import get_common_dict
 from apps.predict.message_helper import send_new_dataset_message_to_tb_admins
 from django.contrib.auth.decorators import login_required
-from apps.predict.pipeline_hardcoded_script_runner import PipelineScriptRunner
 
 from apps.predict.heatmap_helper import HeatmapHelper
 
@@ -79,8 +78,7 @@ def view_single_dataset(request, dataset_md5):
     d['tb_user'] = dataset.user
 
     # Pipeline command
-    (pipeline_command_found, pipeline_command_or_err) = PipelineScriptRunner.get_pipeline_command(dataset)
-    d['pipeline_command_found'] = pipeline_command_found
+    d['pipeline_command_found'] = dataset.get_pipeline_command()[0]
 
     try:
         local_directory_contents = os.listdir(dataset.file_directory)

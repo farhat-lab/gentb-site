@@ -10,6 +10,7 @@ my $pex=shift @ARGV; #0 single end, _R|.
 my $path=shift @ARGV;
 
 use FindBin qw($Bin);
+chdir($Bin);
 
 @name=split('\.',$file);
 my $dataFile=$name[0];
@@ -29,11 +30,13 @@ system("perl $Bin/flatAnnotatorVAR.pl ${path}/$dataFile.h37rv.vcf 15 0.1 PASS");
 system("mv ${path}/$dataFile.h37rv.var ${path}/output");
 system("mv ${path}/$dataFile.h37rv.vcf ${path}/output");
 system("python $Bin/generate_matrix.py ${path}/output");
+
 system("Rscript $Bin/TBpredict.R ".'"'."${path}/output/matrix.csv".'"'." >${path}/output/result.json");
+
 my $size= -s "${path}/output/result.json";
 #print STDERR "$size\n";
 if ($size > 0 ) {
-        system("python ${path}/gentb_status_feedback.py");
+        system("python $Bin/../run_feedback.py ${path}");
 }
 system("rm ${path}/$dataFile.sam");
 system("rm ${path}/$dataFile.sorted.bam");

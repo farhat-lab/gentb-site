@@ -30,7 +30,7 @@ create_heatmap <- function(file_json) {
   dd <- t(dd)
   dd <- as.data.frame(dd)
   druglist <- c('inh','rif','pza', 'emb','str','eth','kan', 'cap', 'amk', 'cip', 'levo', 'oflx', 'pas') 
-  dd <- dd[, druglist]
+  dd <- dd[druglist, ]
   return(d3heatmap(dd, dendrogram = NULL, Rowv = FALSE, Colv = FALSE, colors = colorRamps::matlab.like(10)))
 }
 
@@ -90,7 +90,7 @@ predictfunction<-function(filename){
   #return(displayresult)
   l <- list(result, important, other)
   ## Save JSON file
-  file_noext <- substr(basename(filename), 1, nchar(filename) - 4)
+  file_noext <- substr(filename, 1, nchar(filename) - 4)
   cat(toJSON(l, pretty = TRUE), "\n", file = paste0(file_noext, ".json"))
   h<-create_heatmap(paste0(file_noext, ".json"))
   htmlwidgets::saveWidget(h, paste0(file_noext, ".html"))

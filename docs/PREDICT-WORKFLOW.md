@@ -70,7 +70,7 @@ Overall, the Predict workflow steps are as follows, with notices regarding gaps:
 
 **Purpose:** Periodically (every 10 minutes), check if any new PredictDataset objects have finished downloading the related Dropbox files without error.  If so, run the pipeline script against the directory for this PredictDataset.
 
-Preparation for this run includes the creation of a file named [gentb_status_feedback.py](https://github.com/IQSS/gentb-site/blob/master/gentb_website/tb_website/templates/feedback/gentb_status_feedback.py) which is placed in the PredictDataset directory.  This python file contains callback information so that the pipeline script may send an end of job status message to the genTB server via API call.
+Preparation for this run includes the creation of a file named feedback.conf which is placed in the PredictDataset directory.  This json file contains callback information so that the pipeline script may send an end of job status message to the genTB server via API call.
 
   - Similar to the dropbox functionality, this is activated re: a long running supervisord process -- e.g. it should be moved to a cron job once the cron server can use the needed libraries
     -  [run_dropbox_and_pipeline.py](https://github.com/IQSS/gentb-site/blob/master/gentb_website/cron_scripts/run_dropbox_and_pipeline.py)
@@ -94,7 +94,7 @@ Preparation for this run includes the creation of a file named [gentb_status_fee
 
 The process is:
   1. As a last step the cluster script runs this python program:
-    - [gentb_status_feedback.py](https://github.com/IQSS/gentb-site/blob/master/gentb_website/tb_website/templates/feedback/gentb_status_feedback.py)
+    - [run_feedback.py](https://github.com/IQSS/gentb-site/blob/master/apps/predict/predict_pipeline/run_feedback.py)
     - Note: This program is created in the step 4 above and placed in the file directory for the PredictDataset.  It includes information specific to this pipeline run.
   2. This script does the following:
     1. Makes a simple (somewhat naive) check to see:
