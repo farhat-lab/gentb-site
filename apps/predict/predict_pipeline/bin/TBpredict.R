@@ -55,7 +55,11 @@ predictfunction<-function(filename){
     
     for (i in 1:length(druglist)){
       drug <- druglist[i]
+      print(drug)
       load(paste(drug, "_finalpredict.RData", sep="")) #contains for each drug:
+      # Can't get what's in RF
+      #cat(toJSON(drugg.full.rf, pretty = TRUE), "\n", file = paste0(drug, "-drugg.full.rf.json"))
+
       #drugg.full   :   matrix of all data
       #drugg.full.rf:   a RF classifier 
       #eR           :   OOB false negative rate (For resistance classification)
@@ -92,10 +96,10 @@ predictfunction<-function(filename){
   ## Save JSON file
   file_noext <- substr(filename, 1, nchar(filename) - 4)
   cat(toJSON(l, pretty = TRUE), "\n", file = paste0(file_noext, ".json"))
-  h<-create_heatmap(paste0(file_noext, ".json"))
-  htmlwidgets::saveWidget(h, paste0(file_noext, ".html"))
+  #h<-create_heatmap(paste0(file_noext, ".json"))
+  #htmlwidgets::saveWidget(h, paste0(file_noext, ".html"))
   
-  return(h)
+  #return(h)
   #return(important)
   #return(other)
 }

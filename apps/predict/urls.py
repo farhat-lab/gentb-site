@@ -1,12 +1,14 @@
 from django.conf.urls import patterns, include, url
 
+from .views import Heatmap
+
 urlpatterns = patterns('apps.predict.views',
 
     url(r'^my-datasets/$', 'view_my_datasets', name="view_my_datasets"),
 
     url(r'^my-dataset-detail/(?P<dataset_md5>\w{32})/$', 'view_single_dataset', name="view_single_dataset"),
 
-    url(r'^my-dataset-prediction/(?P<dataset_md5>\w{32})/$', 'view_prediction_heatmap', name="view_prediction_heatmap"),
+    url(r'^my-dataset-prediction/(?P<dataset_md5>\w{32})/$', Heatmap.as_view(), name="view_prediction_heatmap"),
 
 )
 

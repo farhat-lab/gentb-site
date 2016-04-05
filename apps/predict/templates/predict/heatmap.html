@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% load static %}
+{% load jsonify %}
+
+{% block extra_css %}
+  <link href="{% static 'css/heatmap.css' %}" rel="stylesheet">
+{% endblock %}
+
+{% block extra_js %}
+  <script src="{% static 'js/jquery.min.js' %}"></script>
+  <script src="{% static 'd3/d3.v3.js' %}"></script>
+  <script src="{% static 'js/d3.tip.js' %}"></script>
+  <script src="{% static 'js/heatmap.js' %}"></script>
+{% endblock %}
+
+{% block content %}
+
+<div id="htmlwidget_container">
+  <div id="heatmap" style="width:960px;height:500px;" class="d3heatmap"></div>
+</div>
+
+<script>
+  $(document).ready(function() {
+    var data = {"rows": null, "cols": null,
+      "matrix": {{ object.get_heatmap|jsonify }}
+    };
+
+    var merged = [];
+    for (var i = 0; i < data.matrix.data.length; i++) {
+      var a = parseFloat(data.matrix.data[i]);
+      merged.push({
+        label: data.matrix.data[i],
+        color: "rgba(" + [200,0,0,a].join(",") + ")"
+      })
+    }
+    data.matrix.merged = merged;
+
+    heatmap('#heatmap', data, {"xaxis_height":80,"yaxis_width":120,"xaxis_font_size":null,"yaxis_font_size":null,"brush_color":"#0000FF","show_grid":true,"anim_duration":500});
+  });
+</script>
+
+{% endblock %}
+

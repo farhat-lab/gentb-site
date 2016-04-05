@@ -1,20 +1,17 @@
 import os
 import json
-import collections
 
 from hashlib import md5
-from datetime import datetime
-from os.path import basename, join, isfile, isdir
+from os.path import join, isfile, isdir
 
+from collections import defaultdict
 from model_utils.models import TimeStampedModel
 
 from django.db import models
-from django.core.files.storage import FileSystemStorage
 from django.conf import settings
 from django.utils.text import slugify
 from django.core import serializers
 from django.core.urlresolvers import reverse
-from jsonfield import JSONField # https://github.com/bradjasper/django-jsonfield
 
 from apps.tb_users.models import TBUser
 from apps.utils.site_url_util import get_site_url
@@ -27,13 +24,6 @@ from apps.utils.result_file_info import RESULT_FILE_NAME_DICT,\
 
 import logging
 LOGGER = logging.getLogger('apps.predict.runner')
-
-#tb_file_system_storage = FileSystemStorage(location=settings.TB_SHARED_DATAFILE_DIRECTORY)
-
-#def generate_new_filename(instance, filename):
-#    #f, ext = os.path.splitext(filename)
-#    instance.original_filename = basename(filename)
-#    return join(instance.dataset.get_partial_path_for_datafile(), generate_storage_identifier())
 
 VCF_ANALYSIS_SCRIPT = 'analyseVCF.pl'
 FASTQ_ANALYSIS_SCRIPT = 'analyseNGS.pl'
@@ -311,6 +301,23 @@ class PredictDataset(TimeStampedModel):
     def get_file_patterns(self):
         return FilePatternHelper.get_file_patterns_for_dropbox(self.file_type)
 
+    def get_heatmap(self):
+        data = None
+        maf = os.path.join(self.file_directory, 'output', 'matrix.json')
+        if not os.path.isfile(maf):
+            return None
+
+        ret = defaultdict(list)
+        with open(maf, 'r') as fhl:
+            data = json.loads(fhl.read())
+        for row in data[0]:
+            ret['data'].append(row[2])
+            if row[0] not in ret['rows']:
+                ret['rows'].append(row[0])
+            if row[1] not in ret['cols']:
+                ret['cols'].append(row[1])
+        ret['dim'] = [len(ret['rows']), len(ret['cols'])]
+        return ret
 
     def user_name(self):
         if self.user:
