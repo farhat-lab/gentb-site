@@ -1,39 +1,12 @@
-/*
-function makeHeatMap(data) {
-    //height of each row in the heatmap
-    //width of each column in the heatmap
-    var gridSize = 50,
-        h = gridSize,
-        w = gridSize,
-        rectPadding = 60;
-
-    var colorLow = 'green', colorMed = 'yellow', colorHigh = 'red';
-
-    var margin = {top: 20, right: 80, bottom: 30, left: 50},
-        width = 640 - margin.left - margin.right,
-        height = 380 - margin.top - margin.bottom;
-
-    var colorScale = d3.scale.linear()
-         .domain([-1, 0, 1])
-         .range([colorLow, colorMed, colorHigh]);
-
-    var svg = d3.select("#heatmap").append("svg")
-        .attr("width", width + margin.left + margin.right)
-        .attr("height", height + margin.top + margin.bottom)
-      .append("g")
-        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
-    var heatMap = svg.selectAll(".heatmap")
-        .data(data, function(d) { return d.col + ':' + d.row; })
-      .enter().append("svg:rect")
-        .attr("x", function(d) { return d.row * w; })
-        .attr("y", function(d) { return d.col * h; })
-        .attr("width", function(d) { return w; })
-        .attr("height", function(d) { return h; })
-        .style("fill", function(d) { return colorScale(d.score); });
-}*/
-
 function heatmap(selector, data, options) {
+  var merged = [];
+  for (var i = 0; i < data.matrix.data.length; i++) {
+    merged.push({
+      label: data.matrix.data[i],
+      opacity: parseFloat(data.matrix.data[i]),
+    })
+  }
+  data.matrix.merged = merged;
 
   // ==== BEGIN HELPERS =================================
   
@@ -160,17 +133,31 @@ function heatmap(selector, data, options) {
   }).call(Controller.prototype);
 
   var controller = new Controller();
+  var width = options.width || bbox.width;
+  var height = options.height || bbox.height;
+  var num_rows = data.matrix.rows.length;
+  var num_cols = data.matrix.cols.length;
 
   // Set option defaults
   var opts = {};
   options = options || {};
-  opts.width = options.width || bbox.width;
-  opts.height = options.height || bbox.height;
+  opts.xaxis_height = options.xaxis_height || 80;
+  opts.yaxis_width = options.yaxis_width || 120;
+
+  // Make the squares, square
+  if(opts.height / num_rows < opts.width / num_cols) {
+    opts.height = height
+    opts.width = (height / num_rows) * num_cols;
+  } else {
+    opts.height = (width / num_cols) * num_rows;
+    opts.width = width;
+  }
+  opts.height += opts.xaxis_height;
+  opts.width += opts.yaxis_width;
+
   opts.xclust_height = options.xclust_height || opts.height * 0.12;
   opts.yclust_width = options.yclust_width || opts.width * 0.12;
   opts.link_color = opts.link_color || "#AAA";
-  opts.xaxis_height = options.xaxis_height || 80;
-  opts.yaxis_width = options.yaxis_width || 120;
   opts.axis_padding = options.axis_padding || 6;
   opts.show_grid = options.show_grid;
   if (typeof(opts.show_grid) === 'undefined') {
@@ -204,6 +191,14 @@ function heatmap(selector, data, options) {
   var yBound = gridSizer.getCellBounds(2, 1);
   var xBound = gridSizer.getCellBounds(1, 2);
 
+  var rd = el.select('svg.rowDend');
+  var cd = el.select('svg.colDend');
+  var rw = rowDendBounds.width, rh = rowDendBounds.height;
+  var cw = colDendBounds.width, ch = colDendBounds.height;
+  var pad = opts.axis_padding;
+  var row = !data.rows ? null : dendrogram(rd, data.rows, false, rw, rh, pad);
+  var col = !data.cols ? null : dendrogram(cd, data.cols, true, cw, ch, pad);
+
   function cssify(styles) {
     return {
       position: "absolute",
@@ -217,6 +212,8 @@ function heatmap(selector, data, options) {
   // Create DOM structure
   (function() {
     var inner = el.append("div").classed("inner", true);
+    inner.style("width", opts.width + "px");
+    inner.style("height", opts.height + "px");
     var info = inner.append("div").classed("info", true);
     var colDend = inner.append("svg").classed("dendrogram colDend", true)
                                      .style(cssify(colDendBounds));
@@ -253,14 +250,6 @@ function heatmap(selector, data, options) {
     });
   })();
   
-  var rd = el.select('svg.rowDend');
-  var cd = el.select('svg.colDend');
-  var rw = rowDendBounds.width, rh = rowDendBounds.height;
-  var cw = colDendBounds.width, ch = colDendBounds.height;
-  var pad = opts.axis_padding;
-  var row = !data.rows ? null : dendrogram(rd, data.rows, false, rw, rh, pad);
-  var col = !data.cols ? null : dendrogram(cd, data.cols, true, cw, ch, pad);
-
   var cm = el.select('svg.colormap');
   var colormap = colormap(cm, data.matrix, cBounds.width, cBounds.height);
 
@@ -346,11 +335,11 @@ function heatmap(selector, data, options) {
         .property("colIndex", function(d, i) { return i % cols; })
         .property("rowIndex", function(d, i) { return Math.floor(i / cols); })
         .property("value", function(d, i) { return d.value; })
-        .attr("fill", function(d) {
-          if (!d.color) {
-            return "transparent";
+        .attr("fill-opacity", function(d) {
+          if (!d.opacity) {
+            return "0.0";
           }
-          return d.color;
+          return d.opacity;
         });
     rect.exit().remove();
     rect.append("title")

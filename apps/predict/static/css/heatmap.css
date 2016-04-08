@@ -8,11 +8,15 @@
 .theme-dark .link {
 }
 
-.d3heatmap {
-  position: relative;
-  width: 820px;
-  height: 700px;
-  overflow: hidden;
+.d3heatmap svg.colormap {
+  fill: #b7bffc;
+  background-color: #b7bffc;
+}
+.d3heatmap rect.datapt {
+  fill: #a00;
+  stroke: #555;
+  stroke-width: 0.5px;
+
 }
 .d3heatmap .domain {
   fill: none;
