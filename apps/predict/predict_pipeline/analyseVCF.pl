@@ -14,8 +14,6 @@ my @files;
 @files = grep { /\.vcf$/} readdir(DIR);
 closedir(DIR);
 
-#print STDERR "@files\n";
-
 foreach(@files)
 {
     (my $name= $_) =~ s/\.vcf//g;

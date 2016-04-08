@@ -20,8 +20,7 @@ logger = logging.getLogger('apps.dropbox_helper.models')
 
 
 class DropboxRetrievalLog(TimeStampedModel):
-
-    dataset = models.OneToOneField(PredictDataset)
+    dataset = models.OneToOneField(PredictDataset, related_name='log')
 
     # retrieved from dropbox
     file_metadata = JSONField(load_kwargs={'object_pairs_hook': collections.OrderedDict}, blank=True)
@@ -36,8 +35,7 @@ class DropboxRetrievalLog(TimeStampedModel):
     retrieval_error = models.TextField(blank=True)
 
     # Blank unless files are FastQ pair-end extensions
-    fastq_pair_end_extension = models.CharField(max_length=20,\
-                                    blank=True,\
+    fastq_pair_end_extension = models.CharField(max_length=20, blank=True,\
                                     choices=FASTQ_PAIR_END_EXTENSION_TYPES,\
                                     help_text='For FastQ pair-end extensions. Either "_R" or "."')
 
@@ -55,11 +53,8 @@ class DropboxRetrievalLog(TimeStampedModel):
         if self.fastq_pair_end_extension is None:
             self.fastq_pair_end_extension = ''
 
-        if not self.id:
-            super(DropboxRetrievalLog, self).save(*args, **kwargs)
-
-        self.md5 = md5('%s%s' % (self.id, self.created)).hexdigest()
-
+        if not self.md5:
+            self.md5 = md5('%s%s' % (self.id, self.created)).hexdigest()
 
         super(DropboxRetrievalLog, self).save(*args, **kwargs)
 

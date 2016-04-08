@@ -28,18 +28,6 @@ VCF_ANALYSIS_SCRIPT = 'analyseVCF.pl'
 FASTQ_ANALYSIS_SCRIPT = 'analyseNGS.pl'
 SCRIPT_DIR = join(settings.SITE_ROOT, 'apps', 'predict', 'predict_pipeline')
 
-DATASET_STATUS_NOT_READY = 1
-DATASET_STATUS_CONFIRMED = 2
-
-DATASET_STATUS_FILE_RETRIEVAL_STARTED = 3
-DATASET_STATUS_FILE_RETRIEVAL_ERROR = 4
-DATASET_STATUS_FILE_RETRIEVAL_COMPLETE = 5
-
-DATASET_STATUS_PROCESSING_STARTED = 6
-DATASET_STATUS_PROCESSED_SUCCESS = 7
-DATASET_STATUS_PROCESSED_FAILED = 8
-
-
 
 class PredictDatasetStatus(models.Model):
     name = models.CharField(max_length=50)
@@ -68,6 +56,16 @@ class PredictDatasetStatus(models.Model):
 class PredictDataset(TimeStampedModel):
     """An uploaded predict dataset"""
 
+    STATUS_DELETED = 0
+    STATUS_NOT_READY = 1
+    STATUS_CONFIRMED = 2
+    STATUS_FILE_RETRIEVAL_STARTED = 3
+    STATUS_FILE_RETRIEVAL_ERROR = 4
+    STATUS_FILE_RETRIEVAL_COMPLETE = 5
+    STATUS_PROCESSING_STARTED = 6
+    STATUS_PROCESSED_SUCCESS = 7
+    STATUS_PROCESSED_FAILED = 8
+
     user = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='datasets')
     md5 = models.CharField(max_length=40, blank=True, db_index=True,
             help_text='auto-filled on save')
@@ -86,6 +84,9 @@ class PredictDataset(TimeStampedModel):
 
     def __str__(self):
         return self.title
+
+    def get_absolute_url(self):
+        return reverse('view_single_dataset', kwargs=dict(slug=self.md5))
 
     @property
     def files(self):
@@ -241,8 +242,7 @@ class PredictDataset(TimeStampedModel):
         # ---------------------------------------------------------
 
         # Get callback args
-        callback_info_dict = self.get_script_args(dsr.md5, as_dict=True)
-        template_dict = dict(callback_info_dict=callback_info_dict)
+        template_dict = dict(callback_info_dict=dsr.callback_info())
         template_dict.update(RESULT_FILE_NAME_DICT)
         template_dict['RESULT_OUTPUT_DIRECTORY_NAME'] = RESULT_OUTPUT_DIRECTORY_NAME
         template_dict['EXPECTED_FILE_DESCRIPTIONS'] = EXPECTED_FILE_DESCRIPTIONS
@@ -314,7 +314,7 @@ class PredictDataset(TimeStampedModel):
 
     def user_name(self):
         if self.user:
-            return self.user.user
+            return self.user.username
         return 'n/a'
 
     def user_affiliation(self):
@@ -324,7 +324,7 @@ class PredictDataset(TimeStampedModel):
 
     def user_email(self):
         if self.user:
-            return self.user.user.email
+            return self.user.email
         return 'n/a'
     #'user_name', 'user_email'
 
@@ -379,36 +379,6 @@ class PredictDataset(TimeStampedModel):
         """
         return serializers.serialize('json', PredictDataset.objects.filter(id=self.id))
 
-
-    def get_script_args(self, run_md5, **kwargs):
-
-        as_list = kwargs.get('as_list', False)
-        as_dict = kwargs.get('as_dict', False)
-
-        site_url = get_site_url()
-        site_url_callback = get_site_url(for_internal_callback=True)
-
-        url_to_dataset = reverse('admin:predict_predictdataset_change', args=(self.id,))
-        admin_url = '{0}{1}'.format(site_url, url_to_dataset)
-
-        callback_url = '{0}{1}'.format(site_url_callback, reverse('view_dataset_run_notification', kwargs={}))
-
-        d = dict(file_directory=self.file_directory,
-                 dataset_id=self.id,
-                 callback_url=callback_url,
-                 user_email=self.user.user.email,
-                 admin_url=admin_url,
-                 run_md5=run_md5
-                 )
-
-        if as_dict:
-            return d
-
-        if as_list:
-            return [ json.dumps(d)]
-            #return [ '\'%s\'' % json.dumps(d)]
-        return d
-
     def set_status(self, status_type, save_status=True):
         try:
             new_status = PredictDatasetStatus.objects.get(pk=status_type)
@@ -422,32 +392,32 @@ class PredictDataset(TimeStampedModel):
     # Initial information statuses
     #
     def set_status_not_ready(self, save_status=True):
-        self.set_status(DATASET_STATUS_NOT_READY, save_status)
+        self.set_status(self.STATUS_NOT_READY, save_status)
 
     def set_status_confirmed(self, save_status=True):
-        self.set_status(DATASET_STATUS_CONFIRMED, save_status)
+        self.set_status(self.STATUS_CONFIRMED, save_status)
 
     # File Retrieval statuses
     #
     def set_status_file_retrieval_started(self, save_status=True):
-        self.set_status(DATASET_STATUS_FILE_RETRIEVAL_STARTED, save_status)
+        self.set_status(self.STATUS_FILE_RETRIEVAL_STARTED, save_status)
 
     def set_status_file_retrieval_error(self, save_status=True):
-        self.set_status(DATASET_STATUS_FILE_RETRIEVAL_ERROR, save_status)
+        self.set_status(self.STATUS_FILE_RETRIEVAL_ERROR, save_status)
 
     def set_status_file_retrieval_complete(self, save_status=True):
-        self.set_status(DATASET_STATUS_FILE_RETRIEVAL_COMPLETE, save_status)
+        self.set_status(self.STATUS_FILE_RETRIEVAL_COMPLETE, save_status)
 
     # Pipeline processing statuses
     #
     def set_status_processing_started(self, save_status=True):
-        self.set_status(DATASET_STATUS_PROCESSING_STARTED, save_status)
+        self.set_status(self.STATUS_PROCESSING_STARTED, save_status)
 
     def set_status_processing_success(self, save_status=True):
-        self.set_status(DATASET_STATUS_PROCESSED_SUCCESS, save_status)
+        self.set_status(self.STATUS_PROCESSED_SUCCESS, save_status)
 
     def set_status_processing_failed(self, save_status=True):
-        self.set_status(DATASET_STATUS_PROCESSED_FAILED, save_status)
+        self.set_status(self.STATUS_PROCESSED_FAILED, save_status)
 
 
     class Meta:
@@ -511,23 +481,48 @@ class ScriptToRun(TimeStampedModel):
 
         super(ScriptToRun, self).save(*args, **kwargs)
 
-class DatasetScriptRun(TimeStampedModel):
 
+class DatasetScriptRun(TimeStampedModel):
     dataset = models.ForeignKey(PredictDataset, related_name='runs')
+    md5 = models.CharField(max_length=40, blank=True, db_index=True)
+
     notes = models.TextField(blank=True)
     result_received = models.BooleanField(default=False)
     result_success = models.BooleanField(default=False)
     result_data = models.TextField(blank=True)
-    md5 = models.CharField(max_length=40, blank=True, db_index=True, help_text='auto-filled on save')
 
     def __str__(self):
         return '%s' % self.dataset
 
-    def save(self, *args, **kwargs):
-        if not self.id:
-            super(DatasetScriptRun, self).save(*args, **kwargs)
+    def callback_info(self):
+        """
+        Creates a dictionary of data to send which links back to us here.
+        """
+        pk = self.dataset.pk
+        admin_url = reverse('admin:predict_predictdataset_change', args=[pk])
 
-        self.md5 = md5('%s%s' % (self.id, self.created)).hexdigest()
+        slug = {'slug': self.md5}
+        callback_url = get_site_url(for_internal_callback=True) + \
+                reverse('view_dataset_run_notification', kwargs=slug)
+
+        return dict(
+             dataset_id=pk,
+             file_directory=self.dataset.file_directory,
+             callback_url=callback_url,
+             user_email=self.dataset.user.email,
+             admin_url=get_site_url() + admin_url,
+             run_md5=self.md5
+         )
+
+    def save(self, *args, **kwargs):
+        if not self.md5:
+            self.md5 = md5('%s%s' % (self.dataset.pk, self.created)).hexdigest()
+
+        if self.result_received:
+            if self.result_success:
+                self.dataset.set_status_processing_success()
+            else:
+                self.dataset.set_status_processing_failed()
 
         super(DatasetScriptRun, self).save(*args, **kwargs)
 

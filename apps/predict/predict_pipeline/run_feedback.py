@@ -3,14 +3,15 @@ This script checks the local "output" directory and sends feedback to the server
 about the job.
 
 Dataset file diretory/
-        - feedback.conf
+        - feedback.json
         - /output/
             - result.json
-            - matrix.csv
+            - matrix.json
 """
 from __future__ import print_function
 from os.path import dirname, join, isdir, isfile, getsize, realpath
 import os, sys
+import json
 import urllib
 
 """
@@ -23,29 +24,24 @@ CALLBACK_INFO_DICT = {"file_directory": "/home/gentb_test/tbdata_00000112",
 "dataset_id": 112,
 "user_email": "tbuser@harvard.edu"}
 """
-with open(join(sys.argv[1], 'feedback.conf'), 'r') as fhl:
+with open(join(sys.argv[1], 'feedback.json'), 'r') as fhl:
     FEEDBACK_CONF = json.loads(fhl.read())
 
-CALLBACK_INFO_DICT = FEEBACK_CONF['callback_info_dict']
+CALLBACK_INFO_DICT = FEEDBACK_CONF['callback_info_dict']
 
 
 class GenTBStatusFeedback:
 
-    CURRENT_DIRECTORY = dirname(realpath(__file__))
+    CURRENT_DIRECTORY = CALLBACK_INFO_DICT["file_directory"]
     OUTPUT_DIRECTORY = join(CURRENT_DIRECTORY, FEEDBACK_CONF['RESULT_OUTPUT_DIRECTORY_NAME'])
 
     # note file names originate in utils.result_file_info.py
     #
     RESULTS_FILE_FULLPATH = join(OUTPUT_DIRECTORY, FEEDBACK_CONF['RESULT_JSON_FILE_NAME'])
-    MATRIX_FILE_FULLPATH = join(OUTPUT_DIRECTORY, FEEDBACK_CONF['MATRIX_CSV_FILE_NAME'])
-    HEATMAP_FILE_FULLPATH = join(OUTPUT_DIRECTORY, FEEDBACK_CONF['HEATMAP_HTML_FILE_NAME'])
+    MATRIX_FILE_FULLPATH = join(OUTPUT_DIRECTORY, FEEDBACK_CONF['MATRIX_JSON_FILE_NAME'])
 
-    FILE_FULLPATH_NAMES = [RESULTS_FILE_FULLPATH,\
-                MATRIX_FILE_FULLPATH,\
-                HEATMAP_FILE_FULLPATH]
+    FILE_FULLPATH_NAMES = [RESULTS_FILE_FULLPATH, MATRIX_FILE_FULLPATH]
 
-    # Ex: ('results file', 'matrix file', 'heatmap file')
-    #
     EXPECTED_FILE_NAME_LIST = FEEDBACK_CONF['EXPECTED_FILE_DESCRIPTIONS']
 
     EXPECTED_FILE_DESCRIPTIONS = zip(FILE_FULLPATH_NAMES, EXPECTED_FILE_NAME_LIST)
@@ -85,7 +81,7 @@ class GenTBStatusFeedback:
                             Fail: error message
 
         """
-        callback_params = dict(run_md5=CALLBACK_INFO_DICT.get('run_md5', None))
+        callback_params = {}
 
         # --------------------
         # Job Failed

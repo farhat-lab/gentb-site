@@ -6,8 +6,7 @@ Run the pipeline.
 
 from django.core.management.base import BaseCommand, CommandError
 
-from apps.predict.models import LOGGER, PredictDataset,\
-            DATASET_STATUS_FILE_RETRIEVAL_COMPLETE
+from apps.predict.models import LOGGER, PredictDataset
 
 class Command(BaseCommand):
     """Fires off the perl script to kick off the pipeline"""
@@ -39,7 +38,7 @@ FastQ or VCF file analysis.
 
         # get some Dataset
         dataset = PredictDataset.objects.filter(\
-                status=DATASET_STATUS_FILE_RETRIEVAL_COMPLETE).first()
+                status=PredictDataset.STATUS_FILE_RETRIEVAL_COMPLETE).first()
 
         if dataset is None:
             return LOGGER.debug("Nothing to check")

@@ -3,6 +3,10 @@
 A fake bsub command for local use and testing.
 """
 
+import os
+import sys
+
+from subprocess import call
 from argparse import ArgumentParser
 
 def main():
@@ -17,6 +21,15 @@ def main():
     args = parser.parse_args()
 
     print "Running " + args.script
+
+    stdout = sys.stdout
+    stderr = sys.stderr
+    if args.stdout:
+        stdout = open(args.stdout, 'w')
+        stderr = stdout
+
+    # shell=True allows our script to run anything, this a known security allowence
+    call(args.script, stdout=stdout, stderr=stderr, shell=True)
 
 if __name__ == '__main__':
     main()

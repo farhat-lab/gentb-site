@@ -49,3 +49,4 @@ def send_dataset_run_message_to_tb_admins_and_user(dataset_script_run):
         html_message = render_to_string('predict/email/pipeline_fail_run.html', d)
 
     send_mail_to_user_and_admins(subject, user_email, text_message, html_message)
+
