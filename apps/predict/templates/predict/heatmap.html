@@ -24,18 +24,16 @@
     var data = {"rows": null, "cols": null,
       "matrix": {{ object.get_heatmap|jsonify }}
     };
-
-    var merged = [];
-    for (var i = 0; i < data.matrix.data.length; i++) {
-      var a = parseFloat(data.matrix.data[i]);
-      merged.push({
-        label: data.matrix.data[i],
-        color: "rgba(" + [200,0,0,a].join(",") + ")"
-      })
+    var options = {
+      "xaxis_height": 80,
+      "yaxis_width": 120,
+      "xaxis_font_size": null,
+      "yaxis_font_size": null,
+      "brush_color": "#0000FF",
+      "show_grid": true,
+      "anim_duration": 500,
     }
-    data.matrix.merged = merged;
-
-    heatmap('#heatmap', data, {"xaxis_height":80,"yaxis_width":120,"xaxis_font_size":null,"yaxis_font_size":null,"brush_color":"#0000FF","show_grid":true,"anim_duration":500});
+    heatmap('#heatmap', data, options);
   });
 </script>
 

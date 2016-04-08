@@ -54,9 +54,10 @@ class UploadPredictionDataForm(forms.ModelForm):
 
     class Meta:
         model = PredictDataset
-        fields = ('title', 'file_type', 'fastq_type', 'dropbox_url', 'description', )
+        fields = ('status', 'title', 'file_type', 'fastq_type', 'dropbox_url', 'description', )
         widgets = {
             'dropbox_url': forms.Textarea(attrs={'rows': '4'}),
+            'status': forms.HiddenInput(),
         }
 
     def __init__(self, *args, **kwargs):
@@ -67,78 +68,43 @@ class UploadPredictionDataForm(forms.ModelForm):
         #self.fields['dropbox_url'].widget = forms.TextInput(attrs={'size':'40'}))
         #self.fields['dropbox_url'].widget.attrs.update({'size' : '40'})
 
-    def clean(self):
+    def clean_fastq_type(self):
+        """
+        If this is a FastQ file, make sure the user has chosen a FastQ type
+        """
         file_type = self.cleaned_data.get('file_type', None)
         fastq_type = self.cleaned_data.get('fastq_type')
-
-        # -----------------------------------------
-        # If this is a FastQ file, make sure the user
-        # has chosen a FastQ type
-        # -----------------------------------------
         if file_type == FILE_TYPE_FASTQ and not fastq_type:
-            msg = "For FastQ files, please choose a FastQ type"
-            self.add_error('fastq_type', msg)
-            raise forms.ValidationError(msg)
+            raise forms.ValidationError("For FastQ files, please choose a FastQ type")
+        return fastq_type
 
-        # -----------------------------------------
-        # Check the dropbox metadata
+    def clean_dropbox_url(self):
+        """Check the dropbox metadata from the url link"""
         # (This should be moved to an async or ajax call in another part of the code )
-        # -----------------------------------------
+        url = self.cleaned_data.get('dropbox_url')
         file_patterns = FilePatternHelper.get_file_patterns_for_dropbox(file_type)
 
         # Use the dropbox API to look at the files under this dropbox_url
-        #
-        (success, dbox_retriever_obj_or_err_msg) = get_dropbox_metadata_from_link(\
-                                self.cleaned_data.get('dropbox_url'),\
-                                file_patterns=file_patterns)
-        if success:
-            self.dropbox_retriever_object = dbox_retriever_obj_or_err_msg
-            #self.dropbox_metadata_info = dbox_retriever_obj_or_err_msg.matching_files_metadata
+        (success, dbox_retriever_obj_or_err_msg) = get_dropbox_metadata_from_link(url, file_patterns=file_patterns)
+        #self.dropbox_retriever_object = dbox_retriever_obj_or_err_msg
 
-        else:
-            #self.add_error('dropbox_url', dbox_metadata_or_err_msg)
+        if not success:
             raise forms.ValidationError(dbox_retriever_obj_or_err_msg)
 
-        return self.cleaned_data
+        return url
 
-    '''
-    def clean_dropbox_url(self):
-        """
-        This should be an async or ajax call in another part of the code.
-        For prototype, we're relying on dropbox uptime, etc.
-        """
-        #(success, dbox_metadata_or_err_msg) = get_dropbox_metadata_from_link(self.cleaned_data['dropbox_url'])
+    #def save(self):
+        
+        # XXX What is going on here?
+        #db_log = DropboxRetrievalLog(dataset=predict_dataset)
+        #db_log.file_metadata = self.dropbox_retriever_object.dropbox_link_metadata
+        #db_log.selected_files = self.dropbox_retriever_object.matching_files_metadata
+        #db_log.save()
 
-        #if not success:
-        #   raise forms.ValidationError(dbox_metadata_or_err_msg)
-
-        #self.dropbox_metadata_info = dbox_metadata_or_err_msg
-
-        return self.cleaned_data['dropbox_url']
-    '''
-    def get_dataset(self, tb_user):
-
-        assert hasattr(self, 'cleaned_data'), "Do not call this method on an invalid form. (call is_valid() first)"
-        assert tb_user is not None, "tb_user cannot be None"
-
-        # -------------------------------------
-        # save PredictDataset, made inactive
-        # -------------------------------------
-        predict_dataset = self.save(commit=False)   # get object
-        predict_dataset.user = tb_user              # set user
-        predict_dataset.set_status_not_ready(save_status=False)
-        predict_dataset.save()      # save the object
-
-        db_log = DropboxRetrievalLog(dataset=predict_dataset)
-        db_log.file_metadata = self.dropbox_retriever_object.dropbox_link_metadata
-        db_log.selected_files = self.dropbox_retriever_object.matching_files_metadata
-        db_log.save()
-
-        print 'elf.dropbox_retriever_object.dropbox_link_metadata', self.dropbox_retriever_object.dropbox_link_metadata
-        print 'self.dropbox_retriever_object.matching_files_metadata', self.dropbox_retriever_object.matching_files_metadata
+        #print 'elf.dropbox_retriever_object.dropbox_link_metadata', self.dropbox_retriever_object.dropbox_link_metadata
+        #print 'self.dropbox_retriever_object.matching_files_metadata', self.dropbox_retriever_object.matching_files_metadata
         #(success, dinfo_or_err_msg) = get_dropbox_metadata(ds)
-
-        return predict_dataset
+        #return predict_dataset
 
 
 class DropboxDownloadAttemptForm(forms.Form):

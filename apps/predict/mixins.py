@@ -10,7 +10,6 @@ from .models import PredictDataset
 
 class PredictMixin(object):
     """The baseline predict view"""
-    slug_url_kwarg = 'dataset_md5'
     slug_field = 'md5'
     model = PredictDataset
 

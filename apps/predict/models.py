@@ -13,7 +13,6 @@ from django.utils.text import slugify
 from django.core import serializers
 from django.core.urlresolvers import reverse
 
-from apps.tb_users.models import TBUser
 from apps.utils.site_url_util import get_site_url
 from apps.utils.file_patterns import *
 
@@ -67,35 +66,30 @@ class PredictDatasetStatus(models.Model):
 
 
 class PredictDataset(TimeStampedModel):
-    """
+    """An uploaded predict dataset"""
 
-    """
-    user = models.ForeignKey(TBUser)
-
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='datasets')
+    md5 = models.CharField(max_length=40, blank=True, db_index=True,
+            help_text='auto-filled on save')
     title = models.CharField('Dataset title', max_length=255)
-
     file_type = models.CharField(choices=FILE_TYPES, max_length=25)
 
     fastq_type = models.CharField(max_length=50,\
-        choices=FASTQ_FILE_TYPES,\
-        blank=True,\
+        choices=FASTQ_FILE_TYPES, blank=True,\
         help_text='Only used for FastQ files')
 
     dropbox_url = models.URLField("Dropbox link", help_text='https://www.dropbox.com/help/274')
-
     description = models.TextField('Dataset description')
-
     status = models.ForeignKey(PredictDatasetStatus)
-
     file_directory = models.CharField(max_length=255, blank=True)
-
     has_prediction = models.BooleanField(default=False)
-
-    md5 = models.CharField(max_length=40, blank=True, db_index=True, help_text='auto-filled on save')
 
     def __str__(self):
         return self.title
 
+    @property
+    def files(self):
+        return os.listdir(self.file_directory)
 
     def is_vcf_file(self):
         return FilePatternHelper.is_vcf_file(self.file_type)
@@ -287,8 +281,7 @@ class PredictDataset(TimeStampedModel):
         LOGGER.error(msg)
 
         # Write to the database
-        note = PredictDatasetNote(dataset=self, title=msg_title, note=msg)
-        note.save()
+        self.notes.create(title=msg_title, note=msg)
 
     def get_fastq_pair_end_extension(self):
         try:
@@ -462,9 +455,8 @@ class PredictDataset(TimeStampedModel):
 
 
 class PredictDatasetNote(TimeStampedModel):
-
-    dataset = models.ForeignKey(PredictDataset)
-
+    """Notes of background processes"""
+    dataset = models.ForeignKey(PredictDataset, related_name='notes')
     title = models.CharField(max_length=255)
     note = models.TextField()
 
@@ -521,16 +513,11 @@ class ScriptToRun(TimeStampedModel):
 
 class DatasetScriptRun(TimeStampedModel):
 
-    dataset = models.ForeignKey(PredictDataset)
-
+    dataset = models.ForeignKey(PredictDataset, related_name='runs')
     notes = models.TextField(blank=True)
-
     result_received = models.BooleanField(default=False)
-
     result_success = models.BooleanField(default=False)
-
     result_data = models.TextField(blank=True)
-
     md5 = models.CharField(max_length=40, blank=True, db_index=True, help_text='auto-filled on save')
 
     def __str__(self):

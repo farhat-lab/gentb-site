@@ -1,71 +1,88 @@
 {% extends "base.html" %}
-{% load staticfiles %}
-{% load predict_extras %}
+{% load static predict_extras jsonify %}
 
-{% block title %}
-My Datasets - Phthisis Ravens
+{% block title %}My Datasets - Phthisis Ravens{% endblock %}
+ 
+{% block extra_css %}
+  <link href="{% static 'css/heatmap.css' %}" rel="stylesheet">
 {% endblock %}
 
 {% block extra_js %}
+  <script src="{% static 'js/jquery.min.js' %}"></script>
+  <script src="{% static 'd3/d3.v3.js' %}"></script>
+  <script src="{% static 'js/d3.tip.js' %}"></script>
+  <script src="{% static 'js/heatmap.js' %}"></script>
 {% endblock %}
 
 {% block content %}
-
-<div class="row">
+  <div class="row">
     <div class="col-lg-12">
-        Return to <a href="{% url 'view_my_datasets' %}">My Datasets ({{ my_dataset_count }})</a>
+      Return to
+      <a href="{% url 'view_my_datasets' %}">My Datasets</a>
+      <h1>Dataset: <span style="font-weight:normal;">{{ object.title }}</span></h1>
 
-        <h1>Dataset: <span style="font-weight:normal;">{{ dataset.title }}</span></h1>
-
-        {% if not IS_LOGGED_IN %}
-             <p>Please <a href="{% url 'view_login_page' %}">Log In</a> to see your Datasets.</p>
-        {% endif %}
-
-        {% if dataset %}
-
-
-<table class="table table-condensed table-bordered">
-
-     <tr>
-        <th colspan="2">Dataset Information</th>
-    </tr>
-    <tr>
-        <th class="text-primary">Title</th>
-        <td>{{ dataset.title }}</td>
-    </tr>
-    <tr>
-        <th class="text-primary">Status</th>
-        <td>
-            {% if dataset.status.is_error %}
+      {% if object %}
+        <table class="table table-condensed table-bordered">
+          <tr>
+            <th colspan="2">Dataset Information</th>
+          </tr>
+          <tr>
+            <th class="text-primary">Title</th>
+            <td>{{ object.title }}</td>
+          </tr>
+          <tr>
+            <th class="text-primary">Status</th>
+            <td>
+            {% if object.status.is_error %}
                 <span class="label label-warning">Fail</span> &nbsp;
             {% else %}
-                {% if dataset.has_prediction %}
+                {% if object.has_prediction %}
                     <span class="label label-success">OK</span> &nbsp;
                 {% else %}
                     <span class="label label-info">OK</span> &nbsp;
                 {% endif %}
             {% endif %}
-            {{ dataset.status.human_name }} (id: {{ dataset.status.id }})
+            {{ object.status.human_name }} (id: {{ object.status.id }})
         </td>
     </tr>
-    {% if dataset.has_prediction %}
-    <tr>
-        <th class="text-primary">Heat Map</th>
-        <td><a id="lnk_show_hide_heatmap" class="btn btn-default btn-xs">
-            Show prediction heatmap (takes a second or two)</a>
-        <iframe id="id_heatmap_iframe" width="100%" height="600" src="{% url 'view_prediction_heatmap' dataset.md5 %}" style="display:none;cursor:pointer;border:none;" ></iframe></td>
-    </tr>
 
-    {% endif %}
+{% if object.has_prediction %}
+  <tr>
+    <th class="text-primary">Heat Map</th>
+    <td>
+      <div id="htmlwidget_container">
+        <div id="heatmap" class="d3heatmap"></div>
+      </div>
+      <script>
+        $(document).ready(function() {
+          var data = {"rows": null, "cols": null,
+            "matrix": {{ object.get_heatmap|jsonify }}
+          };
+          var options = {
+            "xaxis_height": 80,
+            "yaxis_width": 120,
+            "xaxis_font_size": null,
+            "yaxis_font_size": null,
+            "brush_color": "#0000FF",
+            "show_grid": true,
+            "anim_duration": 500,
+          }
+          heatmap('#heatmap', data, options);
+        });
+      </script>
+    </td>
+  </tr>
+{% endif %}
+
     <tr>
         <th class="text-primary">Description</th>
-        <td>{{ dataset.description|linebreaks }}</td>
+        <td>{{ object.description|linebreaks }}</td>
     </tr>
     <tr>
         <th class="text-primary">File Type</th>
         <td>
-            {{ dataset.file_type|upper }}{% if dataset.is_fastq_file %},
-                {% if dataset.is_fastq_pair_ended %}
+            {{ object.file_type|upper }}{% if object.is_fastq_file %},
+                {% if object.is_fastq_pair_ended %}
                     Pair-end<br />
                 {% else %}
                     Single-end<br />
@@ -73,20 +90,20 @@ My Datasets - Phthisis Ravens
             {% endif %}
         </td>
     </tr>
-    {% if dataset.is_fastq_pair_ended and dataset.dropboxretrievallog %}
+    {% if object.is_fastq_pair_ended and object.dropboxretrievallog %}
     <tr>
         <th class="text-primary">Pair-end Extension
             <br>"." or "_R"</th>
         <td>
-            "{{ dataset.dropboxretrievallog.fastq_pair_end_extension }}"
+            "{{ object.dropboxretrievallog.fastq_pair_end_extension }}"
         </td>
     </tr>
     {% endif %}
     <tr>
         <th class="text-primary">File Names from Dropbox</th>
         <td>
-            {% if dataset.dropboxretrievallog %}
-                {% for fname in dataset.dropboxretrievallog.selected_files %}
+            {% if object.dropboxretrievallog %}
+                {% for fname in object.dropboxretrievallog.selected_files %}
                 ({{ forloop.counter }}) {{ fname }}<br />
                 {% endfor %}
             {% else %}
@@ -98,33 +115,28 @@ My Datasets - Phthisis Ravens
     <tr>
         <th class="text-primary">Local Dataset Directory</th>
         <td>
-            {{ dataset.file_directory }}
+            {{ object.file_directory }}
         </td>
     </tr>
     <tr>
         <th class="text-primary">Local Dataset Directory Contents</th>
         <td>
-            {% if local_directory_err %}
-                <span class="label label-warning">Fail</span> &nbsp;
-                {{ local_directory_err }}
-            {% else %}
-                {% for item in local_directory_contents %}
-                    {% if forloop.first %}
-                        <span class="label label-success">OK</span> &nbsp;<br />
-                    {% endif %}
-                    ({{ forloop.counter }}) {{ item }}<br />
-                {% empty %}
-                    <span class="label label-info">No files</span> &nbsp;
-                    The directory is currently empty.  Have the Dropbox files been
-                    retrieved?
-                {% endfor %}
+          {% for item in object.files %}
+            {% if forloop.first %}
+                <span class="label label-success">OK</span> &nbsp;<br />
             {% endif %}
+            ({{ forloop.counter }}) {{ item }}<br />
+          {% empty %}
+            <span class="label label-info">No files</span> &nbsp;
+            The directory is currently empty.  Have the Dropbox files been
+            retrieved?
+          {% endfor %}
         </td>
     </tr>
     <tr>
         <th class="text-primary">Pipeline Command</th>
         <td>
-            {% if pipeline_command_found %}
+            {% if object.get_pipeline_command.0 %}
                 <span class="label label-info">OK</span> &nbsp;
                 <br />{{ pipeline_command }}
             {% else %}
@@ -135,14 +147,14 @@ My Datasets - Phthisis Ravens
     </tr>
     <tr>
         <th class="text-primary">Created</th>
-        <td>{{ dataset.created }}</td>
+        <td>{{ object.created }}</td>
     </tr>
     <tr>
         <th class="text-primary">Modified</th>
-        <td>{{ dataset.modified }}</td>
+        <td>{{ object.modified }}</td>
     </tr>
 </table>
-{% for script_run in script_runs %}
+{% for script_run in object.runs.all %}
 {% if forloop.first %}<h3>Script Runs</h3>{% endif %}
 
 
@@ -171,7 +183,7 @@ My Datasets - Phthisis Ravens
 {% endfor %}
 
 
-{% for note in dataset_notes %}
+{% for note in object.notes.all %}
 {% if forloop.first %}<h3>Notes</h3>{% endif %}
 
 <div class="panel panel-default">
@@ -190,14 +202,14 @@ My Datasets - Phthisis Ravens
     </tr>
     <tr>
         <th class="text-primary">Name</th>
-        <td>{{ tb_user }}
-            {#{ dataset.middle_name }#}
-            {#{ dataset.tb_user.last_name }#}
+        <td>{{ request.user }}
+            {#{ object.middle_name }#}
+            {#{ object.tb_user.last_name }#}
         </td>
     </tr>
     <tr>
         <th class="text-primary">Affiliation</th>
-        <td>{{ tb_user.affiliation }}</td>
+        <td>{{ request.user.affiliation }}</td>
     </tr>
       <tr>
         <th class="text-primary">Email</th>

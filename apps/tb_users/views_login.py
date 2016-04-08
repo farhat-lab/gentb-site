@@ -9,23 +9,11 @@ from django.contrib.auth import login, logout
 
 from apps.tb_users.forms import TBUserAuthenticationForm
 
-from apps.utils.view_util import get_common_dict, IS_LOGGED_IN_KEY
 from apps.utils.msg_util import *
-
-from apps.basic_pages.views import view_homepage
-
-def view_homepage_just_logged_in(request):
-
-    return view_homepage(request, just_logged_in=True)
-
-
-def view_login_after_logout(request):
-
-    return view_login_page(request, just_logged_out=True)
 
 def view_login_page(request, just_logged_out=False):
 
-    d = get_common_dict(request, 'Log In', login_page=True)
+    #d = get_common_dict(request, 'Log In', login_page=True)
     d['JUST_LOGGED_OUT'] = just_logged_out
 
     # If the person is already logged in, go to the homepage
