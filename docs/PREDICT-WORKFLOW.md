@@ -21,15 +21,15 @@ Overall, the Predict workflow steps are as follows, with notices regarding gaps:
   - The Dropbox link Metadata is checked to see if it contains
     the chosen file types, VCF or FastQ. This is part of the Django forms's
     error check.
-    - Form name: [UploadPredictionDataForm](../gentb_website/tb_website/apps/predict/forms.py#L47)
+    - Form name: [UploadPredictionDataForm](../apps/predict/forms.py#L47)
        - Method: clean() method, see ```get_dropbox_metadata_from_link```
-         - from: ```from apps.dropbox_helper.dropbox_util import get_dropbox_metadata_from_link```
+         - from: ```from apps.dropbox.util import get_dropbox_metadata_from_link```
 - **Actions upon success**
   - Creation of a new ```PredictDataset object``` and related ```DropboxRetrievalLog``` object
     - Includes the creation of a file directory for the ```PredictDataset object```
-        - See [PredictDataset](../gentb_website/tb_website/apps/predict/models.py)
+        - See [PredictDataset](../apps/predict/models.py)
         - Method: ```create_dataset_directory_name```
-  - See [UploadPredictionDataForm](../gentb_website/tb_website/apps/predict/forms.py)
+  - See [UploadPredictionDataForm](../apps/predict/forms.py)
     - Method: get_dataset(tb_user)
 
 ## 2. Confirmation of Predict Information
@@ -40,7 +40,7 @@ Overall, the Predict workflow steps are as follows, with notices regarding gaps:
     - Change PredictDataset status to ```DATASET_STATUS_CONFIRMED```
  - **Actions upon canceling**
     - Delete PredictDataset and the associated file directory
-    - File: [views_upload.py](https://github.com/IQSS/gentb-site/blob/master/gentb_website/tb_website/apps/predict/views_upload.py)
+    - File: [views_upload.py](https://github.com/IQSS/gentb-site/blob/master/apps/predict/views_upload.py)
 
 ## 3. Download Dropbox Files ("cron job")
 
@@ -57,13 +57,13 @@ Overall, the Predict workflow steps are as follows, with notices regarding gaps:
       - The token may be found in the [settings file](https://github.com/IQSS/gentb-site/blob/master/gentb_website/tb_website/tb_website/settings/template_secret_settings.json) under ```DROPBOX_ACCESS_TOKEN```
         - On production, the settings file is named [```secret_settings_prod_hms.json```](https://github.com/IQSS/gentb-site/blob/master/docs/README-SETUP-ORCHESTRA.md#add-production-settings)
     - "Standalone" script that can be used to test the downloading of files from Dropbox links:
-      - [dropbox_retriever.py](https://github.com/IQSS/gentb-site/blob/master/gentb_website/tb_website/apps/dropbox_helper/dropbox_retriever.py)
+      - [dropbox_retriever.py](https://github.com/IQSS/gentb-site/blob/master/gentb_website/tb_website/apps/dropbox/retriever.py)
     - Wrapper object used to run the standalone script above:
-      - [dropbox_retrieval_runner.py](https://github.com/IQSS/gentb-site/blob/master/gentb_website/tb_website/apps/dropbox_helper/dropbox_retrieval_runner.py)
+      - [dropbox_retrieval_runner.py](https://github.com/IQSS/gentb-site/blob/master/gentb_website/tb_website/apps/dropbox/retrieval_runner.py)
     - This "wrapper":
       - Only tries downloads from [PredictDatast objects](https://github.com/IQSS/gentb-site/blob/master/gentb_website/tb_website/apps/predict/models.py)  with a status of [DATASET_STATUS_CONFIRMED](https://github.com/IQSS/gentb-site/blob/master/gentb_website/tb_website/apps/predict/models.py#L31)
       - Uses Dropbox links from [PredictDatast objects](https://github.com/IQSS/gentb-site/blob/master/gentb_website/tb_website/apps/predict/models.py) objects and updates the ```PredictDataset``` object statuses appropriately
-      - Creates associated [DropboxRetrievalLog](https://github.com/IQSS/gentb-site/blob/master/gentb_website/tb_website/apps/dropbox_helper/models.py) objects--each one has an OneToOneField relationship with a  ```PredictDataset```
+      - Creates associated [DropboxRetrievalLog](https://github.com/IQSS/gentb-site/blob/master/gentb_website/tb_website/apps/dropbox/models.py) objects--each one has an OneToOneField relationship with a  ```PredictDataset```
 
 
 ## 4. Run Pipeline ("cron job")
@@ -82,7 +82,7 @@ Preparation for this run includes the creation of a file named feedback.conf whi
     - Constructs the appropriate pipeline command to run (VCF, FastQ single-end, FastQ pair-end, etc)
       - These are dynamically created depending on the data type and file extensions
   - This process is kicked off via a python Popen command--and then left to run without any further checking:
-    - [script_runner_basic.py](https://github.com/IQSS/gentb-site/blob/master/gentb_website/tb_website/apps/script_helper/script_runner_basic.py)
+    - [script_runner_basic.py](https://github.com/IQSS/gentb-site/blob/master/gentb_website/tb_website/apps/predict/script_runner.py)
 
 ## 5. Check for result files
 

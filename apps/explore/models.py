@@ -20,3 +20,4 @@ class ExploreDataFileInfo(TimeStampedModel):
         ordering = ('-created', )
         verbose_name = 'Explore Data File Information'
         verbose_name_plural = verbose_name
+

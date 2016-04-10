@@ -161,23 +161,18 @@ DJANGO_APPS = (
     'django.contrib.sites',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-
-    # Useful template tags:
-    # 'django.contrib.humanize',
-
-    # Admin panel and documentation:
     'django.contrib.admin',
-    # 'django.contrib.admindocs',
 )
 
 # Apps specific for this project go here.
 LOCAL_APPS = (
     'tb_website',
     'apps.tb_users',
-    'apps.script_helper',
     'apps.predict',
-    'apps.dropbox_helper',
-    'apps.explore', # Holds dataverse file ids for Two Ravens
+    'apps.dropbox',
+
+    # Holds dataverse file ids for Two Ravens
+    'apps.explore',
 )
 
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps

@@ -2,7 +2,7 @@ from os.path import dirname, realpath
 import json
 
 from django.test import TestCase
-from apps.dropbox_helper.forms import DropboxRetrievalParamsForm
+from .forms import DropboxRetrievalParamsForm
 
 
 class RetrievalParamsTestCase(TestCase):

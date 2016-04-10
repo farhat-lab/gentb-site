@@ -16,10 +16,10 @@ from django.core.urlresolvers import reverse
 from apps.utils.site_url_util import get_site_url
 from apps.utils.file_patterns import *
 
-from apps.script_helper.script_runner_basic import run_script
 from apps.utils.result_file_info import RESULT_FILE_NAME_DICT,\
             EXPECTED_FILE_DESCRIPTIONS, RESULT_OUTPUT_DIRECTORY_NAME
 
+from .script_runner import run_script
 
 import logging
 LOGGER = logging.getLogger('apps.predict.runner')

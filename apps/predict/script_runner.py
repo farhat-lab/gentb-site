@@ -22,15 +22,14 @@ def run_script(cmd_args, run_test=False):
 
 """
 python manage.py shell
-from apps.script_helper.script_runner_basic import *
+from apps.predict.script_runner import *
 p = run_script(None)
 p.communicate()
-
 
 from subprocess import Popen, PIPE
 cmd = 'echo {0}'.format('{"file1":"this.tab"}')
 
-cmd = 'python /Users/rmp553/Documents/iqss-git/PhthisisRavens/phthisis_website/tb_website/apps/script_helper/test_script.py {0}'.format('{"file1":"this.tab"}')
+cmd = 'python ./apps/script/test_script.py {0}'.format('{"file1":"this.tab"}')
 
 p = Popen(cmd.split(), stdout=PIPE, stderr=PIPE)
 p.communicate()

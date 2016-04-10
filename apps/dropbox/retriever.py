@@ -29,7 +29,7 @@ from apps.utils.file_patterns import GENTB_FILE_PATTERNS, FilePatternHelper
 
 #GENTB_FILE_PATTERNS = ['\.fastq$', '\.fastq\.', '\.vcf$', '\.vcf\.', '\.txt$']
 
-LOGGER = logging.getLogger('apps.dropbox_helper.dropbox_retriever')
+LOGGER = logging.getLogger('apps.dropbox.retriever')
 
 
 class DropboxRetriever(object):

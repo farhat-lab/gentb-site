@@ -10,13 +10,14 @@ from django.core.urlresolvers import reverse
 from jsonfield import JSONField # https://github.com/bradjasper/django-jsonfield
 
 from apps.utils.site_url_util import get_site_url
-from apps.dropbox_helper.forms import DropboxRetrievalParamsForm
 from apps.predict.models import PredictDataset
 from apps.utils.file_patterns import FilePatternHelper,\
                         FASTQ_PAIR_END_EXTENSION_TYPES
 
+from .forms import DropboxRetrievalParamsForm
+
 import logging
-logger = logging.getLogger('apps.dropbox_helper.models')
+logger = logging.getLogger('apps.dropbox.models')
 
 
 class DropboxRetrievalLog(TimeStampedModel):
@@ -115,10 +116,3 @@ class DropboxRetrievalLog(TimeStampedModel):
         # Log a major error
         raise KeyError(f.errors)
 
-"""
-python manage.py shell
-from apps.dropbox_helper.models import *
-dlog = DropboxRetrievalLog.objects.first()
-dlog.get_fastq_extension_type()
-
-"""

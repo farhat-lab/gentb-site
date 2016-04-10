@@ -13,7 +13,6 @@ from apps.utils.msg_util import *
 
 def view_login_page(request, just_logged_out=False):
 
-    #d = get_common_dict(request, 'Log In', login_page=True)
     d['JUST_LOGGED_OUT'] = just_logged_out
 
     # If the person is already logged in, go to the homepage

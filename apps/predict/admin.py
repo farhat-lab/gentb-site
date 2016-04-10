@@ -4,7 +4,8 @@ from django.contrib import admin
 from apps.predict.models import PredictDatasetStatus, PredictDataset,\
             PredictDatasetNote, DatasetScriptRun,\
             ScriptToRun
-from apps.dropbox_helper.models import DropboxRetrievalLog
+
+from apps.dropbox.models import DropboxRetrievalLog
 
 
 class PredictDatasetStatusAdmin(admin.ModelAdmin):

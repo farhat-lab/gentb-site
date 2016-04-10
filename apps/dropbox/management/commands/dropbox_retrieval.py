@@ -6,12 +6,13 @@ Examine existing PredictDataset objects.
 """
 
 from django.core.management.base import BaseCommand, CommandError
+
 from apps.predict.models import PredictDataset
-from apps.dropbox_helper.models import DropboxRetrievalLog
-from apps.dropbox_helper.dropbox_retriever import DropboxRetriever
+from apps.dropbox.models import DropboxRetrievalLog
+from apps.dropbox.retriever import DropboxRetriever
 
 import logging
-LOGGER = logging.getLogger('apps.dropbox_helper.dropbox_retrieval_runner')
+LOGGER = logging.getLogger('apps.dropbox.management.commands.dropbox_retrieval')
 
 class Command(BaseCommand):
     help = """Regular run of new dropbox links:

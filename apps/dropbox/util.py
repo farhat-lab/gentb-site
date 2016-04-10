@@ -1,9 +1,9 @@
 from os.path import join, isdir
 import os
-from apps.dropbox_helper.dropbox_retriever import DropboxRetriever
-from apps.dropbox_helper.models import DropboxRetrievalLog
 from django.conf import settings
 
+from .retriever import DropboxRetriever
+from .models import DropboxRetrievalLog
 
 def get_dropbox_metadata(predict_dataset):
     """

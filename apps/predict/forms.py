@@ -4,10 +4,11 @@ Django forms for adding PredictDataset objects as well as a Confirmation form
 """
 from django.forms import Textarea, HiddenInput, BooleanField, CharField,\
                          ModelForm, Form, ValidationError
-from apps.dropbox_helper.models import DropboxRetrievalLog
+
+from apps.dropbox.models import DropboxRetrievalLog
 from apps.predict.models import PredictDataset
 from apps.utils.file_patterns import FILE_TYPE_FASTQ, FilePatternHelper
-from apps.dropbox_helper.dropbox_util import get_dropbox_metadata_from_link
+from apps.dropbox.util import get_dropbox_metadata_from_link
 import json
 
 class UploadConfirmForm(ModelForm):
