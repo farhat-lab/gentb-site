@@ -42,7 +42,7 @@
                     <span class="icon-bar"></span>
                     <span class="icon-bar"></span>
                 </button>
-                <a class="navbar-brand" href="{% url 'view_homepage' %}">genTB</a>
+                <a class="navbar-brand" href="{% url 'home' %}">genTB</a>
             </div>
             <!-- Collect the nav links, forms, and other content for toggling -->
             <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
@@ -70,7 +70,7 @@
 
                     <center>
                         &copy; {% now "Y" %} genTB. All Rights Reserved
-                        &nbsp;|&nbsp; <a href="{% url 'view_terms_of_use' %}">Terms of Use</a>
+                        &nbsp;|&nbsp; <a href="{% url 'terms' %}">Terms of Use</a>
                         &nbsp;|&nbsp; <a href="mailto:{{ GENTB_CONTACT_EMAIL|safe }}">Contact</a>.<br>
                     </center>
 

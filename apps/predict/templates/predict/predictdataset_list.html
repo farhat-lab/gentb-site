@@ -29,12 +29,12 @@
           {% for ds in object_list %}
             <tr>
               <td>{{ forloop.counter }}</td>
-              <td><a href="{% url 'view_single_dataset' ds.md5 %}">{{ ds.title }}</a></td>
+              <td><a href="{% url 'predict:view_single_dataset' ds.md5 %}">{{ ds.title }}</a></td>
               <td>{{ ds.file_type }}</td>
               <td{% if ds.has_prediction %} class="success"{% endif %}>
                 {{ ds.status.id }} - {{ ds.status.human_name }}
                 {% if dataset.has_prediction %}
-                  <br /><a href="{% url 'view_prediction_heatmap' dataset.md5 %}">prediction heatmap</a>
+                  <br /><a href="{% url 'predict:view_prediction_heatmap' dataset.md5 %}">prediction heatmap</a>
                 {% endif %}
               </td>
               <td>{{ ds.description|truncatewords:20 }}</td>

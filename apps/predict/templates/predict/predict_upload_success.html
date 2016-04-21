@@ -1,9 +1,7 @@
 {% extends "base.html" %}
-{% load staticfiles %}
-{% block title %}
-Predict - genTB
-{% endblock %}
+{% load static %}
 
+{% block title %}Predict{% endblock %}
 
 {% block content %}
 
@@ -31,8 +29,8 @@ Predict - genTB
 
                         <p>Your contribution details are below.</p>
 
-                        <p>Return to the <a href="{% url 'view_homepage' %}">homepage</a> or
-                            <a href="{% url 'view_predict_page' %}">upload another file for prediction</a>.</p>
+                        <p>Return to the <a href="{% url 'home' %}">homepage</a> or
+                            <a href="{% url 'predict:upload' %}">upload another file for prediction</a>.</p>
                     </div>
 
 

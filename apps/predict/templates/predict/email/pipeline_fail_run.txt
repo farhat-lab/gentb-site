@@ -4,7 +4,7 @@ Sorry! The processing of your file has failed.
 
 We are sorry for any inconvenience, we are looking into the error and will email you about next steps shortly.
 
-Link to your dataset details page: {{ SITE_URL }}{% url 'view_single_dataset' dataset.md5 %}
+Link to your dataset details page: {{ SITE_URL }}{% url 'predict:view_single_dataset' dataset.md5 %}
 
 -----------
 Contact

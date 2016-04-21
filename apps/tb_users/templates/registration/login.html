@@ -1,17 +1,13 @@
 {% extends "base.html" %}
-{% load staticfiles %}
-{% block title %}
-{{ title }} - Phthisis Ravens
-{% endblock %}
+{% load static %}
+
+{% block title %}{{ title }}{% endblock %}
 
 {% block content %}
 
         <div class="row">
             <div class="col-lg-12">
                 <h1>{{ title }}</h1>
-
-
-
             </div>
         </div>
         <div class="row">
@@ -24,16 +20,16 @@
                 {% if ALREADY_LOGGED_IN %}
                     <div class="alert alert-info" role="alert">
                         <p>You are already logged in as <b>{{ username }}</b></p>
-                        <p>Please continue to the <a href="{% url 'view_homepage' %}">home page</a></p>
+                        <p>Please continue to the <a href="{% url 'home' %}">home page</a></p>
                     </div>
 
                 {% else %}
                     <p>To log in, please use the sign form below.
                      &nbsp; </p>
-                    {% include "tb_users/login_form.html" %}
+                    {% include "registration/login_form.html" %}
 
                     <p><br />&nbsp;
-                        <i>(I forgot my <a href="{% url 'password_reset' %}">password</a>)</i>
+                        <i>(I forgot my <a href="{% url 'users:password_reset' %}">password</a>)</i>
                     <br />&nbsp;</p>
                 {% endif %}
             </div>

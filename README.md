@@ -42,7 +42,7 @@ A basic view/template combination.  The template includes embedded [Dataverse Wi
 
 A basic view/template combination.  The maps are actually hosted by a Shiny application and embedded in an iframe.  The url to the iframe is written directly into the template.
 
-  - View: "view_map_page" [tb_website/apps/maps/views.py](tb_website/apps/maps/views.py)
+  - View: "map" [tb_website/apps/maps/views.py](tb_website/apps/maps/views.py)
   - Template: [tb_website/templates/maps/basic_map.html](tb_website/templates/maps/basic_map.html)
 
 - **Note**: The Shiny app url is currently https://hmdc.shinyapps.io/genTB and part of the IQSS Shinyapps.io service
@@ -74,7 +74,7 @@ These values may be supplied via the Django admin:
 
 The view/template files may be found here:
 
-  - View: "view_explore_page" [tb_website/apps/basic_pages/views.py](tb_website/apps/basic_pages/views.py)
+  - View: "explore:home" [tb_website/apps/basic_pages/views.py](tb_website/apps/basic_pages/views.py)
   - Template: [tb_website/templates/explore.html](tb_website/templates/explore.html)
 
 ![Explore Page screenshot](screen-shots/genTB-explore.png?raw=true "genTB Explore page")
@@ -83,7 +83,7 @@ The view/template files may be found here:
 
 A basic view/template combination
 
-  - View: "view_about_page" [tb_website/apps/basic_pages/views.py](tb_website/apps/basic_pages/views.py)
+  - View: "about" [tb_website/apps/basic_pages/views.py](tb_website/apps/basic_pages/views.py)
   - Template: [tb_website/templates/about.html](tb_website/templates/about.html)
 
 ![about page screenshot](screen-shots/genTB-about.png?raw=true "genTB About Page")

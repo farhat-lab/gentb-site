@@ -1,25 +1,25 @@
     <li{% if predict_page %} class="active"{% endif %}>
-        <a href="{% url 'view_predict_page' %}">Predict</a>
+        <a href="{% url 'predict:upload' %}">Predict</a>
     </li>
     <li{% if data_page %} class="active"{% endif %}>
-        <a href="{% url 'view_data_page' %}">Data</a>
+        <a href="{% url 'share' %}">Data</a>
     </li>
     <li{% if map_page %} class="active"{% endif %}>
-        <a href="{% url 'view_map_page' %}">Map</a>
+        <a href="{% url 'maps:map' %}">Map</a>
     </li>
     <li{% if explore_page %} class="active"{% endif %}>
-        <a href="{% url 'view_explore_page' %}">Explore</a>
+        <a href="{% url 'explore:home' %}">Explore</a>
     </li>
     <li{% if about_page %} class="active"{% endif %}>
-        <a href="{% url 'view_about_page' %}">About</a>
+        <a href="{% url 'about' %}">About</a>
     </li>
 
     {% if not request.user.is_authenticated %}
         <li{% if signup_page %} class="active"{% endif %}>
-            <a href="{% url 'view_signup_page' %}">Sign Up</a>
+            <a href="{% url 'users:view_signup_page' %}">Sign Up</a>
         </li>
         <li{% if login_page %} class="active"{% endif %}>
-        <a href="{% url 'view_login_page' %}">Log In</a>
+        <a href="{% url 'users:login' %}">Log In</a>
         </li>
     {% else %}
     <li class="dropdown">
@@ -29,7 +29,7 @@
             <!-- my datasets page -->
             {% if request.user.datasets.count %}
             <li{% if view_my_datasets %} class="active"{% endif %}>
-                <a href="{% url 'view_my_datasets' %}">My Datasets ({{ request.user.datasets.count }})</a>
+                <a href="{% url 'predict:view_my_datasets' %}">My Datasets ({{ request.user.datasets.count }})</a>
             </li>
             {% endif %}
 
@@ -40,7 +40,7 @@
             {% endif %}
 
             <!-- log out -->
-            <li{% if logout_page %} class="active"{% endif %}><a href="{% url 'view_logout_page' %}">Log Out</a></li>
+            <li{% if logout_page %} class="active"{% endif %}><a href="{% url 'users:logout' %}">Log Out</a></li>
 
         </ul>
       </li>

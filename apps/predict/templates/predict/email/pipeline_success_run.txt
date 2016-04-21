@@ -2,7 +2,7 @@
 
 Your dataset has been processed.  The details are below:
 
-Link to the details page: {{ SITE_URL }}{% url 'view_single_dataset' dataset.md5 %}
+Link to the details page: {{ SITE_URL }}{% url 'predict:view_single_dataset' dataset.md5 %}
 
 -----------
 Processing Run

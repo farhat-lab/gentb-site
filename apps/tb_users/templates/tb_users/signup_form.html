@@ -3,7 +3,7 @@
     <div class="alert alert-danger" role="alert">Validation Error - Required fields were missed or there was a validation error. Please scroll down to see details. </div>
 {% endif %}
 
-<form action="{% url 'view_signup_page' %}" enctype="multipart/form-data" method="post">
+<form action="{% url 'users:view_signup_page' %}" enctype="multipart/form-data" method="post">
     {% csrf_token %}
 
     {% for hidden in signup_form.hidden_fields %}

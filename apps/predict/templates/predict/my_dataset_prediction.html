@@ -13,12 +13,12 @@ My Datasets - Phthisis Ravens
 
 <div class="row">
     <div class="col-lg-12">
-        Return to <a href="{% url 'view_my_datasets' %}">My Datasets ({{ my_dataset_count }})</a>
+        Return to <a href="{% url 'predict:view_my_datasets' %}">My Datasets ({{ my_dataset_count }})</a>
 
         <h1>Dataset: <span style="font-weight:normal;">{{ dataset.title }}</span></h1>
 
         {% if not IS_LOGGED_IN %}
-             <p>Please <a href="{% url 'view_login_page' %}">Log In</a> to see your Datasets.</p>
+             <p>Please <a href="{% url 'users:login' %}">Log In</a> to see your Datasets.</p>
         {% endif %}
 
 {% if dataset %}

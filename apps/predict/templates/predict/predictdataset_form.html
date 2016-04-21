@@ -21,7 +21,7 @@
                     </div>
                 {% endif %}
 
-                <p>To examine the frequency of individual mutations by drug resistance you can consult the <a href="{% url 'view_map_page' %}">Map function</a> for country specific data, and the <a href="{% url 'view_explore_page' %}">Explore function</a>  to examine their frequency in all of the data.</p>
+                <p>To examine the frequency of individual mutations by drug resistance you can consult the <a href="{% url 'maps:map' %}">Map function</a> for country specific data, and the <a href="{% url 'explore:home' %}">Explore function</a>  to examine their frequency in all of the data.</p>
 
                     <p>To speed up the upload process please:
                         <ol>
@@ -42,7 +42,7 @@
   </div>
 {% endif %}
 
-<form action="{% url 'view_predict_page' %}" enctype="multipart/form-data" method="post">
+<form action="{% url 'predict:upload' %}" enctype="multipart/form-data" method="post">
     {% csrf_token %}
 
     {% for hidden in form.hidden_fields %}

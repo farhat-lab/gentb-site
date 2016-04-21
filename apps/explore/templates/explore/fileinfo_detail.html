@@ -1,34 +1,26 @@
 {% extends "base.html" %}
-{% load staticfiles %}
+{% load static %}
 
-{% block title %}
-Explore - genTB
-{% endblock %}
+{% block title %}Explore{% endblock %}
+
 {% block extra_css %}
 <style>
-h1.right {
-   display: inline-block;
-   text-align: right;
-   width: 100%;
-}
-
-iframe{
-	height: 720px;
-	width: 100%;
-}
-
+  iframe{
+    height: 720px;
+    width: 100%;
+  }
 </style>
 {% endblock %}
-{% block content %}
 
+{% block content %}
 		<div class="row">
 		    <div class="col-xs-12"><!-- Info row -->
 		        <h1 class="page-header">Explore <small>interactively analyze our project data.</small></h1>
 
                 <p>For a <a href="https://youtu.be/KsOJx-SU14s" target="_blank">demo video</a> of this tool, please <a href="https://youtu.be/KsOJx-SU14s" target="_blank">click here</a>.</p>
 
-                    {% if explore_link_info %}
-                        <p><a href="{{ explore_link_info.codebook_file_url }}" class="btn btn-primary">Open Codebook</a></p>
+                    {% if object %}
+                        <p><a href="{{ object.codebook_file_url }}" class="btn btn-primary">Open Codebook</a></p>
                     {% else %}
                         <div class="alert alert-danger" role="alert">
                             Sorry! An Open Codebook  Link is not available.
@@ -40,8 +32,8 @@ iframe{
         </div>
         <div class="row">
             <div class="col-xs-12"><!-- Two Ravens Iframe row -->
-                {% if explore_link_info %}
-                    <iframe src="{{ explore_link_info.two_ravens_url }}"></iframe>
+                {% if object %}
+                    <iframe src="{{ object.two_ravens_url }}"></iframe>
                 {% else %}
                     <div class="alert alert-danger" role="alert">
                         Sorry! An Explore Link is not available.

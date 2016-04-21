@@ -93,7 +93,7 @@ class SignUpForm(forms.ModelForm):
         #password = forms.CharField(widget=forms.PasswordInput())
 
 
-class TBUserAuthenticationForm(AuthenticationForm):
+class LoginForm(AuthenticationForm):
 
     def confirm_login_allowed(self, user):
         """
@@ -117,10 +117,11 @@ class TBUserAuthenticationForm(AuthenticationForm):
             )
 
     def __init__(self, *args, **kwargs):
-        super(TBUserAuthenticationForm, self).__init__(*args, **kwargs)
+        super(LoginForm, self).__init__(*args, **kwargs)
 
         # Add additional error message
-        self.error_messages['not_tbuser'] = 'Sorry!  You are not a TBUser.  Please contact the administrator'
+        self.error_messages['not_tbuser'] = 'Sorry! You are not a TBUser. '\
+                                            'Please contact the administrator'
 
 
 def get_signup_form_test_data():

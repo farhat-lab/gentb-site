@@ -148,7 +148,8 @@ MIDDLEWARE_CLASSES = (
 ########## URL CONFIGURATION
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#root-urlconf
 ROOT_URLCONF = '%s.urls' % SITE_NAME
-LOGIN_URL = 'view_login_page'
+LOGIN_URL = 'users:login'
+LOGIN_REDIRECT_URL = '/'
 ########## END URL CONFIGURATION
 
 

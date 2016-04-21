@@ -9,7 +9,6 @@ from model_utils.models import TimeStampedModel
 class TBUser(models.Model):
     user = models.OneToOneField(User)
     affiliation = models.CharField(max_length=255)
-    #is_activated = models.BooleanField(default=False)
 
     md5 = models.CharField(max_length=40, blank=True, db_index=True, help_text='auto-filled on save')
 

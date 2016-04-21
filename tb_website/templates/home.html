@@ -9,7 +9,7 @@
         <div class="alert alert-success" role="alert">
             <p>Welcome, you are now logged in as <b>{{ username }}</b></p>
             {% if my_dataset_count and my_dataset_count > 0 %}
-                  <p>View your <a href="{% url 'view_my_datasets' %}">{{ my_dataset_count }} dataset{{ my_dataset_count|pluralize }}</a></p>
+                  <p>View your <a href="{% url 'predict:view_my_datasets' %}">{{ my_dataset_count }} dataset{{ my_dataset_count|pluralize }}</a></p>
             {% endif %}
         </div>
         {% endcomment %}
@@ -19,7 +19,7 @@
             <span style="font-size:350%;">Translational Genomics of Tuberculosis</span>
 <p>genTB is a genomics based analysis tool for <i>Mycobacterium tuberculosis</i> data exploration that offers four main features to clinicians and researchers: a method to share and cite data and how it was obtained, the prediction of resistance based on genotype, geographic data mapping, and a user friendly statistical analysis tool.</p>
 
-            <p><a href="{% url 'view_about_page' %}" class="btn btn-primary btn-large">Learn More</a>
+            <p><a href="{% url 'about' %}" class="btn btn-primary btn-large">Learn More</a>
             </p>
         </header>
 
@@ -39,10 +39,10 @@
               <div class="col-md-3 col-sm-6 hero-feature">
                 <div class="thumbnail">
                     <center><h4>Predict resistance based <br>on genotypic data</h4></center>
-                    <a href="{% url 'view_predict_page' %}"><img src="{% static 'images/predict.png' %}" alt=""></a>
+                    <a href="{% url 'predict:upload' %}"><img src="{% static 'images/predict.png' %}" alt=""></a>
                     <div class="caption">
                         <p class="text-center">
-                            <a href="{% url 'view_predict_page' %}" class="btn btn-primary">Run Predictions</a>
+                            <a href="{% url 'predict:upload' %}" class="btn btn-primary">Run Predictions</a>
                         </p>
                     </div>
                 </div>
@@ -52,10 +52,10 @@
             <div class="col-md-3 col-sm-6 hero-feature">
                 <div class="thumbnail">
                     <center><h4>Contribute your data <br>to this project</h4></center>
-                    <a href="{#% url 'view_data_page' %#}"><img src="{% static 'images/share.png' %}" alt=""></a>
+                    <a href="{#% url 'predict:view_data_page' %#}"><img src="{% static 'images/share.png' %}" alt=""></a>
                     <div class="caption">
                         <p class="text-center">
-                            <a href="{#% url 'view_data_page' %#}" class="btn btn-primary">Share Your Data</a>
+                            <a href="{#% url 'predict:view_data_page' %#}" class="btn btn-primary">Share Your Data</a>
                         </p>
                     </div>
                 </div>
@@ -64,10 +64,10 @@
             <div class="col-md-3 col-sm-6 hero-feature">
                 <div class="thumbnail">
                     <center><h4>Visualize impacts and <br>strains globally</h4></center>
-                    <a href="{% url 'view_map_page' %}"><img src="{% static 'images/map.png' %}" alt=""></a>
+                    <a href="{% url 'maps:map' %}"><img src="{% static 'images/map.png' %}" alt=""></a>
                     <div class="caption">
                         <p class="text-center">
-                            <a href="{% url 'view_map_page' %}" class="btn btn-primary">Start Mapping</a>
+                            <a href="{% url 'maps:map' %}" class="btn btn-primary">Start Mapping</a>
                         </p>
                     </div>
                 </div>
@@ -76,10 +76,10 @@
             <div class="col-md-3 col-sm-6 hero-feature">
                 <div class="thumbnail">
                     <center><h4>Interactively analyze our <br>project data</h4></center>
-                    <a href="{% url 'view_explore_page' %}"><img src="{% static 'images/explore.png' %}" alt=""></a>
+                    <a href="{% url 'explore:home' %}"><img src="{% static 'images/explore.png' %}" alt=""></a>
                     <div class="caption">
                         <p class="text-center">
-                            <a href="{% url 'view_explore_page' %}" class="btn btn-primary">Explore Our Data</a>
+                            <a href="{% url 'explore:home' %}" class="btn btn-primary">Explore Our Data</a>
                         </p>
                     </div>
                 </div>
@@ -142,7 +142,7 @@
             <div class="col-md-6 portfolio-item">
                 <p><b>Terms of Use:</b></p>
 
-                {% include "terms_of_use/terms-of-use.html" %}
+                {% include "terms-of-use.html" %}
 
 
             </div>

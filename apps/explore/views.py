@@ -7,6 +7,8 @@ from django.views.generic import DetailView
 from .models import ExploreDataFileInfo
 
 class FirstExplorePage(DetailView):
+    template_name = "explore/fileinfo_detail.html"
+
     def get_object(self):
         return ExploreDataFileInfo.objects.filter(active=True).first()
 
