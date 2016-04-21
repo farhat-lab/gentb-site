@@ -385,6 +385,18 @@ function heatmap(selector, data, options) {
         .on("mouseenter", function() {
           tip.style("display", "block");
         })
+        .on("click", function() {
+          if(options['on_click']) {
+            var offsetX = d3.event.offsetX;
+            var offsetY = d3.event.offsetY;
+
+            var col = Math.floor(x.invert(offsetX));
+            var row = Math.floor(y.invert(offsetY));
+            var datum = merged[row*cols + col];
+
+            options['on_click'](d3.event.target, col, data.cols[col], row, data.rows[row], datum);
+          }
+        })
         .on("mousemove", function() {
           var e = d3.event;
           var offsetX = d3.event.offsetX;

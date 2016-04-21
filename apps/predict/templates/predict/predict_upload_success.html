@@ -39,20 +39,7 @@
                 {% include "predict/success_uploaded_info_table.html" %}
             {% endif %}
 
-
-
-            {% comment %}
-                    {% include "share/r_script_results.html" %}
-                    {% if shared_file_info %}
-                    {% endif %}
-            {% endcomment %}
-
             </div>
             <div class="col-md-6" id="d3-target-div" style="padding-left:60px;"></div>
         </div>
-        {% comment %}
-            <script type="text/javascript" src="{% static 'd3/d3.v3.min.js' %}"></script>
-            <script type="text/javascript" src="{% static 'js/app.js' %}"></script>
-        {% endcomment %}
-
 {% endblock %}

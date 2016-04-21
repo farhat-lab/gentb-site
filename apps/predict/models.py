@@ -294,6 +294,21 @@ class PredictDataset(TimeStampedModel):
     def get_file_patterns(self):
         return FilePatternHelper.get_file_patterns_for_dropbox(self.file_type)
 
+    def make_scatter(self, cols, data):
+        regions = defaultdict(list)
+        for gene in data:
+            if gene:
+                region = gene.split("_")[-1].lower()
+                regions[region].append(gene)
+
+        for x, region in enumerate(cols):
+            ret = {"x": x, "y": 0, "size": 5, "tip": ["No genes"]}
+            if region in regions:
+                ret["y"] = len(regions[region])
+                ret["size"] = 9
+                ret["tip"] = regions[region]
+            yield ret
+
     def get_heatmap(self):
         data = None
         maf = os.path.join(self.file_directory, 'output', 'matrix.json')
@@ -310,6 +325,29 @@ class PredictDataset(TimeStampedModel):
             if row[1] not in ret['cols']:
                 ret['cols'].append(row[1])
         ret['dim'] = [len(ret['rows']), len(ret['cols'])]
+
+        # XXX This shouldn't be fixed here? Load from csv?
+        cols = ["katG", "inhA-promoter", "embB", "inhA", "iniB", "kasA", "ahpC", "embAB-promoter", "fabG1", "ndh", "oxyR", "rpoB", "gid"]
+        lcols = [a.lower() for a in cols]
+
+        # First key is sample, second is mutation, third is important or other
+        output = defaultdict(lambda: defaultdict(lambda: [None] * 2))
+        for series, row in enumerate(data[1:]):
+            for key in row:
+                for col, datum in enumerate(zip(*row[key])):
+                    plot = {
+                        "key": ["Important", "Other"][series],
+                        "color": ["#f00", "#84e"][series],
+                        "yAxis": "1",
+                        "values": list(self.make_scatter(lcols, datum)),
+                    }
+                    if plot["values"]:
+                        output[key][col][series] = plot
+
+        ret['scatter'] = {
+          'cols': cols,
+          'data': output,
+        }
         return ret
 
     def user_name(self):
