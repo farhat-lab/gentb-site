@@ -18,6 +18,12 @@
   stroke-width: 0.5px;
 
 }
+.d3heatmap rect.selected {
+  stroke-width: 4px !important;
+  stroke: #c88;
+  fill: #ee4;
+  fill-opacity: 1.0 !important;
+}
 .d3heatmap .domain {
   fill: none;
   stroke: none;

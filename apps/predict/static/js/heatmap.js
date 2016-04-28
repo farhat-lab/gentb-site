@@ -1,3 +1,80 @@
+
+function scatter_plot(cols, data) {
+  /*  
+   * The idea here is to update an existing plot with new data.
+   */
+  var svg = d3.select('#scatter svg');
+
+  svg[0][0].__data__ = data;
+  var nvChart = svg[0][0].__chart__;
+
+  nvChart.xAxis
+      .axisLabel('Genetic Region')
+      .tickFormat(function(d) { return cols[d]; })
+      .tickValues([0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21])
+      .rotateLabels(-45);
+
+  svg.data([data]).transition().duration(500).call(nvChart);
+  nv.utils.windowResize(nvChart.update);
+}
+
+function make_heatmap(data, heatmap_id, scatter_id) {
+  var scat = data["matrix"]["scatter"];
+  var options = {
+    "xaxis_height": 80,
+    "yaxis_width": 120,
+    "xaxis_font_size": null,
+    "yaxis_font_size": null,
+    "brush_color": "#0000FF",
+    "show_grid": true,
+    "anim_duration": 500,
+    "on_click": function(elem, x, x_label, y, y_label, datum) {
+      $('.datapt.selected').attr('class', 'datapt');
+      $(elem).attr('class', 'datapt selected');
+      $('#scatter_title').text('Plot for: ' + x_label + ', ' + y_label);
+      scatter_plot(scat.cols, scat.data[y_label][x]);
+    },
+  }
+  heatmap(heatmap_id, data, options);
+
+  nv.addGraph(function() {
+    var data = Array();
+    var chart = nv.models.scatterChart()
+      .yDomain([0, 4]);
+
+    var width = 1000;
+    var height = 300;
+
+    chart.margin({top: 20, right: 60, bottom: 60, left: 60});
+    chart.height(height);
+    chart.width(width);
+    chart.yAxis.scale(100).orient("left")
+	.axisLabel('Number of mutations')
+	.tickFormat(d3.format("d"))
+	.tickValues([0,1,2,3,4,5]);
+
+    chart.showLegend(true);
+
+    var svg = d3.select(scatter_id + ' svg')
+	.attr('perserveAspectRatio', 'xMinYMid')
+	.attr('width', width)
+	.attr('height', height)
+	.datum(data)
+	.attr('viewBox', '0 0 ' + width + ' ' + height)
+	.transition().duration(1200)
+	.call(chart);
+
+    chart.tooltip.contentGenerator(function (data) {
+      ret = "<table>";
+      $.each(data.point.tip, function(x, value) {
+	ret += "<tr><th align=\"right\">" + value + "</th></tr>";
+      });
+      return ret + "</table>";
+    });
+    svg[0][0].__chart__ = chart;
+  });
+}
+
 function heatmap(selector, data, options) {
   var merged = [];
   for (var i = 0; i < data.matrix.data.length; i++) {
@@ -381,6 +458,8 @@ function heatmap(selector, data, options) {
     if(brush.event) {
       brushG.call(brush.event);
     }
+    brushG.select("rect.datapt")
+
     brushG.select("rect.background")
         .on("mouseenter", function() {
           tip.style("display", "block");
@@ -392,9 +471,11 @@ function heatmap(selector, data, options) {
 
             var col = Math.floor(x.invert(offsetX));
             var row = Math.floor(y.invert(offsetY));
-            var datum = merged[row*cols + col];
+            var index = row * cols + col;
 
-            options['on_click'](d3.event.target, col, data.cols[col], row, data.rows[row], datum);
+            var rect = $(svg[0]).children('rect.datapt')[row*cols + col];
+
+            options['on_click'](rect, col, data.cols[col], row, data.rows[row], merged[index]);
           }
         })
         .on("mousemove", function() {

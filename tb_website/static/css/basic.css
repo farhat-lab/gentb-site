@@ -1,0 +1,5 @@
+/*! project specific CSS goes here. */
+
+*[data-toggle=tooltip] {
+  cursor: pointer;
+}
