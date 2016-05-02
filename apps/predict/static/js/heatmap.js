@@ -255,18 +255,19 @@ function heatmap(selector, data, options) {
     opts.xclust_height = 0;
   }
   
+  // Change axis location here, by shifting it's size, then it's grid position.
   var gridSizer = new GridSizer(
-    [opts.yclust_width, "*", opts.yaxis_width],
+    [opts.yclust_width, opts.yaxis_width, "*"],
     [opts.xclust_height, "*", opts.xaxis_height],
     opts.width,
     opts.height
   );
 
-  var cBounds = gridSizer.getCellBounds(1, 1);
+  var cBounds = gridSizer.getCellBounds(2, 1);
   var colDendBounds = gridSizer.getCellBounds(1, 0);
   var rowDendBounds = gridSizer.getCellBounds(0, 1);
-  var yBound = gridSizer.getCellBounds(2, 1);
-  var xBound = gridSizer.getCellBounds(1, 2);
+  var yBound = gridSizer.getCellBounds(1, 1);
+  var xBound = gridSizer.getCellBounds(2, 2);
 
   var rd = el.select('svg.rowDend');
   var cd = el.select('svg.colDend');
@@ -513,6 +514,10 @@ function heatmap(selector, data, options) {
   }
 
   function axisLabels(svg, data, rotated, width, height, padding) {
+    if(!rotated) {
+      // Used for axis on the left instead of right.
+      svg.attr("transform", "translate(" + (width - (padding * 2)) + ", 0)");
+    }
     svg = svg.append('g');
 
     // The data variable is either cluster info, or a flat list of names.
@@ -532,7 +537,7 @@ function heatmap(selector, data, options) {
         .rangeBands([0, rotated ? width : height]);
     var axis = d3.svg.axis();
     axis.scale(scale);
-    axis.orient(rotated ? "bottom" : "right");
+    axis.orient(rotated ? "bottom" : "left");
     //axis.outerTickSize(0);
     axis.tickPadding(padding);
     axis.tickValues(leaves);
@@ -605,7 +610,6 @@ function heatmap(selector, data, options) {
       tAxisNodes.call(axis);
       // Set text-anchor on the non-transitioned node to prevent jumpiness
       // in RStudio Viewer pane
-      axisNodes.selectAll("text").style("text-anchor", "start");
       tAxisNodes.selectAll("g")
           .style("opacity", function(d, i) {
             if (i >= _.extent[0][dim] && i < _.extent[1][dim]) {
@@ -614,9 +618,6 @@ function heatmap(selector, data, options) {
               return 0;
             }
           });
-      tAxisNodes
-        .selectAll("text")
-          .style("text-anchor", "start");
       mouseTargets.transition().duration(opts.anim_duration).ease('linear')
           .call(layoutMouseTargets)
           .style("opacity", function(d, i) {
