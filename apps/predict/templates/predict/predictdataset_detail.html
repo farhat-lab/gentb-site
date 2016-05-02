@@ -61,8 +61,9 @@
 
 {% if object.has_prediction %}
   <tr>
-    <th class="text-primary">Selected Gene Mutations
-      <i class="glyphicon glyphicon-info-sign" data-toggle="tooltip" title="Colors more towards the red spectrum represent a higher probability of resistance, colors more blue represent less evidence for resistance. Please note that some error is expected in these predicted probabilities. Hovering over each box corresponding to each strain/drug combination displays the predicted probability of resistance as well as the false positive resistance rate ( resistance probability being falsely >50%), and the false negative resistance rate (resistance probability being falsely <50%). Clicking on each box displays a plot of the mutations contributing to resistance prediction (see minimal list of predictive mutations Farhat et al. AJRCCM 2016)"></i>
+    <th class="text-primary">Selected Mutations
+      <i class="glyphicon glyphicon-question-sign" data-toggle="tooltip" title="More red represents a higher probability of resistance. More blue represent less evidence for resistance. Hovering over each box displays the predicted probability of resistance, false positive resistance rate and the false negative resistance rate. Clicking on each box displays a plot of the mutations contributing to resistance prediction."></i>
+      <i class="glyphicon glyphicon-info-sign" data-toggle="tooltip" title="See minimal list of predictive mutations in Farhat et al. AJRCCM 2016"></i>
     </th>
     <td>
       <div id="heatmap" class="d3heatmap"></div>
