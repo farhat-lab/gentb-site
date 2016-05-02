@@ -86,7 +86,7 @@ class PredictDataset(TimeStampedModel):
         return self.title
 
     def get_absolute_url(self):
-        return reverse('view_single_dataset', kwargs=dict(slug=self.md5))
+        return reverse('predict:view_single_dataset', kwargs=dict(slug=self.md5))
 
     @property
     def files(self):
@@ -541,7 +541,7 @@ class DatasetScriptRun(TimeStampedModel):
 
         slug = {'slug': self.md5}
         callback_url = get_site_url(for_internal_callback=True) + \
-                reverse('view_dataset_run_notification', kwargs=slug)
+                reverse('predict:view_dataset_run_notification', kwargs=slug)
 
         return dict(
              dataset_id=pk,

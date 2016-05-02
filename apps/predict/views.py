@@ -35,7 +35,7 @@ class UploadView(PredictMixin, CreateView):
         return {'status': PredictDataset.STATUS_NOT_READY, 'user': self.request.user}
 
     def get_success_url(self):
-        return reverse('view_predict_upload_step2_confirm', kwargs=dict(slug=self.object.md5))
+        return reverse('predict:view_predict_upload_step2_confirm', kwargs=dict(slug=self.object.md5))
 
 
 class UploadConfirm(PredictMixin, UpdateView):
