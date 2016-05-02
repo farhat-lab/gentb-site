@@ -9,30 +9,8 @@ arg <- commandArgs(trailingOnly = TRUE)
 #aa <- Sys.time()
 
 library(foreign)
-library(jsonlite, quietly=TRUE)
-suppressPackageStartupMessages(library("randomForest"))
-library(htmlwidgets, quietly=TRUE)
-library(reshape2, quietly=TRUE)
-library(d3heatmap, quietly=TRUE)
-library(colorRamps, quietly=TRUE)
-
-
-create_heatmap <- function(file_json) {
-  l <- fromJSON(txt = readLines(file_json))
-  d <- data.frame(l[[1]])[, 1:3]
-  names(d) <- c("strain", "drug","probability_of_resistance")
-  dd <- dcast(d, drug ~ strain)
-  rownames(dd) <- dd$drug
-  for (j in 2:ncol(dd)) {
-    dd[, j] <- as.numeric(dd[, j])
-  }  
-  dd <- dd[, -1]
-  dd <- t(dd)
-  dd <- as.data.frame(dd)
-  druglist <- c('inh','rif','pza', 'emb','str','eth','kan', 'cap', 'amk', 'cip', 'levo', 'oflx', 'pas') 
-  dd <- dd[druglist, ]
-  return(d3heatmap(dd, dendrogram = NULL, Rowv = FALSE, Colv = FALSE, colors = colorRamps::matlab.like(10)))
-}
+library(jsonlite, quietly=TRUE, lib.loc="/home/mo131/website/data/Rlib/R.2.15.3.lib")
+suppressPackageStartupMessages(library("randomForest", lib.loc="/home/mo131/website/data/Rlib/R.2.15.3.lib"))
 
 predictfunction<-function(filename){
   set.seed(5414)
@@ -96,8 +74,6 @@ predictfunction<-function(filename){
   ## Save JSON file
   file_noext <- substr(filename, 1, nchar(filename) - 4)
   cat(toJSON(l, pretty = TRUE), "\n", file = paste0(file_noext, ".json"))
-  #h<-create_heatmap(paste0(file_noext, ".json"))
-  #htmlwidgets::saveWidget(h, paste0(file_noext, ".html"))
   
   #return(h)
   #return(important)
