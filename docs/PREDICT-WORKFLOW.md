@@ -94,7 +94,7 @@ Preparation for this run includes the creation of a file named feedback.conf whi
 
 The process is:
   1. As a last step the cluster script runs this python program:
-    - [run_feedback.py](https://github.com/IQSS/gentb-site/blob/master/apps/predict/predict_pipeline/run_feedback.py)
+    - [run_feedback.py](https://github.com/IQSS/gentb-site/blob/master/apps/predict/pipeline/run_feedback.py)
     - Note: This program is created in the step 4 above and placed in the file directory for the PredictDataset.  It includes information specific to this pipeline run.
   2. This script does the following:
     1. Makes a simple (somewhat naive) check to see:

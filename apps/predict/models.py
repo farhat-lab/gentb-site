@@ -26,7 +26,7 @@ LOGGER = logging.getLogger('apps.predict.runner')
 
 VCF_ANALYSIS_SCRIPT = 'analyseVCF.pl'
 FASTQ_ANALYSIS_SCRIPT = 'analyseNGS.pl'
-SCRIPT_DIR = join(settings.SITE_ROOT, 'apps', 'predict', 'predict_pipeline')
+SCRIPT_DIR = join(settings.SITE_ROOT, 'apps', 'predict', 'pipeline')
 
 
 class PredictDatasetStatus(models.Model):
@@ -561,6 +561,7 @@ class DatasetScriptRun(TimeStampedModel):
 
         if self.result_received:
             if self.result_success:
+                self.dataset.check_for_prediction()
                 self.dataset.set_status_processing_success()
             else:
                 self.dataset.set_status_processing_failed()
