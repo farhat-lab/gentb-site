@@ -269,6 +269,7 @@ class PredictDataset(TimeStampedModel):
         full_args = command_to_run.split()
         print ('full_args', full_args)
         run_script(full_args)
+        return (True, "DONE")
 
     def record_error(self, msg_title, msg):
         """
