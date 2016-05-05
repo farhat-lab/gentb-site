@@ -35,6 +35,7 @@ class CallbackMixin(object):
     def render_to_response(self, context, **kw):
         """Return a json object instead of a template"""
         context.pop('view', None)
-        context['form'] = RemoteForm(context['form']).as_dict()
+        if 'form' in context:
+            context['form'] = RemoteForm(context['form']).as_dict()
         return JsonResponse(context, **kw)
 
