@@ -33,7 +33,7 @@ def send_dataset_run_message_to_tb_admins_and_user(dataset_script_run):
     else:
         subject = "genTB: New file processed (Fail)"
 
-    user_email = dataset_script_run.dataset.user.user.email
+    user_email = dataset_script_run.dataset.user.email
 
     d = dict(dataset=dataset_script_run.dataset,
              tb_user=dataset_script_run.dataset.user,
