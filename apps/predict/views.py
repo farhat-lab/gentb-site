@@ -67,7 +67,7 @@ class Callback(CallbackMixin, FormView):
 
         dataset_run.result_received = True
         dataset_run.result_success = form.was_run_successful()
-        dataset_run.result_data = f.get_result_data()
+        dataset_run.result_data = form.get_result_data()
         dataset_run.save()
 
         send_dataset_run_message_to_tb_admins_and_user(dataset_run)
