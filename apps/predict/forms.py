@@ -69,7 +69,6 @@ class UploadForm(ModelForm):
 
 
 class NotificationForm(Form):
-    run_md5 = CharField()
     success = BooleanField(required=False)
     result_data = CharField(widget=Textarea, required=False)
 
