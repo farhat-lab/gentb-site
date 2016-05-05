@@ -46,5 +46,8 @@ FastQ or VCF file analysis.
         # Run script
         LOGGER.debug("Run pipeline for dataset: %s (%s)", dataset, dataset.pk)
 
-        dataset.run_command()
+        (ret, msg) = dataset.run_command()
+        if not ret:
+            print "ERROR: %s" % msg
+
 

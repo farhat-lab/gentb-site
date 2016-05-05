@@ -151,9 +151,6 @@ class PredictDataset(TimeStampedModel):
         Run the command for FastQ files.
         e.g. perl analyseNGS.pl (directory name)
         """
-        if self.err_found:
-            return None
-
         # (1) Make sure the 'analyseNGS.pl' command is in the
         #   specified 'Pipeline Scripts Directory'
         #
