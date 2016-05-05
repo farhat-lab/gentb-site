@@ -1,0 +1,8 @@
+#
+# Crontab manually created by mo131 / Martin Owens / 2016-05-05
+# This script assumes it's running from a local crontab service.
+#
+
+*/2 * * * * ./manage run_pipeline 2>> ./data/logs/cron.log
+*/5 * * * * ./manage dropbox_retrieval 2>> ./data/logs/cron.log
+
