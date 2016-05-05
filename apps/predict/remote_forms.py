@@ -13,8 +13,7 @@ logger = logging.getLogger(__name__)
 
 def resolve_promise(o):
     if isinstance(o, dict):
-        for k, v in o.items():
-            o[k] = resolve_promise(v)
+        o = dict([(k, resolve_promise(v)) for (k, v) in o.items()])
     elif isinstance(o, (list, tuple)):
         o = [resolve_promise(x) for x in o]
     elif isinstance(o, Promise):
