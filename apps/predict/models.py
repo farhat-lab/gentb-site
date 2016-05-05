@@ -92,6 +92,11 @@ class PredictDataset(TimeStampedModel):
     def files(self):
         return os.listdir(self.file_directory)
 
+    def check_for_prediction(self):
+        if isfile(join(self.file_directory, 'output', 'result.json')):
+            self.has_prediction = True
+            self.save()
+
     def is_vcf_file(self):
         return FilePatternHelper.is_vcf_file(self.file_type)
 

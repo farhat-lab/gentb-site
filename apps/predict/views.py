@@ -70,6 +70,8 @@ class Callback(CallbackMixin, FormView):
         dataset_run.result_data = form.get_result_data()
         dataset_run.save()
 
+        dataset_run.dataset.check_for_prediction()
+
         send_dataset_run_message_to_tb_admins_and_user(dataset_run)
         #send_dataset_run_message_to_tb_admins(dataset_run)
 
