@@ -93,6 +93,8 @@ def boot(rep, estimator, X_, y_):
     ## Split Train Test for Marginal Effects Bootstrap
     X_train, X_test, y_train, y_test = cross_validation.train_test_split(np.asarray(X_), np.asarray(y_), test_size=0.33, random_state=rep)
     ## Test Set Predictions -- Sensitivity and Specificity
+    np.random.seed(1)
+    estimator.fit(X_train, y_train)
     y_pred = estimator.predict(X_test)
     y_tt = y_test.reshape(len(y_test),1)
     NP = np.sum(y_tt)

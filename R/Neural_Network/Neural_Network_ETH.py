@@ -11,7 +11,7 @@ import os
 import numpy as np
 
 # Change to Current Directory
-os.chdir(r'\\mon-jroyer2\users\jroyer\desktop\dna\gentb-site\R\Neural_Network')
+os.chdir(r'\gentb-site\R\Neural_Network')
 
 # Load Data
 execfile('Load_Data.py')
