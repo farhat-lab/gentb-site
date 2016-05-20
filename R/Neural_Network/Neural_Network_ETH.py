@@ -3,7 +3,7 @@
 # Compute ROC, Sensitivity, Marginal Effects
 # Author: Jimmy Royer
 # jimmy.royer@analysisgroup.com
-# May 16, 2016
+# May 19, 2016
 
 # Uncomment to Run on GPU
 #from sknn.platform import gpu32
@@ -11,7 +11,7 @@ import os
 import numpy as np
 
 # Change to Current Directory
-os.chdir(r'\gentb-site\R\Neural_Network')
+os.chdir(r'\\mon-jroyer2\users\jroyer\desktop\dna\gentb-site\R\Neural_Network')
 
 # Load Data
 execfile('Load_Data.py')
@@ -30,28 +30,34 @@ y = data["y"]
 
 ## Output Containers and Boostrap Paramters
 n_boot = 100
-gof_measures = np.zeros((3, (n_boot+2)), dtype=np.float32)
-marg_effects = np.zeros((len(features), (n_boot+3)), dtype=np.float32)
+gof_measures_NN = np.zeros((3, (n_boot+2)), dtype=np.float32)
+marg_effects_NN = np.zeros((len(features), (n_boot+3)), dtype=np.float32)
+gof_measures_rf = np.zeros((3, (n_boot+2)), dtype=np.float32)
+marg_effects_rf = np.zeros((len(features), (n_boot+3)), dtype=np.float32)
 
 ## Grid Search for Meta-Parameters
-Best = meta(X, y)
+Classifiers = meta(X, y)
+NN = Classifiers[0]
+rf = Classifiers[1]
 
 ## Bootstrap Marginal Effects w/ Standard Errors
 for i in range(n_boot):
-    boot(i, Best, X, y)
+    boot(i, NN, X, y, marg_effects_NN, gof_measures_NN, "Neural Network")
+    boot(i, rf, X, y, marg_effects_rf, gof_measures_rf, "Random Forest")
 
-## Compute Mean and Standard Deviation of Bootstraped Marginal Effects and Measures of Fit
-marg_effects[:, n_boot] = np.mean(marg_effects[:,range(n_boot)], axis=1) 
-marg_effects[:, (n_boot+1)] = np.std(marg_effects[:,range(n_boot)], axis=1) 
-marg_effects[:, (n_boot+2)] = marg_effects[:, n_boot] / marg_effects[:, (n_boot+1)]
+out_NN = margeffects(marg_effects_NN, gof_measures_NN, n_boot, predictors)
+out_rf = margeffects(marg_effects_rf, gof_measures_rf, n_boot, predictors)
 
-gof_measures[:, n_boot] = np.mean(gof_measures[:,range(n_boot)], axis=1)
-gof_measures[:, (n_boot+1)] = np.std(gof_measures[:,range(n_boot)], axis=1)
+## Output Variable Importance Random Forest
+importances = rf.feature_importances_
+std = np.std([tree.feature_importances_ for tree in rf.estimators_],
+             axis=0)
+indices = np.argsort(importances)[::-1]
+import_features = np.concatenate((predictors[indices], importances[indices].reshape(len(features),1)), axis=1)
 
-## Export Results
-toout = np.concatenate([predictors, marg_effects], axis=1)
-ind = np.abs(np.double(toout[:, (n_boot+3)])).argsort()[::-1]
-sortedout = toout[ind]
+np.savetxt("./marginal_effects_NN.csv", out_NN, fmt="%s", delimiter=',')
+np.savetxt("./GofF_NN.csv", gof_measures_NN, fmt="%s", delimiter=',')
+np.savetxt("./marginal_effects_rf.csv", out_rf, fmt="%s", delimiter=',')
+np.savetxt("./GofF_rf.csv", gof_measures_rf, fmt="%s", delimiter=',')
+np.savetxt("./importance_rf.csv", import_features, fmt="%s", delimiter=',')
 
-np.savetxt("./marginal_effects.csv", sortedout, fmt="%s", delimiter=',')
-np.savetxt("./GofF.csv", gof_measures, fmt="%s", delimiter=',')
