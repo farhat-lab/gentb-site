@@ -20,6 +20,10 @@ execfile('Load_Data.py')
 execfile('Helper.py')
 
 ## Collect Feature Names
+
+## Trigger Small Set of Features
+# features = features_small
+
 predictors = np.chararray((len(features), 1), itemsize=50)
 for i in range(len(features)):
     predictors[i,0] = features[i]
@@ -29,10 +33,10 @@ X = data[features]
 y = data["y"] 
 
 ## Output Containers and Boostrap Paramters
-n_boot = 100
-gof_measures_NN = np.zeros((3, (n_boot+2)), dtype=np.float32)
+n_boot = 250
+gof_measures_NN = np.zeros((4, (n_boot+2)), dtype=np.float32)
 marg_effects_NN = np.zeros((len(features), (n_boot+3)), dtype=np.float32)
-gof_measures_rf = np.zeros((3, (n_boot+2)), dtype=np.float32)
+gof_measures_rf = np.zeros((4, (n_boot+2)), dtype=np.float32)
 marg_effects_rf = np.zeros((len(features), (n_boot+3)), dtype=np.float32)
 
 ## Grid Search for Meta-Parameters

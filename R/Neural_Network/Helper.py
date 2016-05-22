@@ -26,8 +26,12 @@ def scorer(estimator, xt, yt, xte, yte):
     ROC = roc_curve(yte, Prob[:, 1])
     fpr = ROC[0]
     tpr = ROC[1]
+    thr = ROC[2]
+    # Extract Threshold Maximizing Sensitivity + Specifity
+    crit = np.argmax((1-fpr) + tpr)
+    max_thr = thr[crit]
     AUC = auc(fpr, tpr)
-    return AUC, fpr, tpr
+    return AUC, fpr, tpr, max_thr
 
 ########################################################################      
 # Plot of a ROC curv                                                   #
@@ -106,12 +110,20 @@ def meta(X_, y_):
 # Bootstrap function                                                   #
 ########################################################################
 def boot(rep, estimator, X_, y_, out, gof, clas):
+
     ## Split Train Test for Marginal Effects Bootstrap
     X_train, X_test, y_train, y_test = cross_validation.train_test_split(np.asarray(X_), np.asarray(y_), test_size=0.33, random_state=rep)
-    ## Test Set Predictions -- Sensitivity and Specificity
+
+    ## AUC and Sensitivity on Left Out Test 
     np.random.seed(1)
     estimator.fit(X_train, y_train)
-    y_pred = estimator.predict(X_test).reshape(len(y_test),1)
+    AUC = scorer(estimator, X_train, y_train, X_test, y_test)
+    ## Test Set Predictions -- Sensitivity and Specificity
+    np.random.seed(1)
+    y_prob_pred = estimator.predict_proba(X_test)[:,1].reshape(len(y_test),1)
+    # Categorize Predictions
+    y_pred = np.zeros((len(y_test),1))
+    y_pred[:,0]  = y_prob_pred[:,0] >= AUC[3]
     y_tt = y_test.reshape(len(y_test),1)
     NP = np.sum(y_tt)
     NG = np.sum(1 - y_tt)
@@ -119,12 +131,12 @@ def boot(rep, estimator, X_, y_, out, gof, clas):
     TN = np.sum(np.multiply((1-y_tt), (1-y_pred)))
     sens = np.float(TP) / np.float(NP)
     spec = np.float(TN) / np.float(NG)
-    ## AUC and Sensitivity on Left Out Test 
-    np.random.seed(1)
-    AUC = scorer(estimator, X_train, y_train, X_test, y_test)
+
     gof[0,rep] = AUC[0]
     gof[1,rep] = sens
     gof[2,rep] = spec
+    gof[3,rep] = AUC[3]
+
     ## Compute Marinal Effect
     marg(estimator, rep, X_test, out)
     ## Export AUC chart every 10 bootstrap
