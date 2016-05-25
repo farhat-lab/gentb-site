@@ -1,118 +1,54 @@
-import collections
-from hashlib import md5
-from django.utils import timezone
 
-from model_utils.models import TimeStampedModel
-
-from django.db import models
-from django.core.urlresolvers import reverse
-
-from jsonfield import JSONField # https://github.com/bradjasper/django-jsonfield
-
-from apps.utils.site_url_util import get_site_url
-from apps.predict.models import PredictDataset
-from apps.utils.file_patterns import FilePatternHelper,\
-                        FASTQ_PAIR_END_EXTENSION_TYPES
-
-from .forms import DropboxRetrievalParamsForm
-
+import requests
 import logging
 logger = logging.getLogger('apps.dropbox.models')
 
+from StringIO import StringIO
+from urlparse import urlparse
 
-class DropboxRetrievalLog(TimeStampedModel):
-    dataset = models.OneToOneField(PredictDataset, related_name='log')
+from django.utils.timezone import now
+from django.core.files import File
+from django.db.models import *
 
-    # retrieved from dropbox
-    file_metadata = JSONField(load_kwargs={'object_pairs_hook': collections.OrderedDict}, blank=True)
-    file_metadata_err_msg = models.TextField(blank=True)
+from apps.predict.models import PredictDataset
 
-    # selected from metadata based on file endings
-    selected_files = JSONField(load_kwargs={'object_pairs_hook': collections.OrderedDict}, blank=True)
+class DropboxFile(Model):
+    dataset = ForeignKey(PredictDataset, related_name='files')
+
+    url = URLField()
+    name = SlugField(max_length=32)
+    result = FileField(null=True, blank=True)
+    created = DateTimeField(auto_now_add=True)
 
     # system attempts to download files
-    retrieval_start = models.DateTimeField(null=True, blank=True)
-    retrieval_end = models.DateTimeField(null=True, blank=True)
-    retrieval_error = models.TextField(blank=True)
-
-    # Blank unless files are FastQ pair-end extensions
-    fastq_pair_end_extension = models.CharField(max_length=20, blank=True,\
-                                    choices=FASTQ_PAIR_END_EXTENSION_TYPES,\
-                                    help_text='For FastQ pair-end extensions. Either "_R" or "."')
-
-    # success
-    files_retrieved = models.BooleanField(default=False)
-
-    # md5
-    md5 = models.CharField(max_length=40, blank=True, db_index=True, help_text='auto-filled on save')
-
-    def __str__(self):
-        return '{0}'.format(self.dataset)
-
-    def save(self, *args, **kwargs):
-        self.fastq_pair_end_extension = FilePatternHelper.get_fastq_extension_type(self.selected_files)
-        if self.fastq_pair_end_extension is None:
-            self.fastq_pair_end_extension = ''
-
-        if not self.md5:
-            self.md5 = md5('%s%s' % (self.id, self.created)).hexdigest()
-
-        super(DropboxRetrievalLog, self).save(*args, **kwargs)
-
-    def get_fastq_extension_type(self):
-        """
-        For pair-ended FastQ files, figure out the extension
-        """
-        ext_type = FilePatternHelper.get_fastq_extension_type(self.selected_files)
-        if ext_type is None:
-            return ''
+    retrieval_start = DateTimeField(null=True, blank=True)
+    retrieval_end = DateTimeField(null=True, blank=True)
+    retrieval_error = TextField(blank=True)
 
     class Meta:
         ordering = ('-created', 'dataset')
-        #verbose_name = 'Dropbox Data Source'
-        #verbose_name_plural = '{0}s'.format(verbose_name)
 
-    def set_retrieval_start_time(self, with_reset=True):
+    def __str__(self):
+        return '{0} ({1})'.format(self.dataset, self.name)
+
+    @property
+    def filename(self):
+        return urlparse(self.url).path.split('/')[-1]
+
+    def download_now(self):
         """
-        Called before kicking off file retrieval.
-        Note: This does not save the object
+        Download the dropbox link offline.
         """
-        if with_reset:
-            self.retrieval_end = None
-            self.retrieval_error = ''
-            self.files_retrieved = False
+        self.retrieval_start = now()
+        self.retrieval_error = ''
+        self.save()
 
-        self.retrieval_start = timezone.now()
-
-    def set_retrieval_end_time(self, files_retrieved=True):
-        """
-        Called to mark the close of a file retrieval.
-        Note: This does not save the object
-        """
-        if files_retrieved:
-            self.files_retrieved = True
-
-        self.retrieval_end = timezone.now()
-
-    def get_dropbox_retrieval_script_params(self):
-        assert self.id is not None, "This function cannot be called for an unsaved object.  (The id field is required)"
-
-        callback_url = '{0}{1}'.format(get_site_url(),
-                                reverse('record_file_retrieval_results', args=()))
-
-        params = dict(dropbox_url=self.dataset.dropbox_url,
-                destination_directory=self.dataset.file_directory,
-                callback_url=callback_url,
-                callback_md5=self.md5)
-
-        print 'params', params
-
-        f = DropboxRetrievalParamsForm(params)
-        if f.is_valid():
-            return f.cleaned_data
-
-
-        logger.severe("Failed to create dropbox retrieve params for dataset id {0}. Errors from form: {1}".format(self.id, f.errors.items()))
-        # Log a major error
-        raise KeyError(f.errors)
+        try:
+            io = StringIO(requests.get(self.url).content)
+            self.result =  File(io, name=self.filename)
+            self.retrieval_end = now()
+        except Exception as error:
+            self.retrieval_error = str(error)
+            raise
+        self.save()
 

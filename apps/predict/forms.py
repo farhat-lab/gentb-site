@@ -6,19 +6,10 @@ import json
 
 from django.forms import * 
 
-from apps.utils.file_patterns import FILE_TYPE_FASTQ, FilePatternHelper
-from apps.dropbox.models import DropboxRetrievalLog
-from apps.dropbox.util import get_dropbox_metadata_from_link
 from apps.dropbox.widgets import DropboxChooserWidget
 from apps.mutations.fields import GeneticInputField
 
 from .models import PredictDataset
-
-class UploadConfirmForm(ModelForm):
-    """Confirm the files in the upload"""
-    class Meta:
-        model = PredictDataset
-        fields = ('status',)
 
 class ManualInputForm(ModelForm):
     """
@@ -33,53 +24,45 @@ class ManualInputForm(ModelForm):
 
 class UploadForm(ModelForm):
     """
-    Form for a user to enter a title, description, and dropbox_url
-
-    The dropbox_url is used to retrieve dropbox metadata
+    Form for a user to enter a title, description, and dropbox files.
     """
     class Meta:
         model = PredictDataset
-        exclude = ('md5', 'file_directory', 'has_prediction')
+        fields = ('title', 'description', 'status', 'user', 'file_type', 'fastq_type')
         widgets = {
-            'dropbox_url': Textarea(attrs={'rows': '4'}),
-            'status': HiddenInput(),
-            'user': HiddenInput(),
-            #'dropbox_url': DropboxChooserWidget(['.fastq', '.vcf']),
+          'status': HiddenInput(),
+          'user': HiddenInput(),
+          'file_type': HiddenInput(),
+          'fastq_type': HiddenInput(),
         }
 
-    def clean_fastq_type(self):
-        """
-        If this is a FastQ file, make sure the user has chosen a FastQ type
-        """
-        file_type = self.cleaned_data.get('file_type', None)
-        fastq_type = self.cleaned_data.get('fastq_type')
-        if file_type == FILE_TYPE_FASTQ and not fastq_type:
-            raise ValidationError("For FastQ files, please choose a FastQ type")
-        return fastq_type
-
-    def clean_dropbox_url(self):
-        """Check the dropbox metadata from the url link"""
-        # (This should be moved to an async or ajax call in another part of the code )
-        url = self.cleaned_data.get('dropbox_url')
-        file_type = self.cleaned_data.get('file_type', None)
-        file_patterns = FilePatternHelper.get_file_patterns_for_dropbox(file_type)
-
-        # Use the dropbox API to look at the files under this dropbox_url
-        (success, self.box) = get_dropbox_metadata_from_link(url, file_patterns=file_patterns)
-
-        if not success:
-            raise ValidationError(self.box)
-
-        return url
-
     def save(self, **kw):
-        dataset = super(type(self), self).save(**kw)
-        if dataset.pk:
-            DropboxRetrievalLog.objects.create(dataset=dataset,
-                file_metadata=self.box.dropbox_link_metadata,
-                selected_files=self.box.matching_files_metadata,
-            )
+        dataset = super(UploadForm, self).save(**kw)
+        if not dataset.pk:
+            return dataset
+        for key, field in self.fields.items():
+            if isinstance(field.widget, DropboxChooserWidget):
+                url = self.cleaned_data.get(key, None)
+                if url:
+                    dataset.files.create(name=key, url=url)
         return dataset
+
+
+class UploadVcfForm(UploadForm):
+    vcf_file = CharField(widget=DropboxChooserWidget(['.vcf']), required=True,
+        label="VCF File", help_text="Variant Call Formated sequence data file")
+
+
+class UploadFastQPairForm(UploadForm):
+    fastq_one = CharField(widget=DropboxChooserWidget(['.fastq']), required=True,
+        label="Forward Read", help_text="FastQ file containing the forward read sequence.")
+    fastq_two = CharField(widget=DropboxChooserWidget(['.fastq']), required=True,
+        label="Reverse Read", help_text="FastQ file containing the reverse read sequence.")
+
+
+class UploadFastQSingleForm(UploadForm):
+    fastq_one = CharField(widget=DropboxChooserWidget(['.fastq']), required=True,
+        label="FastQ File", help_text="FastQ file containing the single sequence read.")
 
 
 class NotificationForm(Form):
