@@ -3,3 +3,7 @@
 *[data-toggle=tooltip] {
   cursor: pointer;
 }
+
+table.content-to-top td {
+  vertical-align: top;
+}

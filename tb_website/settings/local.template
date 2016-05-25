@@ -47,6 +47,7 @@ SECRET_KEY = r"REPLACE_ME_ON_LIVE"
 # see This functionality uses the Dropbox Core API to retrieve metadata from a shared link.
 #    https://blogs.dropbox.com/developers/2015/08/new-api-endpoint-shared-link-metadata/
 DROPBOX_ACCESS_TOKEN = ''
+DROPBOX_APP_KEY = ''
 ########## END SECRET CONFIGURATION
 
 ########## EMAIL CONFIGURATION
