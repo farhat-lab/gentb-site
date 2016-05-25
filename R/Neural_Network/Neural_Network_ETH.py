@@ -3,7 +3,7 @@
 # Compute ROC, Sensitivity, Marginal Effects
 # Author: Jimmy Royer
 # jimmy.royer@analysisgroup.com
-# May 19, 2016
+# May 25, 2016
 
 # Uncomment to Run on GPU
 #from sknn.platform import gpu32
@@ -40,14 +40,36 @@ gof_measures_rf = np.zeros((4, (n_boot+2)), dtype=np.float32)
 marg_effects_rf = np.zeros((len(features), (n_boot+3)), dtype=np.float32)
 
 ## Grid Search for Meta-Parameters
-Classifiers = meta(X, y)
+## Need to Define Activation for Neural - Network.
+## Supervised: Rectifier or ExpLin
+Classifiers = meta(X, y, u'ExpLin')
 NN = Classifiers[0]
 rf = Classifiers[1]
 
+## Extract Number of Units for AutoEncoder
+units = []
+for j in NN.layers:
+    units.append(j.units)
+
+## Run AutoEncoder
+#myweights = auto(X, u'ExpLin', units)
+#
+### Explore Predicted X
+#new_X = myweights.predict_proba(X)
+#x_tild = []
+#for i in new_X:
+#    x_tild.append(i[:,1])
+#x_tild = np.array(x_tild).T
+#
+### Transfer Initial Weights
+#wgt = myweights.get_parameters()
+wgt = NN.get_parameters()
+#wgt[1] = wgt1[1]
+
 ## Bootstrap Marginal Effects w/ Standard Errors
 for i in range(n_boot):
-    boot(i, NN, X, y, marg_effects_NN, gof_measures_NN, "Neural Network")
-    boot(i, rf, X, y, marg_effects_rf, gof_measures_rf, "Random Forest")
+    boot(i, NN, X, y, marg_effects_NN, gof_measures_NN, "Neural Network", wgt)
+    boot(i, rf, X, y, marg_effects_rf, gof_measures_rf, "Random Forest", wgt)
 
 out_NN = margeffects(marg_effects_NN, gof_measures_NN, n_boot, predictors)
 out_rf = margeffects(marg_effects_rf, gof_measures_rf, n_boot, predictors)

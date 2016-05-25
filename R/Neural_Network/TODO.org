@@ -1,0 +1,11 @@
+List of TODO for TB Neural Network
+
+* TODO Short Term Milestones [0%]
+  - [ ] Run predictions for other drugs
+  - [ ] Supplement with description of ROC and Marginal Effects
+  
+* TODO Medium Term Milestones [0%]
+  - [ ] Multivariate Marginal Effects
+  - [ ] Optimize Class Weights instead of threshold to maximize sensitivity + specificity
+  - [ ] Auto-Encode to improve features selection (deep learning) 
+

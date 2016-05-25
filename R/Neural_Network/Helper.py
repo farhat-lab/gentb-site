@@ -2,7 +2,7 @@
 # Helper Functions
 # Author: Jimmy Royer
 # jimmy.royer@analysisgroup.com
-# May 19, 2016
+# May 25, 2016
 
 from sknn.mlp import Classifier, Layer
 import matplotlib.pyplot as plt
@@ -13,14 +13,14 @@ from sklearn.metrics import roc_curve, auc
 from sklearn.ensemble import RandomForestClassifier
 import numpy as np
 
-
 ########################################################################      
 ## ROC - AUC                                                           #
 ########################################################################
 def scorer(estimator, xt, yt, xte, yte):
     # Train the Classifier
-    estimator.fit(xt, yt)
+    # estimator.fit(xt, yt)
     # Predict Probabilities
+    np.random.seed(1)
     Prob = estimator.predict_proba(xte)    
     # Compute ROC and AUC
     ROC = roc_curve(yte, Prob[:, 1])
@@ -68,23 +68,23 @@ def marg(estimator, boot, smpl, out):
 ########################################################################
 # Meta Parameters Calibration function                                 #
 ########################################################################
-def meta(X_, y_):
-    
-    ## Neural Network Classifier -- 2 Hidden Layer
-    NN = Classifier(layers = [Layer("ExpLin", units=20), 
-                              Layer("ExpLin", units=20), 
+def meta(X_, y_, act):
+    ## Neural Network Classifier -- 3 Hidden Layer
+    NN = Classifier(layers = [Layer(act, units=20), 
+                              Layer(act, units=20),
                               Layer("Softmax")],
                               regularize="L2",
                               n_iter = 1000,
                               verbose=True,
                               batch_size=32,
                               learning_rule="adagrad",
-                              random_state=12346)
+                              random_state=0)
     ## Meta Parameters Grid Search with Cross Validation
-    param_grid = {"learning_rate": [0.0001, 0.001, 0.01],
-                  "weight_decay": [0.00001, 0.0001, 0.001],
+    param_grid = {"learning_rate": [0.001, 0.01],
+                  "weight_decay": [0.0001, 0.001],
                   "hidden0__units": [50, 100],
                   "hidden1__units": [50, 100]}
+
     NN = GridSearchCV(NN, param_grid, refit=True, verbose=True, scoring='roc_auc', n_jobs=1, cv=5)
     ## Fit the Classifier
     np.random.seed(1)
@@ -107,15 +107,36 @@ def meta(X_, y_):
     return [Best_NN, Best_rf]
 
 ########################################################################
+# Auto-Encoder                                                         #
+########################################################################
+def auto(X_, act, units_):
+    ## Neural Network Classifier -- 3 Hidden Layer
+    myae = Classifier(layers = [Layer(act, units=units_[0]), 
+                                Layer("Softmax")],
+                                n_iter = 100,
+                                verbose=True,
+                                regularize="L2",
+                                batch_size=32,
+                                learning_rule="adagrad")
+    ## Fit the Classifier
+    np.random.seed(1)
+    myae.fit(np.asarray(X_), np.asarray(X_))
+    
+    return myae
+
+
+########################################################################
 # Bootstrap function                                                   #
 ########################################################################
-def boot(rep, estimator, X_, y_, out, gof, clas):
+def boot(rep, estimator, X_, y_, out, gof, clas, wgt_):
 
     ## Split Train Test for Marginal Effects Bootstrap
     X_train, X_test, y_train, y_test = cross_validation.train_test_split(np.asarray(X_), np.asarray(y_), test_size=0.33, random_state=rep)
-
     ## AUC and Sensitivity on Left Out Test 
     np.random.seed(1)
+    ## Transfer Weights
+    #if estimator == "NN":
+    #    estimator.set_parameters(wgt_)
     estimator.fit(X_train, y_train)
     AUC = scorer(estimator, X_train, y_train, X_test, y_test)
     ## Test Set Predictions -- Sensitivity and Specificity
