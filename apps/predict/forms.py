@@ -2,20 +2,33 @@
 Django forms for adding PredictDataset objects as well as a Confirmation form
 
 """
-from django.forms import Textarea, HiddenInput, BooleanField, CharField,\
-                         ModelForm, Form, ValidationError
-
-from apps.dropbox.models import DropboxRetrievalLog
-from apps.predict.models import PredictDataset
-from apps.utils.file_patterns import FILE_TYPE_FASTQ, FilePatternHelper
-from apps.dropbox.util import get_dropbox_metadata_from_link
 import json
+
+from django.forms import * 
+
+from apps.utils.file_patterns import FILE_TYPE_FASTQ, FilePatternHelper
+from apps.dropbox.models import DropboxRetrievalLog
+from apps.dropbox.util import get_dropbox_metadata_from_link
+from apps.dropbox.widgets import DropboxChooserWidget
+from apps.mutations.fields import GeneticInputField
+
+from .models import PredictDataset
 
 class UploadConfirmForm(ModelForm):
     """Confirm the files in the upload"""
     class Meta:
         model = PredictDataset
         fields = ('status',)
+
+class ManualInputForm(ModelForm):
+    """
+    Manually enter genetic information for prediction.
+    """
+    genetic_information = GeneticInputField()
+
+    class Meta:
+        model = PredictDataset
+        fields = ('title', 'description')
 
 
 class UploadForm(ModelForm):
@@ -31,6 +44,7 @@ class UploadForm(ModelForm):
             'dropbox_url': Textarea(attrs={'rows': '4'}),
             'status': HiddenInput(),
             'user': HiddenInput(),
+            #'dropbox_url': DropboxChooserWidget(['.fastq', '.vcf']),
         }
 
     def clean_fastq_type(self):

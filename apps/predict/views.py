@@ -13,7 +13,7 @@ from django.views.generic import (
 from django.core.urlresolvers import reverse
 
 from .models import PredictDataset, DatasetScriptRun
-from .forms import UploadForm, UploadConfirmForm, NotificationForm
+from .forms import UploadForm, UploadConfirmForm, NotificationForm, ManualInputForm
 from .mixins import PredictMixin, CallbackMixin
 from .message_helper import send_dataset_run_message_to_tb_admins_and_user
 
@@ -27,6 +27,14 @@ class Heatmap(PredictMixin, DetailView):
     queryset = PredictDataset.objects.filter(has_prediction=True)
     template_name = 'predict/heatmap.html'
 
+class ManualInputView(PredictMixin, CreateView):
+    form_class = ManualInputForm
+
+    def get_initial(self):
+        return {'status': PredictDataset.STATUS_NOT_READY, 'user': self.request.user}
+
+    def get_success_url(self):
+        return reverse('predict:view_predict_upload_step2_confirm', kwargs=dict(slug=self.object.md5))
 
 class UploadView(PredictMixin, CreateView):
     form_class = UploadForm

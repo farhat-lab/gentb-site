@@ -14,7 +14,7 @@
         </div>
 
         <div class = "row">
-            <div class="col-md-6 portfolio-item">
+            <div class="col-md-9 portfolio-item">
                 {% if PREVIOUS_ATTEMPT_DELETED %}
                     <div class="alert alert-success" role="alert">
                         Note: Your previous dataset information, including the dropbox link, was removed.
@@ -23,7 +23,7 @@
 
                 <p>To examine the frequency of individual mutations by drug resistance you can consult the <a href="{% url 'maps:map' %}">Map function</a> for country specific data, and the <a href="{% url 'explore:home' %}">Explore function</a>  to examine their frequency in all of the data.</p>
 
-                    <p>To speed up the upload process please:
+<!--                    <p>To speed up the upload process please:
                         <ol>
                             <li>Place the FASTQ or VCF files (1 or many) in a <a href="http://dropbox.com/">dropbox</a> folder.</li>
                             <li>To copy the dropbox link for this folder please find the  icon. Clicking on this will open a popup with the URL, highlight and copy this text and paste into the
@@ -31,10 +31,7 @@
                             <li>For more details please consult the dropbox share page:
                         <a href="https://www.dropbox.com/help/274">https://www.dropbox.com/help/274</a></li>
                         </ol>
-                    </p>
-                    <!--
-                    <h4><i>Upload VCF or FASTQ Files:</i></h4>
-                -->
+</p>-->
 
 {% if form.errors %}
   <div class="alert alert-danger" role="alert">Please check the errors below
@@ -49,8 +46,8 @@
     {{ hidden }}
     {% endfor %}
 
-    <table class="table-condensed">
-        <tr>
+    <table class="table-condensed content-to-top">
+        <!--<tr>
             <th colspan="2" class="text-center">Dataset information</th>
         </tr>
         {% for field in form.visible_fields %}
@@ -74,20 +71,57 @@
             {% endfor %}
          <tr>
                 <td colspan="2"><hr /></td>
+         </tr>-->
+        <tr>
+          <td>
+            <button type="submit" class="btn btn-success">
+              <img src="{% static 'images/fastq.svg' %}"/>
+            </button>
+          </td>
+          <td>
+            <h3>New FastQ Pair-Ended Prediction</h3>
+            <p>Create a prediction from a set of pair-ended FastQ genetic sequences. This option involves the largest files and takes more time to process that the vcf or manual options.</p>
+          </td>
         </tr>
         <tr>
-            <td colspan="2" class="text-center">
-                <button type="reset" class="btn btn-default">Reset</button>
-                &nbsp;
-                <button type="submit" class="btn btn-success">Submit</button>
-            </td>
+          <td>
+            <button type="submit" class="btn btn-success">
+              <img src="{% static 'images/fastq-single.svg' %}"/>
+            </button>
+          </td>
+          <td>
+            <h3>New FastQ Single-Ended Prediction</h3>
+            <p>Create a prediction from a single-ended FastQ genetic sequence file. This option involves a large file and takes more time to process that the vcf or manual options.</p>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <button type="submit" class="btn btn-primary">
+              <img src="{% static 'images/vcf.svg' %}"/>
+            </button>
+          </td>
+          <td>
+            <h3>New Variant Call Format Prediction</h3>
+            <p>Minimal genotypic information for accurate resistance predictions are below. Genetic regions are listed in order of decreasing importance. For more detailed list of genetic variants see reference <a href="http://www.ncbi.nlm.nih.gov/pubmed/26910495">Farhat MR, Sultana R et al. Genetic Determinants of Drug Resistance in Mycobacterium tuberculosis and Their Diagnostic Value. AJRCCM 2016</a> and get <a href="">More information</a> about the vcf format.</p>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <button type="submit" class="btn btn-default">
+              <img src="{% static 'images/manual_entry.svg' %}"/>
+            </button>
+          </td>
+          <td>
+            <h3>New Manually Entered Prediction</h3>
+            <p>Create a prediction from a set of pair-ended FastQ genetic sequences. This option involves the largest files and takes more time to process that the vcf or manual options.</p>
+          </td>
         </tr>
     </table>
 </form>
 
             </div>
-
-            <div class="col-md-6 portfolio-item">
+<!--
+            <div class="col-md-3 portfolio-item">
 
 <h3>FASTQ files</b></h3>
 <p>Please label paired end FASTQ files as follows:</p>
@@ -100,7 +134,6 @@
 <h3>vcf file</h3>
 <p>VCF stands for Variant Call Format and is further described in <a href="http://samtools.github.io/hts-specs/VCFv4.2.pdf">this PDF</a>.
 </p>
-<p>Minimal genotypic information for accurate resistance predictions are below. Genetic regions are listed in order of decreasing importance. For more detailed list of genetic variants see reference <a href="http://www.ncbi.nlm.nih.gov/pubmed/26910495">Farhat MR, Sultana R et al. Genetic Determinants of Drug Resistance in Mycobacterium tuberculosis and Their Diagnostic Value. AJRCCM 2016</a></p>
 
     <table class="table">
        <tr>
@@ -156,7 +189,7 @@
        </table>
        * Note: Gene <i>eis</i> is a predictor of kanamycin resistance, but data for this gene was not available when the predictive model was built.
         </div>
-    </div>
+        </div>-->
 {% endblock %}
 
 {% block extra_footer_js %}

@@ -165,19 +165,24 @@ DJANGO_APPS = (
     'django.contrib.admin',
 )
 
+# Apps from the internet (see requirements.txt)
+SUPPORT_APPS = (
+)
+
 # Apps specific for this project go here.
 LOCAL_APPS = (
     'tb_website',
     'apps.tb_users',
     'apps.predict',
     'apps.dropbox',
+    'apps.mutations',
 
     # Holds dataverse file ids for Two Ravens
     'apps.explore',
 )
 
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
-INSTALLED_APPS = DJANGO_APPS + LOCAL_APPS
+INSTALLED_APPS = DJANGO_APPS + SUPPORT_APPS + LOCAL_APPS
 ########## END APP CONFIGURATION
 
 
