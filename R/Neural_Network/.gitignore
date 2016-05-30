@@ -1,0 +1,5 @@
+./R/Neural_Network/output/*
+./output/*
+*.pdf
+*.xlsx
+*.png

@@ -2,7 +2,7 @@
 # Helper Functions
 # Author: Jimmy Royer
 # jimmy.royer@analysisgroup.com
-# May 25, 2016
+# May 29, 2016
 
 from sknn.mlp import Classifier, Layer
 import matplotlib.pyplot as plt
@@ -12,6 +12,7 @@ from sklearn import cross_validation
 from sklearn.metrics import roc_curve, auc
 from sklearn.ensemble import RandomForestClassifier
 import numpy as np
+import itertools
 
 ########################################################################      
 ## ROC - AUC                                                           #
@@ -31,15 +32,15 @@ def scorer(estimator, xt, yt, xte, yte):
     crit = np.argmax((1-fpr) + tpr)
     max_thr = thr[crit]
     AUC = auc(fpr, tpr)
-    return AUC, fpr, tpr, max_thr
+    return dict(AUC=AUC, fpr=fpr, tpr=tpr, max_thr=max_thr)
 
 ########################################################################      
 # Plot of a ROC curv                                                   #
 ########################################################################
 def pics(auc, name, rep):
-    with PdfPages('%s' %name+str(rep) + '.pdf') as pdf:
+    with PdfPages("./output/graph/{0}_{1}.pdf".format(name, str(rep))) as pdf:
         plt.figure()
-        plt.plot(auc[1], auc[2], label='ROC curve (area = %0.3f)' % auc[0])
+        plt.plot(auc["fpr"], auc["tpr"], label='ROC curve (area = %0.3f)' % auc["AUC"])
         plt.plot([0, 1], [0, 1], 'k--')
         plt.xlim([0.0, 1.0])
         plt.ylim([0.0, 1.05])
@@ -66,45 +67,93 @@ def marg(estimator, boot, smpl, out):
         out[j,boot] =  (part1 - part2)
 
 ########################################################################
+# Multivariate Marginal Effets                                         #
+########################################################################
+
+def create_out(x_by):
+    ## Index of Features
+    lst = range(len(features))
+    lst_of_x = list(itertools.combinations(lst,x_by))
+    check_len = sum([map(list, itertools.combinations(lst_of_x[0], i)) for i in range(len(lst_of_x[0])+1)], [])
+    max_len = max(map(len,check_len))
+    n_rows = 0
+    for k in range((1+x_by),len(check_len)):
+        n_rows = n_rows + 1
+    out_by_x_m = np.zeros(((len(lst_of_x)*n_rows), 1), dtype=np.float32)
+    out_by_x_n = np.chararray(((len(lst_of_x)*n_rows), max_len), itemsize=50)
+    return dict(lst_of_x=lst_of_x, n_rows=n_rows, out_by_x_m=out_by_x_m, out_by_x_n=out_by_x_n)
+
+
+def marg_multi(estimator, smpl, cont, x_by):
+    ## Computation all possible Combinations of Marginal Effects
+    for j in range(len(cont['lst_of_x'])):
+        ## For each list of 2, generate all possible Enumations
+        comb = sum([map(list, itertools.combinations(cont['lst_of_x'][j], i)) for i in range(len(cont['lst_of_x'][j])+1)], [])
+        it = 0
+        for k in range((1+x_by),len(comb)):
+            xtest0 = np.asarray(smpl).copy()
+            xtest0[:,comb[k]] = xtest0[:,comb[k]] * 0.0
+            xtest1 = np.asarray(smpl).copy()
+            xtest1[:,comb[k]] = xtest1[:,comb[k]] * 0.0 + 1.0
+            part1 = np.mean(estimator.predict_proba(xtest1)[:,1])
+            part2 = np.mean(estimator.predict_proba(xtest0)[:,1])
+            cont['out_by_x_m'][(j*cont['n_rows'] + it), 0] = (part1 - part2)
+            cont['out_by_x_n'][(j*cont['n_rows'] + it), range(len(comb[k]))] = [features[i] for i in comb[k]]
+            it += 1
+
+########################################################################
 # Meta Parameters Calibration function                                 #
 ########################################################################
-def meta(X_, y_, act):
-    ## Neural Network Classifier -- 3 Hidden Layer
-    NN = Classifier(layers = [Layer(act, units=20), 
-                              Layer(act, units=20),
-                              Layer("Softmax")],
-                              regularize="L2",
-                              n_iter = 1000,
-                              verbose=True,
-                              batch_size=32,
-                              learning_rule="adagrad",
-                              random_state=0)
-    ## Meta Parameters Grid Search with Cross Validation
-    param_grid = {"learning_rate": [0.001, 0.01],
-                  "weight_decay": [0.0001, 0.001],
-                  "hidden0__units": [50, 100],
-                  "hidden1__units": [50, 100]}
-
-    NN = GridSearchCV(NN, param_grid, refit=True, verbose=True, scoring='roc_auc', n_jobs=1, cv=5)
-    ## Fit the Classifier
-    np.random.seed(1)
-    NN.fit(np.asarray(X_), np.asarray(y_, dtype=np.int8))
-    ## Best Fit Estimator
-    Best_NN = NN.best_estimator_
+def find_meta_parameters(X_, y_, classifier_type, **kwargs):
     
-    ## Random Forest
-    rf = RandomForestClassifier(random_state=0, verbose=1, n_estimators=1000)
-    ## Meta Parameters Grid Search with Cross Validation
-    param_grid = {'max_features': ["auto", "log2", np.int(np.shape(X_)[1]/2)],
-                  'n_estimators': [100,500,1000]}    
-    rf = GridSearchCV(rf, param_grid, refit=True, verbose=True, scoring='roc_auc', n_jobs=1, cv=5)
-    ## Fit the Classifier
-    np.random.seed(1)
-    rf.fit(np.asarray(X_), np.asarray(y_, dtype=np.int8))
-    ## Best Fit Estimator
-    Best_rf = rf.best_estimator_
-    #Best_NN,
-    return [Best_NN, Best_rf]
+    if kwargs.get('act'):
+        act = kwargs['act']
+
+    print("\n Finding meta parameters for classifier: {0}".format(classifier_type))
+
+    if classifier_type == "NN":
+        ## Neural Network Classifier -- 2 Hidden Layer
+        NN = Classifier(layers = [Layer(act, units=20), 
+                                  Layer(act, units=20),
+                                  Layer("Softmax")],
+                                  regularize="L2",
+                                  n_iter = 1000,
+                                  verbose=True,
+                                  batch_size=32,
+                                  learning_rule="adagrad",
+                                  random_state=0)
+        ## Meta Parameters Grid Search with Cross Validation
+        param_grid = {"learning_rate": [0.001, 0.01],
+                      "weight_decay": [0.0001, 0.001],
+                      "hidden0__units": [50, 100],
+                      "hidden1__units": [50, 100]}
+
+        NN = GridSearchCV(NN, param_grid, refit=True, verbose=True, scoring='roc_auc', n_jobs=1, cv=5)
+        ## Fit the Classifier
+        np.random.seed(1)
+        NN.fit(np.asarray(X_), np.asarray(y_, dtype=np.int8))
+        ## Best Fit Estimator
+        Best_Model = NN.best_estimator_
+    
+    elif classifier_type == "RF":
+        ## Random Forest
+        rf = RandomForestClassifier(random_state=0, verbose=1, n_estimators=1000)
+        ## Meta Parameters Grid Search with Cross Validation
+        param_grid = {'max_features': ["auto", "log2", np.int(np.shape(X_)[1]/2)],
+                      'n_estimators': [100,500,1000]}    
+        rf = GridSearchCV(rf, param_grid, refit=True, verbose=True, scoring='roc_auc', n_jobs=1, cv=5)
+        ## Fit the Classifier
+        np.random.seed(1)
+        rf.fit(np.asarray(X_), np.asarray(y_, dtype=np.int8))
+        ## Best Fit Estimator
+        Best_Model = rf.best_estimator_
+        #Best_NN,
+
+    else:
+        raise ValueError("classifier_type undefined in find_meta_parameter")
+
+    return Best_Model
+
 
 ########################################################################
 # Auto-Encoder                                                         #
@@ -128,7 +177,10 @@ def auto(X_, act, units_):
 ########################################################################
 # Bootstrap function                                                   #
 ########################################################################
-def boot(rep, estimator, X_, y_, out, gof, clas, wgt_):
+def boot(rep, estimator, X_, y_, out, gof, clas, cont, x_by, c_mm, **kwargs):
+
+    if kwargs.get('weight'):
+        wgt_ = kwargs['weight']
 
     ## Split Train Test for Marginal Effects Bootstrap
     X_train, X_test, y_train, y_test = cross_validation.train_test_split(np.asarray(X_), np.asarray(y_), test_size=0.33, random_state=rep)
@@ -144,7 +196,7 @@ def boot(rep, estimator, X_, y_, out, gof, clas, wgt_):
     y_prob_pred = estimator.predict_proba(X_test)[:,1].reshape(len(y_test),1)
     # Categorize Predictions
     y_pred = np.zeros((len(y_test),1))
-    y_pred[:,0]  = y_prob_pred[:,0] >= AUC[3]
+    y_pred[:,0]  = y_prob_pred[:,0] >= AUC['max_thr']
     y_tt = y_test.reshape(len(y_test),1)
     NP = np.sum(y_tt)
     NG = np.sum(1 - y_tt)
@@ -153,13 +205,15 @@ def boot(rep, estimator, X_, y_, out, gof, clas, wgt_):
     sens = np.float(TP) / np.float(NP)
     spec = np.float(TN) / np.float(NG)
 
-    gof[0,rep] = AUC[0]
+    gof[0,rep] = AUC["AUC"]
     gof[1,rep] = sens
     gof[2,rep] = spec
-    gof[3,rep] = AUC[3]
+    gof[3,rep] = AUC['max_thr']
 
     ## Compute Marinal Effect
     marg(estimator, rep, X_test, out)
+    if c_mm == 1 and rep == 0:
+        marg_multi(estimator, X_test, cont, x_by)
     ## Export AUC chart every 10 bootstrap
     if rep % 10 == 0:
         pics(AUC, clas, rep)
@@ -178,3 +232,11 @@ def margeffects(marg_effects, gof_measures, boot, predictors):
     ind = np.abs(np.double(toout[:, (boot+3)])).argsort()[::-1]
     out = toout[ind]
     return out
+
+########################################################################
+# Marginal Effects Multivariate                                        #
+########################################################################
+def margeffects_multi(marg_effects, name):
+    out_f = np.concatenate((marg_effects, name), axis = 1)
+    return out_f
+

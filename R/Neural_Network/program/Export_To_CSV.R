@@ -1,9 +1,11 @@
+# -*- coding: utf-8 -*-
+# Read raw data
+# Author: Jimmy Royer
+# jimmy.royer@analysisgroup.com
+# May 15, 2016
 
-setwd("./Neural_Network")
-load("../R/eth_finalpredict.RData")
-getwd()
+setwd("../")
+print(getwd())
+load("../eth_finalpredict.RData")
 
-drugg.full["y"] = 0
-drugg.full$y = drugg.full$dr == "r"
-
-write.csv(drugg.full, "./eth.csv")
+write.csv(drugg.full, "./input/eth.csv", row.names=FALSE)
