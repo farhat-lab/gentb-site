@@ -7,12 +7,19 @@ import re
 #
 FILE_TYPE_VCF = 'vcf'
 FILE_TYPE_FASTQ = 'fastq'
-FILE_TYPES = [(FILE_TYPE_VCF, 'VCF'), (FILE_TYPE_FASTQ, 'FastQ')]
+FILE_TYPE_MANUAL = 'manual'
+FILE_TYPES = [
+  (FILE_TYPE_VCF, 'Variant Call Format (VCF)'),
+  (FILE_TYPE_FASTQ, 'FastQ Nucleotide Sequence'),
+  (FILE_TYPE_MANUAL, 'Mutations Manual Entry'),
+]
 
 FASTQ_PAIR_ENDED = 'pair-end'
 FASTQ_SINGLE_ENDED = 'single-end'
-FASTQ_FILE_TYPES = [(FASTQ_PAIR_ENDED, 'Pair-end'),\
-    (FASTQ_SINGLE_ENDED, 'Single-end')]
+FASTQ_FILE_TYPES = [
+  (FASTQ_PAIR_ENDED, 'Pair-end'),
+  (FASTQ_SINGLE_ENDED, 'Single-end'),
+]
 
 FASTQ_PAIR_END_EXTENSION_R = '_R'
 FASTQ_PAIR_END_EXTENSION_DOT = '.'

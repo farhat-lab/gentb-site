@@ -39,16 +39,23 @@
               {% endif %}
             </td>
           </tr>
+          {% if object.files.count %}
           <tr>
             <th class="text-primary">File Names from Dropbox</th>
             <td>
-              {% if object.dropboxretrievallog %}
-                {% for fname in object.dropboxretrievallog.selected_files %}
-                ({{ forloop.counter }}) {{ fname }}<br />
-                {% endfor %}
-              {% else %}N/A{% endif %}
+              {% for file in object.files.all %}
+                {% if file.result %}
+                  <span class="label label-success">Retrieved</span> &nbsp;
+                {% elif file.retrieval_start %}
+                  <span class="label label-danger">Failed</span> &nbsp;
+                {% else %}
+                  <span class="label label-default">In Queue</span> &nbsp;
+                {% endif %}
+                &nbsp; {{ file.filename }} ({{ file.name }})
+              {% endfor %}
             </td>
           </tr>
+          {% endif %}
           {% if object.status.is_error %}
             <tr>
               <th class="text-primary">Status</th>
@@ -106,7 +113,7 @@
     <tr>
         <th class="text-primary">Local Dataset Directory Contents</th>
         <td>
-          {% for item in object.files %}
+          {% for item in object.result_files %}
             {% if forloop.first %}
                 <span class="label label-success">OK</span> &nbsp;<br />
             {% endif %}

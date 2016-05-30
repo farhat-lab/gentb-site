@@ -1,7 +1,8 @@
 from django.contrib import admin
 
-from .models import DropboxRetrievalLog
+from .models import DropboxFile
 
-class DropboxRetrievalLogAdmin(admin.ModelAdmin):
+class DropboxFileAdmin(admin.ModelAdmin):
     save_on_top = True
-admin.site.register(DropboxRetrievalLog, DropboxRetrievalLogAdmin)
+
+admin.site.register(DropboxFile, DropboxFileAdmin)

@@ -69,14 +69,13 @@ class PredictDataset(TimeStampedModel):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='datasets')
     md5 = models.CharField(max_length=40, blank=True, db_index=True,
             help_text='auto-filled on save')
-    title = models.CharField('Dataset title', max_length=255)
+    title = models.CharField('Dataset Title', max_length=255)
     file_type = models.CharField(choices=FILE_TYPES, max_length=25)
 
     fastq_type = models.CharField(max_length=50,\
         choices=FASTQ_FILE_TYPES, blank=True,\
         help_text='Only used for FastQ files')
 
-    dropbox_url = models.URLField("Dropbox link", help_text='https://www.dropbox.com/help/274')
     description = models.TextField('Dataset description')
     status = models.ForeignKey(PredictDatasetStatus)
     file_directory = models.CharField(max_length=255, blank=True)
@@ -89,7 +88,7 @@ class PredictDataset(TimeStampedModel):
         return reverse('predict:view_single_dataset', kwargs=dict(slug=self.md5))
 
     @property
-    def files(self):
+    def result_files(self):
         return os.listdir(self.file_directory)
 
     def check_for_prediction(self):
@@ -544,7 +543,7 @@ class DatasetScriptRun(TimeStampedModel):
 
         slug = {'slug': self.md5}
         callback_url = get_site_url(for_internal_callback=True) + \
-                reverse('predict:view_dataset_run_notification', kwargs=slug)
+                reverse('predict:callback', kwargs=slug)
 
         return dict(
              dataset_id=pk,

@@ -42,8 +42,6 @@ class PredictBasicTest(TestCase):
             u'file_directory':\
                 u'/some-dir-to-add-files/test_setup/tb_uploaded_files/tbdata_00000013',\
             u'fastq_type': u'',\
-            u'dropbox_url': \
-                u'https://www.dropbox.com/sh/p6ses8376312bes/AAA7TB4GhErfLLfE7WPco79ha?dl=0',\
             u'user': self.tb_test_user}
 
         self.dataset_vcf = PredictDataset(**test_params)

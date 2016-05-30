@@ -1,42 +1,30 @@
+/*
+ * Enable DropBox upload for each uploader field.
+ */
+$(window).load(function() {
+  $('input[type=dropbox-chooser]').each(function() {
+    var field = this;
+    Dropbox.appKey = $(field).data("app-key");
 
-(function() {
+    options = {
+      linkType: "direct",
 
-    function dropbox_chooser(){
-
-        var chooser_field = document.querySelector('input[type=dropbox-chooser]');
-
-        Dropbox.appKey = chooser_field.getAttribute("data-app-key");
-
-        options = {
-            linkType: "direct",
-
-            success: function(files) {
-                chooser_field.value = files[0].link;
-                var event = new CustomEvent('dropboxChooserSuccess', { 'file': files[0] });
-                chooser_field.dispatchEvent(event);
-            },
-
-            cancel: function() {
-                chooser_field.dispatchEvent(new CustomEvent('dropboxChooserCancel'));
-            }
-        };
+      success: function(files) {
+        field.value = files[0].link;
+        var event = new CustomEvent('dropboxChooserSuccess', { 'file': files[0] });
+        field.dispatchEvent(event);
+      },
+      cancel: function() {
+        field.dispatchEvent(new CustomEvent('dropboxChooserCancel'));
+      }
+    };
         
-        // add extensions only if specified
-        if(chooser_field.hasAttribute("data-extensions")) {
-            options['extensions'] =  chooser_field.getAttribute("data-extensions")
-                .split(" ");
-        }
-
-        var button = Dropbox.createChooseButton(options);
-        chooser_field.parentNode.insertBefore(button, chooser_field);
+    // add extensions only if specified
+    if($(field).data("extensions")) {
+      options['extensions'] =  $(field).data("extensions").split(" ");
     }
 
-    $ = this.jQuery || this.Zepto || this.ender || this.$;
-
-    if($) {
-        $(dropbox_chooser);
-    } else {
-        window.onload = dropbox_chooser;
-    }
-
-})();
+    var button = Dropbox.createChooseButton(options);
+    field.parentNode.insertBefore(button, field);
+  });
+});

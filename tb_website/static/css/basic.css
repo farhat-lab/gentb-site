@@ -4,6 +4,11 @@
   cursor: pointer;
 }
 
-table.content-to-top td {
+table.content-to-top td,
+table.content-to-top th {
   vertical-align: top;
+}
+
+table input {
+  width: 100%;
 }

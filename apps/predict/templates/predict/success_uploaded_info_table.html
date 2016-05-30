@@ -22,20 +22,11 @@
     <tr>
         <th class="text-primary">Files</th>
         <td>
-            {% if dbox_log %}
-                {% if dbox_log.selected_files %}
-                The following file{{ dbox_log.selected_files|pluralize:" was,s were"}} identified from the
-                <a href="{{ dataset.dropbox_url }}" target="_blank">Dropbox link</a>:
-                    <ol>
-                    {% for file_info in dbox_log.selected_files %}
-                        <li>{{ file_info }}</li>
-                    {% endfor %}
-                    </ol>
-                {% endif %}
-                {% if dbox_log.file_metadata_err_msg %}<br />
-                    {{ dbox_log.file_metadata_err_msg }}
-                {% endif %}
-            {% endif %}
+          <ol>
+            {% for file in dataset.files.all %}
+              <li {% if file.result %}class="retrieved"{% endif %}>{{ file.name }} - {{ file.url }}</li>
+            {% endfor %}
+          </ol>
         </td>
     </tr>
     <tr>

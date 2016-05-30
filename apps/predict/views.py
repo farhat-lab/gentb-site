@@ -8,50 +8,58 @@ import logging
 LOGGER = logging.getLogger(__name__)
 
 from django.views.generic import (
-    DetailView, ListView, CreateView, UpdateView, FormView
+    DetailView, ListView, CreateView, UpdateView, FormView,
+    TemplateView,
 )
 from django.core.urlresolvers import reverse
 
 from .models import PredictDataset, DatasetScriptRun
-from .forms import UploadForm, UploadConfirmForm, NotificationForm, ManualInputForm
 from .mixins import PredictMixin, CallbackMixin
 from .message_helper import send_dataset_run_message_to_tb_admins_and_user
+from .forms import *
+
 
 class Datasets(PredictMixin, ListView):
     pass
 
+
 class DatasetView(PredictMixin, DetailView):
     pass
+
 
 class Heatmap(PredictMixin, DetailView):
     queryset = PredictDataset.objects.filter(has_prediction=True)
     template_name = 'predict/heatmap.html'
 
-class ManualInputView(PredictMixin, CreateView):
+
+class UploadChoices(PredictMixin, TemplateView):
+    template_name = 'predict/predictdataset_upload.html'
+
+
+class UploadManual(PredictMixin, CreateView):
+    template_name = 'predict/predictdataset_manual.html'
     form_class = ManualInputForm
 
     def get_initial(self):
         return {'status': PredictDataset.STATUS_NOT_READY, 'user': self.request.user}
 
-    def get_success_url(self):
-        return reverse('predict:view_predict_upload_step2_confirm', kwargs=dict(slug=self.object.md5))
 
 class UploadView(PredictMixin, CreateView):
-    form_class = UploadForm
+    @property
+    def form_class(self):
+        if self.kwargs['type'] == 'fastq':
+            if self.kwargs['fastq'] == 'pair-end':
+                return UploadFastQPairForm
+            return UploadFastQSingleForm
+        return UploadVcfForm
 
     def get_initial(self):
-        return {'status': PredictDataset.STATUS_NOT_READY, 'user': self.request.user}
-
-    def get_success_url(self):
-        return reverse('predict:view_predict_upload_step2_confirm', kwargs=dict(slug=self.object.md5))
-
-
-class UploadConfirm(PredictMixin, UpdateView):
-    """
-    After dropbox has downloaded some metadata, we confirm the files.
-    """
-    template_name = 'predict/predictdataset_confirm.html'
-    form_class = UploadConfirmForm
+        return {
+          'user': self.request.user,
+          'status': PredictDataset.STATUS_NOT_READY,
+          'file_type': self.kwargs['type'],
+          'fastq_type': self.kwargs.get('fastq', None),
+        }
 
 
 class Callback(CallbackMixin, FormView):
