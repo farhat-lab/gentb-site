@@ -6,8 +6,8 @@ from django.core.urlresolvers import reverse
 
 
 class Drug(Model):
-    name = CharField(max_length=255, db_index=True)
-    code = CharField(max_length=12, db_index=True)
+    name = CharField(max_length=255, db_index=True, unique=True)
+    code = CharField(max_length=12, db_index=True, unique=True)
 
     class Meta:
         ordering = ('code',)
@@ -17,11 +17,12 @@ class Drug(Model):
 
 
 class GeneLocus(Model):
-    drug = ForeignKey(Drug, related_name='genes')
+    drug = ForeignKey(Drug, related_name='gene_locuses')
     name = CharField(max_length=255, db_index=True)
 
     class Meta:
         ordering = ('name',)
+        unique_together = ('drug', 'name')
 
     def __str__(self):
         return self.name
@@ -35,6 +36,7 @@ class Mutation(Model):
 
     class Meta:
         ordering = ('order',)
+        unique_together = ('gene_locus', 'name')
 
     def __str__(self):
         return self.name
