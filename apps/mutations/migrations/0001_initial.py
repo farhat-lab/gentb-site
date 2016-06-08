@@ -14,8 +14,8 @@ class Migration(migrations.Migration):
             name='Drug',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
-                ('name', models.CharField(max_length=255, db_index=True)),
-                ('code', models.CharField(max_length=12, db_index=True)),
+                ('name', models.CharField(unique=True, max_length=255, db_index=True)),
+                ('code', models.CharField(unique=True, max_length=12, db_index=True)),
             ],
             options={
                 'ordering': ('code',),
@@ -26,7 +26,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('name', models.CharField(max_length=255, db_index=True)),
-                ('drug', models.ForeignKey(related_name='genes', to='mutations.Drug')),
+                ('drug', models.ForeignKey(related_name='gene_locuses', to='mutations.Drug')),
             ],
             options={
                 'ordering': ('name',),
@@ -43,5 +43,13 @@ class Migration(migrations.Migration):
             options={
                 'ordering': ('order',),
             },
+        ),
+        migrations.AlterUniqueTogether(
+            name='mutation',
+            unique_together=set([('gene_locus', 'name')]),
+        ),
+        migrations.AlterUniqueTogether(
+            name='genelocus',
+            unique_together=set([('drug', 'name')]),
         ),
     ]

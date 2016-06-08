@@ -1,11 +1,18 @@
 
 from django.forms.fields import CharField
+from django.forms.widgets import Textarea
 from django.conf import settings
+
+class ListerWidget(Textarea):
+    class Media:
+        js = ('js/lister.js',)
 
 
 class GeneticInputField(CharField):
-    def __init__(self, *args, **kwargs):
-        pass
+    def __init__(self, data_url, *args, **kw):
+        self.data_url = data_url
+        kw['widget'] = ListerWidget
+        super(GeneticInputField, self).__init__(*args, **kw)
 
     def to_python(self, value):
         "Returns a Unicode object."
@@ -15,8 +22,7 @@ class GeneticInputField(CharField):
 
     def widget_attrs(self, widget):
         attrs = super(CharField, self).widget_attrs(widget)
-        if self.max_length is not None:
-            # The HTML attribute is maxlength, not max_length.
-            attrs.update({'maxlength': str(self.max_length)})
+        attrs['data-data-url'] = self.data_url
+        attrs['class'] = 'lister'
         return attrs
 

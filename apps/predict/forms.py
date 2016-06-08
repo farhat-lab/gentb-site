@@ -4,6 +4,7 @@ Django forms for adding PredictDataset objects as well as a Confirmation form
 """
 import json
 
+from django.core.urlresolvers import reverse_lazy
 from django.forms import * 
 
 from apps.dropbox.widgets import DropboxChooserWidget
@@ -15,7 +16,7 @@ class ManualInputForm(ModelForm):
     """
     Manually enter genetic information for prediction.
     """
-    genetic_information = GeneticInputField()
+    genetic_information = GeneticInputField(reverse_lazy('genes:json'))
 
     class Meta:
         model = PredictDataset

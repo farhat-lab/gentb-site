@@ -20,6 +20,7 @@ urlpatterns = patterns('',
 
     url(r'^explore/', include('apps.explore.urls', namespace='explore')),
     url(r'^predict/', include('apps.predict.urls', namespace='predict')),
+    url(r'^genes/', include('apps.mutations.urls', namespace='genes')),
     url(r'^user/', include('apps.tb_users.urls', namespace='users')),
     url(r'^maps/', include('apps.maps.urls', namespace='maps')),
 
