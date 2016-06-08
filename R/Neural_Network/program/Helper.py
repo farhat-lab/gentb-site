@@ -4,7 +4,7 @@
 # jimmy.royer@analysisgroup.com
 # May 29, 2016
 
-from sknn.mlp import Classifier, Layer
+from sknn.mlp import Classifier, Layer, Native
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
 from sklearn.grid_search import GridSearchCV
@@ -119,14 +119,14 @@ def find_meta_parameters(X_, y_, classifier_type, **kwargs):
                                   regularize="L2",
                                   n_iter = 1000,
                                   verbose=True,
-                                  batch_size=32,
+                                  batch_size=25,
                                   learning_rule="adagrad",
                                   random_state=0)
         ## Meta Parameters Grid Search with Cross Validation
-        param_grid = {"learning_rate": [0.001, 0.01],
-                      "weight_decay": [0.0001, 0.001],
-                      "hidden0__units": [50, 100],
-                      "hidden1__units": [50, 100]}
+        param_grid = {"learning_rate": [0.001, 0.01, 0.05],
+                      "weight_decay": [0.0001, 0.001, 0.005],
+                      "hidden0__units": [75, 100],
+                      "hidden1__units": [75, 100]}
 
         NN = GridSearchCV(NN, param_grid, refit=True, verbose=True, scoring='roc_auc', n_jobs=1, cv=5)
         ## Fit the Classifier
@@ -240,3 +240,24 @@ def margeffects_multi(marg_effects, name):
     out_f = np.concatenate((marg_effects, name), axis = 1)
     return out_f
 
+
+#### AUTO-ENCODING -- TO BE MOVED TO MAIN CODE
+## Extract Number of Units for AutoEncoder
+#units = []
+#for j in NN.layers:
+#    units.append(j.units)
+
+## Run AutoEncoder
+#myweights = auto(X, u'ExpLin', units)
+#
+### Explore Predicted X
+#new_X = myweights.predict_proba(X)
+#x_tild = []
+#for i in new_X:
+#    x_tild.append(i[:,1])
+#x_tild = np.array(x_tild).T
+#
+### Transfer Initial Weights
+#wgt = myweights.get_parameters()
+#wgt = NN.get_parameters()
+#wgt[1] = wgt1[1]

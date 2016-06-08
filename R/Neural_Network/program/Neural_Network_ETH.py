@@ -10,6 +10,7 @@
 import os
 import numpy as np
 import pickle
+import collections
 
 # Change to Current Directory
 os.chdir(r'T:/Share/Jimmy/gentb-site/R/Neural_Network')
@@ -43,44 +44,55 @@ marg_effects_rf = np.zeros((len(features), (n_boot+3)), dtype=np.float32)
 ## Grid Search for Meta-Parameters
 ## Need to Define Activation for Neural - Network.
 ## Supervised: Rectifier or ExpLin
-NN = find_meta_parameters(X, y, "NN", act=u'ExpLin')
-rf = find_meta_parameters(X, y, "RF")
+#NN = find_meta_parameters(X, y, "NN", act=u'ExpLin')
+#rf = find_meta_parameters(X, y, "RF")
 
-## Save and Load Trained Classifier
-#pickle.dump(NN, open('NN.pkl', 'wb'))
-#NN = pickle.load(open('NN.pkl', 'rb'))
+## Save Trained Classifier
+#pickle.dump(NN, open('./output/Classifiers/NN.pkl', 'wb'))
+#pickle.dump(rf, open('./output/Classifiers/rf.pkl', 'wb'))
+#wgtandbias = NN.get_parameters()
+#np.savez('./output/Classifiers/wgtandbias', wgtandbias)
 
-## Extract Number of Units for AutoEncoder
-#units = []
-#for j in NN.layers:
-#    units.append(j.units)
+## Load Trained Classifier (Include weights and biases)
+NN = pickle.load(open('./output/Classifiers/NN.pkl', 'rb'))
+rf = pickle.load(open('./output/Classifiers/rf.pkl', 'rb'))
 
-## Run AutoEncoder
-#myweights = auto(X, u'ExpLin', units)
-#
-### Explore Predicted X
-#new_X = myweights.predict_proba(X)
-#x_tild = []
-#for i in new_X:
-#    x_tild.append(i[:,1])
-#x_tild = np.array(x_tild).T
-#
-### Transfer Initial Weights
-#wgt = myweights.get_parameters()
-#wgt = NN.get_parameters()
-#wgt[1] = wgt1[1]
+#with np.load('./output/Classifiers/wgtandbias.npz') as f:
+#     param_values = [f['arr_%d' % i] for i in range(len(f.files))]
+#importwgt = param_values[0]
+#wgtandbias = []
+#lyr = collections.namedtuple('Parameters', 'weights biases layer')
+#it = 0
+#for i in NN.layers:
+#    lname = i.name
+#    wgt = importwgt[it][0]
+#    bias = importwgt[it][1]
+#    wgtandbias.append(lyr(layer=lname, weights=wgt, biases=bias))
+#    it += 1
+## Transfert Weights for Initial State
+#NN.fit(X, y)
+#NN.set_parameters(wgtandbias)
+#check_wgt = NN.get_parameters()[0][0]
+#check_wgt1 = wgtandbias[0][0]
 
-## Bootstrap Marginal Effects w/ Standard Errors
+
+## Predict With Saved State
+np.random.seed(1)
+#check_prob = NN.predict_proba(X)
+## Reset
+#reset = NN._backend._initialize_impl(X, y)
+## Dimension of Multivariate Marginal Effects
 n_inter = 2
+## Create Containers for Multivariate Marginal Effects
 cont_NN = create_out(n_inter)
 cont_rf = create_out(n_inter)
 ## Compute Multivariate Effects Y = 1
-c_mm = 1
+c_mm = 0
 
+## Bootstrap Marginal Effects w/ Standard Errors
 for i in range(n_boot):
     boot(i, NN, X, y, marg_effects_NN, gof_measures_NN, "Neural Network", cont_NN, n_inter, c_mm) #, weight=wgt)
     boot(i, rf, X, y, marg_effects_rf, gof_measures_rf, "Random Forest", cont_rf, n_inter, c_mm)
-
 
 out_NN = margeffects(marg_effects_NN, gof_measures_NN, n_boot, predictors)
 out_rf = margeffects(marg_effects_rf, gof_measures_rf, n_boot, predictors)

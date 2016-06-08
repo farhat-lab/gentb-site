@@ -1,9 +1,9 @@
 List of TODO for TB Neural Network
 
-* TODO Short Term Milestones [0%]
+* TODO Short Term Milestones [33%]
   - [ ] Run predictions for other drugs
   - [ ] Supplement with description of ROC and Marginal Effects
-  - [ ] Save Meta-Parameters for re-use instead of re-calibration each time
+  - [X] Save Meta-Parameters for re-use instead of re-calibration each time
   
 * TODO Medium Term Milestones [0%]
   - [ ] Multivariate Marginal Effects
