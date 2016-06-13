@@ -41,7 +41,11 @@ class UploadManual(PredictMixin, CreateView):
     form_class = ManualInputForm
 
     def get_initial(self):
-        return {'status': PredictDataset.STATUS_CONFIRMED, 'user': self.request.user}
+        return {
+          'user': self.request.user,
+          'status': PredictDataset.STATUS_FILE_RETRIEVAL_COMPLETE,
+          'file_type': 'manual',
+        }
 
 
 class UploadView(PredictMixin, CreateView):

@@ -26,6 +26,7 @@ LOGGER = logging.getLogger('apps.predict.runner')
 
 VCF_ANALYSIS_SCRIPT = 'analyseVCF.pl'
 FASTQ_ANALYSIS_SCRIPT = 'analyseNGS.pl'
+MANUAL_ANALYSIS_SCRIPT = 'analyseMan.pl'
 SCRIPT_DIR = join(settings.SITE_ROOT, 'apps', 'predict', 'pipeline')
 
 
@@ -111,6 +112,9 @@ class PredictDataset(TimeStampedModel):
             return False
         return FilePatternHelper.is_fastq_pair_ended(self.fastq_type)
 
+    def is_manual(self):
+        return self.file_type == 'manual'
+
     def get_script_command(self):
         """
         Using dataset information, to decide whether to run:
@@ -123,6 +127,9 @@ class PredictDataset(TimeStampedModel):
 
         elif self.is_fastq_file(): # (2b) command for FastQ files
             command_to_run = self.get_fastq_script_command()
+
+        elif self.is_manual():
+            command_to_run = self.get_manual_script_command()
 
         else:
             err_title = 'Not VCF or FastQ file'
@@ -190,6 +197,11 @@ class PredictDataset(TimeStampedModel):
             return None
 
         return command_str
+
+    def get_manual_script_command(self):
+        """Manual script processing"""
+        script_cmd = join(SCRIPT_DIR, MANUAL_ANALYSIS_SCRIPT)
+        return 'perl {0} {1}'.format(script_cmd, self.file_directory)
 
     def get_vcf_script_command(self):
         """

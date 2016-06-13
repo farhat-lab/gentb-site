@@ -27,12 +27,29 @@ class GeneLocus(Model):
     def __str__(self):
         return self.name
 
+class MutationQuerySet(QuerySet):
+    def matrix_csv(self, name, mutations):
+        """Creates a matrix.csv file for prediction"""
+        mutations = set(mutations)
+        headers = ['strain']
+        row = [name.replace(',', '-')]
+        for item in self:
+            headers.append(item.name)
+            if item.name in mutations:
+                row.append('1')
+                mutations.remove(item.name)
+            else:
+                row.append('0')
+
+        # we could use the csv module here, but this is ok.
+        return (",".join(headers) + "\n" + ",".join(row), mutations)
 
 class Mutation(Model):
     gene_locus = ForeignKey(GeneLocus, related_name='mutations')
 
     name = CharField(max_length=255, db_index=True)
     order = IntegerField(default=0)
+    objects = MutationQuerySet.as_manager()
 
     class Meta:
         ordering = ('order',)

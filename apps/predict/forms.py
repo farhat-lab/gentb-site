@@ -2,38 +2,19 @@
 Django forms for adding PredictDataset objects as well as a Confirmation form
 
 """
+import os
 import json
 
+from django.utils.text import slugify
 from django.core.urlresolvers import reverse_lazy
 from django.forms import * 
 
 from apps.dropbox.widgets import DropboxChooserWidget
 from apps.mutations.fields import GeneticInputField
+from apps.mutations.models import Mutation
 
 from .models import PredictDataset
 
-class ManualInputForm(ModelForm):
-    """
-    Manually enter genetic information for prediction.
-    """
-    genetic_information = GeneticInputField(reverse_lazy('genes:json'))
-
-    class Meta:
-        model = PredictDataset
-        fields = ('title', 'description')
-
-    def clean_genetic_information(self):
-        raw = self.cleaned_data.get('genetic_information')
-        # XXX Here goes the code
-        return "Something"
-
-    def save(self, *args, **kw):
-        obj = super(ManualInputForm).save(*args, **kw)
-        if obj and obj.pk:
-            fn = join(obj.file_directory, 'results.csv')
-            with open(fn, 'w') as fhl:
-                fhl.write(self.cleaned_data.get('genetic_information'))
-        return obj
 
 class UploadForm(ModelForm):
     """
@@ -59,6 +40,32 @@ class UploadForm(ModelForm):
                 if url:
                     dataset.files.create(name=key, url=url)
         return dataset
+
+
+class ManualInputForm(UploadForm):
+    """
+    Manually enter genetic information for prediction.
+    """
+    genetic_information = GeneticInputField(reverse_lazy('genes:json'))
+
+    def clean_genetic_information(self):
+        data = self.cleaned_data.get('genetic_information')
+        mutations = [m.strip() for m in data.split('\n') if m.strip()]
+        name = slugify(self.cleaned_data.get('title'))
+        (output, left_over) = Mutation.objects.matrix_csv(name, mutations)
+        if left_over:
+            raise ValidationError("Mutations not found in database: %s" % left_over)
+        return output
+
+    def save(self, *args, **kw):
+        obj = super(UploadForm, self).save(*args, **kw)
+        if obj and obj.pk:
+            path = os.path.join(obj.file_directory, 'output')
+            if not os.path.isdir(path):
+                os.makedirs(path)
+            with open(os.path.join(path, 'matrix.csv'), 'w') as fhl:
+                fhl.write(self.cleaned_data.get('genetic_information'))
+        return obj
 
 
 class UploadVcfForm(UploadForm):

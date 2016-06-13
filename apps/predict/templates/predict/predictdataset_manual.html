@@ -12,7 +12,7 @@
   </div>
   <div class = "row">
     <div class="col-md-6 portfolio-item">
-      <p>Enter each of the mutations manually, any mutations not added will be considered to have been NOT found. There is no way to specify that mutations have not been tested for.
+      <p>Please select one or more mutations from this list. Please note that if a mutation is not selected the model will assume that it was tested for/sequenced and is not present. There is no way to specify that mutations have not been tested for.
 
       {% if form.errors %}
         <div class="alert alert-danger" role="alert">Please check the errors below
@@ -20,7 +20,7 @@
         </div>
       {% endif %}
 
-      <form action="{% url 'predict:upload' %}" enctype="multipart/form-data" method="post">
+      <form method="post">
         {% csrf_token %}
         {% for hidden in form.hidden_fields %}
           {{ hidden }}

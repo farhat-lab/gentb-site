@@ -32,7 +32,7 @@
             <td>{{ object.description|linebreaks }}</td>
           </tr>
           <tr>
-            <th class="text-primary">File Type</th>
+            <th class="text-primary">Data Type</th>
             <td>
               {{ object.file_type|upper }}{% if object.is_fastq_file %},
               {% if object.is_fastq_pair_ended %}Pair-end{% else %}Single-end{% endif %}<br/>
