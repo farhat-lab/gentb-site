@@ -48,7 +48,10 @@
             </tr>
           {% endfor %}
           <tr>
-            <td colspan="2"><hr /></td>
+            <td colspan="2"><hr />
+              <a href="{% url "predict:upload" %}" class="btn btn-default">Cancel</a>
+              <button class="btn btn-primary">Submit</button>
+            </td>
           </tr>
         </table>
       </form>

@@ -1,0 +1,109 @@
+2016-06-13 13:05:36,863 - INFO - Beginning variant calling
+2016-06-13 13:05:36,863 - INFO - Output will go to /home/doctormo/Documents/Maha/gentb-site/data/tb_uploaded_files/tbdata_00000013/h37rv.h37rv.vcf
+2016-06-13 13:05:36,863 - DEBUG - Loaded regions from BAM header, SQ tags
+2016-06-13 13:05:36,863 - DEBUG - The following regions will be searched: [('NC_000962.3', 0, 4411532)]
+2016-06-13 13:05:36,864 - DEBUG - Error in BAM header sample parsing. Error was 
+'RG'
+
+2016-06-13 13:05:36,864 - DEBUG - Adding sample name h37rv.sorted, from BAM file /home/doctormo/Documents/Maha/gentb-site/data/tb_uploaded_files/tbdata_00000013/h37rv.sorted.bam
+2016-06-13 13:05:36,864 - DEBUG - Max haplotypes used for initial haplotype filtering = 50
+2016-06-13 13:05:36,864 - DEBUG - Max haplotypes used for genotype generation = 50
+2016-06-13 13:05:36,864 - DEBUG - Max genotypes = 1275
+2016-06-13 13:05:36,865 - INFO - Processing region NC_000962.3:0-100000. (Only printing this message every 10 regions of size 100000)
+2016-06-13 13:05:36,865 - DEBUG - There is one sample in each BAM file. No merging is required
+2016-06-13 13:05:36,865 - DEBUG - There are 0 filtered variant candidates in reads which overlap the region NC_000962.3:0-100000
+2016-06-13 13:05:36,866 - DEBUG - There is one sample in each BAM file. No merging is required
+2016-06-13 13:05:36,866 - DEBUG - There are 0 filtered variant candidates in reads which overlap the region NC_000962.3:100000-200000
+2016-06-13 13:05:36,866 - DEBUG - There is one sample in each BAM file. No merging is required
+2016-06-13 13:05:36,866 - DEBUG - There are 0 filtered variant candidates in reads which overlap the region NC_000962.3:200000-300000
+2016-06-13 13:05:36,867 - DEBUG - There is one sample in each BAM file. No merging is required
+2016-06-13 13:05:36,867 - DEBUG - There are 0 filtered variant candidates in reads which overlap the region NC_000962.3:300000-400000
+2016-06-13 13:05:36,867 - DEBUG - There is one sample in each BAM file. No merging is required
+2016-06-13 13:05:36,868 - DEBUG - There are 0 filtered variant candidates in reads which overlap the region NC_000962.3:400000-500000
+2016-06-13 13:05:36,868 - DEBUG - There is one sample in each BAM file. No merging is required
+2016-06-13 13:05:36,868 - DEBUG - There are 0 filtered variant candidates in reads which overlap the region NC_000962.3:500000-600000
+2016-06-13 13:05:36,868 - DEBUG - There is one sample in each BAM file. No merging is required
+2016-06-13 13:05:36,869 - DEBUG - There are 0 filtered variant candidates in reads which overlap the region NC_000962.3:600000-700000
+2016-06-13 13:05:36,869 - DEBUG - There is one sample in each BAM file. No merging is required
+2016-06-13 13:05:36,869 - DEBUG - There are 0 filtered variant candidates in reads which overlap the region NC_000962.3:700000-800000
+2016-06-13 13:05:36,870 - DEBUG - There is one sample in each BAM file. No merging is required
+2016-06-13 13:05:36,870 - DEBUG - There are 0 filtered variant candidates in reads which overlap the region NC_000962.3:800000-900000
+2016-06-13 13:05:36,870 - DEBUG - There is one sample in each BAM file. No merging is required
+2016-06-13 13:05:36,870 - DEBUG - There are 0 filtered variant candidates in reads which overlap the region NC_000962.3:900000-1000000
+2016-06-13 13:05:36,870 - INFO - Processing region NC_000962.3:1000000-1100000. (Only printing this message every 10 regions of size 100000)
+2016-06-13 13:05:36,871 - DEBUG - There is one sample in each BAM file. No merging is required
+2016-06-13 13:05:36,871 - DEBUG - There are 0 filtered variant candidates in reads which overlap the region NC_000962.3:1000000-1100000
+2016-06-13 13:05:36,871 - DEBUG - There is one sample in each BAM file. No merging is required
+2016-06-13 13:05:36,872 - DEBUG - There are 0 filtered variant candidates in reads which overlap the region NC_000962.3:1100000-1200000
+2016-06-13 13:05:36,872 - DEBUG - There is one sample in each BAM file. No merging is required
+2016-06-13 13:05:36,872 - DEBUG - There are 0 filtered variant candidates in reads which overlap the region NC_000962.3:1200000-1300000
+2016-06-13 13:05:36,872 - DEBUG - There is one sample in each BAM file. No merging is required
+2016-06-13 13:05:36,873 - DEBUG - There are 0 filtered variant candidates in reads which overlap the region NC_000962.3:1300000-1400000
+2016-06-13 13:05:36,873 - DEBUG - There is one sample in each BAM file. No merging is required
+2016-06-13 13:05:36,873 - DEBUG - There are 0 filtered variant candidates in reads which overlap the region NC_000962.3:1400000-1500000
+2016-06-13 13:05:36,873 - DEBUG - There is one sample in each BAM file. No merging is required
+2016-06-13 13:05:36,874 - DEBUG - There are 0 filtered variant candidates in reads which overlap the region NC_000962.3:1500000-1600000
+2016-06-13 13:05:36,874 - DEBUG - There is one sample in each BAM file. No merging is required
+2016-06-13 13:05:36,874 - DEBUG - There are 0 filtered variant candidates in reads which overlap the region NC_000962.3:1600000-1700000
+2016-06-13 13:05:36,874 - DEBUG - There is one sample in each BAM file. No merging is required
+2016-06-13 13:05:36,875 - DEBUG - There are 0 filtered variant candidates in reads which overlap the region NC_000962.3:1700000-1800000
+2016-06-13 13:05:36,875 - DEBUG - There is one sample in each BAM file. No merging is required
+2016-06-13 13:05:36,875 - DEBUG - There are 0 filtered variant candidates in reads which overlap the region NC_000962.3:1800000-1900000
+2016-06-13 13:05:36,875 - DEBUG - There is one sample in each BAM file. No merging is required
+2016-06-13 13:05:36,876 - DEBUG - There are 0 filtered variant candidates in reads which overlap the region NC_000962.3:1900000-2000000
+2016-06-13 13:05:36,876 - INFO - Processing region NC_000962.3:2000000-2100000. (Only printing this message every 10 regions of size 100000)
+2016-06-13 13:05:36,876 - DEBUG - There is one sample in each BAM file. No merging is required
+2016-06-13 13:05:36,876 - DEBUG - There are 0 filtered variant candidates in reads which overlap the region NC_000962.3:2000000-2100000
+2016-06-13 13:05:36,877 - DEBUG - There is one sample in each BAM file. No merging is required
+2016-06-13 13:05:36,877 - DEBUG - There are 0 filtered variant candidates in reads which overlap the region NC_000962.3:2100000-2200000
+2016-06-13 13:05:36,877 - DEBUG - There is one sample in each BAM file. No merging is required
+2016-06-13 13:05:36,877 - DEBUG - There are 0 filtered variant candidates in reads which overlap the region NC_000962.3:2200000-2300000
+2016-06-13 13:05:36,878 - DEBUG - There is one sample in each BAM file. No merging is required
+2016-06-13 13:05:36,878 - DEBUG - There are 0 filtered variant candidates in reads which overlap the region NC_000962.3:2300000-2400000
+2016-06-13 13:05:36,878 - DEBUG - There is one sample in each BAM file. No merging is required
+2016-06-13 13:05:36,879 - DEBUG - There are 0 filtered variant candidates in reads which overlap the region NC_000962.3:2400000-2500000
+2016-06-13 13:05:36,879 - DEBUG - There is one sample in each BAM file. No merging is required
+2016-06-13 13:05:36,879 - DEBUG - There are 0 filtered variant candidates in reads which overlap the region NC_000962.3:2500000-2600000
+2016-06-13 13:05:36,879 - DEBUG - There is one sample in each BAM file. No merging is required
+2016-06-13 13:05:36,880 - DEBUG - There are 0 filtered variant candidates in reads which overlap the region NC_000962.3:2600000-2700000
+2016-06-13 13:05:36,880 - DEBUG - There is one sample in each BAM file. No merging is required
+2016-06-13 13:05:36,880 - DEBUG - There are 0 filtered variant candidates in reads which overlap the region NC_000962.3:2700000-2800000
+2016-06-13 13:05:36,880 - DEBUG - There is one sample in each BAM file. No merging is required
+2016-06-13 13:05:36,881 - DEBUG - There are 0 filtered variant candidates in reads which overlap the region NC_000962.3:2800000-2900000
+2016-06-13 13:05:36,881 - DEBUG - There is one sample in each BAM file. No merging is required
+2016-06-13 13:05:36,881 - DEBUG - There are 0 filtered variant candidates in reads which overlap the region NC_000962.3:2900000-3000000
+2016-06-13 13:05:36,881 - INFO - Processing region NC_000962.3:3000000-3100000. (Only printing this message every 10 regions of size 100000)
+2016-06-13 13:05:36,881 - DEBUG - There is one sample in each BAM file. No merging is required
+2016-06-13 13:05:36,882 - DEBUG - There are 0 filtered variant candidates in reads which overlap the region NC_000962.3:3000000-3100000
+2016-06-13 13:05:36,882 - DEBUG - There is one sample in each BAM file. No merging is required
+2016-06-13 13:05:36,882 - DEBUG - There are 0 filtered variant candidates in reads which overlap the region NC_000962.3:3100000-3200000
+2016-06-13 13:05:36,883 - DEBUG - There is one sample in each BAM file. No merging is required
+2016-06-13 13:05:36,883 - DEBUG - There are 0 filtered variant candidates in reads which overlap the region NC_000962.3:3200000-3300000
+2016-06-13 13:05:36,883 - DEBUG - There is one sample in each BAM file. No merging is required
+2016-06-13 13:05:36,884 - DEBUG - There are 0 filtered variant candidates in reads which overlap the region NC_000962.3:3300000-3400000
+2016-06-13 13:05:36,884 - DEBUG - There is one sample in each BAM file. No merging is required
+2016-06-13 13:05:36,884 - DEBUG - There are 0 filtered variant candidates in reads which overlap the region NC_000962.3:3400000-3500000
+2016-06-13 13:05:36,884 - DEBUG - There is one sample in each BAM file. No merging is required
+2016-06-13 13:05:36,885 - DEBUG - There are 0 filtered variant candidates in reads which overlap the region NC_000962.3:3500000-3600000
+2016-06-13 13:05:36,885 - DEBUG - There is one sample in each BAM file. No merging is required
+2016-06-13 13:05:36,885 - DEBUG - There are 0 filtered variant candidates in reads which overlap the region NC_000962.3:3600000-3700000
+2016-06-13 13:05:36,885 - DEBUG - There is one sample in each BAM file. No merging is required
+2016-06-13 13:05:36,886 - DEBUG - There are 0 filtered variant candidates in reads which overlap the region NC_000962.3:3700000-3800000
+2016-06-13 13:05:36,886 - DEBUG - There is one sample in each BAM file. No merging is required
+2016-06-13 13:05:36,886 - DEBUG - There are 0 filtered variant candidates in reads which overlap the region NC_000962.3:3800000-3900000
+2016-06-13 13:05:36,887 - DEBUG - There is one sample in each BAM file. No merging is required
+2016-06-13 13:05:36,887 - DEBUG - There are 0 filtered variant candidates in reads which overlap the region NC_000962.3:3900000-4000000
+2016-06-13 13:05:36,887 - INFO - Processing region NC_000962.3:4000000-4100000. (Only printing this message every 10 regions of size 100000)
+2016-06-13 13:05:36,887 - DEBUG - There is one sample in each BAM file. No merging is required
+2016-06-13 13:05:36,887 - DEBUG - There are 0 filtered variant candidates in reads which overlap the region NC_000962.3:4000000-4100000
+2016-06-13 13:05:36,888 - DEBUG - There is one sample in each BAM file. No merging is required
+2016-06-13 13:05:36,888 - DEBUG - There are 0 filtered variant candidates in reads which overlap the region NC_000962.3:4100000-4200000
+2016-06-13 13:05:36,888 - DEBUG - There is one sample in each BAM file. No merging is required
+2016-06-13 13:05:36,889 - DEBUG - There are 0 filtered variant candidates in reads which overlap the region NC_000962.3:4200000-4300000
+2016-06-13 13:05:36,889 - DEBUG - There is one sample in each BAM file. No merging is required
+2016-06-13 13:05:36,889 - DEBUG - There are 0 filtered variant candidates in reads which overlap the region NC_000962.3:4300000-4400000
+2016-06-13 13:05:36,889 - DEBUG - There is one sample in each BAM file. No merging is required
+2016-06-13 13:05:36,889 - DEBUG - There are 0 filtered variant candidates in reads which overlap the region NC_000962.3:4400000-4411532
+2016-06-13 13:05:36,889 - INFO - Merging output VCF file(s) into final file /home/doctormo/Documents/Maha/gentb-site/data/tb_uploaded_files/tbdata_00000013/h37rv.h37rv.vcf
+2016-06-13 13:05:36,890 - INFO - Finished merging VCF file(s)
+2016-06-13 13:05:36,890 - INFO - Finished variant calling

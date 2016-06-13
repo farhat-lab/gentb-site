@@ -49,5 +49,6 @@ FastQ or VCF file analysis.
         (ret, msg) = dataset.run_command()
         if not ret:
             print "ERROR: %s" % msg
+        print "It RUN OK\n\n"
 
 

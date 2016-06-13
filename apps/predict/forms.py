@@ -22,6 +22,18 @@ class ManualInputForm(ModelForm):
         model = PredictDataset
         fields = ('title', 'description')
 
+    def clean_genetic_information(self):
+        raw = self.cleaned_data.get('genetic_information')
+        # XXX Here goes the code
+        return "Something"
+
+    def save(self, *args, **kw):
+        obj = super(ManualInputForm).save(*args, **kw)
+        if obj and obj.pk:
+            fn = join(obj.file_directory, 'results.csv')
+            with open(fn, 'w') as fhl:
+                fhl.write(self.cleaned_data.get('genetic_information'))
+        return obj
 
 class UploadForm(ModelForm):
     """

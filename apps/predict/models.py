@@ -57,7 +57,6 @@ class PredictDataset(TimeStampedModel):
     """An uploaded predict dataset"""
 
     STATUS_DELETED = 0
-    STATUS_NOT_READY = 1
     STATUS_CONFIRMED = 2
     STATUS_FILE_RETRIEVAL_STARTED = 3
     STATUS_FILE_RETRIEVAL_ERROR = 4
@@ -248,7 +247,6 @@ class PredictDataset(TimeStampedModel):
         template_dict['RESULT_OUTPUT_DIRECTORY_NAME'] = RESULT_OUTPUT_DIRECTORY_NAME
         template_dict['EXPECTED_FILE_DESCRIPTIONS'] = EXPECTED_FILE_DESCRIPTIONS
         
-
         print('-' * 40)
         print(template_dict)
         print('-' * 40)
@@ -431,9 +429,6 @@ class PredictDataset(TimeStampedModel):
 
     # Initial information statuses
     #
-    def set_status_not_ready(self, save_status=True):
-        self.set_status(self.STATUS_NOT_READY, save_status)
-
     def set_status_confirmed(self, save_status=True):
         self.set_status(self.STATUS_CONFIRMED, save_status)
 
@@ -480,7 +475,7 @@ class PredictDatasetFile(TimeStampedModel):
     """
     Single file that has been retrieved for a particular dataset
     """
-    dataset = models.ForeignKey(PredictDataset)
+    dataset = models.ForeignKey(PredictDataset, related_name='results')
     name = models.CharField(max_length=255, help_text='Name of the file (w/o) the path')
     fullpath = models.TextField(help_text='Full path to the file')
     size = models.IntegerField(default=0, help_text='Size of the file in bytes')

@@ -1,10 +1,6 @@
 from django.contrib import admin
 
-# Register your models here.
-from apps.predict.models import PredictDatasetStatus, PredictDataset,\
-            PredictDatasetNote, DatasetScriptRun,\
-            ScriptToRun
-
+from apps.predict.models import *
 from apps.dropbox.models import DropboxFile
 
 
@@ -23,6 +19,11 @@ class PredictDatasetNoteAdmin(admin.ModelAdmin):
 
 admin.site.register(PredictDatasetNote, PredictDatasetNoteAdmin)
 
+class PredictDatasetFileInline(admin.StackedInline):
+    model = PredictDatasetFile
+    can_delete = True
+    verbose_name_plural = 'Dataset Files'
+    extra = 0
 
 class PredictDatasetNoteInline(admin.StackedInline):
     model = PredictDatasetNote
@@ -42,7 +43,7 @@ class DropboxFileInline(admin.StackedInline):
     extra = 0
 
 class PredictDatasetAdmin(admin.ModelAdmin):
-    inlines = (DropboxFileInline, PredictDatasetNoteInline, DatasetScriptRunInline)
+    inlines = (DropboxFileInline, PredictDatasetFileInline, PredictDatasetNoteInline, DatasetScriptRunInline)
     save_on_top = True
     search_fields = ('title', 'user__first_name', 'user__last_name',)
     list_display = ('title', 'user', 'status', 'has_prediction', 'file_directory', 'created', 'modified')

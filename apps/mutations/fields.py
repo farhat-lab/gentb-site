@@ -7,7 +7,6 @@ class ListerWidget(Textarea):
     class Media:
         js = ('js/lister.js',)
 
-
 class GeneticInputField(CharField):
     def __init__(self, data_url, *args, **kw):
         self.data_url = data_url

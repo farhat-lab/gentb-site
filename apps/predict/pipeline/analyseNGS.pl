@@ -30,8 +30,6 @@ if ($pairend >0) {
 }
 closedir(DIR);
 
-#print STDERR "@files\n";
-
 foreach(@files)
 {
 	my @name=split('\.',$_);
@@ -43,6 +41,5 @@ foreach(@files)
             $command = "$Bin/no_bsub";
         }
 	system("$command -q long -W 99:00 -o ${path}/$name[0].error -J ".$name[0].' "'."source $Bin/prepare_environment.sh ; perl $Bin/bin/bsubAnalyse.pl $name[0] $ref $pairend $pex $path".'"');
-	#print STDERR "bsub -q long -W 990:00 -o ${path}/$name[0].error -J ".$name[0].' "'."source $Bin/prepare_environment.sh ; perl $Bin/bin/bsubAnalyse.pl $name[0] $ref $pairend $pex $path".'"';
 }
 
