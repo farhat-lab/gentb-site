@@ -14,6 +14,9 @@
     {% for hidden_field in form.hidden_fields %}
         {{ hidden_field }}
     {% endfor %}
+    {% if request.GET.next %}
+      <input type="hidden" name="next" value="{{ request.GET.next }}"/>
+    {% endif %}
 
     <table class="table-condensed">
         {% for field in form.visible_fields %}
