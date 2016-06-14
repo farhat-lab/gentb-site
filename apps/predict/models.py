@@ -13,13 +13,13 @@ from django.utils.text import slugify
 from django.core import serializers
 from django.core.urlresolvers import reverse
 
-from apps.utils.site_url_util import get_site_url
 from apps.utils.file_patterns import *
 
 from apps.utils.result_file_info import RESULT_FILE_NAME_DICT,\
             EXPECTED_FILE_DESCRIPTIONS, RESULT_OUTPUT_DIRECTORY_NAME
 
 from .script_runner import run_script
+from .utils import get_site_url
 
 import logging
 LOGGER = logging.getLogger('apps.predict.pipeline')
@@ -552,7 +552,7 @@ class DatasetScriptRun(TimeStampedModel):
         admin_url = reverse('admin:predict_predictdataset_change', args=[pk])
 
         slug = {'slug': self.md5}
-        callback_url = get_site_url(for_internal_callback=True) + \
+        callback_url = get_site_url(internal=True) + \
                 reverse('predict:callback', kwargs=slug)
 
         return dict(

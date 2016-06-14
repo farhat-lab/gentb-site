@@ -1,7 +1,8 @@
 from django.template.loader import render_to_string
-from apps.utils.view_util import get_site_url
 from apps.utils.email_util import send_email_to_admins, send_mail_to_user_and_admins
 from apps.predict.models import DatasetScriptRun
+
+from .utils import get_site_url
 
 def send_new_dataset_message_to_tb_admins(dataset):
     """
