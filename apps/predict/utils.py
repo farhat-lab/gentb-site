@@ -9,6 +9,8 @@ def get_site_url(internal=False):
     protocol = 'http%s://' % ('', 's')[settings.IS_HTTPS_SITE]
 
     if internal and settings.INTERNAL_CALLBACK_SITE_URL:
-        return protocol + settings.INTERNAL_CALLBACK_SITE_URL
+        if '://' not in settings.INTERNAL_CALLBACK_SITE_URL:
+            return protocol + settings.INTERNAL_CALLBACK_SITE_URL
+        return settings.INTERNAL_CALLBACK_SITE_URL
     return protocol + Site.objects.get_current().domain
 
