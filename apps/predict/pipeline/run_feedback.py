@@ -19,8 +19,7 @@ import urllib
 CALLBACK_INFO_DICT = {"file_directory": "/home/gentb_test/tbdata_00000112",
 "run_md5": "bb897a28f59f93ad115a6faa42f4918d",
 "admin_url": "https://gentb.hms.harvard.edu/gentb-admin/predict/predictdataset/1/",
-"callback_url": "http://127.0.0.1:8000/predict/pipeline-run-results-notice/",
-#"callback_url": "https://gentb.hms.harvard.edu/predict/pipeline-run-results-notice/",
+"callback_url": "http://internal_addr:9001/predict/1/callback/",
 "dataset_id": 112,
 "user_email": "tbuser@harvard.edu"}
 """
