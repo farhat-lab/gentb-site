@@ -33,22 +33,21 @@ FastQ or VCF file analysis.
             DATASET_STATUS_FILE_RETRIEVAL_COMPLETE
         (2) If such a dataset exists, run it through the pipeline
         """
-        LOGGER.debug("Run pipeline check: next dataset")
-        print("Run pipeline check: next dataset")
+        LOGGER.info("Run pipeline check: next dataset")
 
         # get some Dataset
         dataset = PredictDataset.objects.filter(\
                 status=PredictDataset.STATUS_FILE_RETRIEVAL_COMPLETE).first()
 
         if dataset is None:
-            return LOGGER.debug("Nothing to check")
+            return LOGGER.info("Nothing to check")
 
         # Run script
-        LOGGER.debug("Run pipeline for dataset: %s (%s)", dataset, dataset.pk)
+        LOGGER.info("Run pipeline for dataset: %s (%s)", dataset, dataset.pk)
 
         (ret, msg) = dataset.run_command()
         if not ret:
-            print "ERROR: %s" % msg
-        print "It RUN OK\n\n"
+            LOGGER.error(str(msg))
+        LOGGER.info("OK")
 
 

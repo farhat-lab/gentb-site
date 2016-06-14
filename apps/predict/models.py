@@ -22,7 +22,7 @@ from apps.utils.result_file_info import RESULT_FILE_NAME_DICT,\
 from .script_runner import run_script
 
 import logging
-LOGGER = logging.getLogger('apps.predict.runner')
+LOGGER = logging.getLogger('apps.predict.pipeline')
 
 VCF_ANALYSIS_SCRIPT = 'analyseVCF.pl'
 FASTQ_ANALYSIS_SCRIPT = 'analyseNGS.pl'
