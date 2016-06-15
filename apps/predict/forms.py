@@ -15,6 +15,8 @@ from apps.mutations.models import Mutation
 
 from .models import PredictDataset
 
+FASTQ_FILES = ['.fastq', '.fastq.gz']
+VCF_FILES = ['.vcf', '.vcf.gz']
 
 class UploadForm(ModelForm):
     """
@@ -69,19 +71,19 @@ class ManualInputForm(UploadForm):
 
 
 class UploadVcfForm(UploadForm):
-    vcf_file = CharField(widget=DropboxChooserWidget(['.vcf']), required=True,
+    vcf_file = CharField(widget=DropboxChooserWidget(VCF_FILES), required=True,
         label="VCF File", help_text="Variant Call Formated sequence data file")
 
 
 class UploadFastQPairForm(UploadForm):
-    fastq_one = CharField(widget=DropboxChooserWidget(['.fastq']), required=True,
+    fastq_one = CharField(widget=DropboxChooserWidget(FASTQ_FILES), required=True,
         label="Forward Read", help_text="FastQ file containing the forward read sequence.")
-    fastq_two = CharField(widget=DropboxChooserWidget(['.fastq']), required=True,
+    fastq_two = CharField(widget=DropboxChooserWidget(FASTQ_FILES), required=True,
         label="Reverse Read", help_text="FastQ file containing the reverse read sequence.")
 
 
 class UploadFastQSingleForm(UploadForm):
-    fastq_one = CharField(widget=DropboxChooserWidget(['.fastq']), required=True,
+    fastq_one = CharField(widget=DropboxChooserWidget(FASTQ_FILES), required=True,
         label="FastQ File", help_text="FastQ file containing the single sequence read.")
 
 
