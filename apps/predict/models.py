@@ -13,22 +13,14 @@ from django.utils.text import slugify
 from django.core import serializers
 from django.core.urlresolvers import reverse
 
-from apps.utils.file_patterns import *
-
 from apps.utils.result_file_info import RESULT_FILE_NAME_DICT,\
             EXPECTED_FILE_DESCRIPTIONS, RESULT_OUTPUT_DIRECTORY_NAME
 
 from .script_runner import run_script
-from .utils import get_site_url
+from .utils import *
 
 import logging
 LOGGER = logging.getLogger('apps.predict.pipeline')
-
-VCF_ANALYSIS_SCRIPT = 'analyseVCF.pl'
-FASTQ_ANALYSIS_SCRIPT = 'analyseNGS.pl'
-MANUAL_ANALYSIS_SCRIPT = 'analyseMan.pl'
-SCRIPT_DIR = join(settings.SITE_ROOT, 'apps', 'predict', 'pipeline')
-
 
 class PredictDatasetStatus(models.Model):
     name = models.CharField(max_length=50)
@@ -96,22 +88,6 @@ class PredictDataset(TimeStampedModel):
             self.has_prediction = True
             self.save()
 
-    def is_vcf_file(self):
-        return FilePatternHelper.is_vcf_file(self.file_type)
-
-    def is_fastq_file(self):
-        return FilePatternHelper.is_fastq_file(self.file_type)
-
-    def is_fastq_single_ended(self):
-        if not self.is_fastq_file():
-            return False
-        return FilePatternHelper.is_fastq_single_ended(self.fastq_type)
-
-    def is_fastq_pair_ended(self):
-        if not self.is_fastq_file():
-            return False
-        return FilePatternHelper.is_fastq_pair_ended(self.fastq_type)
-
     def is_manual(self):
         return self.file_type == 'manual'
 
@@ -120,24 +96,14 @@ class PredictDataset(TimeStampedModel):
         Using dataset information, to decide whether to run:
             (1) script for a VCF file
             (2) script for FastQ files
+            (3) script for Manual input
         """
-        # Formate either a VCF or FastQ pipeline command
-        if self.is_vcf_file():     # (2a) command for a VCF file
+        if self.file_type == FILE_TYPE_VCF:
             command_to_run = self.get_vcf_script_command()
-
-        elif self.is_fastq_file(): # (2b) command for FastQ files
+        elif self.file_type == FILE_TYPE_FASTQ:
             command_to_run = self.get_fastq_script_command()
-
-        elif self.is_manual():
+        elif self.file_type == FILE_TYPE_MANUAL:
             command_to_run = self.get_manual_script_command()
-
-        else:
-            err_title = 'Not VCF or FastQ file'
-            err_note = 'Could not determine the file type.\
-             Database contained: "%s"' % (self.file_type)
-            #err_msg_obj =
-            self.record_error(err_title, err_note)
-            return None
 
         return command_to_run
 
@@ -170,33 +136,10 @@ class PredictDataset(TimeStampedModel):
             self.record_error(err_title, err_note)
             return None
 
-        # Format the full command with target containing
-        #   input files
-        #
-        if self.is_fastq_single_ended():
-            command_str = 'perl {0} 0 . {1}'.format(script_cmd,\
-                self.file_directory)
-        elif self.is_fastq_pair_ended():
-            pair_extension = self.get_fastq_pair_end_extension()
-            if pair_extension is None:
-                err_title = 'FastQ could not find pair-ended extension type'
-                err_note = 'Could not determine pair-ended extension type.\
-                 Database contained: "%s"' % (self.fastq_type)
-                #err_msg_obj = self.record_error(err_title, err_note)
-                self.record_error(err_title, err_note)
-                return None
-
-            command_str = 'perl {0} 1 {1} {2}'.format(script_cmd,\
-                             pair_extension, self.file_directory)
-        else:
-            err_title = 'FastQ: single-ended or pair-ended?'
-            err_note = 'Could not determine single-ended or pair-ended FastQ type.\
-             Database contained: "%s"' % (self.fastq_type)
-            # err_msg_obj = self.record_error(err_title, err_note)
-            self.record_error(err_title, err_note)
-            return None
-
-        return command_str
+        return ' '.join(['perl', script_cmd,
+            str(int(self.fastq_type == FASTQ_PAIR_ENDED)),
+            FASTQ_PAIR_END[self.fastq_type],
+            self.file_directory])
 
     def get_manual_script_command(self):
         """Manual script processing"""
@@ -294,17 +237,6 @@ class PredictDataset(TimeStampedModel):
 
         # Write to the database
         self.notes.create(title=msg_title, note=msg)
-
-    def get_fastq_pair_end_extension(self):
-        try:
-            dlog = self.dropboxretrievallog
-        except:
-            return None
-
-        return dlog.fastq_pair_end_extension
-
-    def get_file_patterns(self):
-        return FilePatternHelper.get_file_patterns_for_dropbox(self.file_type)
 
     def make_scatter(self, cols, data):
         regions = defaultdict(list)
