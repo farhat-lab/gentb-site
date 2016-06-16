@@ -3,15 +3,15 @@
     <div class="alert alert-danger" role="alert">Validation Error - Required fields were missed or there was a validation error. Please scroll down to see details. </div>
 {% endif %}
 
-<form action="{% url 'users:view_signup_page' %}" enctype="multipart/form-data" method="post">
+<form action="{% url 'users:signup' %}" enctype="multipart/form-data" method="post">
     {% csrf_token %}
 
-    {% for hidden in signup_form.hidden_fields %}
+    {% for hidden in form.hidden_fields %}
     {{ hidden }}
     {% endfor %}
 
     <table class="table-condensed">
-        {% for field in signup_form.visible_fields %}
+        {% for field in form.visible_fields %}
             {% if field.id_for_label == 'id_title' %}
                 <tr>
                     <th colspan="2" class="text-center">Dataset information</th>

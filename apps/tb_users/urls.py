@@ -7,11 +7,11 @@ from django.contrib.auth.views import (password_reset, password_reset_done,
         password_reset_confirm, password_reset_complete)
 
 from .forms import LoginForm
+from .views import UserSignUp, SignUpSuccess
 
-urlpatterns = patterns('apps.tb_users.views',
-    url(r'^signup/$', 'view_signup_page', name="view_signup_page"),
-    url(r'^signup-success/(?P<tb_user_md5>\w{32})/$',
-        'view_signup_success', name="view_signup_success"),
+urlpatterns = patterns('',
+    url(r'^signup/$', UserSignUp.as_view(), name="signup"),
+    url(r'^signup/success/$', SignUpSuccess.as_view(), name="signup_success"),
 
     url(r'^accounts/password_reset/$', password_reset,
         {'post_reset_redirect' : '/accounts/password_reset/mailed/'},

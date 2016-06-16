@@ -16,7 +16,7 @@
 
     {% if not request.user.is_authenticated %}
         <li{% if signup_page %} class="active"{% endif %}>
-            <a href="{% url 'users:view_signup_page' %}">Sign Up</a>
+            <a href="{% url 'users:signup' %}">Sign Up</a>
         </li>
         <li{% if login_page %} class="active"{% endif %}>
         <a href="{% url 'users:login' %}">Log In</a>
