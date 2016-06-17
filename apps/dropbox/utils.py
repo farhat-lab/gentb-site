@@ -1,5 +1,7 @@
 
+import logging
 import requests
+
 from os.path import join, getsize
 from django.core.files.storage import FileSystemStorage
 
@@ -11,11 +13,16 @@ class Download(object):
 
     def save(self, path, filename):
         """Perform the download in chunks"""
+        if filename is None:
+            logging.error("Dropbox url has no filename, skipping.")
+            return
         storage = FileSystemStorage(location=path)
         self.filepath = join(path, storage.save(filename, self))
 
     @property
     def size(self):
+        if not self.filepath:
+            return 0
         return getsize(self.filepath)
 
     def chunks(self):

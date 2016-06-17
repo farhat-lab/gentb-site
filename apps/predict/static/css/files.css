@@ -1,0 +1,22 @@
+
+.file {
+  padding: 6px 2px;
+  cursor: default;
+  color: #47525D;
+}
+.file:hover {
+  background-color: #f6f9fc;
+}
+
+.file img {
+  float: left;
+  width: 18px;
+  height: 18px;
+  margin: 1px 4px 4px 2px;
+}
+
+.file > div .label {
+  top: -2px;
+  position: relative;
+}
+

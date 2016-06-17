@@ -8,10 +8,11 @@ $(window).load(function() {
 
     options = {
       linkType: "direct",
+      multiselect: true,
 
       success: function(files) {
-        field.value = files[0].link;
-        var event = new CustomEvent('dropboxChooserSuccess', { 'file': files[0] });
+        field.value = JSON.stringify(files);
+        var event = new CustomEvent('dropboxChooserSuccess', { 'files': files });
         field.dispatchEvent(event);
       },
       cancel: function() {

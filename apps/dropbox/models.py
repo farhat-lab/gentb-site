@@ -18,6 +18,9 @@ class DropboxFile(Model):
 
     url = URLField()
     name = SlugField(max_length=32)
+    filename = CharField(max_length=255, null=True)
+    size = PositiveIntegerField(null=True)
+    icon = URLField(null=True)
     created = DateTimeField(auto_now_add=True)
 
     # system attempts to download files
@@ -27,14 +30,10 @@ class DropboxFile(Model):
 
     class Meta:
         ordering = ('-created', 'dataset')
-        unique_together = ('name', 'dataset')
+        unique_together = ('filename', 'dataset')
 
     def __str__(self):
         return '{0} ({1})'.format(self.dataset, self.name)
-
-    @property
-    def filename(self):
-        return urlparse(self.url).path.split('/')[-1]
 
     def download_now(self):
         """
@@ -48,9 +47,11 @@ class DropboxFile(Model):
             download = Download(self.url)
             download.save(self.dataset.file_directory, self.filename)
             self.retrieval_end = now()
+            if not download.filepath:
+                raise KeyError("No filename provided for download.")
         except Exception as error:
             self.retrieval_error = str(error)
-            raise
+            return
 
         # We save the original filename instead of the new django one
         self.result = self.dataset.results.create(

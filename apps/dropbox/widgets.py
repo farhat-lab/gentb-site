@@ -7,8 +7,9 @@
 #
 
 from django.conf import settings
-
 from django.forms import TextInput
+
+import json
 
 class DropboxChooserWidget(TextInput):
     input_type = 'dropbox-chooser'

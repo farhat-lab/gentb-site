@@ -4,6 +4,7 @@
 {% block title %}My Datasets - Phthisis Ravens{% endblock %}
  
 {% block extra_css %}
+  <link href="{% static 'css/files.css' %}" rel="stylesheet">
   <link href="{% static 'css/heatmap.css' %}" rel="stylesheet">
   <link href="{% static 'css/nv.d3.css' %}" rel="stylesheet">
 {% endblock %}
@@ -44,14 +45,18 @@
             <th class="text-primary">File Names from Dropbox</th>
             <td>
               {% for file in object.files.all %}
-                {% if file.result %}
-                  <span class="label label-success">Retrieved</span> &nbsp;
-                {% elif file.retrieval_start %}
-                  <span class="label label-danger">Failed</span> &nbsp;
-                {% else %}
-                  <span class="label label-default">In Queue</span> &nbsp;
-                {% endif %}
-                &nbsp; {{ file.filename }} ({{ file.name }})
+<div class="file">
+  <img alt="for {{ file.name }}" src="{{ file.icon }}">
+  <div>{{ file.filename }}
+    {% if file.result %}
+      <span class="label label-success">Retrieved</span> &nbsp;
+    {% elif file.retrieval_start %}
+      <span class="label label-danger">Failed</span> &nbsp;
+    {% else %}
+      <span class="label label-default">In Queue</span> &nbsp;
+    {% endif %}
+  </div>
+</div>   
               {% endfor %}
             </td>
           </tr>

@@ -38,9 +38,15 @@ class UploadForm(ModelForm):
             return dataset
         for key, field in self.fields.items():
             if isinstance(field.widget, DropboxChooserWidget):
-                url = self.cleaned_data.get(key, None)
-                if url:
-                    dataset.files.create(name=key, url=url)
+                files = json.loads(self.cleaned_data.get(key, None))
+                for dropbox_file in files:
+                    dataset.files.create(
+                      name=key,
+                      filename=dropbox_file['name'],
+                      url=dropbox_file['link'],
+                      size=dropbox_file['bytes'],
+                      icon=dropbox_file['icon'],
+                    )
         return dataset
 
 
