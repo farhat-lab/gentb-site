@@ -3,8 +3,6 @@ use strict;
 
 my $file=shift @ARGV;
 my $refFile=shift @ARGV; #has a fasta extension
-my @name=split('\.',$refFile); 
-$refFile=$name[0]; #fasta extension removed, assumes path doesnot contain a period
 my $pairend=shift @ARGV; #1 paired end, 0 single end
 my $pex=shift @ARGV; #0 single end, _R|.
 my $path=shift @ARGV;
@@ -12,8 +10,11 @@ my $path=shift @ARGV;
 use FindBin qw($Bin);
 chdir($Bin);
 
-@name=split('\.',$file);
+my @name=split('\.',$file);
 my $dataFile=$name[0];
+
+# Remove fasta extension from call
+$refFile =~ s/\.fasta$//;
 
 if ($pairend>0) {
 	system("stampy.py -g $refFile -h $refFile -o ${path}/$dataFile.sam -f sam -M ${path}/${dataFile}${pex}1.fastq ${path}/${dataFile}${pex}2.fastq;");
