@@ -123,8 +123,8 @@ def find_meta_parameters(X_, y_, classifier_type, **kwargs):
                                   learning_rule="adagrad",
                                   random_state=0)
         ## Meta Parameters Grid Search with Cross Validation
-        param_grid = {"learning_rate": [0.001, 0.01, 0.05],
-                      "weight_decay": [0.0001, 0.001, 0.005],
+        param_grid = {"learning_rate": [0.001, 0.01, 0.05, 0.075],
+                      "weight_decay": [0.0001, 0.001, 0.005, 0.01],
                       "hidden0__units": [75, 100],
                       "hidden1__units": [75, 100]}
 

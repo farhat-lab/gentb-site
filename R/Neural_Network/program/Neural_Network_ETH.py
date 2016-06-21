@@ -11,12 +11,14 @@ import os
 import numpy as np
 import pickle
 import collections
+from sklearn.feature_selection import RFE
+
 
 # Change to Current Directory
 os.chdir(r'T:/Share/Jimmy/gentb-site/R/Neural_Network')
 
 # Load Data
-execfile('./program/Load_Data.py')
+execfile('./program/Load_Data_ETH.py')
 
 # Helper Functions
 execfile('./program/Helper.py')
@@ -48,14 +50,14 @@ marg_effects_rf = np.zeros((len(features), (n_boot+3)), dtype=np.float32)
 #rf = find_meta_parameters(X, y, "RF")
 
 ## Save Trained Classifier
-#pickle.dump(NN, open('./output/Classifiers/NN.pkl', 'wb'))
-#pickle.dump(rf, open('./output/Classifiers/rf.pkl', 'wb'))
+#pickle.dump(NN, open('./output/Classifiers/NN_ETH.pkl', 'wb'))
+#pickle.dump(rf, open('./output/Classifiers/rf_ETH.pkl', 'wb'))
 #wgtandbias = NN.get_parameters()
 #np.savez('./output/Classifiers/wgtandbias', wgtandbias)
 
 ## Load Trained Classifier (Include weights and biases)
-NN = pickle.load(open('./output/Classifiers/NN.pkl', 'rb'))
-rf = pickle.load(open('./output/Classifiers/rf.pkl', 'rb'))
+NN = pickle.load(open('./output/Classifiers/NN_ETH.pkl', 'rb'))
+rf = pickle.load(open('./output/Classifiers/rf_ETH.pkl', 'rb'))
 
 #with np.load('./output/Classifiers/wgtandbias.npz') as f:
 #     param_values = [f['arr_%d' % i] for i in range(len(f.files))]
@@ -91,8 +93,8 @@ c_mm = 0
 
 ## Bootstrap Marginal Effects w/ Standard Errors
 for i in range(n_boot):
-    boot(i, NN, X, y, marg_effects_NN, gof_measures_NN, "Neural Network", cont_NN, n_inter, c_mm) #, weight=wgt)
-    boot(i, rf, X, y, marg_effects_rf, gof_measures_rf, "Random Forest", cont_rf, n_inter, c_mm)
+    boot(i, NN, X, y, marg_effects_NN, gof_measures_NN, "ETH Neural Network", cont_NN, n_inter, c_mm) #, weight=wgt)
+    boot(i, rf, X, y, marg_effects_rf, gof_measures_rf, "ETH Random Forest", cont_rf, n_inter, c_mm)
 
 out_NN = margeffects(marg_effects_NN, gof_measures_NN, n_boot, predictors)
 out_rf = margeffects(marg_effects_rf, gof_measures_rf, n_boot, predictors)
@@ -104,16 +106,17 @@ std = np.std([tree.feature_importances_ for tree in rf.estimators_],
 indices = np.argsort(importances)[::-1]
 import_features = np.concatenate((predictors[indices], importances[indices].reshape(len(features),1)), axis=1)
 
-np.savetxt("./output/marginal_effects_NN.csv", out_NN, fmt="%s", delimiter=',')
-np.savetxt("./output/GofF_NN.csv", gof_measures_NN, fmt="%s", delimiter=',')
-np.savetxt("./output/marginal_effects_rf.csv", out_rf, fmt="%s", delimiter=',')
-np.savetxt("./output/GofF_rf.csv", gof_measures_rf, fmt="%s", delimiter=',')
+np.savetxt("./output/ETH_importance_rf.csv", import_features, fmt="%s", delimiter=',')
+np.savetxt("./output/ETH_marginal_effects_NN.csv", out_NN, fmt="%s", delimiter=',')
+np.savetxt("./output/ETH_GofF_NN.csv", gof_measures_NN, fmt="%s", delimiter=',')
+np.savetxt("./output/ETH_marginal_effects_rf.csv", out_rf, fmt="%s", delimiter=',')
+np.savetxt("./output/ETH_GofF_rf.csv", gof_measures_rf, fmt="%s", delimiter=',')
 
 if c_mm == 1:
     out_MM_NN = margeffects_multi(cont_NN['out_by_x_m'], cont_NN['out_by_x_n'])
     out_MM_rf = margeffects_multi(cont_rf['out_by_x_m'], cont_rf['out_by_x_n'])
-    np.savetxt("./output/marginal_mv_NN.csv", out_MM_NN, fmt="%s", delimiter=',')
-    np.savetxt("./output/marginal_mv_rf.csv", out_MM_rf, fmt="%s", delimiter=',')
+    np.savetxt("./output/ETH_marginal_mv_NN.csv", out_MM_NN, fmt="%s", delimiter=',')
+    np.savetxt("./output/ETH_marginal_mv_rf.csv", out_MM_rf, fmt="%s", delimiter=',')
 
 
 
