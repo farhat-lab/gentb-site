@@ -8,4 +8,8 @@ List of TODO for TB Neural Network
 * TODO Medium Term Milestones [0%]
   - [ ] Multivariate Marginal Effects
   - [ ] Optimize Class Weights instead of threshold to maximize sensitivity + specificity
-  - [ ] Auto-Encode to improve features selection (deep learning) 
+  - [ ] Auto-Encode to improve features selection (deep learning)
+  - [ ] Web interface for predictions
+
+
+
