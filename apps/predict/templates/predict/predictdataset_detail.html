@@ -42,12 +42,11 @@
           </tr>
           {% if object.files.count %}
           <tr>
-            <th class="text-primary">File Names from Dropbox</th>
+            <th class="text-primary">File Names</th>
             <td>
               {% for file in object.files.all %}
 <div class="file">
-  <img alt="for {{ file.name }}" src="{{ file.icon }}">
-  <div>{{ file.filename }}
+  <div>{{ file }}
     {% if file.result %}
       <span class="label label-success">Retrieved</span> &nbsp;
     {% elif file.retrieval_start %}
@@ -73,9 +72,9 @@
 
 {% if object.has_prediction %}
   <tr>
-    <th class="text-primary">Selected Mutations
-      <i class="glyphicon glyphicon-question-sign" data-toggle="tooltip" title="More red represents a higher probability of resistance. More blue represent less evidence for resistance. Hovering over each box displays the predicted probability of resistance, false positive resistance rate and the false negative resistance rate. Clicking on each box displays a plot of the mutations contributing to resistance prediction."></i>
+    <th class="text-primary">Mutations
       <i class="glyphicon glyphicon-info-sign" data-toggle="tooltip" title="See minimal list of predictive mutations in Farhat et al. AJRCCM 2016"></i>
+      <i class="glyphicon glyphicon-question-sign" data-toggle="tooltip" title="DR=Drug Resistance, FN=False Negative, FP=False Positive"></i>
     </th>
     <td>
       <div id="heatmap" class="d3heatmap"></div>
@@ -84,19 +83,21 @@
           var data = {"rows": null, "cols": null,
             "matrix": {{ object.get_heatmap|jsonify }}
           };
-          make_heatmap(data, '#heatmap', '#scatter');
+          make_heatmap(data, '#heatmap', '#scatter', "click on a box on the heamap to show mutations");
         });
       </script>
     </td>
   </tr>
   <tr>
-    <th class="text-primary" rowspan="2">Resistance Prediction</th>
-    <td><h3 id="scatter_title">Select from heatmap above</h3></td>
+    <th class="text-primary">Resistance Prediction</th>
+    <td><div id="scatter" class="d3graph"><svg></svg></div></td>
   </tr>
+</table>
+
+<table class="table table-condensed table-bordered">
   <tr>
-    <td>
-      <div id="scatter" class="d3graph"><svg></svg></div>
-    </td>
+    <th colspan="2">Administration</th>
+  </tr>
   </tr>
 {% endif %}
 

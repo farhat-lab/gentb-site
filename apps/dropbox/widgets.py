@@ -27,4 +27,5 @@ class DropboxChooserWidget(TextInput):
     class Media:
         js = ['https://www.dropbox.com/static/api/2/dropins.js',
               'js/dropbox/chooser.js']
+        css = {'all': ('css/dropbox/chooser.css',)}
 

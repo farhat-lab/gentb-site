@@ -18,9 +18,10 @@ function scatter_plot(cols, data) {
   nv.utils.windowResize(nvChart.update);
 }
 
-function make_heatmap(data, heatmap_id, scatter_id) {
+function make_heatmap(data, heatmap_id, scatter_id, no_data) {
   var scat = data["matrix"]["scatter"];
   var options = {
+    "no_data": no_data,
     "xaxis_height": 80,
     "yaxis_width": 120,
     "xaxis_font_size": null,
@@ -45,29 +46,30 @@ function make_heatmap(data, heatmap_id, scatter_id) {
     var width = 1000;
     var height = 300;
 
+    chart.noData(options.no_data);
     chart.margin({top: 20, right: 60, bottom: 60, left: 60});
     chart.height(height);
     chart.width(width);
     chart.yAxis.scale(100).orient("left")
-	.axisLabel('Number of mutations')
-	.tickFormat(d3.format("d"))
-	.tickValues([0,1,2,3,4,5]);
+  .axisLabel('Number of mutations')
+  .tickFormat(d3.format("d"))
+  .tickValues([0,1,2,3,4,5]);
 
     chart.showLegend(true);
 
     var svg = d3.select(scatter_id + ' svg')
-	.attr('perserveAspectRatio', 'xMinYMid')
-	.attr('width', width)
-	.attr('height', height)
-	.datum(data)
-	.attr('viewBox', '0 0 ' + width + ' ' + height)
-	.transition().duration(1200)
-	.call(chart);
+  .attr('perserveAspectRatio', 'xMinYMid')
+  .attr('width', width)
+  .attr('height', height)
+  .datum(data)
+  .attr('viewBox', '0 0 ' + width + ' ' + height)
+  .transition().duration(1200)
+  .call(chart);
 
     chart.tooltip.contentGenerator(function (data) {
       ret = "<table>";
       $.each(data.point.tip, function(x, value) {
-	ret += "<tr><th align=\"right\">" + value + "</th></tr>";
+        ret += "<tr><th align=\"right\">" + value + "</th></tr>";
       });
       return ret + "</table>";
     });
@@ -336,6 +338,11 @@ function heatmap(selector, data, options) {
   var cols = data.cols || data.matrix.cols;
   var rows = data.rows || data.matrix.rows;
 
+  // This isn't right, shouldn't be here. XXX
+  $.each(cols, function(index, item) {
+      cols[index] = item.toUpperCase();
+  });
+
   var xax = axisLabels(xa, cols, true, xBound.width, xBound.height, pad);
   var yax = axisLabels(ya, rows, false, yBound.width, yBound.height, pad);
   
@@ -345,7 +352,7 @@ function heatmap(selector, data, options) {
       return function() {};
 
         if (!opts.show_grid) {
-      svg.style("shape-rendering", "crispEdges");
+          svg.style("shape-rendering", "crispEdges");
         }
  
     var cols = data.dim[1];
@@ -358,10 +365,13 @@ function heatmap(selector, data, options) {
     var tip = d3.tip()
         .attr('class', 'd3heatmap-tip')
         .html(function(d, i) {
+          // XXX This is specific to one use case, and isn't good here.
           return "<table>" + 
-            "<tr><th align=\"right\">Row</th><td>" + htmlEscape(data.rows[d.row]) + "</td></tr>" +
-            "<tr><th align=\"right\">Column</th><td>" + htmlEscape(data.cols[d.col]) + "</td></tr>" +
-            "<tr><th align=\"right\">Value</th><td>" + htmlEscape(d.label) + "</td></tr>" +
+            "<tr><th align=\"right\">Strain</th><td>" + htmlEscape(data.rows[d.row]) + "</td></tr>" +
+            "<tr><th align=\"right\">Drug</th><td>" + htmlEscape(data.cols[d.col]) + "</td></tr>" +
+            "<tr><th align=\"right\">DR Probability</th><td>" + htmlEscape(d.label) + "</td></tr>" +
+            "<tr><th align=\"right\">FP Rate</th><td>" + "?" + "</td></tr>" +
+            "<tr><th align=\"right\">FN Rate</th><td>" + "?" + "</td></tr>" +
             "</table>";
         })
         .direction("se")

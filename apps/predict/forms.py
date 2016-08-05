@@ -78,19 +78,19 @@ class ManualInputForm(UploadForm):
 
 class UploadVcfForm(UploadForm):
     vcf_file = CharField(widget=DropboxChooserWidget(VCF_FILES), required=True,
-        label="VCF File", help_text="Variant Call Formated sequence data file")
+        label="VCF Files", help_text="Variant Call Formated sequence data file. Multiple files can be selected, one vcf file per stain to compare.")
 
 
 class UploadFastQPairForm(UploadForm):
     fastq_one = CharField(widget=DropboxChooserWidget(FASTQ_FILES), required=True,
-        label="Forward Read", help_text="FastQ file containing the forward read sequence.")
+        label="Forward Read", help_text="FastQ file containing the forward read sequence. Multiple strains can be selected for comparison, but select only the forward reads here.")
     fastq_two = CharField(widget=DropboxChooserWidget(FASTQ_FILES), required=True,
-        label="Reverse Read", help_text="FastQ file containing the reverse read sequence.")
+        label="Reverse Read", help_text="FastQ file containing the reverse read sequence. Multiple stains can be selected for comparison, but select only to reverse reads here.")
 
 
 class UploadFastQSingleForm(UploadForm):
     fastq_one = CharField(widget=DropboxChooserWidget(FASTQ_FILES), required=True,
-        label="FastQ File", help_text="FastQ file containing the single sequence read.")
+        label="FastQ Files", help_text="FastQ files containing the single sequence read. Multiple files can be selected, one fastq file per strain to compare.")
 
 
 class NotificationForm(Form):

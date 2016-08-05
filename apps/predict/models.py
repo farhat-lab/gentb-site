@@ -246,7 +246,7 @@ class PredictDataset(TimeStampedModel):
                 regions[region].append(gene)
 
         for x, region in enumerate(cols):
-            ret = {"x": x, "y": 0, "size": 5, "tip": ["No genes"]}
+            ret = {"x": x, "y": 0, "size": 5, "tip": ["No mutations"]}
             if region in regions:
                 ret["y"] = len(regions[region])
                 ret["size"] = 9
@@ -281,7 +281,7 @@ class PredictDataset(TimeStampedModel):
                 for col, datum in enumerate(zip(*row[key])):
                     plot = {
                         "key": ["Important", "Other"][series],
-                        "color": ["#f00", "#84e"][series],
+                        "color": ["rgba(255, 0, 0, 0.8)", "rgba(0, 0, 255, 0.17)"][series],
                         "yAxis": "1",
                         "values": list(self.make_scatter(lcols, datum)),
                     }
