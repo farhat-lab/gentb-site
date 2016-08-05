@@ -18,3 +18,7 @@ write.csv(drugg.full, "./input/str.csv", row.names=FALSE)
 load("../emb_finalpredict.RData")
 write.csv(selected, "./input/short_emb.csv")
 write.csv(drugg.full, "./input/emb.csv", row.names=FALSE)
+
+load("../pza_finalpredict.RData")
+write.csv(selected, "./input/short_pza.csv")
+write.csv(drugg.full, "./input/pza.csv", row.names=FALSE)
