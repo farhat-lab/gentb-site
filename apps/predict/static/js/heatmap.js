@@ -31,7 +31,7 @@ function make_heatmap(data, heatmap_id, scatter_id, no_data) {
     "on_click": function(elem, x, x_label, y, y_label, datum) {
       $('.datapt.selected').attr('class', 'datapt');
       $(elem).attr('class', 'datapt selected');
-      $('#scatter_title').text('Plot for: ' + x_label + ', ' + y_label);
+      $('#scatter_title').text('Mutation plot for drug='+x_label+', strain=' +y_label);
       scatter_plot(scat.data[y_label][x]);
     },
   }
@@ -375,7 +375,7 @@ function heatmap(selector, data, options) {
             "</table>";
         })
         .direction("se")
-        .style("position", "fixed");
+        .style("position", "absolute");
     
     var brush = d3.svg.brush()
         .x(x)

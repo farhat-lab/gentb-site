@@ -90,7 +90,12 @@
   </tr>
   <tr>
     <th class="text-primary">Resistance Prediction</th>
-    <td><div id="scatter" class="d3graph"><svg></svg></div></td>
+    <td>
+      <div id="scatter" class="d3graph">
+        <h2 id="scatter_title"></h2>
+        <svg id="scaller_plot"></svg>
+      </div>
+    </td>
   </tr>
 </table>
 
@@ -222,23 +227,3 @@
 </div>
 {% endblock %}
 
-{% block extra_footer_js %}
-<script type="text/javascript">
-
-// show/hide heatmap
-$( document ).ready(function() {
-    if ( $("#lnk_show_hide_heatmap").length ) {
-        $("#lnk_show_hide_heatmap").click(function(){
-            if ($("#id_heatmap_iframe").is(":visible")){
-
-                $("#id_heatmap_iframe").hide();
-                $("#lnk_show_hide_heatmap").text('Show Prediction Heat Map (takes a second or two)');
-            }else{
-                $("#id_heatmap_iframe").show();
-                $("#lnk_show_hide_heatmap").text('Hide Prediction Heat Map');
-            };
-        });
-    }
-});
-</script>
-{% endblock %}
