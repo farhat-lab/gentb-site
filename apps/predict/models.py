@@ -13,6 +13,7 @@ from django.utils.text import slugify
 from django.core import serializers
 from django.core.urlresolvers import reverse
 
+from apps.mutations.models import Drug
 from apps.utils.result_file_info import RESULT_FILE_NAME_DICT,\
             EXPECTED_FILE_DESCRIPTIONS, RESULT_OUTPUT_DIRECTORY_NAME
 
@@ -238,19 +239,20 @@ class PredictDataset(TimeStampedModel):
         # Write to the database
         self.notes.create(title=msg_title, note=msg)
 
-    def make_scatter(self, cols, data):
+    def make_scatter(self, locusts, data):
         regions = defaultdict(list)
         for gene in data:
             if gene:
                 region = gene.split("_")[-1].lower()
                 regions[region].append(gene)
 
-        for x, region in enumerate(cols):
+        for x, locust in enumerate(locusts):
+            key = locust.lower()
             ret = {"x": x, "y": 0, "size": 5, "tip": ["No mutations"]}
-            if region in regions:
-                ret["y"] = len(regions[region])
+            if key in regions:
+                ret["y"] = len(regions[key])
                 ret["size"] = 9
-                ret["tip"] = regions[region]
+                ret["tip"] = regions[key]
             yield ret
 
     def get_heatmap(self):
@@ -260,36 +262,45 @@ class PredictDataset(TimeStampedModel):
             return None
 
         ret = defaultdict(list)
+        drugs = list()
         with open(maf, 'r') as fhl:
             data = json.loads(fhl.read())
         for row in data[0]:
             ret['data'].append(row[2])
+            ret['extra'].append([row[3], row[4]])
             if row[0] not in ret['rows']:
                 ret['rows'].append(row[0])
             if row[1] not in ret['cols']:
                 ret['cols'].append(row[1])
+
+            try:
+                drugs.append(Drug.objects.get(code__iexact=row[1]))
+            except Drug.DoesNotExist:
+                import sys
+                sys.stderr.write("Can't find drug %s\n" % row[1])
+                drugs.append(None)
+
         ret['dim'] = [len(ret['rows']), len(ret['cols'])]
 
-        # XXX This shouldn't be fixed here? Load from csv?
-        cols = ["katG", "inhA-promoter", "embB", "inhA", "iniB", "kasA", "ahpC", "embAB-promoter", "fabG1", "ndh", "oxyR", "rpoB", "gid"]
-        lcols = [a.lower() for a in cols]
-
-        # First key is sample, second is mutation, third is important or other
         output = defaultdict(lambda: defaultdict(lambda: [None] * 2))
-        for series, row in enumerate(data[1:]):
-            for key in row:
-                for col, datum in enumerate(zip(*row[key])):
-                    plot = {
+        for series, rows in enumerate(data[1:]):
+            for row in rows:
+                for col, datum in enumerate(zip(*rows[row])):
+                    drug = drugs[col]
+                    if drug is None:
+                        output[row][col][series] = {}
+                        continue
+                    
+                    locusts = list(drug.gene_locuses.values_list('name', flat=True))
+                    output[row][col][series] = {
+                        "cols": locusts,
                         "key": ["Important", "Other"][series],
                         "color": ["rgba(255, 0, 0, 0.8)", "rgba(0, 0, 255, 0.17)"][series],
                         "yAxis": "1",
-                        "values": list(self.make_scatter(lcols, datum)),
+                        "values": list(self.make_scatter(locusts, datum)),
                     }
-                    if plot["values"]:
-                        output[key][col][series] = plot
 
         ret['scatter'] = {
-          'cols': cols,
           'data': output,
         }
         return ret

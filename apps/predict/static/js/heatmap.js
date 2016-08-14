@@ -1,5 +1,5 @@
 
-function scatter_plot(cols, data) {
+function scatter_plot(data) {
   /*  
    * The idea here is to update an existing plot with new data.
    */
@@ -10,10 +10,9 @@ function scatter_plot(cols, data) {
 
   nvChart.xAxis
       .axisLabel('Genetic Region')
-      .tickFormat(function(d) { return cols[d]; })
+      .tickFormat(function(d) { return data[0].cols[d];})
       .tickValues([0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21])
       .rotateLabels(-45);
-
   svg.data([data]).transition().duration(500).call(nvChart);
   nv.utils.windowResize(nvChart.update);
 }
@@ -33,7 +32,7 @@ function make_heatmap(data, heatmap_id, scatter_id, no_data) {
       $('.datapt.selected').attr('class', 'datapt');
       $(elem).attr('class', 'datapt selected');
       $('#scatter_title').text('Plot for: ' + x_label + ', ' + y_label);
-      scatter_plot(scat.cols, scat.data[y_label][x]);
+      scatter_plot(scat.data[y_label][x]);
     },
   }
   heatmap(heatmap_id, data, options);
@@ -365,13 +364,14 @@ function heatmap(selector, data, options) {
     var tip = d3.tip()
         .attr('class', 'd3heatmap-tip')
         .html(function(d, i) {
+          var index = d.row * data.cols.length + d.col;
           // XXX This is specific to one use case, and isn't good here.
           return "<table>" + 
             "<tr><th align=\"right\">Strain</th><td>" + htmlEscape(data.rows[d.row]) + "</td></tr>" +
             "<tr><th align=\"right\">Drug</th><td>" + htmlEscape(data.cols[d.col]) + "</td></tr>" +
             "<tr><th align=\"right\">DR Probability</th><td>" + htmlEscape(d.label) + "</td></tr>" +
-            "<tr><th align=\"right\">FP Rate</th><td>" + "?" + "</td></tr>" +
-            "<tr><th align=\"right\">FN Rate</th><td>" + "?" + "</td></tr>" +
+            "<tr><th align=\"right\">FP Rate</th><td>" + data.extra[index][0] + "</td></tr>" +
+            "<tr><th align=\"right\">FN Rate</th><td>" + data.extra[index][1] + "</td></tr>" +
             "</table>";
         })
         .direction("se")
