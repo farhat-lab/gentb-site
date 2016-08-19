@@ -21,8 +21,8 @@
             <th class="text-center">File Type</th>
             <th class="text-center">Status</th>
             <th class="text-center">Description</th>
-            <th class="text-center">File(s)</th>
             <th class="text-center">Created</th>
+            <th class="text-center">Time</th>
           </tr>
         </thead>
         <tbody>
@@ -38,12 +38,8 @@
                 {% endif %}
               </td>
               <td>{{ ds.description|truncatewords:20 }}</td>
-              <td>{{ ds.filename1 }} ({{ ds.file1.file.size|readable_filesize }})
-                {% if ds.file2 %}
-                  <br />{{ ds.filename2 }} ({{ ds.file2.file.size|readable_filesize }})
-                {% endif %}
-              </td>
               <td>{{ ds.created }}</td>
+              <td>{{ ds.time_taken }}</td>
             </tr>
           {% empty %}
             <tr>

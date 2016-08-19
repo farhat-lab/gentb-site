@@ -12,3 +12,16 @@ table.content-to-top th {
 table input {
   width: 100%;
 }
+
+td.field {
+}
+
+td.field input,
+td.field textarea {
+  width: 100%;
+}
+
+th[scope="row"] label {
+  text-align: right;
+  width: 100%;
+}
