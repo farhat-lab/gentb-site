@@ -167,6 +167,7 @@ DJANGO_APPS = (
 
 # Apps from the internet (see requirements.txt)
 SUPPORT_APPS = (
+    'cachebuster',
 )
 
 # Apps specific for this project go here.
