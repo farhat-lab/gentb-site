@@ -20,11 +20,10 @@ ul.dropbox-files li {
   padding: 2px 15px;
 }
 
-/*ul.dropbox-files li:hover {
-  background-color: #fcbcac;
-}*/
-
-ul.dropbox-files:empty {
-  display: none;
+ul.dropbox-files label {
+  border: 1px solid rgb(204, 204, 204);
+  background: white none repeat scroll 0% 0%;
+  padding: 2px 8px;
+  margin-left: -5px;
 }
 

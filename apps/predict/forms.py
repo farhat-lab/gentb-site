@@ -38,16 +38,25 @@ class UploadForm(ModelForm):
             return dataset
         for key, field in self.fields.items():
             if isinstance(field.widget, DropboxChooserWidget):
-                files = json.loads(self.cleaned_data.get(key, None))
-                for dropbox_file in files:
-                    dataset.files.create(
-                      name=key,
-                      filename=dropbox_file['name'],
-                      url=dropbox_file['link'],
-                      size=dropbox_file['bytes'],
-                      icon=dropbox_file['icon'],
-                    )
+                for bucket_id, _, _ in field.widget.buckets:
+                    self.save_dropbox(dataset, key + '_' + bucket_id)
+                else:
+                    self.save_dropbox(dataset, key)
         return dataset
+
+    def save_dropbox(self, dataset, key):
+        data = self.cleaned_data.get(key, self.data.get(key, '[]'))
+        if data is None:
+            return
+        files = json.loads(data)
+        for dropbox_file in files:
+            dataset.files.create(
+              name=key,
+              filename=dropbox_file['name'],
+              url=dropbox_file['link'],
+              size=dropbox_file['bytes'],
+              icon=dropbox_file['icon'],
+            )
 
 
 class ManualInputForm(UploadForm):
@@ -82,14 +91,35 @@ class UploadVcfForm(UploadForm):
 
 
 class UploadFastQPairForm(UploadForm):
-    fastq_one = CharField(widget=DropboxChooserWidget(FASTQ_FILES), required=True,
-        label="Forward Read", help_text="FastQ file containing the forward read sequence. Multiple strains can be selected for comparison, but select only the forward reads here.")
-    fastq_two = CharField(widget=DropboxChooserWidget(FASTQ_FILES), required=True,
-        label="Reverse Read", help_text="FastQ file containing the reverse read sequence. Multiple stains can be selected for comparison, but select only to reverse reads here.")
+    fastq_file = CharField(widget=DropboxChooserWidget(FASTQ_FILES, buckets=[
+        ('forward', "_R1.fastq _R1.fastq.gz", "Forward FastQ Files"),
+        ('backward', "_R2.fastq _R2.fastq.gz", "Backward FastQ Files")]),
+        required=True, label="FastQ Files",
+        help_text="FastQ file containing the forward and backward sequence. Multiple strains can be selected for comparison.")
+
+    def clean_fastq_file(self):
+        value = json.loads(self.cleaned_data['fastq_file'])
+        if value:
+            raise ValidationError("Unknown files were included, please select only accepted files.")
+        r1 = set(self.clean_fastq_dir(self.data['fastq_file_forward'], 'R1'))
+        r2 = set(self.clean_fastq_dir(self.data['fastq_file_backward'], 'R2'))
+        extra = r1 ^ r2
+        if extra:
+            raise ValidationError("Unmatched files found: %s" % ", ".join(extra))
+
+    def clean_fastq_dir(self, files, direction='R1'):
+        for fastq_file in json.loads(files):
+            name = fastq_file['name']
+            key = "_%s.fastq" % direction
+            if name.endswith('.gz'):
+                name = name[:-3]
+            if not name.endswith(key):
+                raise ValidationError("Filename '%s' invalid, remember to include R1 or R2 suffix in each filename." % fastq_file['name'])
+            yield name[:0-len(key)]
 
 
 class UploadFastQSingleForm(UploadForm):
-    fastq_one = CharField(widget=DropboxChooserWidget(FASTQ_FILES), required=True,
+    fastq_file = CharField(widget=DropboxChooserWidget(FASTQ_FILES), required=True,
         label="FastQ Files", help_text="FastQ files containing the single sequence read. Multiple files can be selected, one fastq file per strain to compare.")
 
 
