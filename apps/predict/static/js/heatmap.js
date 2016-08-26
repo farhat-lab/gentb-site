@@ -10,8 +10,7 @@ function scatter_plot(data) {
 
   nvChart.xAxis
       .axisLabel('Genetic Region')
-      .tickFormat(function(d) { return data[0].cols[d];})
-      .tickValues([0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21])
+      .tickFormat(function(d) { return data[0].cols[d] || d; })
       .rotateLabels(-45);
   svg.data([data]).transition().duration(500).call(nvChart);
   nv.utils.windowResize(nvChart.update);
@@ -39,7 +38,7 @@ function make_heatmap(data, heatmap_id, scatter_id, no_data) {
 
   nv.addGraph(function() {
     var data = Array();
-    var chart = nv.models.scatterChart()
+    var chart = nv.models.multiBarChart()
       .yDomain([0, 4]);
 
     var width = 1000;
@@ -67,9 +66,11 @@ function make_heatmap(data, heatmap_id, scatter_id, no_data) {
 
     chart.tooltip.contentGenerator(function (data) {
       ret = "<table>";
-      $.each(data.point.tip, function(x, value) {
-        ret += "<tr><th align=\"right\">" + value + "</th></tr>";
-      });
+      if(data.data) {
+        $.each(data.data.tip, function(x, value) {
+          ret += "<tr><th align=\"right\">" + value + "</th></tr>";
+        });
+      }
       return ret + "</table>";
     });
     svg[0][0].__chart__ = chart;
