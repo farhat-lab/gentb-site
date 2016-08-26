@@ -10,8 +10,25 @@ function scatter_plot(data) {
 
   nvChart.xAxis
       .axisLabel('Genetic Region')
-      .tickFormat(function(d) { return data[0].cols[d] || d; })
-      .rotateLabels(-45);
+      .tickFormat(function(d) {
+	 if (typeof this != 'undefined') {
+	   var el = d3.select(this);
+           // XXX - We should find the actual width here rather than just guess.
+           var width = 108;
+	   var p = d3.select(this.parentNode);
+	   p.append("foreignObject")
+	    .attr('x', 0-(width / 2))
+	    .attr("width", width)
+	    .attr("height", 200)
+	    .append("xhtml:p")
+	    .attr('style','word-wrap: break-word; text-align:center;')
+	    .html(data[0].cols[d]);    
+
+	   el.remove();
+	 }
+         return data[0].cols[d];
+      })
+      ;
   svg.data([data]).transition().duration(500).call(nvChart);
   nv.utils.windowResize(nvChart.update);
 }
@@ -20,7 +37,7 @@ function make_heatmap(data, heatmap_id, scatter_id, no_data) {
   var scat = data["matrix"]["scatter"];
   var options = {
     "no_data": no_data,
-    "xaxis_height": 80,
+    "xaxis_height": 120,
     "yaxis_width": 120,
     "xaxis_font_size": null,
     "yaxis_font_size": null,

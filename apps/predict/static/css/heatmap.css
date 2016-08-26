@@ -110,3 +110,7 @@
   padding: 0 1px;
 }
 
+#scatter_title {
+  margin-left: 20px;
+  font-weight: bold;
+}
