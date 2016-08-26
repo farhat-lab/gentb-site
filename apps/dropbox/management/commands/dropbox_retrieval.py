@@ -23,7 +23,6 @@ class Command(BaseCommand):
 
     """
     def handle(self, **options):
-        print "Starting downloads..."
         for dataset in PredictDataset.objects.filter(status=PredictDataset.STATUS_CONFIRMED):
             print " * Looking at dataset: %s" % str(dataset)
             dataset.set_status_file_retrieval_started()

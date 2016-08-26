@@ -5,6 +5,8 @@
 import sys
 from crontab import CronTab
 
+from datetime import datetime
+
 fn = 'scripts/crontab.tab'
 
 try:
@@ -21,7 +23,15 @@ if kw['warp']:
     kw['cadence'] = 1
     print "Testing mode, 1 minute == 1 second."
 
+log = sys.stdout
+sys.stdout = open('/dev/null', 'w')
+
 # Timeout of -1 means forever
 for output in cron.run_scheduler(-1, **kw):
-    print output
+    if output:
+        log.write('\n'.join([
+           ("=" * 30),
+           str(datetime.now()),
+           ("-" * 30),
+           output]) + '\n')
 

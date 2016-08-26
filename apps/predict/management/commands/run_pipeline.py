@@ -43,11 +43,11 @@ FastQ or VCF file analysis.
             return LOGGER.info("Nothing to check")
 
         # Run script
-        LOGGER.info("Run pipeline for dataset: %s (%s)", dataset, dataset.pk)
+        LOGGER.warning("Run pipeline for dataset: %s (%s)", dataset, dataset.pk)
 
         (ret, msg) = dataset.run_command()
         if not ret:
             LOGGER.error(str(msg))
-        LOGGER.info("OK")
+        LOGGER.warning("OK")
 
 
