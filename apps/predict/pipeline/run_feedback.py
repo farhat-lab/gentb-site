@@ -36,10 +36,9 @@ class GenTBStatusFeedback:
 
     # note file names originate in utils.result_file_info.py
     #
-    RESULTS_FILE_FULLPATH = join(OUTPUT_DIRECTORY, FEEDBACK_CONF['RESULT_JSON_FILE_NAME'])
     MATRIX_FILE_FULLPATH = join(OUTPUT_DIRECTORY, FEEDBACK_CONF['MATRIX_JSON_FILE_NAME'])
 
-    FILE_FULLPATH_NAMES = [RESULTS_FILE_FULLPATH, MATRIX_FILE_FULLPATH]
+    FILE_FULLPATH_NAMES = [MATRIX_FILE_FULLPATH]
 
     EXPECTED_FILE_NAME_LIST = FEEDBACK_CONF['EXPECTED_FILE_DESCRIPTIONS']
 
@@ -94,14 +93,6 @@ class GenTBStatusFeedback:
         # Job succeeded
         # --------------------
         callback_params['success'] = True
-
-        # Send back results.json data
-        #
-        fh = open(self.RESULTS_FILE_FULLPATH, 'r')
-        result_info = fh.read()
-        fh.close()
-        callback_params['result_data'] = result_info
-
         return callback_params
 
 

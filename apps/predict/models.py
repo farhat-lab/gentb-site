@@ -2,7 +2,7 @@ import os
 import json
 
 from hashlib import md5
-from os.path import join, isfile, isdir
+from os.path import join, isfile, isdir, basename
 
 from collections import defaultdict
 from model_utils.models import TimeStampedModel
@@ -82,10 +82,17 @@ class PredictDataset(TimeStampedModel):
 
     @property
     def result_files(self):
-        return os.listdir(self.file_directory)
+        try:
+            return os.listdir(join(self.file_directory, 'output'))
+        except OSError:
+            return []
+
+    @property
+    def media_url(self):
+        return join(settings.MEDIA_URL, 'data', basename(self.file_directory))
 
     def check_for_prediction(self):
-        if isfile(join(self.file_directory, 'output', 'result.json')):
+        if isfile(join(self.file_directory, 'output', 'matrix.json')):
             self.has_prediction = True
             self.save()
 

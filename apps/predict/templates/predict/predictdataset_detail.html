@@ -42,13 +42,15 @@
           </tr>
           {% if object.files.count %}
           <tr>
-            <th class="text-primary">File Names</th>
+            <th class="text-primary">Dataset Files</th>
             <td>
               {% for file in object.files.all %}
 <div class="file">
-  <div>{{ file }}
+  <div>
     {% if file.result %}
+      {{ file.filename|default:file }}
       <span class="label label-success">Retrieved</span> &nbsp;
+      <a href="{{ object.media_url }}/{{ file.filename }}"><span class="glyphicon glyphicon-download"></span></a>
     {% elif file.retrieval_start %}
       <span class="label label-danger">Failed</span> &nbsp;
     {% else %}
@@ -92,7 +94,7 @@
     <th class="text-primary">Resistance Prediction</th>
     <td>
       <div id="scatter" class="d3graph">
-        <h2 id="scatter_title"></h2>
+        <h4 id="scatter_title"></h4>
         <svg id="scaller_plot"></svg>
       </div>
     </td>
@@ -105,30 +107,22 @@
   </tr>
   </tr>
 {% endif %}
-
-    {% if object.is_fastq_pair_ended and object.dropboxretrievallog %}
+  <tr>
+    <th class="text-primary">Local Dataset Directory</th>
+    <td>
+      {{ object.file_directory }}
+    </td>
+  </tr>
     <tr>
-        <th class="text-primary">Pair-end Extension
-            <br>"." or "_R"</th>
-        <td>
-            "{{ object.dropboxretrievallog.fastq_pair_end_extension }}"
-        </td>
-    </tr>
-    {% endif %}
-    <tr>
-        <th class="text-primary">Local Dataset Directory</th>
-        <td>
-            {{ object.file_directory }}
-        </td>
-    </tr>
-    <tr>
-        <th class="text-primary">Local Dataset Directory Contents</th>
+        <th class="text-primary">Raw Results Files</th>
         <td>
           {% for item in object.result_files %}
             {% if forloop.first %}
                 <span class="label label-success">OK</span> &nbsp;<br />
             {% endif %}
-            ({{ forloop.counter }}) {{ item }}<br />
+            ({{ forloop.counter }}) {{ item }} 
+            <a href="{{ object.media_url }}/output/{{ item }}"><span class="glyphicon glyphicon-download"></span></a>
+            <br />
           {% empty %}
             <span class="label label-info">No files</span> &nbsp;
             The directory is currently empty.  Have the Dropbox files been
