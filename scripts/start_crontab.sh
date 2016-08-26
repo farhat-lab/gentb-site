@@ -8,5 +8,7 @@ cd ..
 
 source pythonenv/bin/activate
 
+source /opt/lsf/conf/profile.lsf
+
 python "$PWD/scripts/crontab_server.py" $@ 
  
