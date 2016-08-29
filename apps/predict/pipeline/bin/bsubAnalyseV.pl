@@ -7,12 +7,21 @@ my $path=shift @ARGV;
 use FindBin qw($Bin);
 chdir($Bin);
 
-system("perl $Bin/flatAnnotatorVAR.pl ${path}/$file.vcf 15 0.1 PASS");
-system("mv ${path}/$file.var ${path}/output");
-system("python $Bin/generate_matrix.py ${path}/output");
-system("Rscript $Bin/TBpredict.R ".'"'."${path}/output/matrix.csv".'"'." >${path}/output/result.json");
-my $size= -s "${path}/output/result.json";
+my @cmd;
 
-if ($size > 0 ) {
-        system("python $Bin/../run_feedback.py ${path}");
+push @cmd, "perl $Bin/flatAnnotatorVAR.pl ${path}/$file.vcf 15 0.1 PASS";
+push @cmd, "mv ${path}/$file.var ${path}/output";
+push @cmd, "python $Bin/generate_matrix.py ${path}/output";
+push @cmd, "Rscript $Bin/TBpredict.R ".'"'."${path}/output/matrix.csv".'"';
+
+my $n=0;
+my @steps=('annotate','mvVar','genMatrix','Rpredict');
+foreach my $cmd (@cmd) {
+	my $i=system($cmd);
+	if ($i>0) {
+		die "died at $steps[$n] with error $i";
+	}
+	$n++;
 }
+
+system("python $Bin/../run_feedback.py ${path}");

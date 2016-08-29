@@ -16,30 +16,36 @@ my $dataFile=$name[0];
 # Remove fasta extension from call
 $refFile =~ s/\.fasta$//;
 
+my @cmd;
+
 if ($pairend>0) {
-	system("stampy.py -g $refFile -h $refFile -o ${path}/$dataFile.sam -f sam -M ${path}/${dataFile}${pex}1.fastq ${path}/${dataFile}${pex}2.fastq;");
-	#print STDERR "stampy.py -g $refFile -h $refFile -M ${path}/${dataFile}${pex}1.fastq ${path}/${dataFile}${pex}2.fastq -o ${path}/$dataFile.sam -f sam";
+	push @cmd, "stampy.py -g $refFile -h $refFile -o ${path}/$dataFile.sam -f sam -M ${path}/${dataFile}${pex}1.fastq ${path}/${dataFile}${pex}2.fastq;";
 } else {
-	system("stampy.py -g $refFile -h $refFile -o ${path}/$dataFile.sam -f sam -M ${path}/${dataFile}.fastq;");
-	#print STDERR "stampy.py -g $refFile -h $refFile -M ${path}/${dataFile}.fastq -o ${path}/$dataFile.sam -f sam";
+	push @cmd, "stampy.py -g $refFile -h $refFile -o ${path}/$dataFile.sam -f sam -M ${path}/${dataFile}.fastq;";
 }
-system("samtools view -bS ${path}/$dataFile.sam > ${path}/$dataFile.bam");
-system("samtools sort ${path}/$dataFile.bam ${path}/$dataFile.sorted");
-system("samtools index ${path}/$dataFile.sorted.bam");
-system("Platypus.py callVariants --bamFiles=${path}/$dataFile.sorted.bam --refFile=$refFile.fasta --output=${path}/$dataFile.h37rv.vcf");
-system("perl $Bin/flatAnnotatorVAR.pl ${path}/$dataFile.h37rv.vcf 15 0.1 PASS");
-system("mv ${path}/$dataFile.h37rv.var ${path}/output");
-system("mv ${path}/$dataFile.h37rv.vcf ${path}/output");
-system("python $Bin/generate_matrix.py ${path}/output");
+push @cmd, "samtools view -bS ${path}/$dataFile.sam > ${path}/$dataFile.bam";
+push @cmd, "samtools sort ${path}/$dataFile.bam ${path}/$dataFile.sorted";
+push @cmd, "samtools index ${path}/$dataFile.sorted.bam";
+push @cmd, "Platypus.py callVariants --bamFiles=${path}/$dataFile.sorted.bam --refFile=$refFile.fasta --output=${path}/$dataFile.h37rv.vcf";
+push @cmd, "perl $Bin/flatAnnotatorVAR.pl ${path}/$dataFile.h37rv.vcf 15 0.1 PASS";
+push @cmd, "mv ${path}/$dataFile.h37rv.var ${path}/output";
+push @cmd, "mv ${path}/$dataFile.h37rv.vcf ${path}/output";
+push @cmd, "python $Bin/generate_matrix.py ${path}/output";
+push @cmd, "Rscript $Bin/TBpredict.R ".'"'."${path}/output/matrix.csv".'"';
 
-system("Rscript $Bin/TBpredict.R ".'"'."${path}/output/matrix.csv".'"'." >${path}/output/result.json");
-
-my $size= -s "${path}/output/result.json";
-#print STDERR "$size\n";
-if ($size > 0 ) {
-        system("python $Bin/../run_feedback.py ${path}");
+my $n=0;
+my @steps=('stampy','sam2bam','sort','index','platypus','annotate','mvVar','mvVCF','genMatrix','Rpredict');
+foreach my $cmd (@cmd) {
+	my $i=system($cmd);
+	if ($i>0) {
+		die "died at $steps[$n] with error $i";
+	}
+	$n++;
 }
-system("rm ${path}/$dataFile.sam");
-system("rm ${path}/$dataFile.sorted.bam");
-system("rm ${path}/$dataFile.sorted.bam.bai");
-system("rm ${path}/$dataFile.bam");
+
+system("python $Bin/../run_feedback.py ${path}");
+
+system("rm -f ${path}/$dataFile.sam");
+system("rm -f ${path}/$dataFile.sorted.bam");
+system("rm -f ${path}/$dataFile.sorted.bam.bai");
+system("rm -f ${path}/$dataFile.bam");
