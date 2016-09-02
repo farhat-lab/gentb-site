@@ -189,18 +189,6 @@ s.domain = 'gentb.hms.harvard.edu'
 s.save()
 ```
 
-### Load initial status settings + pipeline script directory
-
-```
-# status settings
-python manage.py loaddata apps/predict/fixtures/predict_statuses.json
-
-# location of pipeline scripts (HMS)
-python manage.py loaddata apps/predict/fixtures/hms_pipeline_scripts_dir.json
-```
-
-
-
 ### Set up the .htaccess file
 
 Create an .htaccess file

@@ -36,8 +36,8 @@ FastQ or VCF file analysis.
         LOGGER.info("Run pipeline check: next dataset")
 
         # get some Dataset
-        dataset = PredictDataset.objects.filter(\
-                status=PredictDataset.STATUS_FILE_RETRIEVAL_COMPLETE).first()
+        COMPLETE = PredictDataset.STATUS['FILE_RETRIEVAL_SUCCESS']
+        dataset = PredictDataset.objects.filter(status=COMPLETE).first()
 
         if dataset is None:
             return LOGGER.info("Nothing to check")

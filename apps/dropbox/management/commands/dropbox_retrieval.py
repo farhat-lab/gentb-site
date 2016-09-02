@@ -23,18 +23,19 @@ class Command(BaseCommand):
 
     """
     def handle(self, **options):
-        for dataset in PredictDataset.objects.filter(status=PredictDataset.STATUS_CONFIRMED):
+        CONFIRMED = PredictDataset.STATUS['DATASET_CONFIRMED']
+        for dataset in PredictDataset.objects.filter(status=CONFIRMED):
             print " * Looking at dataset: %s" % str(dataset)
-            dataset.set_status_file_retrieval_started()
+            dataset.set_status('FILE_RETRIEVAL_STARTED')
             try:
                 for d_file in DropboxFile.objects.filter(result__isnull=True):
                     print "  + Downloading: %s" % d_file.url
                     d_file.download_now()
                     if d_file.retrieval_error:
                         raise RetrievalError(d_file.retrieval_error)
-            except RetrievalError as err:
+            except Exception as err:
                 print "  XXX Failed: %s" % str(err)
-                dataset.set_status_file_retrieval_error()
+                dataset.set_status('FILE_RETRIEVAL_FAILED')
             else:
-                dataset.set_status_file_retrieval_complete()
+                dataset.set_status('FILE_RETRIEVAL_SUCCESS')
 

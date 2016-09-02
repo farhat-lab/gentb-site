@@ -6,8 +6,7 @@ import json
 from django.contrib.auth.models import User
 from django.utils.crypto import get_random_string
 
-from apps.predict.models import PredictDataset, PredictDatasetStatus,\
-    SCRIPT_DIR, DATASET_STATUS_FILE_RETRIEVAL_COMPLETE
+from apps.predict.models import PredictDataset, SCRIPT_DIR
 from apps.tb_users.models import TBUser
 from apps.utils.file_patterns import \
                                 GENTB_FASTQ_FILE_PATTERNS,\
@@ -33,8 +32,8 @@ class PredictBasicTest(TestCase):
         self.tb_test_user = TBUser(user=self.test_user, affiliation='HU')
         self.tb_test_user.save()
 
-        test_params = {u'status':\
-                PredictDatasetStatus.objects.get(pk=DATASET_STATUS_FILE_RETRIEVAL_COMPLETE),\
+        test_params = {
+            u'status': PredictDataset.STATUS_FILE_RETRIEVAL_COMPLETE,
             u'has_prediction': False,\
             u'description': u'ok',\
             u'file_type': u'vcf',\

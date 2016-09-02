@@ -62,12 +62,12 @@
             </td>
           </tr>
           {% endif %}
-          {% if object.status.is_error %}
+          {% if object.is_error %}
             <tr>
               <th class="text-primary">Status</th>
               <td>
                 <span class="label label-warning">Fail</span> &nbsp;
-                {{ object.status.human_name }} (id: {{ object.status.id }})
+                {{ object.get_status_display }} (id: {{ object.status }})
               </td>
             </tr>
           {% endif %}

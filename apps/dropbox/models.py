@@ -43,6 +43,9 @@ class DropboxFile(Model):
         self.retrieval_error = ''
         self.save()
 
+        if self.filename is None:
+            self.filename = self.url.split('/')[-1]
+
         try:
             download = Download(self.url)
             download.save(self.dataset.file_directory, self.filename)

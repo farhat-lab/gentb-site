@@ -56,12 +56,12 @@ My Datasets - Phthisis Ravens
     <tr>
         <th class="text-primary">Status</th>
         <td>
-            {% if dataset.status.is_error %}
+            {% if dataset.is_error %}
                 <span class="label label-warning">Fail</span> &nbsp;
             {% else %}
                 <span class="label label-info">OK</span> &nbsp;
             {% endif %}
-            {{ dataset.status.human_name }} (id: {{ dataset.status.id }})
+            {{ dataset.get_status_display }} (id: {{ dataset.status }})
         </td>
     </tr>
     <tr>

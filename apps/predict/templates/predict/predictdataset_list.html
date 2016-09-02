@@ -31,8 +31,8 @@
               <td>{{ forloop.counter }}</td>
               <td><a href="{% url 'predict:view_single_dataset' ds.md5 %}">{{ ds.title }}</a></td>
               <td>{{ ds.file_type }}</td>
-              <td{% if ds.has_prediction %} class="success"{% endif %}>
-                {{ ds.status.id }} - {{ ds.status.human_name }}
+              <td class="{% if ds.has_prediction %}success{% elif ds.is_error %}error{% endif %}">
+                {{ ds.status }} - {{ ds.get_status_display }}
                 {% if dataset.has_prediction %}
                   <br /><a href="{% url 'predict:view_prediction_heatmap' dataset.md5 %}">prediction heatmap</a>
                 {% endif %}

@@ -12,7 +12,9 @@ from django.conf import settings
 from django.utils.text import slugify
 from django.core import serializers
 from django.core.urlresolvers import reverse
+from django.utils.timezone import now
 
+from django.utils.translation import ugettext_lazy as _
 from apps.mutations.models import Drug
 from apps.utils.result_file_info import RESULT_FILE_NAME_DICT,\
             EXPECTED_FILE_DESCRIPTIONS, RESULT_OUTPUT_DIRECTORY_NAME
@@ -23,41 +25,23 @@ from .utils import *
 import logging
 LOGGER = logging.getLogger('apps.predict.pipeline')
 
-class PredictDatasetStatus(models.Model):
-    name = models.CharField(max_length=50)
-    human_name = models.CharField(max_length=100)
-    is_error = models.BooleanField()
-    slug = models.SlugField(blank=True)
-    sort_order = models.IntegerField()
-
-    def __str__(self):
-        return '%s - %s' % (self.sort_order, self.name)
-
-    def save(self, *args, **kwargs):
-        if not self.pk:
-            super(PredictDatasetStatus, self).save(*args, **kwargs)
-
-        self.slug = slugify(self.name)
-
-        super(PredictDatasetStatus, self).save(*args, **kwargs)
-
-    class Meta:
-        ordering = ('sort_order', '-name')
-        #verbose_name = 'VCF Dataset Status'
-        verbose_name_plural = 'Predict Dataset Statuses'
-
-
 class PredictDataset(TimeStampedModel):
     """An uploaded predict dataset"""
-
-    STATUS_DELETED = 0
-    STATUS_CONFIRMED = 2
-    STATUS_FILE_RETRIEVAL_STARTED = 3
-    STATUS_FILE_RETRIEVAL_ERROR = 4
-    STATUS_FILE_RETRIEVAL_COMPLETE = 5
-    STATUS_PROCESSING_STARTED = 6
-    STATUS_PROCESSED_SUCCESS = 7
-    STATUS_PROCESSED_FAILED = 8
+    # These names are also keys, DO NOT CHANGE
+    STATUS_CHOICES = list(enumerate([
+      _('Dataset Deleted'),
+      _('Dataset Not Ready'),
+      _('Dataset Confirmed'),
+      _('File Retrieval Started'),
+      _('File Retrieval Failed'),
+      _('File Retrieval Success'),
+      _('Processing Started'),
+      _('Processing Success'),
+      _('Processing Failed'),
+    ]))
+    STATUS = dict([(x, x) for x, st in STATUS_CHOICES])
+    STATUS.update(dict([(str(st).upper().replace(' ', '_'), x) for x, st in STATUS_CHOICES]))
+    STATUS_ERRORS = [0, 5, 9]
 
     user = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='datasets')
     md5 = models.CharField(max_length=40, blank=True, db_index=True,
@@ -70,9 +54,11 @@ class PredictDataset(TimeStampedModel):
         help_text='Only used for FastQ files')
 
     description = models.TextField('Dataset description')
-    status = models.ForeignKey(PredictDatasetStatus)
     file_directory = models.CharField(max_length=255, blank=True)
     has_prediction = models.BooleanField(default=False)
+
+    status = models.PositiveIntegerField(default=1, choices=STATUS_CHOICES)
+    is_error = property(lambda self: self.status in self.STATUS_ERRORS)
 
     def __str__(self):
         return self.title
@@ -222,7 +208,7 @@ class PredictDataset(TimeStampedModel):
 
         # (3) Update the dataset status to 'in process'
         #
-        self.set_status_processing_started()
+        self.set_status('PROCESSING_STARTED')
 
         # (4) Run the script -- not waiting for output
         #
@@ -352,10 +338,6 @@ class PredictDataset(TimeStampedModel):
 
         return dirname
 
-        #datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
-
-
-
     def save(self, *args, **kwargs):
         if not self.id:
             super(PredictDataset, self).save(*args, **kwargs)
@@ -375,47 +357,22 @@ class PredictDataset(TimeStampedModel):
 
     def get_full_json(self):
         """
-        Need to serialize the PredictDataset as well as related PredictDatasetFile objects
+        Need to serialize the PredictDataset
         """
         return serializers.serialize('json', PredictDataset.objects.filter(id=self.id))
 
-    def set_status(self, status_type, save_status=True):
+    def set_status(self, status, save=True):
+        """Set the status of this Dataset.
+        
+           status - Can be integer (0-9) or a tag such as 'FILE_RETRIEVAL_SUCCESS'
+           save   - Boolean, if save should be called (default=True)
+        """
         try:
-            new_status = PredictDatasetStatus.objects.get(pk=status_type)
-        except PredictDatasetStatus.DoesNotExist:
-            return
-
-        self.status = new_status
-        if save_status:
-            self.save()
-
-    # Initial information statuses
-    #
-    def set_status_confirmed(self, save_status=True):
-        self.set_status(self.STATUS_CONFIRMED, save_status)
-
-    # File Retrieval statuses
-    #
-    def set_status_file_retrieval_started(self, save_status=True):
-        self.set_status(self.STATUS_FILE_RETRIEVAL_STARTED, save_status)
-
-    def set_status_file_retrieval_error(self, save_status=True):
-        self.set_status(self.STATUS_FILE_RETRIEVAL_ERROR, save_status)
-
-    def set_status_file_retrieval_complete(self, save_status=True):
-        self.set_status(self.STATUS_FILE_RETRIEVAL_COMPLETE, save_status)
-
-    # Pipeline processing statuses
-    #
-    def set_status_processing_started(self, save_status=True):
-        self.set_status(self.STATUS_PROCESSING_STARTED, save_status)
-
-    def set_status_processing_success(self, save_status=True):
-        self.set_status(self.STATUS_PROCESSED_SUCCESS, save_status)
-
-    def set_status_processing_failed(self, save_status=True):
-        self.set_status(self.STATUS_PROCESSED_FAILED, save_status)
-
+            self.status = self.STATUS[status]
+            if save:
+                self.save()
+        except KeyError:
+            raise ValueError("Status %s not acceptable choice" % str(status))
 
     class Meta:
         ordering = ('-created', 'title')
@@ -491,6 +448,9 @@ class DatasetScriptRun(TimeStampedModel):
     result_success = models.BooleanField(default=False)
     result_data = models.TextField(blank=True)
 
+    process_start = models.DateTimeField(auto_now_add=True, null=True)
+    process_end = models.DateTimeField(null=True, blank=True)
+
     def __str__(self):
         return '%s' % self.dataset
 
@@ -514,16 +474,23 @@ class DatasetScriptRun(TimeStampedModel):
              run_md5=self.md5
          )
 
+    @property
+    def process_time(self):
+        if self.process_end and self.process_start:
+            return self.process_end - self.process_start
+
     def save(self, *args, **kwargs):
         if not self.md5:
             self.md5 = md5('%s%s' % (self.dataset.pk, self.created)).hexdigest()
 
         if self.result_received:
+            if not self.process_end:
+                self.process_end = now()
             if self.result_success:
                 self.dataset.check_for_prediction()
-                self.dataset.set_status_processing_success()
+                self.dataset.set_status('PROCESSING_SUCCESS')
             else:
-                self.dataset.set_status_processing_failed()
+                self.dataset.set_status('PROCESSING_FAILED')
 
         super(DatasetScriptRun, self).save(*args, **kwargs)
 
