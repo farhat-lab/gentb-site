@@ -38,7 +38,8 @@ function make_heatmap(data, heatmap_id, scatter_id, no_data) {
   var options = {
     "no_data": no_data,
     "xaxis_height": 120,
-    "yaxis_width": 120,
+    // XXX This should dynamically set the width based on the labels.
+    "yaxis_width": 150,
     "xaxis_font_size": null,
     "yaxis_font_size": null,
     "brush_color": "#0000FF",
