@@ -29,8 +29,7 @@ FastQ or VCF file analysis.
 
     def handle(self, **options):
         """
-        (1) Retrieve the first PredictDataset with a status of:
-            DATASET_STATUS_FILE_RETRIEVAL_COMPLETE
+        (1) Retrieve the first PredictDataset with a status of: FILE_RETRIEVAL_SUCCESS
         (2) If such a dataset exists, run it through the pipeline
         """
         LOGGER.info("Run pipeline check: next dataset")

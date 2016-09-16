@@ -54,7 +54,7 @@ class DatasetScriptRunAdmin(admin.ModelAdmin):
     save_on_top = True
     list_display = ('dataset', 'result_received', 'result_success', 'created', 'modified', 'process_time')
     list_filter = ['result_received', 'result_success']
-    readonly_fields = [ 'created', 'modified', 'md5']
+    readonly_fields = [ 'created', 'modified', 'md5', 'process_start', 'process_end']
 
 admin.site.register(DatasetScriptRun, DatasetScriptRunAdmin)
 

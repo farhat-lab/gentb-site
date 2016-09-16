@@ -43,7 +43,7 @@ class UploadManual(PredictMixin, CreateView):
     def get_initial(self):
         return {
           'user': self.request.user,
-          'status': PredictDataset.STATUS_FILE_RETRIEVAL_COMPLETE,
+          'status': PredictDataset.STATUS['FILE_RETRIEVAL_SUCCESS'],
           'file_type': 'manual',
         }
 

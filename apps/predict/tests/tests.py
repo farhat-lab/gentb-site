@@ -33,7 +33,7 @@ class PredictBasicTest(TestCase):
         self.tb_test_user.save()
 
         test_params = {
-            u'status': PredictDataset.STATUS_FILE_RETRIEVAL_COMPLETE,
+            u'status': PredictDataset.STATUS['FILE_RETRIEVAL_SUCCESS'],
             u'has_prediction': False,\
             u'description': u'ok',\
             u'file_type': u'vcf',\
