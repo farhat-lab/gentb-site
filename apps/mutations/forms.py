@@ -38,21 +38,14 @@ class DrugForm(ModelForm):
                 raise ValueError("Optional sort index should be a number.")
 
         bits = line.split('_')
-        if bits[0] == 'SNP':
-            if bits[1] == 'N':
-                return (index, bits[-1], line)
-            elif bits[1] == 'CN':
-                return (index, bits[-2], line)
-            elif bits[1] == 'P':
-                return (index, 'promoter ' + bits[-1], line)
-            elif bits[1] == 'I':
-                return (index, 'intergenic ' + bits[-1], line)
-            else:
-                raise ValueError("Unknown SNP value %s" % bits[1])
-        elif bits[0] in ('INS', 'DEL'):
+        if bits[1] == 'P':
+            return (index, 'promoter ' + bits[-1], line)
+        elif bits[1] == 'I':
+            return (index, 'intergenic ' + bits[-1], line)
+        elif bits[1] in ['CN', 'CD', 'CF', 'CI', 'CZ', 'N', 'ND', 'NI', 'NF']:
             return (index, bits[-1], line)
 
-        raise ValueError("First part is not SNP, INS or DEL")
+        raise ValueError("Must be promoter, intergenic or CN, CD, CF, CI, CZ or N, ND, NI, NF")
 
     def save(self, *args, **kw):
         obj = super(DrugForm, self).save(*args, **kw)
