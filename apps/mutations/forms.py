@@ -39,9 +39,15 @@ class DrugForm(ModelForm):
 
         bits = line.split('_')
         if bits[1] == 'P':
-            return (index, 'promoter ' + bits[-1], line)
+            if 'promoter' not in bits:
+                raise ValueError("Promoter doesn't specify 'promoter' part")
+            name = ' '.join(bits[bits.index('promoter') + 1:])
+            return (index, 'promoter ' + name, line)
         elif bits[1] == 'I':
-            return (index, 'intergenic ' + bits[-1], line)
+            if 'inter' not in bits:
+                raise ValueError("Integenic doesn't specify 'inter' part")
+            name = ' '.join(bits[bits.index('inter') + 1:])
+            return (index, 'intergenic ' + name, line)
         elif bits[1] in ['CN', 'CD', 'CF', 'CI', 'CZ', 'N', 'ND', 'NI', 'NF']:
             return (index, bits[-1], line)
 
