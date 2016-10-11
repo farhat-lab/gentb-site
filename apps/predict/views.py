@@ -60,7 +60,7 @@ class UploadView(PredictMixin, CreateView):
     def get_initial(self):
         return {
           'user': self.request.user,
-          'status': PredictDataset.STATUS_CONFIRMED,
+          'status': PredictDataset.STATUS['DATASET_CONFIRMED'],
           'file_type': self.kwargs['type'],
           'fastq_type': self.kwargs.get('fastq', None),
         }
