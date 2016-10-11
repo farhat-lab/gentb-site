@@ -5,4 +5,5 @@
 
 */2 * * * * ./manage run_pipeline 2>> ./data/logs/cron.log
 */5 * * * * ./manage dropbox_retrieval 2>> ./data/logs/cron.log
+*   * * * * ./scripts/watchdog.sh &> /dev/null
 
