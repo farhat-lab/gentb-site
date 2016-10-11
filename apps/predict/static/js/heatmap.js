@@ -11,24 +11,33 @@ function scatter_plot(data) {
   nvChart.xAxis
       .axisLabel('Genetic Region')
       .tickFormat(function(d) {
-	 if (typeof this != 'undefined') {
-	   var el = d3.select(this);
-           // XXX - We should find the actual width here rather than just guess.
-           var width = 108;
-	   var p = d3.select(this.parentNode);
-	   p.append("foreignObject")
-	    .attr('x', 0-(width / 2))
-	    .attr("width", width)
-	    .attr("height", 200)
-	    .append("xhtml:p")
-	    .attr('style','word-wrap: break-word; text-align:center;')
-	    .html(data[0].cols[d]);    
+         if (typeof this != 'undefined') {
+           var el = d3.select(this);
+           // Total width - yaxis_width / number of cols;
+           var width = (1000 - 150) / data[0].cols.length;
+           var parentNode = d3.select(this.parentNode);
 
-	   el.remove();
-	 }
-         return data[0].cols[d];
-      })
-      ;
+           var p = this.replacement;
+
+           if(p === undefined) {
+             p = parentNode.append("foreignObject")
+                .attr("width", 200)
+                .attr("height", 200)
+              .append("xhtml:p")
+                .attr('style','word-wrap: break-word; text-align:center;');
+             this.replacement = p;
+           }
+
+           var vp = d3.select(p[0][0].parentNode);
+
+           vp.attr('x', 0-(width / 2))
+             .attr("width", width);
+
+           p.html(data[0].cols[d]);
+         }
+         // Return blank string to svg text since we've replaced it.
+         return '';
+      });
   svg.data([data]).transition().duration(500).call(nvChart);
   nv.utils.windowResize(nvChart.update);
 }
@@ -49,7 +58,9 @@ function make_heatmap(data, heatmap_id, scatter_id, no_data) {
       $('.datapt.selected').attr('class', 'datapt');
       $(elem).attr('class', 'datapt selected');
       $('#scatter_title').text('Mutation plot for drug='+x_label+', strain=' +y_label);
-      scatter_plot(scat.data[y_label][x]);
+      var row = scat.data[y_label];
+      var col = row[x];
+      scatter_plot(col);
     },
   }
   heatmap(heatmap_id, data, options);
@@ -57,7 +68,8 @@ function make_heatmap(data, heatmap_id, scatter_id, no_data) {
   nv.addGraph(function() {
     var data = Array();
     var chart = nv.models.multiBarChart()
-      .yDomain([0, 4]);
+      .yDomain([0, 4])
+      .reduceXTicks(false);
 
     var width = 1000;
     var height = 300;
@@ -67,20 +79,20 @@ function make_heatmap(data, heatmap_id, scatter_id, no_data) {
     chart.height(height);
     chart.width(width);
     chart.yAxis.scale(100).orient("left")
-  .axisLabel('Number of mutations')
-  .tickFormat(d3.format("d"))
-  .tickValues([0,1,2,3,4,5]);
+         .axisLabel('Number of mutations')
+         .tickFormat(d3.format("d"))
+         .tickValues([0,1,2,3,4,5]);
 
     chart.showLegend(true);
 
     var svg = d3.select(scatter_id + ' svg')
-  .attr('perserveAspectRatio', 'xMinYMid')
-  .attr('width', width)
-  .attr('height', height)
-  .datum(data)
-  .attr('viewBox', '0 0 ' + width + ' ' + height)
-  .transition().duration(1200)
-  .call(chart);
+          .attr('perserveAspectRatio', 'xMinYMid')
+          .attr('width', width)
+          .attr('height', height)
+          .datum(data)
+          .attr('viewBox', '0 0 ' + width + ' ' + height)
+          .transition().duration(1200)
+          .call(chart);
 
     chart.tooltip.contentGenerator(function (data) {
       ret = "<table>";
