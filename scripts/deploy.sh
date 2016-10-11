@@ -8,6 +8,6 @@ cd ..
 
 git pull
 ./manage migrate
-./manage collectstatic
+./manage collectstatic --noinput
 
 touch restart_me
