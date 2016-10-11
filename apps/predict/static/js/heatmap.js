@@ -389,8 +389,8 @@ function heatmap(selector, data, options) {
             "<tr><th align=\"right\">Strain</th><td>" + htmlEscape(data.rows[d.row]) + "</td></tr>" +
             "<tr><th align=\"right\">Drug</th><td>" + htmlEscape(data.cols[d.col]) + "</td></tr>" +
             "<tr><th align=\"right\">DR Probability</th><td>" + htmlEscape(d.label) + "</td></tr>" +
-            "<tr><th align=\"right\">FP Rate</th><td>" + data.extra[index][0] + "</td></tr>" +
-            "<tr><th align=\"right\">FN Rate</th><td>" + data.extra[index][1] + "</td></tr>" +
+            "<tr><th align=\"right\">FP Rate</th><td>" + data.extra[index][1] + "</td></tr>" +
+            "<tr><th align=\"right\">FN Rate</th><td>" + data.extra[index][0] + "</td></tr>" +
             "</table>";
         })
         .direction("se")
