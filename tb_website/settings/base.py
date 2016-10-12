@@ -177,6 +177,7 @@ LOCAL_APPS = (
     'apps.predict',
     'apps.dropbox',
     'apps.mutations',
+    'apps.maps',
 
     # Holds dataverse file ids for Two Ravens
     'apps.explore',

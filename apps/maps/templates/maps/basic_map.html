@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block extra_css %}
+  <link rel="stylesheet" href="{% static "css/leaflet.css" %}"/>
+  <link rel="stylesheet" href="{% static "css/leaflet_map.css" %}"/>
+{% endblock %}
+{% block extra_js %}
+  <script src="{% static "js/d3.js" %}"></script>
+  <script src="{% static "js/leaflet.js" %}"></script>
+  <script src="{% static "js/leaflet_map.js" %}"></script>
+{% endblock %}
+
+{% block content %}
+  <div class="row">
+    <div class="col-lg-12">
+      <h1 class="page-header">Map <small>visualize TB impacts and strains globally.</small><h1>
+      <div class="maps" id="mapid" data-map="{% static "map_data/tb_data_01.json" %}" data-polygons="{% static "map_data/tb_data_01_polygons.json" %}">
+      </div>
+    </div>
+  </div>
+{% endblock %}
