@@ -2,6 +2,7 @@
 from django.forms import ModelForm, CharField, Textarea, ValidationError
 
 from .models import Drug
+from .utils import unpack_mutation_format
 
 class DrugForm(ModelForm):
     paste = CharField(label="Paste Mutations", widget=Textarea, required=False,
@@ -24,34 +25,9 @@ class DrugForm(ModelForm):
             if not line:
                 continue
             try:
-                yield self._process_line(line)
+                yield unpack_mutation_format(line)
             except ValueError as err:
                 raise ValueError("Line '%d:%s' can not be read: %s" % (no, line, str(err)))
-
-    def _process_line(self, line):
-        index = None
-        if " " in line:
-            index, line = line.split(" ", 1)
-            try:
-                index = int(index)
-            except:
-                raise ValueError("Optional sort index should be a number.")
-
-        bits = line.split('_')
-        if bits[1] == 'P':
-            if 'promoter' not in bits:
-                raise ValueError("Promoter doesn't specify 'promoter' part")
-            name = ' '.join(bits[bits.index('promoter') + 1:])
-            return (index, 'promoter ' + name, line)
-        elif bits[1] == 'I':
-            if 'inter' not in bits:
-                raise ValueError("Integenic doesn't specify 'inter' part")
-            name = ' '.join(bits[bits.index('inter') + 1:])
-            return (index, 'intergenic ' + name, line)
-        elif bits[1] in ['CN', 'CD', 'CF', 'CI', 'CZ', 'N', 'ND', 'NI', 'NF']:
-            return (index, bits[-1], line)
-
-        raise ValueError("Must be promoter, intergenic or CN, CD, CF, CI, CZ or N, ND, NI, NF")
 
     def save(self, *args, **kw):
         obj = super(DrugForm, self).save(*args, **kw)

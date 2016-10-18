@@ -16,6 +16,8 @@ from django.utils.timezone import now
 
 from django.utils.translation import ugettext_lazy as _
 from apps.mutations.models import Drug
+from apps.mutations.utils import unpack_mutation_format
+
 from apps.utils.result_file_info import RESULT_FILE_NAME_DICT,\
             EXPECTED_FILE_DESCRIPTIONS, RESULT_OUTPUT_DIRECTORY_NAME
 
@@ -236,16 +238,16 @@ class PredictDataset(TimeStampedModel):
         regions = defaultdict(list)
         for gene in data:
             if gene:
-                region = gene.split("_")[-1].lower()
+                (index, region, mutation) = unpack_mutation_format(gene)
                 regions[region].append(gene)
 
+
         for x, locust in enumerate(locusts):
-            key = locust.lower()
             ret = {"x": x, "y": 0, "size": 5, "tip": ["No mutations"]}
-            if key in regions:
-                ret["y"] = len(regions[key])
+            if locust in regions:
+                ret["y"] = len(regions[locust])
                 ret["size"] = 9
-                ret["tip"] = regions[key]
+                ret["tip"] = regions[locust]
             yield ret
 
     def get_heatmap(self):
@@ -293,6 +295,7 @@ class PredictDataset(TimeStampedModel):
                         "values": list(self.make_scatter(locusts, datum)),
                     }
 
+
         ret['scatter'] = {
           'data': output,
         }
@@ -312,7 +315,6 @@ class PredictDataset(TimeStampedModel):
         if self.user:
             return self.user.email
         return 'n/a'
-    #'user_name', 'user_email'
 
     def create_dataset_directory_name(self):
         """

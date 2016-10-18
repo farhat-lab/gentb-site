@@ -29,9 +29,6 @@ class PredictBasicTest(TestCase):
         self.test_user = User(username='testtb', password=get_random_string(length=32))
         self.test_user.save()
 
-        self.tb_test_user = TBUser(user=self.test_user, affiliation='HU')
-        self.tb_test_user.save()
-
         test_params = {
             u'status': PredictDataset.STATUS['FILE_RETRIEVAL_SUCCESS'],
             u'has_prediction': False,\
@@ -41,7 +38,7 @@ class PredictBasicTest(TestCase):
             u'file_directory':\
                 u'/some-dir-to-add-files/test_setup/tb_uploaded_files/tbdata_00000013',\
             u'fastq_type': u'',\
-            u'user': self.tb_test_user}
+            u'user': self.test_user}
 
         self.dataset_vcf = PredictDataset(**test_params)
         self.dataset_vcf.save()
@@ -79,14 +76,8 @@ class PredictBasicTest(TestCase):
 
     def test_fastq_file(self):
         """FastQ file test"""
-        self.assertTrue(not self.dataset_fastq.is_vcf_file(),
-                        "Should NOT be a VCF file")
-
-        self.assertTrue(self.dataset_fastq.is_fastq_file(),
-                        "Should be a FastQ file")
-
-        self.assertEqual(self.dataset_fastq.get_file_patterns(),\
-                    GENTB_FASTQ_FILE_PATTERNS)
+        self.assertTrue(self.dataset_vcf.file_type, 'vcf')
+        self.assertTrue(self.dataset_fastq.file_type, 'fastq')
 
         self.assertTrue(self.dataset_fastq.get_pipeline_command()[0])
 
