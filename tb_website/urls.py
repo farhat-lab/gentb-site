@@ -22,6 +22,7 @@ urlpatterns = patterns('',
     url(r'^predict/', include('apps.predict.urls', namespace='predict')),
     url(r'^genes/', include('apps.mutations.urls', namespace='genes')),
     url(r'^user/', include('apps.tb_users.urls', namespace='users')),
+    url(r'^auth/', include('apps.tb_users.auth_urls')),
     url(r'^maps/', include('apps.maps.urls', namespace='maps')),
 
     url(r'^gentb-admin/', include(admin.site.urls)),

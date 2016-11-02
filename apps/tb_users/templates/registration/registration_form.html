@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block title %}Password reset{% endblock %}
+
+{% block content %}
+
+{% if validlink %}
+
+<div class="row">
+    <div class="col-lg-12">
+        <h1 class="page-header">Enter new password<h1>
+    </div>
+</div>
+<p>Please enter your new password twice so we can verify you typed it in correctly.</p>
+
+<form action="" method="post">{% csrf_token %}
+
+{% if form.new_password1.errors %}
+<div class="text-danger">{{ form.new_password1.errors }}</div>
+{% endif %}
+
+
+<p class="aligned wide"><label for="id_new_password1" class="text-primary">New password:</label>
+    &nbsp;{{ form.new_password1 }}</p>
+
+{% if form.new_password2.errors %}
+<div class="text-danger">{{ form.new_password2.errors }}</div>
+{% endif %}
+
+
+<p class="aligned wide"><label for="id_new_password2" class="text-primary">Confirm password:</label>
+    &nbsp;{{ form.new_password2 }}</p>
+<p><input type="submit" value="Change Password" class="btn btn-sm btn-success" /></p>
+</form>
+
+{% else %}
+
+<div class="row">
+    <div class="col-lg-12">
+        <h1 class="page-header">Password reset unsuccessful<h1>
+    </div>
+</div>
+
+<p class="text-danger">The password reset link was invalid, possibly because it has already been used.</p>
+<p class="text-danger">Please request a new <a href="{% url 'password_reset' %}">password reset</a>.</p>
+
+{% endif %}
+
+{% endblock %}
