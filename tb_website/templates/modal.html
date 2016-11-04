@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% load i18n static %}
+
+{% block "css" %}{{ block.super }}
+  <link rel="stylesheet" type="text/css" href="{% static "css/modal.css" %}"/>
+{% endblock %}
+
+{% block content %}
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        {% block "dialog-title" %}<h4 class="modal-title">{% block "title" %}{{ title|default:"Dialog Title" }}{% endblock %}</h4>{% endblock %}
+        {% block "dialog-subtitle" %}{% endblock %}
+        {% if form.non_field_errors %}
+          {% for error in form.non_field_errors %}
+            <p class="bg-danger" style="margin: 1rem; padding: 1rem;">{{ error }}</p>
+          {% endfor %}
+        {% endif %}
+      </div>
+      <div class="modal-body">
+        {% block "dialog-body" %}{% endblock %}
+        {% if form or formset or delete %}
+          {% block "dialog-form" %}
+            <form method="POST" action="{% block "dialog-action" %}{% endblock %}"
+                 {% if form.is_multipart %}enctype="multipart/form-data"{% endif %}>
+              {% csrf_token %}
+
+              <input type="hidden" name="msie11bug" value="http://stackoverflow.com/questions/20149751/ie11-only-submit-bug" />
+
+              {% if next or request.GET.next %}
+                <input type="hidden" name="next" value="{{ next|default:request.GET.next }}" />
+              {% endif %}
+
+              {% if form.fieldsets %}
+                <div class="tabs">
+                  {% for label, fieldset in form.fieldsets %}
+                    <label class="tab" for="tab{{ forloop.counter }}">{{ label }}</label>
+                  {% endfor %}
+                </div>
+                {% for label, fieldset in form.fieldsets %}
+                  <div class="fields" id="tab{{ forloop.counter }}">
+                    {% include "modal-fields.html" %}
+                  </div>
+                {% endfor %}
+              {% else %}
+                {% with form as fieldset %}
+                  {% include "modal-fields.html" %}
+                {% endwith %}
+              {% endif %}
+
+              <div class="modal-footer">
+                {% block "form-buttons" %}
+                  <button type="submit" class="btn btn-primary">Go</button>
+                {% endblock %}
+              </div>
+            </form>
+          {% endblock %}
+        {% else %}
+          <div class="modal-footer">{% block "dialog-buttons" %}{% endblock %}
+          </div>
+        {% endif %}
+        </div>
+      </div>
+  </div>
+{% endblock %}

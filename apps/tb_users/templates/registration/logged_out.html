@@ -1,0 +1,12 @@
+{% extends "modal.html" %}
+{% load i18n %}
+
+{% block "title" %}{% trans "Logout Successful" %}{% endblock %}
+
+{% block "dialog-body" %}
+  <p>{% trans "Thanks for using the GenTB website. Good bye." %}</p>
+{% endblock %}
+
+{% block "dialog-buttons" %}
+<a class="btn btn-primary" href="{% url "users:login" %}"><span class="glyphicon glyphicon-user"></span> {% trans "Login Again" %}</a>
+{% endblock %}

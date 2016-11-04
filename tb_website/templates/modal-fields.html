@@ -1,0 +1,22 @@
+{% load i18n static formextra %}
+
+{% for field in fieldset %}
+  {% if field.help_text %}
+    <div class="tooltip floating-tip"> 
+      <img class="help" src="{% static "images/icons/help.svg" %}" alt="?"/>
+      <span><span class="ttarrow"></span>{{ field.help_text|safe }}</span>
+    </div>
+  {% endif %}
+  <div class="form-group">
+    {% if field.errors %}{{ field.errors }}{% endif %}
+    {{ field.label_tag }}
+    {% if forloop.first %}
+      {{ field|placeholder:field.label|formfield|autofocus }}
+    {% else %}
+      {{ field|placeholder:field.label|formfield }}
+    {% endif %}
+    {% if field.help_text %}
+      <small class="form-text text-muted">{{ field.help_text }}</small>
+    {% endif %}
+  </div>
+{% endfor %}
