@@ -59,14 +59,12 @@ def get_database_config(filename, site=None):
     engine, db = engines[0]
 
     return {
-        'default': {
-            'ENGINE': engine,
-            'NAME': db.get('DB', db.get('FILENAME', '')),
-            'USER': db.get('USER', ''),
-            'PASSWORD': db.get('PASSWORD', ''),
-            'HOST': db.get('SERVER', ''),
-            'PORT': db.get('PORT', ''),
-        }
+        'ENGINE': engine,
+        'NAME': db.get('DB', db.get('FILENAME', '')),
+        'USER': db.get('USER', ''),
+        'PASSWORD': db.get('PASSWORD', ''),
+        'HOST': db.get('SERVER', ''),
+        'PORT': db.get('PORT', ''),
     }
 
 
