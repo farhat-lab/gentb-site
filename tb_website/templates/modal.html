@@ -1,22 +1,18 @@
 {% extends "base.html" %}
 {% load i18n static %}
 
-{% block "css" %}{{ block.super }}
-  <link rel="stylesheet" type="text/css" href="{% static "css/modal.css" %}"/>
-{% endblock %}
-
 {% block content %}
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
         {% block "dialog-title" %}<h4 class="modal-title">{% block "title" %}{{ title|default:"Dialog Title" }}{% endblock %}</h4>{% endblock %}
         {% block "dialog-subtitle" %}{% endblock %}
+      </div>
         {% if form.non_field_errors %}
           {% for error in form.non_field_errors %}
-            <p class="bg-danger" style="margin: 1rem; padding: 1rem;">{{ error }}</p>
+            <div class="alert alert-danger" role="alert">{{ error }}</div>
           {% endfor %}
         {% endif %}
-      </div>
       <div class="modal-body">
         {% block "dialog-body" %}{% endblock %}
         {% if form or formset or delete %}

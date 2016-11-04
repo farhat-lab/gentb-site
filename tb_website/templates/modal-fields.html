@@ -7,9 +7,16 @@
       <span><span class="ttarrow"></span>{{ field.help_text|safe }}</span>
     </div>
   {% endif %}
-  <div class="form-group">
-    {% if field.errors %}{{ field.errors }}{% endif %}
-    {{ field.label_tag }}
+  <div class="form-group{% if field.errors %} has-error{% endif %}">
+    {% if field.errors %}
+      <span class="text-danger">
+        {% for error in field.errors %}
+          <br />{{ field.label_tag }} {{ error }}
+        {% endfor %}
+      </span>
+    {% else %}
+      {{ field.label_tag }}
+    {% endif %}
     {% if forloop.first %}
       {{ field|placeholder:field.label|formfield|autofocus }}
     {% else %}

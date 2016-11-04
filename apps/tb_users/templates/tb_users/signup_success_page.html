@@ -1,19 +1,12 @@
-{% extends "base.html" %}
-{% load staticfiles %}
-{% block title %}
-{{ title }} - Phthisis Ravens
+{% extends "modal.html" %}
+{% load i18n %}
+
+{% block "title" %}{% trans "Sign Up Success!" %}{% endblock %}
+
+{% block "dialog-body" %}
+  <p>{% trans "Congratulations, your new account has been created." %}</p>
 {% endblock %}
 
-{% block content %}
-<div class="row">
-    <div class="col-lg-12">
-        <h1>{{ title }}</h1>
-
-        <div class="alert alert-success" role="alert">
-            <p>Congratulations, your new account has been created.</p>
-            <br />
-            <p>Please <a href="{% url 'users:login' %}" class="btn btn-primary btn-xs">Log In</a></p>
-        </div>
-    </div>
-</div>
+{% block "dialog-buttons" %}
+  <a href= "{% url "users:login" %}" class="btn btn-primary">{% trans "Login" %}</a>
 {% endblock %}

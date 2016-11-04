@@ -24,7 +24,7 @@ def add_tabindex(form, number):
 def add_form_control(form):
     cls = ['form-control']
     if form.errors:
-        cls.append("has-error")
+        cls.append("form-control-danger")
     form.field.widget.attrs.update({"class": ' '.join(cls)})
     return form
 
