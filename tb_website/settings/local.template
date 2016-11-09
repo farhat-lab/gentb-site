@@ -76,6 +76,7 @@ DATABASES = {
         'PORT': '',
     }
 }
+#DATABASE_ROUTERS = ['tb_website.routers.PrivateAppRouter']
 ########## END DATABASE CONFIGURATION
 
 
