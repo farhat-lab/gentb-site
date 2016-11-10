@@ -24,12 +24,14 @@ predictfunction<-function(filename){
   names(important)<-input[,1]
   other<-vector("list",nrow(input))
   names(other)<-input[,1]
+  distmatrix<-matrix(NA,nrow=1,ncol=13,dimnames=list(c(), druglist))
   
   for ( j in 1:nrow(input)){
     strain <- input[j,]
     resultperstrain <- matrix(NA, nrow=length(druglist), ncol=5)
     important_strain<-matrix(NA,nrow=5,ncol=length(druglist),dimnames=list(c(), druglist))
     other_strain<-matrix(NA, nrow=5,ncol=length(druglist),dimnames=list(c(),druglist))
+    fordiststrain<-c()
     
     for (i in 1:length(druglist)){
       drug <- druglist[i]
@@ -51,6 +53,7 @@ predictfunction<-function(filename){
 
       Valid <- predict(drugg.full.rf, vars, type="prob", norm.votes=TRUE, predict.all=FALSE)
       resultperstrain[i,] <- c(as.vector(strain[1,1]), drug, round(Valid[1,1],3), round(eR,2), round(eS,2))
+      fordiststrain<-c(fordiststrain, round(Valid[1,1],3))
       
       imp<-intersect(selected, colnames(strain)[which(strain[1,]==1)])[1:5]
       important_strain[1:length(imp),i]<-imp
@@ -61,6 +64,7 @@ predictfunction<-function(filename){
     result<-rbind(result, resultperstrain)
     important[[j]]<-important_strain
     other[[j]]<-other_strain
+    distmatrix<-rbind(distmatrix,fordiststrain)
   }
   #print(length(warnings()))
   #warnings()
@@ -68,6 +72,13 @@ predictfunction<-function(filename){
   #print("Time to completion:")
   #print(bb-aa)
   result<-result[-1,] #removing empty first line
+  distmatrix<-distmatrix[-1,] #removing empty first line
+  order<-hclust(dist(distmatrix))$order
+  result2<-rep(NA,ncol(result))
+  for (j in order) {
+    result2<-rbind(result2, result[((j-1)*13+1):((j-1)*13+13),])
+  }
+  result<-result2[-1,] #removing empty first line and replacing unordered matrix
   #displayresult<- jsonlite:::toJSON(result)
   #return(displayresult)
   l <- list(result, important, other)
@@ -87,3 +98,4 @@ suppressWarnings(predictfunction(arg))
 # h <- create_heatmap("matrix.json")
 # h
 # 
+
