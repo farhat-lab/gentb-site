@@ -26,6 +26,7 @@ if ($pairend>0) {
 push @cmd, "samtools view -bS ${path}/$dataFile.sam > ${path}/$dataFile.bam";
 push @cmd, "samtools sort ${path}/$dataFile.bam ${path}/$dataFile.sorted";
 push @cmd, "samtools index ${path}/$dataFile.sorted.bam";
+push @cmd, "samtools depth -b $Bin/DR_regions.BED -Q 29 $dataFile.sorted.bam >${path}/output/$dataFile.qc";
 push @cmd, "Platypus.py callVariants --bamFiles=${path}/$dataFile.sorted.bam --refFile=$refFile.fasta --output=${path}/$dataFile.h37rv.vcf";
 push @cmd, "perl $Bin/flatAnnotatorVAR.pl ${path}/$dataFile.h37rv.vcf 15 0.1 PASS";
 push @cmd, "mv ${path}/$dataFile.h37rv.var ${path}/output";
@@ -34,7 +35,7 @@ push @cmd, "python $Bin/generate_matrix.py ${path}/output";
 push @cmd, "Rscript $Bin/TBpredict.R ".'"'."${path}/output/matrix.csv".'"';
 
 my $n=0;
-my @steps=('stampy','sam2bam','sort','index','platypus','annotate','mvVar','mvVCF','genMatrix','Rpredict');
+my @steps=('stampy','sam2bam','sort','index','QC','platypus','annotate','mvVar','mvVCF','genMatrix','Rpredict');
 foreach my $cmd (@cmd) {
 	my $i=system($cmd);
 	if ($i>0) {
