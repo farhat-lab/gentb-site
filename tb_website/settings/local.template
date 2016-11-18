@@ -16,7 +16,6 @@ TB_ADMINS = ADMINS
 
 ########## DEBUG CONFIGURATION
 DEBUG = True
-TEMPLATE_DEBUG = DEBUG
 
 # See: http://django-debug-toolbar.readthedocs.org/en/latest/installation.html#explicit-setup
 if DEBUG:
