@@ -43,7 +43,7 @@ class PredictDataset(TimeStampedModel):
     ]))
     STATUS = dict([(x, x) for x, st in STATUS_CHOICES])
     STATUS.update(dict([(str(st).upper().replace(' ', '_'), x) for x, st in STATUS_CHOICES]))
-    STATUS_ERRORS = [0, 5, 9]
+    STATUS_ERRORS = [0, 4, 8]
 
     user = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='datasets')
     md5 = models.CharField(max_length=40, blank=True, db_index=True,
@@ -286,7 +286,7 @@ class PredictDataset(TimeStampedModel):
                         output[row][col][series] = {}
                         continue
                     
-                    locusts = list(drug.gene_locuses.values_list('name', flat=True))
+                    locusts = list(drug.mutations.values_list('gene_locus__name', flat=True).distinct())
                     output[row][col][series] = {
                         "cols": locusts,
                         "key": ["Important", "Other"][series],
