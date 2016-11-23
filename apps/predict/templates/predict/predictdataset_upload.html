@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+﻿{% extends "base.html" %}
 {% load cachebuster %}
 
 {% block title %}Create Prediction{% endblock %}
@@ -65,7 +65,7 @@
           </td>
           <td>
             <h3>New Manually Entered Prediction</h3>
-            <p>Create a prediction from a set of pair-ended FastQ genetic sequences. This option involves the largest files and takes more time to process that the vcf or manual options.</p>
+            <p>Create a prediction though manual selection of 1 or more mutations from a list. This option involves the shortest processing time but does assume that any non-entered mutations have been tested for and are absent.</p>
           </td>
         </tr>
     </table>
