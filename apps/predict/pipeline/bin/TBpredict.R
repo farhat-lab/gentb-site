@@ -73,12 +73,18 @@ predictfunction<-function(filename){
   #print(bb-aa)
   result<-result[-1,] #removing empty first line
   distmatrix<-distmatrix[-1,] #removing empty first line
-  order<-hclust(dist(distmatrix))$order
-  result2<-rep(NA,ncol(result))
-  for (j in order) {
-    result2<-rbind(result2, result[((j-1)*13+1):((j-1)*13+13),])
+  if (is.vector(distmatrix)) {
+    order=1
+  } else {
+    order<-hclust(dist(distmatrix))$order
+    result2<-rep(NA,ncol(result))
+    for (j in order) {
+      result2<-rbind(result2, result[((j-1)*13+1):((j-1)*13+13),])
+      #print((j-1)*13+1)
+      #print((j-1)*13+13)
+    }
+    result<-result2[-1,] #removing empty first line and replacing unordered matrix
   }
-  result<-result2[-1,] #removing empty first line and replacing unordered matrix
   #displayresult<- jsonlite:::toJSON(result)
   #return(displayresult)
   l <- list(result, important, other)
