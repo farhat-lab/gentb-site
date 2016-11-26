@@ -55,9 +55,9 @@ predictfunction<-function(filename){
       resultperstrain[i,] <- c(as.vector(strain[1,1]), drug, round(Valid[1,1],3), round(eR,2), round(eS,2))
       fordiststrain<-c(fordiststrain, round(Valid[1,1],3))
       
-      imp<-intersect(selected, colnames(strain)[which(strain[1,]==1)])[1:5]
+      imp<-intersect(selected, colnames(vars)[which(vars[1,]==1)])[1:5]
       important_strain[1:length(imp),i]<-imp
-      oth<-setdiff(intersect(selected, colnames(strain)[which(strain[1,]==1)]), colnames(strain)[which(strain[1,]==1)])[1:5]
+      oth<-setdiff(colnames(vars)[which(vars[1,]==1)], intersect(selected, colnames(vars)[which(vars[1,]==1)]))[1:5]
       other_strain[1:length(oth),i]<-oth
       
     }
