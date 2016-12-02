@@ -15,8 +15,17 @@
   <div class="row">
     <div class="col-lg-12">
       <h1 class="page-header">Map <small>visualize TB impacts and strains globally.</small><h1>
+      <iframe id="shinymap" height="1200" width="100%" frameborder="0" src="https://hmdc.shinyapps.io/genTB"></iframe>
+      {#<div id="map" style="width: 960px; height: 500px"></div>#}
+    </div>
+  </div>
+  {% if 0 %}
+  <div class="row">
+    <div class="col-lg-12">
+      <h1 class="page-header">Map <small>visualize TB impacts and strains globally.</small><h1>
       <div class="maps" id="mapid" data-map="{% static "map_data/tb_data_01.json" %}" data-polygons="{% static "map_data/tb_data_01_polygons.json" %}">
       </div>
     </div>
   </div>
+  {% endif %}
 {% endblock %}
