@@ -4,6 +4,7 @@ django-braces==1.4.0
 django-model-utils==2.0.3
 django-cachebuster==0.2.1
 django-autotest-command>=1.5.3
+django-spaghetti-and-meatballs==0.2.2
 logutils==0.3.3
 requests==2.4.1
 pytz==2015.4

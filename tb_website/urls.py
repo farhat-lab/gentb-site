@@ -24,6 +24,7 @@ urlpatterns = patterns('',
     url(r'^user/', include('apps.tb_users.urls', namespace='users')),
     url(r'^auth/', include('apps.tb_users.auth_urls')),
     url(r'^maps/', include('apps.maps.urls', namespace='maps')),
+    url(r'^models/', include('django_spaghetti.urls')),
 
     url(r'^gentb-admin/', include(admin.site.urls)),
 )

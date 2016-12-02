@@ -147,6 +147,7 @@ DJANGO_APPS = (
 # Apps from the internet (see requirements.txt)
 SUPPORT_APPS = (
     'cachebuster',
+    'django_spaghetti',
     'autotest',
 )
 
@@ -227,6 +228,12 @@ LOGGING = {
     },
 }
 ########## END LOGGING CONFIGURATION
+
+SPAGHETTI_SAUCE = {
+  'apps': ['mutations',],
+  'show_fields': False,
+  'exclude': {'auth':['user']}
+}
 
 ########## WSGI CONFIGURATION
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#wsgi-application
