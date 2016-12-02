@@ -6,6 +6,8 @@
 cd "$(dirname "$0")"
 cd ..
 
+# Fetch any online revisions and check for updates
+git fetch
 REVS=`git log HEAD..origin/master --oneline`
 
 if [[ $REVS == "" ]]; then
