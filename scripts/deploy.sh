@@ -6,8 +6,20 @@
 cd "$(dirname "$0")"
 cd ..
 
-git pull
-./manage migrate
-./manage collectstatic --noinput
+REVS=`git log HEAD..origin/master --oneline`
 
-touch restart_me
+if [[ $REVS == "" ]]; then
+  echo "No version"
+else
+  echo "NEW VERSION AVAILABLE, INSTALLING:"
+  echo $REVS
+
+  # Get a new copy of available files.
+  git pull
+
+  ./pythonenv/bin/pip install -r requirements/production.txt
+  ./manage migrate
+  ./manage collectstatic --noinput
+
+  touch restart_me
+fi
