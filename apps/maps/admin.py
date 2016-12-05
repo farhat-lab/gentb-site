@@ -1,3 +1,7 @@
-from django.contrib import admin
+from django.contrib.admin import *
 
-# Register your models here.
+from .models import Place, Country
+
+site.register(Place)
+site.register(Country)
+
