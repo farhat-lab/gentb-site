@@ -94,8 +94,7 @@ class Command(BaseCommand):
                 sys.stderr.write("Shape file %s is not found\n" % shp)
                 continue
 
-            #data = FilteredDataSource(shp, getattr(model, 'map_filter', None))
             lm = FilteredMapping(model, shp, model.mapping,
                     transform=True, unique=model.mapping_id)
-            lm.save(strict=False, verbose=False)
+            lm.save(strict=False, verbose=True)
 

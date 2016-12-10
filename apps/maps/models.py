@@ -48,6 +48,10 @@ class Country(Model):
         'geom' : 'MULTIPOLYGON',
     }
 
+    class Meta:
+        verbose_name_plural = 'countries'
+        ordering = ('-pop',)
+
     def __str__(self):
         return self.name
 
@@ -55,7 +59,7 @@ class Country(Model):
 class Place(Model):
     """A populated place from the world map source"""
     name = CharField(max_length=128)
-    country = ForeignKey(Country)
+    country = ForeignKey(Country, related_name='places')
 
     latitude = FloatField()
     longitude = FloatField()
@@ -81,6 +85,9 @@ class Place(Model):
         'timezone' : 'TIMEZONE',
         'geom' : 'MULTIPOINT',
     }   
+
+    class Meta:
+        ordering = ('-pop',)
 
     def __str__(self):
         return self.name
