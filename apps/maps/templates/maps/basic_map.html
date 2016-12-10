@@ -4,14 +4,80 @@
 {% block extra_css %}
   <link rel="stylesheet" href="{% static "css/leaflet.css" %}"/>
   <link rel="stylesheet" href="{% static "css/leaflet_map.css" %}"/>
+  <link rel="stylesheet" href="{% static "css/vertical-tabs.css" %}"/>
 {% endblock %}
 {% block extra_js %}
   <script src="{% static "js/d3.js" %}"></script>
   <script src="{% static "js/leaflet.js" %}"></script>
   <script src="{% static "js/leaflet_map.js" %}"></script>
+  <script src="{% static "js/vertical-tabs.js" %}"></script>
 {% endblock %}
 
 {% block content %}
+  {% if request.GET.new %}
+  <div class="container">
+	<div class="row">
+        <div class="col-lg-5 col-md-5 col-sm-8 col-xs-9 vertical-tab-container">
+            <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3 vertical-tab-menu">
+              <div class="list-group">
+                <a href="#" class="list-group-item active text-center">
+                  <h3 class="glyphicon glyphicon-globe"></h3>
+                  <p>World</p>
+                </a>
+                <a href="#" class="list-group-item text-center">
+                  <h3 class="icon-gene"></h3>
+                  <p>Gene</p>
+                </a>
+                <a href="#" class="list-group-item text-center">
+                  <h3 class="icon-graph"></h3>
+                  <p>Lineage</p>
+                </a>
+                <a href="#" class="list-group-item text-center">
+                  <h3 class="icon-adenine"></h3>
+                  <p>Mutation</p>
+                </a>
+              </div>
+            </div>
+            <div class="col-lg-9 col-md-9 col-sm-9 col-xs-9 vertical-tab">
+                <!-- flight section -->
+                <div class="vertical-tab-content active">
+                    <center>
+                      <h1 class="glyphicon glyphicon-plane" style="font-size:14em;color:#55518a"></h1>
+                      <h2 style="margin-top: 0;color:#55518a">Cooming Soon</h2>
+                      <h3 style="margin-top: 0;color:#55518a">Flight Reservation</h3>
+                    </center>
+                </div>
+                <!-- train section -->
+                <div class="vertical-tab-content">
+                    <center>
+                      <h1 class="glyphicon glyphicon-road" style="font-size:12em;color:#55518a"></h1>
+                      <h2 style="margin-top: 0;color:#55518a">Cooming Soon</h2>
+                      <h3 style="margin-top: 0;color:#55518a">Train Reservation</h3>
+                    </center>
+                </div>
+    
+                <!-- hotel search -->
+                <div class="vertical-tab-content">
+                    <center>
+                      <h1 class="glyphicon glyphicon-home" style="font-size:12em;color:#55518a"></h1>
+                      <h2 style="margin-top: 0;color:#55518a">Cooming Soon</h2>
+                      <h3 style="margin-top: 0;color:#55518a">Hotel Directory</h3>
+                    </center>
+                </div>
+                <div class="vertical-tab-content">
+                    <center>
+                      <h1 class="glyphicon glyphicon-cutlery" style="font-size:12em;color:#55518a"></h1>
+                      <h2 style="margin-top: 0;color:#55518a">Cooming Soon</h2>
+                      <h3 style="margin-top: 0;color:#55518a">Restaurant Diirectory</h3>
+                    </center>
+                </div>
+            </div>
+        </div>
+  </div>
+</div>
+
+{% else %}
+  {# Old shiny-io maps #}
   <div class="row">
     <div class="col-lg-12">
       <h1 class="page-header">Map <small>visualize TB impacts and strains globally.</small><h1>
@@ -28,4 +94,6 @@
     </div>
   </div>
   {% endif %}
+{% endif %}
+
 {% endblock %}

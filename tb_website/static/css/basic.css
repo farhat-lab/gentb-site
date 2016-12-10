@@ -1,7 +1,15 @@
 /*! project specific CSS goes here. */
 
+body > .container {
+  padding-top: 50px;
+}
+
 *[data-toggle=tooltip] {
   cursor: pointer;
+}
+
+a, a:active, a:hover {
+   outline: 0 !important;
 }
 
 table.content-to-top td,
