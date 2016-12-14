@@ -14,7 +14,7 @@ from django.utils import six
 from django.core.management.base import BaseCommand, CommandError
 from django.contrib.gis.utils import LayerMapping
 
-from apps.maps.models import Country, Place
+from apps.maps.models import Country, CountryDetail, Place
 
 class FilteredMapping(LayerMapping):
     def feature_kwargs(self, feat):
@@ -42,6 +42,13 @@ class FilteredMapping(LayerMapping):
                 kwargs['iso3'] = get_first_value('WB_A3', 'ADM0_A3_US', 'BRK_A3')
             if kwargs['iso2'] is None:
 		kwargs['iso2'] = get_first_value('WB_A2', default=kwargs['iso3'][2:])
+
+        # The gis mapping module doesn't update the map, it adds points to it.
+        # which leads to a VERY large map full of duplicate points. Clean the
+        # existing data with the expectation that the geom will be repopulated.
+        if self.unique:
+            u_kwargs = self.unique_kwargs(kwargs)
+            self.model.objects.using(self.using).filter(**u_kwargs).delete()
 
         return kwargs
 
@@ -80,7 +87,10 @@ class Command(BaseCommand):
         if not os.path.isdir(self.DATA_DIR):
             os.makedirs(self.DATA_DIR)
 
-        for model in (Country, Place):
+        for model in (Country, CountryDetail, Place):
+            if not hasattr(model, 'online_zip'):
+                continue
+
             zfile = ZipFile(self.download(model.online_zip))
 
             shp = None

@@ -21,9 +21,9 @@ class Countries(JsonView):
               "geometry": json.loads(country.geom.geojson),
               "popupContent": country.name,
               "type": "Feature",
-              "id": country.iso3,
+              "id": country.id,
               "properties": {"name": country.name},
-            } for country in Country.objects.exclude(sources__isnull=True)
+            } for country in Country.objects.all() #exclude(sources__isnull=True)
            ],
         }            
 
