@@ -20,12 +20,11 @@ class PredictBasicTest(TestCase):
     """
     Run basic tests with the PredictDataset object
     """
-    fixtures = ['initial_data']
-
     def setUp(self):
         """
         Create initial objects for testing
         """
+        super(PredictBasicTest, self).setUp()
         self.test_user = User(username='testtb', password=get_random_string(length=32))
         self.test_user.save()
 
@@ -53,6 +52,7 @@ class PredictBasicTest(TestCase):
         """
         Delete test objects
         """
+        super(PredictBasicTest, self).tearDown()
         self.dataset_vcf.delete()
         self.dataset_fastq.delete()
         self.tb_test_user.delete()
