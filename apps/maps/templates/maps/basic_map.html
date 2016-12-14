@@ -4,21 +4,24 @@
 {% block extra_css %}
   <link rel="stylesheet" href="{% static "css/leaflet.css" %}"/>
   <link rel="stylesheet" href="{% static "css/leaflet_map.css" %}"/>
+  <link rel="stylesheet" href="{% static "css/leaflet.markercluster.css" %}"/>
   <link rel="stylesheet" href="{% static "css/vertical-tabs.css" %}"/>
 {% endblock %}
 {% block extra_js %}
   <script src="{% static "js/d3.js" %}"></script>
   <script src="{% static "js/leaflet.js" %}"></script>
   <script src="{% static "js/leaflet_map.js" %}"></script>
+  <script src="{% static "js/leaflet.markercluster.js" %}"></script>
   <script src="{% static "js/vertical-tabs.js" %}"></script>
 {% endblock %}
 
 {% block content %}
   {% if request.GET.new %}
-  <div class="container">
-	<div class="row">
-        <div class="col-lg-5 col-md-5 col-sm-8 col-xs-9 vertical-tab-container">
-            <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3 vertical-tab-menu">
+    <div class="container">
+      <h2 class="page-header">Map <small>visualize TB impacts and strains globally.</small></h2>
+      <div class="row">
+        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 vertical-tab-container">
+            <div class="col-lg-1 col-md-3 col-sm-3 col-xs-3 vertical-tab-menu">
               <div class="list-group">
                 <a href="#" class="list-group-item active text-center">
                   <h3 class="glyphicon glyphicon-globe"></h3>
@@ -38,16 +41,12 @@
                 </a>
               </div>
             </div>
-            <div class="col-lg-9 col-md-9 col-sm-9 col-xs-9 vertical-tab">
-                <!-- flight section -->
+            <div class="col-lg-11 col-md-9 col-sm-9 col-xs-9 vertical-tab max-width">
                 <div class="vertical-tab-content active">
-                    <center>
-                      <h1 class="glyphicon glyphicon-plane" style="font-size:14em;color:#55518a"></h1>
-                      <h2 style="margin-top: 0;color:#55518a">Cooming Soon</h2>
-                      <h3 style="margin-top: 0;color:#55518a">Flight Reservation</h3>
-                    </center>
+                  <div class="maps" id="mapid" data-map="{% static "map_data/tb_data_01.json" %}" data-polygons="{% url 'maps:map.countries' %}">
                 </div>
-                <!-- train section -->
+
+                </div>
                 <div class="vertical-tab-content">
                     <center>
                       <h1 class="glyphicon glyphicon-road" style="font-size:12em;color:#55518a"></h1>
@@ -55,8 +54,6 @@
                       <h3 style="margin-top: 0;color:#55518a">Train Reservation</h3>
                     </center>
                 </div>
-    
-                <!-- hotel search -->
                 <div class="vertical-tab-content">
                     <center>
                       <h1 class="glyphicon glyphicon-home" style="font-size:12em;color:#55518a"></h1>
@@ -85,15 +82,6 @@
       {#<div id="map" style="width: 960px; height: 500px"></div>#}
     </div>
   </div>
-  {% if 0 %}
-  <div class="row">
-    <div class="col-lg-12">
-      <h1 class="page-header">Map <small>visualize TB impacts and strains globally.</small><h1>
-      <div class="maps" id="mapid" data-map="{% static "map_data/tb_data_01.json" %}" data-polygons="{% static "map_data/tb_data_01_polygons.json" %}">
-      </div>
-    </div>
-  </div>
-  {% endif %}
 {% endif %}
 
 {% endblock %}

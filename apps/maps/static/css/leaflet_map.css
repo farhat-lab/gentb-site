@@ -1,5 +1,5 @@
 #mapid {
-  height: 500px;
+  height: 700px;
 }
 
 .legend {
@@ -13,4 +13,8 @@
 
 .key path {
   display: none;
+}
+
+.leaflet-control-attribution {
+  display: none !important;
 }
