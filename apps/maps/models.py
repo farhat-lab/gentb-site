@@ -137,7 +137,7 @@ class Place(Model):
     geom = MultiPointField(srid=4326)
     objects = GeoManager()
 
-    #online_zip = os.path.join(url_prefix, 'ne_10m_populated_places.zip')
+    online_zip = os.path.join(url_prefix, 'ne_10m_populated_places.zip')
     mapping_id = ('name', 'country')
     mapping = { 
         'pop' : 'GN_POP',
