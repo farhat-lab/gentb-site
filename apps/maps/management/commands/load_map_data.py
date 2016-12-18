@@ -15,6 +15,7 @@ from django.core.management.base import BaseCommand, CommandError
 from django.contrib.gis.utils import LayerMapping
 
 from apps.maps.models import Country, CountryDetail, Place
+from apps.mutations.utils import StatusBar
 
 class FilteredMapping(LayerMapping):
     def feature_kwargs(self, feat):
@@ -61,26 +62,17 @@ class Command(BaseCommand):
         filename = os.path.basename(url)
         save_as = os.path.join(self.DATA_DIR, filename)
 
-        sys.stderr.write("%s X%s]\r%s [" % (filename, " " * 40, filename))
-        sys.stderr.flush()
-
         if os.path.isfile(save_as):
-            sys.stderr.write('X' * 40 + "\n")
+            list(StatusBar(filename, 0, []))
             return save_as
 
-        pos = 0
-        down = 40
         response = requests.get(url, stream=True)
-        length = response.headers.get('content-length')
         with open(save_as, 'wb') as fhl:
-            for chunk in response.iter_content(chunk_size=4096):
-                pos += len(chunk)
-                p = int((pos / float(length)) * 40)
-                if 40 - p < down:
-                    sys.stderr.write('-' * (down - 40 + p))
-                    down = 40 - p
+            for chunk in StatusBar(filename,
+              response.headers.get('content-length'),
+              response.iter_content(chunk_size=4096)):
                 fhl.write(chunk)
-        sys.stderr.write("\n")
+
         return save_as
 
     def handle(self, verbose=True, **options):

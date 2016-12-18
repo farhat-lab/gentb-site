@@ -35,7 +35,7 @@ class Command(BaseCommand):
         'DR Congo': 'Democratic Republic of the Congo',
         'RD Congo': 'Democratic Republic of the Congo',
         'Guinea Eq.': 'Equatorial Guinea',
-        'Burma': 'Myanmar',
+        'Myanmar': 'Burma',
         'Netherlands Antilles': 'Sint Maarten',
         'Guinea-Conakry': 'Guinea',
         'China /Tibet': 'Tibet',
@@ -43,7 +43,8 @@ class Command(BaseCommand):
 
         'Philipines': 'Philippines',
         'Comoro Islands': 'Comoros',
-        'South Korea N': 'Korea',
+        'South Korea N': 'Korea, Republic of',
+        'Korea': 'Korea, Republic of',
 
         'Karakalpakstan': 'Nukus', # Region
         'New York City': 'New York',
@@ -81,22 +82,24 @@ class Command(BaseCommand):
         if path is None or not os.path.isdir(path):
             raise IOError("Data path doesn't exist: %s" % path)
 
-        not_found = set(list(self.load_places(os.path.join(path, 'sources.json'))))
+        not_found = set(list(self.load_places(os.path.join(path, 'sources.json'), status='Loading Maps')))
         if not_found:
             sys.stderr.write('Countries or cities missing from mapping or database: %s' % str(not_found))
             return "2"
 
+        self.make_all_drugs()
+
         name = os.path.basename(path.rstrip('/'))
         self.genome = Genome.objects.get(code='H37Rv')
-        self.importer = ImportSource.objects.get_or_create(name=name)
-        locuses = dict(self.load_genes(os.path.join(path, 'genes.json')))
+        (self.importer, _) = ImportSource.objects.get_or_create(name=name)
+        locuses = dict(self.load_genes(os.path.join(path, 'genes.json'), status='Loading Genes'))
 
         tarset = None
         target_file = os.path.join(path, 'targets.json')
         if os.path.isfile(target_file):
             print "Creating Genetic target set: %s" % name
             (tarset, _) = TargetSet.objects.get_or_create(name=name, genome=self.genome)
-            targets = list(self.load_gene_targets(target_file, locuses=locuses, targetting=tarset))
+            targets = list(self.load_gene_targets(target_file, locuses=locuses, targetting=tarset, status='Loading Targets'))
 
         strainres = json_dict(os.path.join(path, 'resistances.json'), key_id='id')
 
@@ -107,7 +110,7 @@ class Command(BaseCommand):
         # Once merged/flattened, the keys can be reset to just the id
         mutations.re_key('id')
 
-        return list(self.load_strains(os.path.join(path, 'sources.json'), strainres, mutations, targeting=tarset))
+        return list(self.load_strains(os.path.join(path, 'sources.json'), strainres, mutations, targeting=tarset, status='Loading Strains'))
 
     def long_match(self, d, value, model=None, *cols, **filter):
         """Match in a model with case-insensitive multi-column matching."""
@@ -161,21 +164,15 @@ class Command(BaseCommand):
             (obj, created) = StrainSource.objects.update_or_create(defaults=row, old_id=pk)
         except Exception as err:
             print "FOUND ERR: %s" % str(err)
-            print str(row)
-            print str(pk)
             return None
-        msg = "CREATED!" if created else "UPDATED"
-        print msg
+
         for (key, v) in res.items():
             if v not in [None, '']:
                 key = key[1:].upper()
                 defaults = {'resistance': v}
                 drug = Drug.objects.get(code=key).pk
                 (dr, created) = obj.drugs.update_or_create(defaults=defaults, drug_id=drug)
-                if created:
-                    print " + Creating resistance: %s: %s" % (key, v)
-                else:
-                    print " - Updating resistance: %s: %s" % (key, v)
+
         for data in mutations.get(int(pk), []):
             mutations = Mutation.objects.filter(old_id=data.pop('snpid'))
             mutation = mutations[0]
@@ -185,10 +182,6 @@ class Command(BaseCommand):
               fq='mapping_quality', aavar='animoacid_varient', depth=None)
             data['bi_directional'] = data.get('bi_directional', '') == 'Y'
             (mu, created) = obj.mutations.update_or_create(defaults=data, mutation=mutation)
-            #if created:
-            #    print " + Creating mutation: %s" % mutation.name
-            #else:
-            #    print " - Updating mutation: %s" % mutation.name
 
 
     @json_generator

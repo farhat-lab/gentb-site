@@ -18,12 +18,14 @@
 Match and extract information from snp names and other encoded information.
 """
 
-from collections import defaultdict
-from datetime import date
-
 import os
 import re
 import json
+import sys
+import time
+
+from collections import defaultdict
+from datetime import date
 
 MONTHS = ['', 'jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec']
 DATE_FORMATS = [
@@ -113,7 +115,7 @@ def match_snp_name(name):
     """
     return re_match([
       r'^SNP_(?P<syn>[A-Z]{1,2})_(?P<ntpos>\d+)_(?P<coding>[ACTG]\d+[ACTG])_(((?P<amino>[A-Z\*]\d+[A-Z\*])|(?P<noncode>promoter|inter))_(?P<gene>[a-zA-Z\d\-_]+)|(?P<rgene>rr[sl]))\'?$',
-      r'^(?P<mode>(INS|DEL))_(?P<syn>[A-Z]{1,2})_(?P<ntpos>\d+)_(i|d|\.|i\.)(?P<codes>[\d\-]+[ATGC]*)_((?P<noncode>promoter|inter|\d+)_)?(?P<gene>[a-z][a-zA-Z\d\-_]+?)(_(?P<amino>[A-Z\*]\d+[A-Z\*]))?\'?$',
+      r'^(?P<mode>(INS|DEL))_(?P<syn>[A-Z]{1,2})_(?P<ntpos>\d+)_(i|d|\.|i\.)?(?P<codes>[\d\-]+[ATGC]*)_((?P<noncode>promoter|inter|\d+)_)?(?P<gene>[a-z][a-zA-Z\d\-_]+?)(_(?P<amino>[A-Z\*]\d+[A-Z\*]))?\'?$',
       # These are older SNP names and should probably be converted
       r'SNP_(?P<syn>[A-Z]{1,2})_(?P<ntpos>\d+)_(?P<coding>[ACTG]\d+[ACTG])_(?P<gene>Rv\w+)',
       r'SNP_(?P<syn>[A-Z]{1,2})_(?P<ntpos>\d+)_(?P<coding>[ACTG]\d*[ACTG])_PE_(?P<gene>[a-zA-Z\d\-]+)_(?P<amino>[A-Z\*]\d+[A-Z\*])',
@@ -205,7 +207,10 @@ def json_generator(f):
         if not os.path.isfile(args[index]):
             raise IOError("Json file '%s' Not Found" % args[index])
         with open(args[index], 'r') as fhl:
-            for row in json.loads(fhl.read()):
+            rows = json.loads(fhl.read())
+            if 'status' in kw:
+                rows = StatusBar(kw.pop('status'), len(rows), rows, True)
+            for row in rows:
                 args[index] = row
                 value = f(*args, **kw)
                 if value is not None:
@@ -260,4 +265,45 @@ def tr(data, **kw):
                 dest = dest[0]
             if dest is not None and value not in ['', u'', None, 0]:
                 data[dest] = value
+
+
+class StatusBar(object):
+    """A generic command line status bar, use like so:
+
+    for item in StatusBar("Label:", 300, looper_function):
+        # Do something here.
+
+    It will catch errors and return before the error prints.
+    """
+    io = sys.stderr
+    width = 40
+
+    def __init__(self, label='', size=100, iterator=[], count=False):
+        self.label = label
+        self.size = size
+        self.iter = iterator
+        self.pos = 0 
+        self.down = self.width
+        self.write("%s X%s]\r%s [" % (label, " " * self.width, label))
+
+    def write(self, msg):
+        self.io.write(msg)
+        self.io.flush()
+
+    def count(self, item):
+        if self.count:
+            return self.pos + 1
+        return self.pos + len(item)
+
+    def __iter__(self):
+        try:
+            for item in self.iter:
+                self.pos = self.count(item)
+                p = int((self.pos / float(self.size)) * self.width)
+                if self.width - p < self.down:
+                    self.write('-' * (self.down - self.width + p)) 
+                    self.down = self.width - p 
+                yield item
+        finally:
+            self.write('X' * self.down + "\n")
 
