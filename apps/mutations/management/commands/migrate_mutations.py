@@ -53,6 +53,29 @@ class Command(BaseCommand):
         'CDC': None,
         'isolated in SF Lineage3A': None,
     }
+    # Maps ids/names to Labs for the source field.
+    LAB_MAP = {
+	r'CDC-\d+': 'CDC',
+        r'\d\d-R\d+': 'MSLI',
+	r'K\d{2}\d?': 'RIVM',
+	r'MT00\d\d': 'BCCDC',
+	r'K-\d':         'FZB',
+	r'\d{4,5}\d{2}': 'FZB',
+	r'X122':        'Stellenbosch',
+	r'R1207':       'Stellenbosch',
+	r'[MR]\d{1,3}(Hi|L)Q': 'Stellenbosch',
+	r'w-148':   'PHRI/NCBI',
+        r'c':       'PHRI/NCBI',
+	r'haarlem': 'PHRI/NCBI',
+	r'HN878':  'NCBI',
+	r'H37Ra':  'NCBI',
+	r'MTB210': 'NCBI',
+	r'borowski\d': 'UCSF',
+	r'T\d{2}':     'UCSF',
+	r'GM_0981':    'UCSF',
+	r'\d{2}\d{4}': 'UCSF',
+	r'M4100':      'UCSF',
+    }
 
     def handle(self, path, **options):
         if path is None or not os.path.isdir(path):
@@ -63,13 +86,14 @@ class Command(BaseCommand):
             sys.stderr.write('Countries or cities missing from mapping or database: %s' % str(not_found))
             return "2"
 
+        name = os.path.basename(path.rstrip('/'))
         self.genome = Genome.objects.get(code='H37Rv')
-        #locuses = dict(self.load_genes(os.path.join(path, 'genes.json')))
+        self.importer = ImportSource.objects.get_or_create(name=name)
+        locuses = dict(self.load_genes(os.path.join(path, 'genes.json')))
 
         tarset = None
         target_file = os.path.join(path, 'targets.json')
         if os.path.isfile(target_file):
-            name = os.path.basename(path)
             print "Creating Genetic target set: %s" % name
             (tarset, _) = TargetSet.objects.get_or_create(name=name, genome=self.genome)
             targets = list(self.load_gene_targets(target_file, locuses=locuses, targetting=tarset))
@@ -97,7 +121,7 @@ class Command(BaseCommand):
     def load_places(self, row):
         """Loop through all lines and look for cities and counties"""
         try:
-            country = self.long_match(self.countries, row['country'], Country, 'name', 'name_short', 'name_abbr', 'iso2', 'iso3')
+            country = self.long_match(self.countries, row['country'], Country, 'name', 'detail__name_short', 'detail__name_abbr', 'iso2', 'iso3')
         except Country.DoesNotExist:
             return row['country']
         try:
@@ -107,7 +131,6 @@ class Command(BaseCommand):
 
     @json_generator
     def load_strains(self, row, resistances, mutations, targeting=None):
-        sys.stdout.write("Strain Source %d\n" % row['id'])
         pk = str(row.pop('id'))
         res = resistances[int(pk)]
         pop_all(res, *list(row))
@@ -115,12 +138,25 @@ class Command(BaseCommand):
           snp_set=None, snp_cluster_group=None, snp_cluster_group2=None,
           sptype=('spoligotype_type', 'int'), spfamily_parentstrain='spoligotype_family', spoligo_octal='spoligotype_octal',
           inttype='rflp_type', rflpfamily='rflp_family', is6110=('insert_type', 'int'), pgg='principle_group',
-          otherid=None, clustername='cluster', name='name', date=('date', 'date'), source='source_lab')
+          otherid=None, clustername='cluster', date=('date', 'date'), setting='source_lab', source='notes')
+
+        row['notes'] = row.get('notes', '') or ''
+        row['source_lab'] = row.get('source_lab', None)
+        if row['source_lab'] and ' ' in row['source_lab']:
+            row['notes'] += '; ' + row['source_lab']
+            row['source_lab'] = None
+
+        if not row['source_lab']:
+	    try:
+		row['source_lab'] = re_match_dict(self.LAB_MAP, row['name'])
+            except ValueError:
+                row['source_lab'] = 'unknown'
 
         row['country'] = self.long_match(self.countries, row['country'])
         row['city'] = self.long_match(self.places, row['city'])
         row['resistance_group'] = res.pop('drtype')
         row['targeting'] = targeting
+        row['importer'] = self.importer
         try:
             (obj, created) = StrainSource.objects.update_or_create(defaults=row, old_id=pk)
         except Exception as err:
