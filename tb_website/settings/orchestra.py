@@ -6,12 +6,20 @@ import os
 
 from collections import defaultdict
 
-DB_ENGINES = {
+DB_ENGINES = [
+  {
     'SQLITE': 'django.db.backends.sqlite3',
     'MYSQL': 'django.db.backends.mysql',
     'PSQL': 'django.db.backends.postgresql',
     'ORACLE': None,
-}
+  },
+  {
+    'SQLITE': 'django.contrib.gis.db.backends.spatialite',
+    'MYSQL': 'django.contrib.gis.db.backends.mysql',
+    'PSQL': 'django.contrib.gis.db.backends.postgis',
+    'ORACLE': None,
+  },
+]
 
 def infinatedict():
     """An infinately deep defaultdict"""
@@ -40,7 +48,7 @@ def parse_apache_config(filename):
     return kwargs
 
 
-def get_database_config(filename, site=None):
+def get_database_config(filename, site=None, gis=False):
     config = parse_apache_config(filename)
     if not config:
         raise ValueError("Apache Config is empty: %s" % filename)
@@ -52,7 +60,7 @@ def get_database_config(filename, site=None):
         raise KeyError("Apache config doesn't have site: %s" % site)
 
     config = config[site]
-    engines = [(DB_ENGINES[key], config[key]) for key, value in config.items() if key in DB_ENGINES]
+    engines = [(DB_ENGINES[gis][key], config[key]) for key, value in config.items() if key in DB_ENGINES[gis]]
     if not engines:
         raise KeyError("No supported database engine found in the apache config: %s" % filename)
 
