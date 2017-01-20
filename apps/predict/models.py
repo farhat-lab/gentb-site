@@ -286,9 +286,7 @@ class PredictDataset(TimeStampedModel):
                         output[row][col][series] = {}
                         continue
                     
-                    #locusts = list(drug.mutations.values_list('gene_locus__name', flat=True).distinct())
-                    locusts = list(drug.gene_locuses.values_list('name', flat=True))
-
+                    locusts = list(drug.mutations.values_list('gene_locus__name', flat=True).distinct())
                     output[row][col][series] = {
                         "cols": locusts,
                         "key": ["Important", "Other"][series],

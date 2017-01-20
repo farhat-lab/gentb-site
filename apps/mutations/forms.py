@@ -18,18 +18,22 @@
 Drop mutation for pasting in mutation information quickly.
 """
 
-from django.forms import ModelForm, CharField, Textarea, ValidationError
+from django.forms import *
+from django.contrib.admin.widgets import FilteredSelectMultiple
 
-from .models import Drug
+from .models import Drug, GeneLocus, Mutation
 from .utils import unpack_mutation_format
 
 class DrugForm(ModelForm):
-    paste = CharField(label="Paste Mutations", widget=Textarea, required=False,
-               help_text="Put a list of mutations here for automatic processing.")
+    paste = CharField(label="Create Mutations", widget=Textarea, required=False,
+        help_text="Put a list of mutations here for automatic processing.")
+    mutations = ModelMultipleChoiceField(
+        queryset=Mutation.objects.all(), label="Existing Mutations",
+        widget=FilteredSelectMultiple('mutations', False))
 
     class Meta:
         model = Drug
-        fields = ('name', 'code', 'paste')
+        fields = ('name', 'code', 'mutations', 'paste')
 
     def clean_paste(self):
         try:
@@ -51,8 +55,13 @@ class DrugForm(ModelForm):
     def save(self, *args, **kw):
         obj = super(DrugForm, self).save(*args, **kw)
         if obj and obj.pk:
+            muts = self.cleaned_data.get('mutations')
+            pks = list(muts.values_list('pk', flat=True))
             for (index, locus_name, mutation) in self.cleaned_data.get('paste'):
-                (loc, _) = obj.gene_locuses.get_or_create(name=locus_name)
-                (mut, _) = loc.mutations.get_or_create(name=mutation,
-                        defaults={'order': index or -1})
+                (locus, _) = GeneLocus.objects.get_or_create(name=locus_name)
+                (mutation, _) = Mutation.objects.get_or_create(name=mutation,
+                    defaults={'gene_locus': locus, 'order': index or -1})
+                obj.mutations.add(mutation)
+                pks.append(mutation.pk)
+            self.cleaned_data['mutations'] = Mutation.objects.filter(pk__in=pks)
         return obj

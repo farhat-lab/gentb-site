@@ -22,16 +22,16 @@ from django.contrib.admin import *
 from .models import *
 from .forms import DrugForm
 
-class LocusInline(StackedInline):
-    model = GeneLocus
-    extra = 5
-
 class DrugAdmin(ModelAdmin):
-    inlines = (LocusInline,)
+    list_display = ('__str__', 'mutation_count')
 
     def get_form(self, *args, **kw):
         return DrugForm
 
+    def mutation_count(self, obj):
+        return obj.mutations.count()
+
+site.register(DrugClass)
 site.register(Drug, DrugAdmin)
 
 class MutationInline(StackedInline):
@@ -40,19 +40,36 @@ class MutationInline(StackedInline):
 
 class GeneLocusAdmin(ModelAdmin):
     inlines = (MutationInline,)
-    list_display = ('admin_name',)
+    list_filter = ('genome',)
+    list_display = ('name', 'description', 'previous_id', 'mutation_count', 'genome')
 
-    def admin_name(self, obj):
-        return "%s for drug %s" % (obj.name, str(obj.drug))
+    def mutation_count(self, obj):
+        return obj.mutations.count()
 
+site.register(Genome)
 site.register(GeneLocus, GeneLocusAdmin)
 
 class MutationAdmin(ModelAdmin):
-    list_display = ('name', 'gene_locus', 'drug')
-    list_filter = ('gene_locus', 'gene_locus__drug')
+    list_display = ('name', 'old_id', 'gene_locus', 'drugs_list')
+    list_filter = ('gene_locus', 'drugs')
 
-    def drug(self, obj):
-        return obj.gene_locus.drug
+    def drugs_list(self, obj):
+        return ", ".join(obj.drugs.values_list('code', flat=True))
 
 site.register(Mutation, MutationAdmin)
+
+site.register(TargetSet)
+site.register(TargetRegion)
+
+class StrainSourceAdmin(ModelAdmin):
+    list_display = ('__str__', 'old_id', 'patient_id', 'country', 'date')
+    list_filter = ('importer', 'source_lab', 'patient_sex', 'patient_hiv', 'resistance_group')
+
+site.register(StrainSource, StrainSourceAdmin)
+site.register(StrainMutation)
+
+class StrainResistanceAdmin(ModelAdmin):
+    list_filter = ('resistance', 'drug')
+
+site.register(StrainResistance, StrainResistanceAdmin)
 
