@@ -15,13 +15,22 @@ The directory structure is as follows:
   - Contains Virtualenv running python 2.7.x
   - Gunicorn is run from ```rc-app-shared01.orchestra:9001```
 
+## Ensure system requirements
+
+The GIS Maps system requires extra libraries to work correctly, make sure you have the following:
+
+1. ```mysql``` or ```postgresql``` with GIS extensions installed.
+1. The libGEOS library for database lookups.
+1. The libGDAL library for json serialisation of map data.
+
+See the django GIS documentation for more information: https://docs.djangoproject.com/en/1.8/ref/contrib/gis/
+
 ## Set-up steps
 
 - Log ```ssh -l username orchestra.med.harvard.edu```
 - Create these directories:
 ```
 cd /www/gentb.hms.harvard.edu/
-mkdir code
 # On the docroot
 #
 mkdir docroot/tb
