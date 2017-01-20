@@ -70,14 +70,37 @@ class PredictDataset(TimeStampedModel):
 
     @property
     def result_files(self):
+        """Returns a list of all files in the output directory"""
+        return list(self.get_files('output'))
+
+    @property
+    def all_files(self):
+        """Returns a list of all files not in the results output directory"""
+        return list(self.get_files())
+
+    def get_files(self, prefix='.'):
+        base_url = self.media_url
+        base_path = join(self.file_directory, prefix)
         try:
-            return os.listdir(join(self.file_directory, 'output'))
+            # We could use walktree here, but we'll keep it flat for now.
+            for filename in os.listdir(base_path):
+                subpath = join(base_path, filename)
+                if os.path.isfile(subpath):
+                    url = join(base_url, prefix, filename)
+                    yield (url, filename)
         except OSError:
-            return []
+            raise
+            pass
 
     @property
     def media_url(self):
-        return join(settings.MEDIA_URL, 'data', basename(self.file_directory))
+        """Return the location of the file directory accessable via url"""
+        return join(settings.MEDIA_URL, 'data', basename(self.file_directory.rstrip('/')))
+
+    @property
+    def directory_exists(self):
+        """Returns true if the file_directory exists"""
+        return os.path.isdir(self.file_directory)
 
     def check_for_prediction(self):
         if isfile(join(self.file_directory, 'output', 'matrix.json')):

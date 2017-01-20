@@ -106,23 +106,38 @@
   <tr>
     <th class="text-primary">Local Dataset Directory</th>
     <td>
+      {% if object.directory_exists %}
+        <span class="label label-success">OK</span>
+      {% else %}
+        <span class="label label-danger">Missing!</span>
+      {% endif %}
       {{ object.file_directory }}
     </td>
   </tr>
     <tr>
-        <th class="text-primary">Raw Results Files</th>
+        <th class="text-primary">Results Files</th>
         <td>
-          {% for item in object.result_files %}
+          {% for url, name in object.result_files %}
             {% if forloop.first %}
                 <span class="label label-success">OK</span> &nbsp;<br />
             {% endif %}
-            ({{ forloop.counter }}) {{ item }} 
-            <a href="{{ object.media_url }}/output/{{ item }}"><span class="glyphicon glyphicon-download"></span></a>
+            ({{ forloop.counter }}) {{ name }} 
+            <a href="{{ url }}"><span class="glyphicon glyphicon-download"></span></a>
             <br />
           {% empty %}
             <span class="label label-info">No files</span> &nbsp;
             The directory is currently empty.  Have the Dropbox files been
             retrieved?
+          {% endfor %}
+        </td>
+    </tr>
+    <tr>
+        <th class="text-primary">Other Files</th>
+        <td>
+          {% for url, name in object.all_files %}
+            ({{ forloop.counter }}) {{ name }} 
+            <a href="{{ url }}"><span class="glyphicon glyphicon-download"></span></a>
+            <br />
           {% endfor %}
         </td>
     </tr>
