@@ -20,6 +20,10 @@ class PredictMixin(object):
         """Only allow a logged in users to view"""
         return super(PredictMixin, self).dispatch(request, *args, **kwargs)
 
+    def get_queryset(self):
+        """Limit queryset to the user's own predictions only"""
+        return super(PredictMixin, self).get_queryset().filter(user_id=self.request.user.pk)
+
 
 class CallbackMixin(object):
     """A view called by the server itself"""
