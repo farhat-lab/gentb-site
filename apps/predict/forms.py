@@ -86,11 +86,13 @@ class ManualInputForm(UploadForm):
 
 
 class UploadVcfForm(UploadForm):
+    title = "Create VCF Prediction"
     vcf_file = CharField(widget=DropboxChooserWidget(VCF_FILES), required=True,
         label="VCF Files", help_text="Variant Call Formated sequence data file. Multiple files can be selected, one vcf file per stain to compare.")
 
 
 class UploadFastQPairForm(UploadForm):
+    title = "Create FastQ Pair-Ended Prediction"
     fastq_file = CharField(widget=DropboxChooserWidget(FASTQ_FILES, buckets=[
         ('forward', "_R1.fastq _R1.fastq.gz", "Forward FastQ Files"),
         ('backward', "_R2.fastq _R2.fastq.gz", "Backward FastQ Files")]),
@@ -119,6 +121,7 @@ class UploadFastQPairForm(UploadForm):
 
 
 class UploadFastQSingleForm(UploadForm):
+    title = "Create FastQ Single-Ended Prediction"
     fastq_file = CharField(widget=DropboxChooserWidget(FASTQ_FILES), required=True,
         label="FastQ Files", help_text="FastQ files containing the single sequence read. Multiple files can be selected, one fastq file per strain to compare.")
 

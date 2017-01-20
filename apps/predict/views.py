@@ -39,10 +39,18 @@ class Heatmap(PredictMixin, DetailView):
 class UploadChoices(PredictMixin, TemplateView):
     template_name = 'predict/predictdataset_upload.html'
 
+    title = "Create Prediction"
+    parent = Datasets
+
+    @classmethod
+    def get_absolute_url(cls):
+        return reverse('predict:upload')
 
 class UploadManual(PredictMixin, CreateView):
     template_name = 'predict/predictdataset_manual.html'
     form_class = ManualInputForm
+    parent = UploadChoices
+    title = "Create Manual Prediction"
 
     def get_initial(self):
         return {
@@ -53,6 +61,11 @@ class UploadManual(PredictMixin, CreateView):
 
 
 class UploadView(PredictMixin, CreateView):
+    parent = UploadChoices
+
+    def get_title(self):
+        return self.form_class.title
+
     @property
     def form_class(self):
         if self.kwargs['type'] == 'fastq':

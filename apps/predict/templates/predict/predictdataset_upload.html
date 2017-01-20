@@ -1,27 +1,14 @@
 ﻿{% extends "base.html" %}
-{% load cachebuster %}
-
-{% block title %}Create Prediction{% endblock %}
+{% load static %}
 
 {% block content %}
+  <div class="row">
+    <div class="col-lg-12">
+      <h1 class="page-header">{{ title }}
+        <small>Upload your genetic data to make drug resistance prediction.</small>
+      </h1>
 
-        <div class="row">
-            <div class="col-lg-12">
-                <h1 class="page-header">Predict
-                <small>Upload your genetic data to make drug resistance prediction.
-                </small><h1>
-            </div>
-        </div>
-
-        <div class = "row">
-            <div class="col-md-9 portfolio-item">
-                {% if PREVIOUS_ATTEMPT_DELETED %}
-                    <div class="alert alert-success" role="alert">
-                        Note: Your previous dataset information, including the dropbox link, was removed.
-                    </div>
-                {% endif %}
-
-                <p>To examine the frequency of individual mutations by drug resistance you can consult the <a href="{% url 'maps:map' %}">Map function</a> for country specific data, and the <a href="{% url 'explore:home' %}">Explore function</a>  to examine their frequency in all of the data.</p>
+      <p>To examine the frequency of individual mutations by drug resistance you can consult the <a href="{% url 'maps:map' %}">Map function</a> for country specific data, and the <a href="{% url 'explore:home' %}">Explore function</a>  to examine their frequency in all of the data.</p>
 
     <table class="table-condensed content-to-top">
         <tr>
@@ -31,8 +18,8 @@
             </a>
           </td>
           <td>
-            <h3>New FastQ Pair-Ended Prediction</h3>
-            <p>Create a prediction from a set of pair-ended FastQ genetic sequences. This option involves the largest files and takes more time to process that the vcf or manual options.</p>
+            <h3>FastQ Pair-Ended Prediction</h3>
+            <p>Create a prediction from a set of pair-ended FastQ genetic sequences. This option involves the largest files and takes more time to process that the VCF or manual options.</p>
           </td>
         </tr>
         <tr>
@@ -42,8 +29,8 @@
             </a>
           </td>
           <td>
-            <h3>New FastQ Single-Ended Prediction</h3>
-            <p>Create a prediction from a single-ended FastQ genetic sequence file. This option involves a large file and takes more time to process that the vcf or manual options.</p>
+            <h3>FastQ Single-Ended Prediction</h3>
+            <p>Create a prediction from a single-ended FastQ genetic sequence file. This option involves a large file and takes more time to process that the VCF or manual options.</p>
           </td>
         </tr>
         <tr>
@@ -53,8 +40,8 @@
             </a>
           </td>
           <td>
-            <h3>New Variant Call Format Prediction</h3>
-            <p>Minimal genotypic information for accurate resistance predictions are below. Genetic regions are listed in order of decreasing importance. For more detailed list of genetic variants see reference <a href="http://www.ncbi.nlm.nih.gov/pubmed/26910495">Farhat MR, Sultana R et al. Genetic Determinants of Drug Resistance in Mycobacterium tuberculosis and Their Diagnostic Value. AJRCCM 2016</a> and get <a href="">More information</a> about the vcf format.</p>
+            <h3>Variant Call Format (VCF) Prediction</h3>
+            <p>Minimal genotypic information for accurate resistance predictions are below. Genetic regions are listed in order of decreasing importance. For more detailed list of genetic variants see reference <a href="http://www.ncbi.nlm.nih.gov/pubmed/26910495">Farhat MR, Sultana R et al. Genetic Determinants of Drug Resistance in Mycobacterium tuberculosis and Their Diagnostic Value. AJRCCM 2016</a> and get <a href="https://en.wikipedia.org/wiki/Variant_Call_Format">more information</a> about the VCF format.</p>
           </td>
         </tr>
         <tr>
@@ -64,105 +51,11 @@
             </a>
           </td>
           <td>
-            <h3>New Manually Entered Prediction</h3>
+            <h3>Manually Entered Prediction</h3>
             <p>Create a prediction though manual selection of 1 or more mutations from a list. This option involves the shortest processing time but does assume that any non-entered mutations have been tested for and are absent.</p>
           </td>
         </tr>
     </table>
-</form>
-
-            </div>
-<!--
-            <div class="col-md-3 portfolio-item">
-
-<h3>FASTQ files</b></h3>
-<p>Please label paired end FASTQ files as follows:</p>
-    <ul>
-        <li><i>isolate-name-here</i>_R1.fastq</li>
-        <li><i>isolate-name-here</i>_R2.fastq</li>
-    </ul>
-<p>Replace “<i>isolate-name-here</i>” with your desired isolate or strain name.
-
-<h3>vcf file</h3>
-<p>VCF stands for Variant Call Format and is further described in <a href="http://samtools.github.io/hts-specs/VCFv4.2.pdf">this PDF</a>.
-</p>
-
-    <table class="table">
-       <tr>
-           <th align = "center">Drug</th>
-           <th align = "cetner">Genes</th>
-       </tr>
-       <tr>
-           <td>Isoniazid</td>
-           <td><i>katG</i>, <i>inhA</i> promoter, <i>inhA</i>, <i>embB</i>,
-               <i>iniB</i>, <i>kasA</i>, <i>embAB</i> promoter, and <i>ahpC</i>
-           </td>
-       </tr>
-       <tr>
-           <td>Rifampicin</td>
-           <td><i>rpoB</i></td>
-       </tr>
-       <tr>
-           <td>Pyrazinamide</td>
-           <td><i>pncA</i> and <i>pncA</i> promoter</td>
-       </tr>
-       <tr>
-           <td>Ethambutol</td>
-           <td><i>embB</i>, <i>iniB</i>, <i>embAB</i> promoter, <i>embAB</i>, and <i>embC</i></td>
-       </tr>
-       <tr>
-           <td>Streptomycin</td>
-           <td><i>rpsL</i>, <i>rrs</i>, <i>gid</i>, and <i>rrs-rrl</i> intergenic region</td>
-       </tr>
-       <tr>
-           <td>Ethionamide</td>
-           <td><i>inhA promoter</i>, <i>ethA</i>, and <i>inhA</i></td>
-       </tr>
-       <tr>
-           <td>Kanamycin*</td>
-           <td><i>rrs</i>, <i>tlyA</i>*</td>
-       </tr>
-       <tr>
-           <td>Capreomycin</td>
-           <td><i>rrs</i></td>
-       </tr>
-       <tr>
-           <td>Amikacin</td>
-           <td><i>rrs</i></td>
-       </tr>
-       <tr>
-           <td>Fluoroquinolones</td>
-           <td><i>gyrA</i>, <i>gyrB</i></td>
-       </tr>
-       <tr>
-           <td>Para-aminosalicylic acid</td>
-           <td><i>thyA</i></td>
-       </tr>
-       </table>
-       * Note: Gene <i>eis</i> is a predictor of kanamycin resistance, but data for this gene was not available when the predictive model was built.
-        </div>
-        </div>-->
-{% endblock %}
-
-{% block extra_footer_js %}
-<script language="javascript" type="text/javascript">
-<!--
-
-function show_hide_fastq_types(){
-    var file_type_val = $('#id_file_type').val();
-    if (file_type_val=='fastq'){
-        $('#row_id_fastq_type').show();
-    }else{
-        $('#row_id_fastq_type').hide();
-   }
-}
-$(document).ready(function(){
-       show_hide_fastq_types();
-       // bind file type dropdown
-       $( "#id_file_type" ).change(function() {
-          show_hide_fastq_types();
-       });
-});
-//-->
-</script>
+    </div>
+  </div>
 {% endblock %}

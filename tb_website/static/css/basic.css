@@ -34,3 +34,8 @@ th[scope="row"] label {
   width: 100%;
 }
 
+.breadcrumb {
+  /* Breadcrumbs appear way too high */
+  margin-bottom: -15px;
+}
+

@@ -1,48 +1,16 @@
 {% extends "base.html" %}
 {% load cachebuster %}
 
-{% block title %}
-Share - genTB
-{% endblock %}
+{% block "title" %}Data - genTB{% endblock %}
 
 {% block content %}
 
 <div class="row">
-    <div class="col-md-6 col-sm-12">
+    <div class="col-md-12 col-sm-12">
         <h1 class="page-header">Download <small>the current genTB data repository</small></h1>
 
         <script src="https://dataverse.harvard.edu/resources/js/widgets.js?alias=tuberculosis&amp;dvUrl=https://dataverse.harvard.edu&amp;widget=search&amp;text=Search+my+dataverse"></script>
         <script src="https://dataverse.harvard.edu/resources/js/widgets.js?alias=tuberculosis&amp;dvUrl=https://dataverse.harvard.edu&amp;widget=iframe&amp;heightPx=500"></script>
-    </div>
-    <div class="col-md-6 col-sm-12">
-        <h1 class="page-header">Contribute <small> your data</small></h1>
-
-        <p>You can add your tuberculosis data to genTB using the Harvard Dataverse Application. Datasets of both phenotype and genotype are most useful to the Tuberculosis community and we recommend contributing both if they are available.
-
-        <p>If you upload FASTQ files that are paired end, please label them as follows:</p>
-        <ul>
-            <li><i>isolate-name-here</i>_R1.fastq</li>
-            <li><i>isolate-name-here</i>_R2.fastq.</li>
-        </ul>
-
-        <p>For a detailed guide on how to <a href="{% url 'info' %}">prepare your data for sharing</a> please click <a href="{% url 'info' %}">here</a>.</p>
-
-        <h4>Steps:</h4>
-        <ol>
-            <li>Create an account at <a href="https://dataverse.harvard.edu" target="tb_share">dataverse.harvard.edu</a></li>
-
-            <li>Go to the <a href="https://dataverse.harvard.edu/loginpage.xhtml?redirectPage=%2Fdataverse.xhtml%3Falias%3DgenTB"  target="tb_share">Tuberculosis Dataverse</a>, click the Add Data button, and select New Dataset.</li>
-
-            <li>Fill out the dataset deposit form, upload your files, and click Save Dataset.</li>
-
-            <li>You are able to edit your dataset and upload new files after saving the dataset for the first time.</li>
-
-            <li>Once your dataset is ready, click the Submit for Review button on the right side of the dataset page.</li>
-        </ol>
-
-        <p>Questions? Please contact us at <a href="tbpredict@gmail.com">tbpredict@gmail.com</a></p>
-
-
     </div>
 </div>
 {% endblock %}
