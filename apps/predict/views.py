@@ -20,11 +20,15 @@ from .forms import *
 
 
 class Datasets(PredictMixin, ListView):
-    pass
+    title = "My Datasets"
+
+    @classmethod
+    def get_absolute_url(cls):
+        return reverse('predict:view_my_datasets')
 
 
 class DatasetView(PredictMixin, DetailView):
-    pass
+    parent = Datasets
 
 
 class Heatmap(PredictMixin, DetailView):

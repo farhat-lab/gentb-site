@@ -120,6 +120,8 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.middleware.security.SecurityMiddleware',
+    # App based middleware
+    'tb_website.middleware.AutoBreadcrumbMiddleware',
 )
 ########## END MIDDLEWARE CONFIGURATION
 

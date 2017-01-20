@@ -1,8 +1,6 @@
 {% extends "base.html" %}
 {% load cachebuster predict_extras jsonify %}
 
-{% block title %}My Datasets - Phthisis Ravens{% endblock %}
- 
 {% block extra_css %}
   <link href="{% static 'css/files.css' %}" rel="stylesheet">
   <link href="{% static 'css/heatmap.css' %}" rel="stylesheet">
@@ -19,8 +17,6 @@
 {% block content %}
   <div class="row">
     <div class="col-lg-12">
-      Return to
-      <a href="{% url 'predict:view_my_datasets' %}">My Datasets</a>
       <h1>Dataset: <span style="font-weight:normal;">{{ object.title }}</span></h1>
 
       {% if object %}
