@@ -33,6 +33,8 @@ except ImportError:
 
 for n, v in globals().items():
     if n.split('_')[-1] in ('DIR', 'DIRECTORY', 'PATH', 'ROOT'):
+        if 'FORMAT' in n:
+            continue
         if v and v[0] != '/':
             raise IOError("Setting %s should be an absolute path." % n)
         if not isdir(v):
