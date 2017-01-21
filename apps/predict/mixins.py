@@ -22,7 +22,9 @@ class PredictMixin(object):
 
     def get_queryset(self):
         """Limit queryset to the user's own predictions only"""
-        return super(PredictMixin, self).get_queryset().filter(user_id=self.request.user.pk)
+        return super(PredictMixin, self).get_queryset()\
+                .filter(user_id=self.request.user.pk)\
+                .exclude(status=PredictDataset.STATUS['DATASET_DELETED'])
 
 
 class CallbackMixin(object):

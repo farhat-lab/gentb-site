@@ -26,14 +26,17 @@
         <tbody>
           {% for ds in object_list %}
             <tr>
-              <td>{{ forloop.counter }}</td>
+              <td>
+                {% if ds.is_busy %}
+                  <img src="{% static "images/spinner.svg" %}" style="width: 14px;"/>
+                {% else %}
+                  {{ forloop.counter }}
+                {% endif %}
+              </td>
               <td><a href="{% url 'predict:view_single_dataset' ds.md5 %}">{{ ds.title }}</a></td>
               <td>{{ ds.file_type }}</td>
-              <td class="{% if ds.has_prediction %}success{% elif ds.is_error %}error{% endif %}">
+              <td class="{% if ds.status == 7 %}success{% elif ds.is_error %}danger{% elif ds.is_busy %}info{% endif %}">
                 {{ ds.status }} - {{ ds.get_status_display }}
-                {% if dataset.has_prediction %}
-                  <br /><a href="{% url 'predict:view_prediction_heatmap' dataset.md5 %}">prediction heatmap</a>
-                {% endif %}
               </td>
               <td>{{ ds.description|truncatewords:20 }}</td>
               <td>{{ ds.created }}</td>

@@ -43,7 +43,6 @@ class PredictDataset(TimeStampedModel):
     ]))
     STATUS = dict([(x, x) for x, st in STATUS_CHOICES])
     STATUS.update(dict([(str(st).upper().replace(' ', '_'), x) for x, st in STATUS_CHOICES]))
-    STATUS_ERRORS = [0, 4, 8]
 
     user = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='datasets')
     md5 = models.CharField(max_length=40, blank=True, db_index=True,
@@ -60,7 +59,8 @@ class PredictDataset(TimeStampedModel):
     has_prediction = models.BooleanField(default=False)
 
     status = models.PositiveIntegerField(default=1, choices=STATUS_CHOICES)
-    is_error = property(lambda self: self.status in self.STATUS_ERRORS)
+    is_error = property(lambda self: self.status in [0, 4, 8])
+    is_busy = property(lambda self: self.status in [3, 6])
 
     def __str__(self):
         return self.title
