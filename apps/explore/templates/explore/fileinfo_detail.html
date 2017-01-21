@@ -1,31 +1,19 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}Explore{% endblock %}
-
-{% block extra_css %}
-<style>
-  iframe{
-    height: 720px;
-    width: 100%;
-  }
-</style>
-{% endblock %}
-
 {% block content %}
 		<div class="row">
 		    <div class="col-xs-12"><!-- Info row -->
-		        <h1 class="page-header">Explore <small>interactively analyze our project data.</small></h1>
+                      <h1 class="page-header">{{ title }} <small>interactively analyze our project data.</small></h1>
 
-                <p>For a <a href="https://youtu.be/KsOJx-SU14s" target="_blank">demo video</a> of this tool, please <a href="https://youtu.be/KsOJx-SU14s" target="_blank">click here</a>.</p>
-
+                      <p>Please watch our <a href="https://youtu.be/KsOJx-SU14s" target="_blank">tutorial video</a> for a quick demonstration of how to use this analysis tool.</p>
+                
                     {% if object %}
-                        <p><a href="{{ object.codebook_file_url }}" class="btn btn-primary">Open Codebook</a></p>
+                        <p><a href="{{ object.codebook_file_url }}" target="_blank" class="btn btn-primary">Open Codebook</a></p>
                     {% else %}
                         <div class="alert alert-danger" role="alert">
                             Sorry! An Open Codebook  Link is not available.
                         <p>(If you are the administrator, make sure that "Explore Data File Information" is available in the database.)</p>
-                        {#<a href="https://dataverse.harvard.edu/api/access/datafile/2694344" class="btn btn-primary">Open Codebook</a>#}
                         </div>
                     {% endif %}
 		    </div>
@@ -33,12 +21,11 @@
         <div class="row">
             <div class="col-xs-12"><!-- Two Ravens Iframe row -->
                 {% if object %}
-                    <iframe src="{{ object.two_ravens_url }}"></iframe>
+                    <iframe style="height: 720px; width:100%; border: 1px #ccc solid;" src="{{ object.two_ravens_url }}"></iframe>
                 {% else %}
                     <div class="alert alert-danger" role="alert">
                         Sorry! An Explore Link is not available.
                         <p>(If you are the administrator, make sure that "Explore Data File Information" is available in the database.)
-                    {#<iframe src="https://rserve.dataverse.harvard.edu/dataexplore/gui.html?dfId=2693726&key=c54f07b7-5098-461c-adf3-a976c0d62f6e"></iframe>#}
                     </div>
                 {% endif %}
             </div>

@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% load cachebuster %}
+
+{% block "title" %}Data - genTB{% endblock %}
+
+{% block content %}
+
+<div class="row">
+    <div class="col-md-6 col-sm-12">
+        <h1 class="page-header">Download <small>the current genTB data repository</small></h1>
+
+        <script src="https://dataverse.harvard.edu/resources/js/widgets.js?alias=tuberculosis&amp;dvUrl=https://dataverse.harvard.edu&amp;widget=search&amp;text=Search+my+dataverse"></script>
+        <script src="https://dataverse.harvard.edu/resources/js/widgets.js?alias=tuberculosis&amp;dvUrl=https://dataverse.harvard.edu&amp;widget=iframe&amp;heightPx=500"></script>
+    </div>
+    <div class="col-md-6 col-sm-12">
+        <h1 class="page-header">Contribute <small> your data</small></h1>
+
+        <p>You can add your tuberculosis data to genTB using the Harvard Dataverse. Data sets of both phenotype and genotype are most useful to the Tuberculosis community and we recommend contributing both if they are available.</p>
+
+        <p>If you upload FastQ files that are paired end, please label them as follows:</p>
+        <ul>
+            <li><i>isolate-name-here</i>_R1.fastq</li>
+            <li><i>isolate-name-here</i>_R2.fastq.</li>
+        </ul>
+
+        <p>Please view the Data <a href="{% url 'info' %}">Upload Instructions guide</a> for more information on how to prepare your data for sharing.</p>
+
+        <h4>Steps:</h4>
+        <ol>
+            <li>Go to the Harvard Dataverse to <a href="https://dataverse.harvard.edu" target="tb_share">create an account</a>.</li>
+
+            <li>Upon creating your account, you’ll be redirected to the Tuberculosis Dataverse, then click the Add Data button, and select New Dataset.</li>
+
+            <li>Fill out the dataset deposit form, upload your files, and click Save Dataset.</li>
+
+            <li>You are able to edit your dataset and upload new files after saving the dataset for the first time.</li>
+
+            <li>Once your dataset is ready, click the Submit for Review button on the right side of the dataset page.</li>
+        </ol>
+
+        <p>Questions? Please contact us at <a href="mailto:tbpredict@gmail.com">tbpredict@gmail.com</a></p>
+
+
+    </div>
+</div>
+{% endblock %}

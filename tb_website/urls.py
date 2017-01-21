@@ -14,9 +14,9 @@ admin.autodiscover()
 urlpatterns = patterns('',
     url(r'^$', Tv.as_view(template_name='home.html'), name="home"),
     url(r'^about/$', Tv.as_view(template_name='about.html'), name="about"),
-    url(r'^share/$', Tv.as_view(template_name='share.html'), name="share"),
+    url(r'^data/$', Tv.as_view(template_name='data.html'), name="data"),
+    url(r'^data/info/$', Tv.as_view(template_name='info.html'), name="info"),
     url(r'^terms/$', Tv.as_view(template_name='terms.html'), name="terms"),
-    url(r'^info/$', Tv.as_view(template_name='info.html'), name="info"),
 
     url(r'^explore/', include('apps.explore.urls', namespace='explore')),
     url(r'^predict/', include('apps.predict.urls', namespace='predict')),

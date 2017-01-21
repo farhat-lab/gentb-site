@@ -8,7 +8,11 @@ from .models import ExploreDataFileInfo
 
 class FirstExplorePage(DetailView):
     template_name = "explore/fileinfo_detail.html"
+    # This is very broken
+    breadcrumbs = []
+    title = "Explore"
 
     def get_object(self):
         return ExploreDataFileInfo.objects.filter(active=True).first()
+
 

@@ -1,8 +1,6 @@
 ﻿{% extends "base.html" %}
-{% load cachebuster %}
-{% block title %}
-About - Phthisis Ravens
-{% endblock %}
+{% load static %}
+{% block "title" %}About - getTB{% endblock %}
 
 {% block content %}
 
@@ -12,78 +10,76 @@ About - Phthisis Ravens
             </div>
         </div>
 
-        <p>
-        <i>The application makes sharing, mapping, manipulating and linking TB genetic data to drug resistance phenotype as well as other epidemiological, demographic and host variables. As such, the tool performs 4 different tasks in its current version:</i>
+        <p>The application makes sharing, mapping, manipulating and linking TB genetic data to drug resistance phenotype as well as other epidemiological, demographic and host variables. As such, the tool performs 4 different tasks in its current version:
         </p>
 
         <div class="row">
             <div class="col-md-6 portfolio-item">
+            	<h3>Predict</h3>
                 <img src="{% static 'images/predict.png' %}" align="right">
-            	<h3>Predict DR</h3>
             	<p>Clinicians and researchers can make predictions about an isolate’s resistance based on its genotype using a random forest classifier, trained using a 1400 isolate bank of clinical <i>Mycobacterium tuberculosis</i>. This classifier will be updated and retrained with the contribution of new high quality genotype and drug resistance data from the research community.</p>
             </div>
 
             <div class="col-md-6 portfolio-item">
+            	<h3>Data</h3>
                 <img src="{% static 'images/share.png' %}" align="right">
-            	<h3>Share</h3>
-                <p>Clinicians and researchers can also store and share TB genetic and phenotypic data, allowing for the expansion of the current dataset. Every additional dataset that is uploaded is given a persistent and citable identifier using the broadly supported <a href="http://www.doi.org/">Digital Object Identifier (DOI)</a> system, an ISO standard which provides an actionable, interpretable, and persistent link.</p>
+                <p>Clinicians and researchers can also store and share TB genetic and phenotypic data, allowing for the expansion of the current dataset. Every additional dataset that is uploaded is given a persistent and citable identifier using the broadly supported <a target="_blank" href="http://www.doi.org/">Digital Object Identifier (DOI)</a> system, an ISO standard which provides an actionable, interpretable, and persistent link.</p>
             </div>
         </div>
 
         <div class="row">
             <div class="col-md-6 portfolio-item">
-                <img src="{% static 'images/map.png' %}" align="right">
             	<h3>Map</h3>
+                <img src="{% static 'images/map.png' %}" align="right">
                     <p>The tool also makes mapping TB genetic and phenotypic data as well as resistances easy. In particular, the tool, as it stands, allows for the mapping of resistance frequencies by different geographies through an interactive interface.</p>
             </div>
 
             <div class="col-md-6 portfolio-item">
-                <img src="{% static 'images/explore.png' %}" align="right">
                 <h3>Explore</h3>
-            	<p>The tool allows clinicians and researchers with limited statistical experience to explore the data using a point and click interface that can generate summary statistics and a graphical or tabular data display. This feature is powered by the <a href="https://github.com/IQSS/TwoRavens/">TwoRavens</a>.</p>
+                <img src="{% static 'images/explore.png' %}" align="right">
+            	<p>The tool allows clinicians and researchers with limited statistical experience to explore the data using a point and click interface that can generate summary statistics and a graphical or tabular data display. This feature is powered by the <a target="_blank" href="https://github.com/IQSS/TwoRavens/">TwoRavens</a>.</p>
             </div>
         </div>
 
         <hr>
 
-		<div class="row">
-            <div class="col-md-6 portfolio-item">
-                <h3><i>Features and Tools in Development</i></h3>
-                <p>Stay tuned for additional analysis features as we have several in progress. If you would like to receive updates on these features please email us at <a href="tbpredict@gmail.com">tbpredict@gmail.com</a>.</p>
-            </div>
+<div class="row">
+  <div class="col-md-4 col-sm-8">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h4 class="panel-title">In Development</h4>
+      </div>
+      <div class="panel-body">
+	<p>Stay tuned for additional analysis features as we have several in progress. If you would like to receive updates on these features please email us at <a href="mailto:tbpredict@gmail.com">tbpredict@gmail.com</a>.</p>
+      </div>
+    </div>
+  </div>
 
-            <div class="col-md-6 portfolio-item">
-                <h3><i>Training data sources are described in</i></h3>
-            	<p> Farhat MR et. al. <a href="http://www.ncbi.nlm.nih.gov/pubmed/23995135">Genomic analysis identifies targets of convergent positive selection in drug-resistant Mycobacterium tuberculosis</a></b> <i>Nat Genet</i> 2013</p>
-		<p> Farhat MR et. al. <a href="http://www.ncbi.nlm.nih.gov/pubmed/26910495">Genetic determinants of drug resistance in Mycobacterium tuberculosis and their diagnostic value</a></b> <i>AJRCCM</i> 2016</p>
-            </div>
-            <div class="col-md-6 portfolio-item">
-                <h3><i>Random Forest Classifier</i></h3>
-                <p>Development and validation of this Prediction classifier is described in detail in Farhat MR, Razvan S et. al. <a href="http://www.ncbi.nlm.nih.gov/pubmed/26910495">Genetic determinants of drug resistance in Mycobacterium tuberculosis and their diagnostic value</a></b> <i>AJRCCM</i> 2016</p>
-            </div>
-            <div class="col-md-6 portfolio-item">
-                <h3><i>Contact</i></h3>
-                <p>Maha Farhat, MD MSc <a href="mailto:tbpredict@gmail.com">tbpredict@gmail.com</a></p>
-            </div>
-            <div class="col-md-6 portfolio-item">
-                <h3><i>Funding</i></h3>
-                <div class="row">
-                    <div class="col-md-6">
-                        {% include "funding/lung.html" %}
-                    </div>
-                    <div class="col-md-6">
-                        {% include "funding/nih_bd2k.html" %}
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-6 portfolio-item">
-                <h3><i>Terms of use statement</i></h3>
-                <p>This database is maintained as a benefit to the research and education community. This website is provided in an "as is" basis only and without warranty or representation, whether express or implied, (including warranties of merchantability and fitness for a particular purpose) as to its accuracy or reliability. The developers, the National Institute of Health and the American Lung Association are neither responsible for nor accept any liability for any direct or indirect loss or damages arising from or connected to the use of this website. The information provided on this website is intended for research and educational purposes and is not intended to substitute for care by a licensed healthcare professional.</p>
-            </div>
-            <div class="col-md-6 portfolio-item">
-                <h3><i>Citing the project</i></h3>
-                <p>{% include 'citation-for-project.html' %}</p>
-            </div>
-        </div>
+  <div class="col-md-4 col-sm-8">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h4 class="panel-title">Training Data Sources</h4>
+      </div>
+      <div class="panel-body">
+	<p> Farhat MR et. al. <a target="_blank" href="http://www.ncbi.nlm.nih.gov/pubmed/23995135">Genomic analysis identifies targets of convergent positive selection in drug-resistant Mycobacterium tuberculosis</a></b> <i>Nat Genet</i> 2013</p>
+	<p> Farhat MR et. al. <a target="_blank" href="http://www.ncbi.nlm.nih.gov/pubmed/26910495">Genetic determinants of drug resistance in Mycobacterium tuberculosis and their diagnostic value</a></b> <i>AJRCCM</i> 2016</p>
+      </div>
+    </div>
+  </div>
 
+  <div class="col-md-4 col-sm-8">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h4 class="panel-title">Random Forest Classifier</h4>
+      </div>
+      <div class="panel-body">
+	<p>Development and validation of this Prediction classifier is described in detail in Farhat MR, Razvan S et. al. <a target="_blank" href="http://www.ncbi.nlm.nih.gov/pubmed/26910495">Genetic determinants of drug resistance in Mycobacterium tuberculosis and their diagnostic value</a></b> <i>AJRCCM</i> 2016</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+        <hr>
+
+        {% include "legal-info.html" %}
 {% endblock %}

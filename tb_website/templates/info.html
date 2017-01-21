@@ -1,9 +1,7 @@
 {% extends "base.html" %}
 {% load cachebuster %}
 
-{% block title %}
-Data Upload Instructions - genTB
-{% endblock %}
+{% block "title" %}Data Upload Instructions - genTB{% endblock %}
 
 {% block content %}
 <div class="row">
@@ -12,17 +10,20 @@ Data Upload Instructions - genTB
     </div>
 </div>
 
-<p>We recommend uploading two separate files for phenotype and genotype data through <a href="http://dataverse.harvard.edu/">Dataverse</a>.</p>
+<p>We recommend uploading two separate files for phenotype and genotype data through <a href="http://dataverse.harvard.edu/">Harvard Dataverse</a>.</p>
 
-<h3>Genotype data files</h3>
-<p>Accepted formats are FASTQ or VCF. If you upload, a VCF please describe or indicate:</p>
+<h3>Genotype Data Files</h3>
+
+<p>Accepted formats are FastQ or VCF. If you upload, a VCF please describe or indicate:</p>
+
     <ul>
         <li>How your VCF was generated</li>
         <li>What software was used and which thresholds were applied</li>
         <li>If the variants are filtered and how this was performed</li>
     </ul>
-<p><b><i>FASTQ paired end files</i></b></p>
-<p>If you upload FASTQ files that are paired end: </p>
+
+<h4>FastQ Paired-Ended Files</h4>
+<p>If you upload FastQ files that are paired end: </p>
     <ul>
         <li>Please label them as follows:
             <ul>
@@ -32,11 +33,11 @@ Data Upload Instructions - genTB
         <li>Replace “<i>isolate-name-here</i>” with your desired isolate or strain name.</li>
     </ul>
 
-<h3>Phenotype data files</h3>
+<h3>Phenotype Data Files</h3>
 <ul>
     <li>We recommend formatting your file as a tab delimited or a comma delimited file. Excel files are also acceptable.</li>
 
-    <li>Please include an ID field that links directly to the names (or isolate names) of the FASTQ or VCF files that you upload.</li>
+    <li>Please include an ID field that links directly to the names (or isolate names) of the FastQ or VCF files that you upload.</li>
 
     <li>Drug resistance results should include information on what concentration of the drug was tested. For example if isoniazid drug resistance was tested at a concentration of 0.2 then the field containing the resistance status should be called inh_0.2 and so forth for other drugs. Please indicate the concentration units and method of testing in the description of your file during the Dataverse upload.</li>
 

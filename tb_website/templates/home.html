@@ -37,10 +37,10 @@
             <div class="col-md-3 col-sm-6">
                 <div class="thumbnail">
                     <center><h4>Contribute your data <br>to this project</h4></center>
-                    <a href="{#% url 'predict:view_data_page' %#}"><img src="{% static 'images/share.png' %}" alt=""></a>
+                    <a href="{% url 'data' %}"><img src="{% static 'images/share.png' %}" alt=""></a>
                     <div class="caption">
                         <p class="text-center">
-                            <a href="{% url 'share' %}" class="btn btn-primary">Share Your Data</a>
+                            <a href="{% url 'data' %}" class="btn btn-primary">Share Your Data</a>
                         </p>
                     </div>
                 </div>
@@ -71,79 +71,6 @@
             </div>
         </div>
 
- <!-- Projects Row -->
-        <div class="row">
-            <div class="col-md-3 col-sm-6">
-                <div class="panel-group" id="accordion">
-                  <div class="panel panel-default">
-                    <div class="panel-heading">
-                      <h4 class="panel-title">
-                        <a data-toggle="collapse" data-parent="#accordion" href="#collapseOne">
-                          Contact Information
-                        </a>
-                      </h4>
-                    </div>
-                    <div id="collapseOne" class="panel-collapse collapse">
-                      <div class="panel-body">
-                        Maha Farhat, MD MSc <a href="mailto:tbpredict@gmail.com">tbpredict@gmail.com</a>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div class="panel panel-default">
-                    <div class="panel-heading">
-                      <h4 class="panel-title">
-                        <a data-toggle="collapse" data-parent="#accordion" href="#collapseTwo">
-                          Citing the Project
-                        </a>
-                      </h4>
-                    </div>
-                    <div id="collapseTwo" class="panel-collapse collapse">
-                      <div class="panel-body">
-                          {% include 'citation-for-project.html' %}
-                      </div>
-                    </div>
-                  </div>
-
-                  <div class="panel panel-default">
-                    <div class="panel-heading">
-                      <h4 class="panel-title">
-                        <a data-toggle="collapse" data-parent="#accordion" href="#collapseThree">
-                          Frequently Asked Questions
-                        </a>
-                      </h4>
-                    </div>
-                    <div id="collapseThree" class="panel-collapse collapse">
-                      <div class="panel-body">
-                        <i>Coming Soon</i>
-                        <!-- <a href="#">FAQs can be found here</a> -->
-                      </div>
-                    </div>
-                  </div>
-
-              </div>
-            </div>
-
-            <div class="col-md-6 portfolio-item">
-                <p><b>Terms of Use:</b></p>
-
-                {% include "terms-of-use.html" %}
-
-
-            </div>
-
-
-            <div class="col-md-3 col-sm-6">
-                    <p>
-                        Supported with funding by:
-                        {% include "funding/lung.html" %}
-                        {% include "funding/nih_bd2k.html" %}
-                    </p>
-                </div>
-            </div>
-
-
-
-        <!-- /.row -->
+        {% include "legal-info.html" %}
 
 {% endblock %}

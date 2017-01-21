@@ -11,6 +11,9 @@ for filename in */bin/activate; do
     # Doesn't matter if it's pythonenv, venv or something else
     source */bin/activate
 
+    # Set the settings to a special management PY file.
+    export DJANGO_SETTINGS_MODULE=tb_website.settings.manage
+
     # Run the manage.py in the current directry
     ./manage.py $@
 
