@@ -89,7 +89,6 @@ class PredictDataset(TimeStampedModel):
                     url = join(base_url, prefix, filename)
                     yield (url, filename)
         except OSError:
-            raise
             pass
 
     @property
