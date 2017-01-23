@@ -1,0 +1,29 @@
+
+{% for script_run in object.runs.all %}
+{% if forloop.first %}<h3>Script Runs</h3>{% endif %}
+
+
+<div class="panel panel-default">
+  <div class="panel-heading">
+    <h3 class="panel-title">{{ script_run.created }} <small>updated: {{ script_run.modified }}</small></h3>
+  </div>
+  <div class="panel-body">
+      {% if script_run.result_received %}
+            {% if script_run.result_success %}
+                <span class="label label-success">Success</span><br />
+            {% else %}
+                <span class="label label-warning">Fail</span><br />
+            {% endif %}
+      {% else %}
+          <span class="label label-info">Results not received</span><br />
+      {% endif %}
+      Command run: <div class="well">{{ script_run.notes }}</div>
+
+      {% if script_run.result_data %}
+      Results
+      <div class="well" id="result_div_{{ forloop.counter }}">{{ script_run.result_data }}</div>
+      {% endif %}
+  </div>
+</div>
+{% endfor %}
+

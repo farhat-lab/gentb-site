@@ -1,4 +1,14 @@
 
+#activate-notes {
+  cursor: pointer;
+  border-radius: 8px;
+  top: -7px;
+}
+#activate-notes.active {
+  background-color: #ddd;
+  border: 1px solid #aaa;
+}
+
 .panel.with-nav-tabs .panel-heading{
   padding: 5px 5px 0 5px;
 }

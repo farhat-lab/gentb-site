@@ -5,6 +5,7 @@
   <link href="{% static 'css/files.css' %}" rel="stylesheet">
   <link href="{% static 'css/heatmap.css' %}" rel="stylesheet">
   <link href="{% static 'css/nv.d3.css' %}" rel="stylesheet">
+  <link href="{% static 'css/nav-tabs.css' %}" rel="stylesheet">
 {% endblock %}
 
 {% block extra_js %}
@@ -12,222 +13,94 @@
   <script src="{% static 'js/d3.tip.js' %}"></script>
   <script src="{% static 'js/nv.d3.js' %}"></script>
   <script src="{% static 'js/heatmap.js' %}"></script>
+  <script src="{% static 'js/nav-tabs.js' %}"></script>
 {% endblock %}
 
 {% block content %}
   <div class="row">
     <div class="col-lg-12">
-      <h1 class="page-header">Dataset: <span style="font-weight:normal;">{{ object.title }}</span></h1>
-
-      {% if object %}
-        <table class="table table-condensed table-bordered">
-          <tr>
-            <th colspan="2">Dataset Information</th>
-          </tr>
-          <tr>
-            <th class="text-primary">Description</th>
-            <td>{{ object.description|linebreaks }}</td>
-          </tr>
-          <tr>
-            <th class="text-primary">Data Type</th>
-            <td>
-              {{ object.file_type|upper }}{% if object.is_fastq_file %},
-              {% if object.is_fastq_pair_ended %}Pair-end{% else %}Single-end{% endif %}<br/>
-              {% endif %}
-            </td>
-          </tr>
-          {% if object.files.count %}
-          <tr>
-            <th class="text-primary">Dataset Files</th>
-            <td>
-              {% for file in object.files.all %}
-<div class="file">
-  <div>
-    {% if file.result %}
-      {{ file.filename|default:file }}
-      <span class="label label-success">Retrieved</span> &nbsp;
-      <a href="{{ object.media_url }}/{{ file.filename }}"><span class="glyphicon glyphicon-download"></span></a>
-    {% elif file.retrieval_start %}
-      <span class="label label-danger">Failed</span> &nbsp;
-    {% else %}
-      <span class="label label-default">In Queue</span> &nbsp;
-    {% endif %}
-  </div>
-</div>   
-              {% endfor %}
-            </td>
-          </tr>
-          {% endif %}
+      <h1 class="page-header">{{ title }}&nbsp;
+          <small style="display: inline-block">
           {% if object.is_error %}
-            <tr>
-              <th class="text-primary">Status</th>
-              <td>
-                <span class="label label-warning">Fail</span> &nbsp;
-                {{ object.get_status_display }} (id: {{ object.status }})
-              </td>
-            </tr>
+	    <span class="label label-danger pull-right">Failed</span>
+          {% elif object.is_busy %}
+	    <span class="label label-info pull-right">Processing
+              <img src="{% static "images/spinner.svg" %}"/>
+            </span>
           {% endif %}
+          </small>
+      </h1>
 
-{% if object.has_prediction %}
-  <tr>
-    <th class="text-primary">Resistance Prediction
-      <i class="glyphicon glyphicon-info-sign" data-toggle="tooltip" title="See minimal list of predictive mutations in Farhat et al. AJRCCM 2016"></i>
-      <i class="glyphicon glyphicon-question-sign" data-toggle="tooltip" title="DR=Drug Resistance, FN=False Negative, FP=False Positive"></i>
-    </th>
-    <td>
-      <div id="heatmap" class="d3heatmap"></div>
-      <script>
-        $(document).ready(function() {
-          var data = {"rows": null, "cols": null,
-            "matrix": {{ object.get_heatmap|jsonify }}
-          };
-          make_heatmap(data, '#heatmap', '#scatter', "click on a box on the heamap to show mutations");
-        });
-      </script>
-    </td>
-  </tr>
-  <tr>
-    <th class="text-primary">Mutations</th>
-    <td>
-      <div id="scatter" class="d3graph">
-        <h4 id="scatter_title"></h4>
-        <svg id="scaller_plot"></svg>
+
+    <div class="col-lg-12 col-sm-12" id="dataselect">
+      <div class="col-lg-12 col-md-12 col-sm-12">
+          <p>{{ object.description|linebreaks }}</p>
       </div>
-    </td>
-  </tr>
-</table>
+      <div class="panel with-nav-tabs panel-default">
+	<div class="panel-heading">
+	  <ul class="nav nav-tabs" data-autoselect="">
+	    <li data-priority="0"><a href="#inputdata-tab" data-toggle="tab">Input Data</a></li>
+	    <li data-priority="3"><a href="#processing-tab" data-toggle="tab">Processing</a></li>
+	    <li data-priority="6"><a href="#output-tab" data-toggle="tab">Output Data</a></li>
+	    <li data-priority="9"><a href="#prediction-tab" data-toggle="tab">Resistance Prediction</a></li>
+            <li class="pull-right">
+              <a id="activate-notes"><span class="glyphicon glyphicon-edit"></span></a>
+            </li>
+	  </ul>
+	</div>
+	<div class="panel-body">
+	  <div class="tab-content">
+	    <div class="tab-pane fade" id="inputdata-tab">
+              {% include "predict/predictdataset_inputdata.html" %}
+            </div>
+	    <div class="tab-pane fade" id="processing-tab">
+              {% include "predict/predictdataset_processing.html" %}
+            </div>
+	    <div class="tab-pane fade" id="output-tab">
+              {% include "predict/predictdataset_outputdata.html" %}
+            </div>
+	    <div class="tab-pane fade" id="prediction-tab">
+              {% if object.has_prediction %}
+                {% include "predict/predictdataset_prediction.html" %}
+              {% else %}
+                <div class="vertical-tab-content pannel-danger">
+                    <center>
+                      <h1 class="glyphicon glyphicon-alert" style="font-size:8em;"></h1>
+                      <h2>Prediction Not Available</h2>
+                      <h3>Not Available</h3>
+                    </center>
+                </div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
 
-<table class="table table-condensed table-bordered">
-  <tr>
-    <th colspan="2">Administration</th>
-  </tr>
-  </tr>
-{% endif %}
-  <tr>
-    <th class="text-primary">Local Dataset Directory</th>
-    <td>
-      {% if object.directory_exists %}
-        <span class="label label-success">OK</span>
-      {% else %}
-        <span class="label label-danger">Missing!</span>
-      {% endif %}
-      {{ object.file_directory }}
-    </td>
-  </tr>
-    <tr>
-        <th class="text-primary">Results Files</th>
-        <td>
-          {% for url, name in object.result_files %}
-            {% if forloop.first %}
-                <span class="label label-success">OK</span> &nbsp;<br />
-            {% endif %}
-            ({{ forloop.counter }}) {{ name }} 
-            <a href="{{ url }}"><span class="glyphicon glyphicon-download"></span></a>
-            <br />
-          {% empty %}
-            <span class="label label-info">No files</span> &nbsp;
-            The directory is currently empty.  Have the Dropbox files been
-            retrieved?
-          {% endfor %}
-        </td>
-    </tr>
-    <tr>
-        <th class="text-primary">Other Files</th>
-        <td>
-          {% for url, name in object.all_files %}
-            ({{ forloop.counter }}) {{ name }} 
-            <a href="{{ url }}"><span class="glyphicon glyphicon-download"></span></a>
-            <br />
-          {% endfor %}
-        </td>
-    </tr>
-    <tr>
-        <th class="text-primary">Pipeline Command</th>
-        <td>
-            {% if object.get_pipeline_command.0 %}
-                <span class="label label-info">OK</span> &nbsp;
-                <br />{{ pipeline_command }}
-            {% else %}
-                <span class="label label-danger">Error</span>
-                {{ pipeline_command_err|linebreaks }}
-            {% endif %}
-        </td>
-    </tr>
-    <tr>
-        <th class="text-primary">Created</th>
-        <td>{{ object.created }}</td>
-    </tr>
-    <tr>
-        <th class="text-primary">Modified</th>
-        <td>{{ object.modified }}</td>
-    </tr>
-</table>
-{% for script_run in object.runs.all %}
-{% if forloop.first %}<h3>Script Runs</h3>{% endif %}
+    <div class="col-lg-0 col-sm-12 hidden" id="notes">
+    <div class="well">
+        <h4>Notes</h4>
+    <div class="input-group">
+        <input type="text" id="userComment" class="form-control input-sm chat-input" placeholder="New note..." />
+	    <span class="input-group-btn" onclick="addComment()">     
+            <a href="#" class="btn btn-primary btn-sm"><span class="glyphicon glyphicon-comment"></span> Add Note</a>
+        </span>
+    </div>
+    <hr data-brackets-id="12673">
+    <ul data-brackets-id="12674" id="sortable" class="list-unstyled ui-sortable">
+      {% for note in object.notes.all %}
+        <strong class="pull-left primary-font">{{ note.title }}</strong>
+        <!--small class="pull-right text-muted">
+           <span class="glyphicon glyphicon-time"></span> 7 mins ago</small-->
+        </br>
+        <li class="ui-state-default">{{ note.note|linebreaks }}</li>
+        </br>
+      {% endfor %}
+    </ul>
+    </div>
 
-
-<div class="panel panel-default">
-  <div class="panel-heading">
-    <h3 class="panel-title">{{ script_run.created }} <small>updated: {{ script_run.modified }}</small></h3>
-  </div>
-  <div class="panel-body">
-      {% if script_run.result_received %}
-            {% if script_run.result_success %}
-                <span class="label label-success">Success</span><br />
-            {% else %}
-                <span class="label label-warning">Fail</span><br />
-            {% endif %}
-      {% else %}
-          <span class="label label-info">Results not received</span><br />
-      {% endif %}
-      Command run: <div class="well">{{ script_run.notes }}</div>
-
-      {% if script_run.result_data %}
-      Results
-      <div class="well" id="result_div_{{ forloop.counter }}">{{ script_run.result_data }}</div>
-      {% endif %}
-  </div>
-</div>
-{% endfor %}
-
-
-{% for note in object.notes.all %}
-{% if forloop.first %}<h3>Notes</h3>{% endif %}
-
-<div class="panel panel-default">
-  <div class="panel-heading">
-    <h3 class="panel-title">{{ note.title }} <small>{{ note.modified }}</small></h3>
-  </div>
-  <div class="panel-body">
-   {{ note.note|linebreaks  }}
-  </div>
-</div>
-{% endfor %}
-{% comment %}
-<table class="table table-condensed table-bordered">
-    <tr>
-        <th colspan="2">Contact Information</th>
-    </tr>
-    <tr>
-        <th class="text-primary">Name</th>
-        <td>{{ request.user }}
-            {#{ object.middle_name }#}
-            {#{ object.tb_user.last_name }#}
-        </td>
-    </tr>
-    <tr>
-        <th class="text-primary">Affiliation</th>
-        <td>{{ request.user.affiliation }}</td>
-    </tr>
-      <tr>
-        <th class="text-primary">Email</th>
-        <td>{{ tb_user.user.email }}</td>
-    </tr>
-</table>
-{% endcomment %}
-
-{% endif %}
-
+	</div>
+      </div>
     </div>
 </div>
 {% endblock %}

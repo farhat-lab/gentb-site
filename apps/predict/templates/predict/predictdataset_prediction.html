@@ -1,0 +1,21 @@
+{% load jsonify static %}
+
+  <i class="glyphicon glyphicon-info-sign" data-toggle="tooltip" title="See minimal list of predictive mutations in Farhat et al. AJRCCM 2016"></i>
+  <i class="glyphicon glyphicon-question-sign" data-toggle="tooltip" title="DR=Drug Resistance, FN=False Negative, FP=False Positive"></i>
+
+  <div id="heatmap" class="d3heatmap"></div>
+
+  <script>
+    $(document).ready(function() {
+      var data = {"rows": null, "cols": null,
+	"matrix": {{ object.get_heatmap|jsonify }}
+      };
+      make_heatmap(data, '#heatmap', '#scatter', "click on a box on the heamap to show mutations");
+    });
+  </script>
+
+  <div id="scatter" class="d3graph">
+    <h4 id="scatter_title"></h4>
+    <svg id="scaller_plot"></svg>
+  </div>
+

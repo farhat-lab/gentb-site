@@ -45,6 +45,7 @@ function scatter_plot(data) {
 function make_heatmap(data, heatmap_id, scatter_id, no_data) {
   var scat = data["matrix"]["scatter"];
   var options = {
+    //"width": 950, // This isn't dynamic enough XXX
     "no_data": no_data,
     "xaxis_height": 120,
     // XXX This should dynamically set the width based on the labels.
@@ -63,7 +64,15 @@ function make_heatmap(data, heatmap_id, scatter_id, no_data) {
       scatter_plot(col);
     },
   }
-  heatmap(heatmap_id, data, options);
+
+  $(heatmap_id).bind('resize', function(e) {
+    if(options['width'] != $(heatmap_id).width()) {
+      console.log("Resizing heatmap!");
+      options['width'] = $(heatmap_id).width();
+      heatmap(heatmap_id, data, options);
+    }
+  }).resize();
+  nv.utils.windowResize(function() {$(heatmap_id).trigger('resize')});
 
   nv.addGraph(function() {
     var data = Array();
@@ -108,6 +117,9 @@ function make_heatmap(data, heatmap_id, scatter_id, no_data) {
 }
 
 function heatmap(selector, data, options) {
+  // Empty and restart heatmap
+  $(selector).empty();
+
   var merged = [];
   for (var i = 0; i < data.matrix.data.length; i++) {
     merged.push({
@@ -262,7 +274,7 @@ function heatmap(selector, data, options) {
     opts.width = width;
   }
   opts.height += opts.xaxis_height;
-  opts.width += opts.yaxis_width;
+  //opts.width += opts.yaxis_width;
 
   opts.xclust_height = options.xclust_height || opts.height * 0.12;
   opts.yclust_width = options.yclust_width || opts.width * 0.12;
@@ -322,6 +334,7 @@ function heatmap(selector, data, options) {
   // Create DOM structure
   (function() {
     var inner = el.append("div").classed("inner", true);
+
     inner.style("width", opts.width + "px");
     inner.style("height", opts.height + "px");
     var info = inner.append("div").classed("info", true);
