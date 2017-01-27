@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load cachebuster predict_extras jsonify %}
+{% load cachebuster predict_extras jsonify humanize %}
 
 {% block extra_css %}
   <link href="{% static 'css/files.css' %}" rel="stylesheet">
@@ -102,8 +102,8 @@
         <li>
           <hr/>
           <strong class="pull-left primary-font">{{ note.title }}</strong>
-          <!--small class="pull-right text-muted">
-           <span class="glyphicon glyphicon-time"></span> 7 mins ago</small-->
+          <small class="pull-right text-muted">
+            <span class="glyphicon glyphicon-time"></span> {{ note.created|naturaltime }}</small>
           </br>
           <span class="ui-state-default">{{ note.note|linebreaks }}</span>
         </li>
