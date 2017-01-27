@@ -39,10 +39,18 @@
       <div class="panel with-nav-tabs panel-default">
 	<div class="panel-heading">
 	  <ul class="nav nav-tabs" data-autoselect="">
-	    <li data-priority="0"><a href="#inputdata-tab" data-toggle="tab">Input Data</a></li>
-	    <li data-priority="3"><a href="#processing-tab" data-toggle="tab">Processing</a></li>
-	    <li data-priority="6"><a href="#output-tab" data-toggle="tab">Output Data</a></li>
-	    <li data-priority="9"><a href="#prediction-tab" data-toggle="tab">Resistance Prediction</a></li>
+	    <li data-priority="0">
+              <a href="#input-tab" data-toggle="tab">Input Data</a>
+            </li>
+            <li data-priority="3" {% if object.status < 6 %}class="disabled"{% endif %}>
+              <a href="#processing-tab" data-toggle="tab">Processing</a>
+            </li>
+            <li data-priority="6" {% if object.status < 9 %}class="disabled"{% endif %}>
+              <a href="#output-tab" data-toggle="tab">Output Files</a>
+            </li>
+            <li data-priority="9" {% if not object.has_prediction %}class="disabled"{%endif %}>
+              <a href="#prediction-tab" data-toggle="tab">Resistance Prediction</a>
+            </li>
             <li class="pull-right">
               <a id="activate-notes"><span class="glyphicon glyphicon-edit"></span></a>
             </li>
@@ -50,7 +58,7 @@
 	</div>
 	<div class="panel-body">
 	  <div class="tab-content">
-	    <div class="tab-pane fade" id="inputdata-tab">
+	    <div class="tab-pane fade" id="input-tab">
               {% include "predict/predictdataset_inputdata.html" %}
             </div>
 	    <div class="tab-pane fade" id="processing-tab">
