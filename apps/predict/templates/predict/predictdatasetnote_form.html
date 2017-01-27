@@ -1,0 +1,13 @@
+
+
+{% extends "modal.html" %}
+{% load i18n %}
+
+{% block "dialog-body" %}
+  <p>{% trans "Manually add note." %}</p>
+{% endblock %}
+
+{% block "form-buttons" %}
+<button class="btn btn-primary" type="submit">{% trans "Add Note" %}</button>
+{% endblock %}
+

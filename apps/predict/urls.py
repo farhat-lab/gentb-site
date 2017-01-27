@@ -25,6 +25,7 @@ urlpatterns = patterns('',
   url_tree(r'^(?P<slug>\w{32})/',
     url(r'^$',          DatasetView.as_view(),   name="view_single_dataset"),
     url(r'^callback/$', Callback.as_view(),      name="callback"),
+    url(r'^note/$',     AddNote.as_view(),       name="add_note"),
   ),
 )
 

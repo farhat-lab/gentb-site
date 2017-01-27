@@ -13,7 +13,6 @@ from .models import PredictDataset
 class PredictMixin(object):
     """The baseline predict view"""
     slug_field = 'md5'
-    model = PredictDataset
 
     @method_decorator(login_required)
     def dispatch(self, request, *args, **kwargs):
@@ -22,9 +21,12 @@ class PredictMixin(object):
 
     def get_queryset(self):
         """Limit queryset to the user's own predictions only"""
-        return super(PredictMixin, self).get_queryset()\
-                .filter(user_id=self.request.user.pk)\
-                .exclude(status=PredictDataset.STATUS['DATASET_DELETED'])
+        deleted = PredictDataset.STATUS['DATASET_DELETED']
+        qs = PredictDataset.objects.exclude(status=deleted)
+        if 'slug' not in self.kwargs:
+            # Limit to my own predictions unless I have the md5
+            qs = qs.filter(user_id=self.request.user.pk)
+        return qs
 
 
 class CallbackMixin(object):

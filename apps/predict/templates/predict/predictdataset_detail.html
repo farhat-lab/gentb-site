@@ -81,20 +81,24 @@
     <div class="well">
         <h4>Notes</h4>
     <div class="input-group">
-        <input type="text" id="userComment" class="form-control input-sm chat-input" placeholder="New note..." />
-	    <span class="input-group-btn" onclick="addComment()">     
-            <a href="#" class="btn btn-primary btn-sm"><span class="glyphicon glyphicon-comment"></span> Add Note</a>
+      <form method="POST" id="addnote" action="{% url "predict:add_note" object.md5 %}" style="display: inherit;">
+        {% csrf_token %}
+        <input type="text" id="note" name="note" class="form-control input-sm chat-input" placeholder="New note..." />
+	<span class="input-group-btn">     
+            <button type="submit" class="btn btn-primary btn-sm"><span class="glyphicon glyphicon-comment"></span> Add Note</button>
         </span>
+      </form>
     </div>
-    <hr data-brackets-id="12673">
-    <ul data-brackets-id="12674" id="sortable" class="list-unstyled ui-sortable">
+    <ul id="notepad" class="list-unstyled ui-sortable">
       {% for note in object.notes.all %}
-        <strong class="pull-left primary-font">{{ note.title }}</strong>
-        <!--small class="pull-right text-muted">
+        <li>
+          <hr/>
+          <strong class="pull-left primary-font">{{ note.title }}</strong>
+          <!--small class="pull-right text-muted">
            <span class="glyphicon glyphicon-time"></span> 7 mins ago</small-->
-        </br>
-        <li class="ui-state-default">{{ note.note|linebreaks }}</li>
-        </br>
+          </br>
+          <span class="ui-state-default">{{ note.note|linebreaks }}</span>
+        </li>
       {% endfor %}
     </ul>
     </div>

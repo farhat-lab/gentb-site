@@ -12,8 +12,9 @@ from django.views.generic import (
     TemplateView,
 )
 from django.core.urlresolvers import reverse
+from django.http.response import JsonResponse
 
-from .models import PredictDataset, DatasetScriptRun
+from .models import PredictDataset, DatasetScriptRun, PredictDatasetNote
 from .mixins import PredictMixin, CallbackMixin
 from .message_helper import send_dataset_run_message_to_tb_admins_and_user
 from .forms import *
@@ -58,6 +59,25 @@ class UploadManual(PredictMixin, CreateView):
           'status': PredictDataset.STATUS['FILE_RETRIEVAL_SUCCESS'],
           'file_type': 'manual',
         }
+
+
+class AddNote(PredictMixin, CreateView):
+    model = PredictDatasetNote
+    fields = ('note',)
+
+    def form_invalid(self, form):
+        return JsonResponse({'status': 'INVALID'})
+
+    def form_valid(self, form):
+        obj = form.save(commit=False)
+        obj.title = unicode(self.request.user)
+        obj.dataset = self.get_queryset().get(md5=self.kwargs['slug'])
+        obj.save()
+        return JsonResponse({
+          'status': 'OK',
+          'title': obj.title,
+          'note': obj.note,
+        })
 
 
 class UploadView(PredictMixin, CreateView):

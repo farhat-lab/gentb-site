@@ -34,4 +34,27 @@ $(document).ready(function() {
       $('#heatmap').resize();
   });
 
+  $('#addnote').on('submit', function (event) {
+    console.log("Adding note!");
+    event.preventDefault();
+
+    console.log($(this).attr('action'));
+    $.ajax({
+      type: 'post',
+      url: $(this).attr('action'),
+      data: $(this).serialize(),
+      success: function (json) {
+        if(json.status == 'OK') {
+          $('#note').val('');
+          $('#notepad').prepend('<li><hr/><strong class="pull-left primary-font">'+json.title+'</strong></br><span class="ui-state-default">'+json.note+'</span></li>')
+        } else {
+          $('#note').addClass('has-error');
+        }
+      },
+      error: function (result) {
+          $('#note').addClass('has-error');
+      },
+    });
+  });
+
 });
