@@ -1,9 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Spyder Editor
-
-This is a temporary script file.
-"""
 #code that generates the matrix.csv from the .var files
 
 import sys
@@ -54,10 +48,8 @@ for s in strains:
            else:
              output2.write(",0")
    elif parts[1] in ['CF']: #coding frameshifts pool all that occur at the same nucleotide start
-       g=re.escape(parts[5])
-       a=re.compile(re.escape(parts[2]))
        for u in d[s]:
-           if re.match(g, u) and re.match(a,u):
+           if re.search(parts[5], u) and re.search(parts[2],u):
              output2.write(",1")
            else:
              output2.write(",0")
