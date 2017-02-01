@@ -7,7 +7,7 @@ import os
 import re
 
 SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
-#SCRIPT_DIR = '/home/maha/gentb/gentb-site/apps/predict/pipeline/bin'
+#SCRIPT_DIR= sys.argv[2]
 
 variants=set()
 for line in open(SCRIPT_DIR + "/variant_name_list.csv"):
@@ -16,8 +16,6 @@ for line in open(SCRIPT_DIR + "/variant_name_list.csv"):
 d = defaultdict(set)
 strains=set()
 for filename in os.listdir(sys.argv[1]):
-#for filename in os.listdir('/home/maha/gentb/gentb-site/apps/predict/pipeline/bin'):
-#    print >>sys.stderr, filename
     if filename.endswith(".var"):
         sn=filename.split(".")[0] #strain name
         filen=sys.argv[1]+"/"+filename
@@ -42,20 +40,25 @@ for s in strains:
  for v in variants:
    parts=v.split('_')
    if parts[1] in ['CN','CS','CZ']: #coding snps pool changes that cause the same aachange
-       for u in d[s]:
-           if re.search(parts[5],u) and re.search(parts[4],u):
+       #print parts[4]+"_"+parts[5]
+       pattern=parts[4]+"_"+re.escape(parts[5])	
+       if re.search(pattern,"\t".join(d[s])):
              output2.write(",1")
-           else:
+             #print >>sys.stderr, v
+       else:
              output2.write(",0")
    elif parts[1] in ['CF']: #coding frameshifts pool all that occur at the same nucleotide start
-       for u in d[s]:
-           if re.search(parts[5], u) and re.search(parts[2],u):
+       pattern=re.compile(parts[2] + '_[^\s\,]+_' + parts[5])
+       if re.search(pattern, "\t".join(d[s])):
              output2.write(",1")
-           else:
+#             print 'here!', s, v #>>sys.stderr, v
+       else:
              output2.write(",0")
+#	     print >>sys.stderr, v
    else: #non coding, promoter, ribosomal changes SNPs or indels, and coding non frame shift indels have to be identical
        if v in d[s]:
            output2.write(",1")
+           #print >>sys.stderr, v
        else:
            output2.write(",0")
  output2.write("\n")

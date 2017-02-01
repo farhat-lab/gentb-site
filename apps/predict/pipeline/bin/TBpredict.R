@@ -35,7 +35,7 @@ predictfunction<-function(filename){
     
     for (i in 1:length(druglist)){
       drug <- druglist[i]
-      print(drug)
+      #print(drug)
       load(paste(drug, "_finalpredict.RData", sep="")) #contains for each drug:
       # Can't get what's in RF
       #cat(toJSON(drugg.full.rf, pretty = TRUE), "\n", file = paste0(drug, "-drugg.full.rf.json"))
