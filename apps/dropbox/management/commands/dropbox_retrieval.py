@@ -28,7 +28,7 @@ class Command(BaseCommand):
             print " * Looking at dataset: %s" % str(dataset)
             dataset.set_status('FILE_RETRIEVAL_STARTED')
             try:
-                for d_file in DropboxFile.objects.filter(result__isnull=True):
+                for d_file in DropboxFile.objects.filter(retrieval_start__isnull=True):
                     print "  + Downloading: %s" % d_file.url
                     d_file.download_now()
                     if d_file.retrieval_error:

@@ -414,54 +414,6 @@ class PredictDatasetNote(TimeStampedModel):
     class Meta:
         ordering = ('-modified', '-created')
 
-class PredictDatasetFile(TimeStampedModel):
-    """
-    Single file that has been retrieved for a particular dataset
-    """
-    dataset = models.ForeignKey(PredictDataset, related_name='results')
-    name = models.CharField(max_length=255, help_text='Name of the file (w/o) the path')
-    fullpath = models.TextField(help_text='Full path to the file')
-    size = models.IntegerField(default=0, help_text='Size of the file in bytes')
-
-    def __str__(self):
-        return self.name
-
-    class Meta:
-        ordering = ('-created', 'dataset', 'name')
-
-
-class ScriptToRun(TimeStampedModel):
-
-    name = models.CharField(max_length=100)
-    is_chosen_script = models.BooleanField(default=True)
-    script = models.TextField('Command Line Script',
-        help_text='Example of JSON argument: \'{"admin_url": "http://127.0.'
-        '0.1:8000/tb-admin/predict/PredictDataset/3/", "callback_url": "som'
-        'e_url to receive results", "dataset_id": 3, "user_email": "user_wh'
-        'o_uploaded_file@place.edu", "file1_path": ".../tb_uploaded_files/s'
-        'hared-files/2015/08/Predict_-_genTB_BnVjFcO.png"}\'')
-    script_args = models.TextField(blank=True, help_text='populated on save')
-
-    def __str__(self):
-        return self.name
-
-    def get_script_args_as_list(self):
-        return self.script.split()
-
-    def save(self, *args, **kwargs):
-
-        self.script_args = self.script.split()
-
-        try:
-            ot = ScriptToRun.objects.get(is_chosen_script=True)
-            if not self==ot:
-                ot.is_chosen_script = False
-                ot.save()
-        except ScriptToRun.DoesNotExist:
-            pass
-
-        super(ScriptToRun, self).save(*args, **kwargs)
-
 
 class DatasetScriptRun(TimeStampedModel):
     dataset = models.ForeignKey(PredictDataset, related_name='runs')
@@ -520,3 +472,9 @@ class DatasetScriptRun(TimeStampedModel):
 
     class Meta:
         ordering = ('-modified', '-created')
+
+
+
+
+
+

@@ -7,20 +7,22 @@ from urlparse import urlparse
 from django.db.models import *
 from django.utils.timezone import now
 
-from apps.predict.models import PredictDataset, PredictDatasetFile
+from apps.predict.models import PredictDataset
 
 from .utils import Download
 
 
 class DropboxFile(Model):
     dataset = ForeignKey(PredictDataset, related_name='files')
-    result = ForeignKey(PredictDatasetFile, null=True, blank=True)
 
     url = URLField()
     name = SlugField(max_length=32)
     filename = CharField(max_length=255, null=True)
+    fullpath = TextField(null=True, blank=True)
+
     size = PositiveIntegerField(null=True)
     icon = URLField(null=True)
+
     created = DateTimeField(auto_now_add=True)
 
     # system attempts to download files
@@ -57,10 +59,7 @@ class DropboxFile(Model):
             return
 
         # We save the original filename instead of the new django one
-        self.result = self.dataset.results.create(
-            name=self.filename,
-            fullpath=download.filepath,
-            size=download.size,
-        )
+        self.fullpath = download.filepath
+        self.size = download.size
         self.save()
 

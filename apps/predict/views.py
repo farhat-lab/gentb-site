@@ -81,6 +81,7 @@ class AddNote(PredictMixin, CreateView):
 
 
 class UploadView(PredictMixin, CreateView):
+    model = PredictDataset
     parent = UploadChoices
 
     def get_title(self):
