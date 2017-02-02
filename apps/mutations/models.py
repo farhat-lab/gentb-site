@@ -137,7 +137,8 @@ class Mutation(Model):
     aminoacid_position = IntegerField(null=True, blank=True)
     aminoacid_reference = CharField(max_length=41, null=True, blank=True)
     aminoacid_varient = CharField(max_length=41, null=True, blank=True,
-            help_text="The variant aminoacid tracks multiple mutations in the same codon")
+            help_text="The variant aminoacid tracks multiple mutations "
+            "in the same codon")
     
     # codonpos, varcodon, refcodon
     codon_position = IntegerField(null=True, blank=True)
@@ -150,6 +151,10 @@ class Mutation(Model):
 
     mrna_ntpos = IntegerField(null=True, blank=True)
     ecoli_aapos = IntegerField(null=True, blank=True)
+
+    predictor = BooleanField(default=False,
+        help_text="This mutation is selected to be used in predictions and "
+        "will be shown to users in the manual mutation selection process.")
 
     objects = MutationManager()
 
