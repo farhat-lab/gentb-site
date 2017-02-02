@@ -11,6 +11,10 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
+        migrations.RemoveField(
+            model_name='predictdataset',
+            name='status',
+        ),
         migrations.AlterField(
             model_name='scripttorun',
             name='script',
