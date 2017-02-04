@@ -87,9 +87,9 @@
 
     <div class="col-lg-0 col-sm-12 hidden" id="notes">
     <div class="well">
-        <h4>Notes</h4>
-    <div class="input-group">
-      <form method="POST" id="addnote" action="{% url "predict:add_note" object.md5 %}" style="display: inherit;">
+      <h4>Notes</h4>
+      <div class="input-group" style="width: 100%">
+       <form method="POST" id="addnote" action="{% url "predict:add_note" object.md5 %}" style="display: inherit;">
         {% csrf_token %}
         <input type="text" id="note" name="note" class="form-control input-sm chat-input" placeholder="New note..." />
 	<span class="input-group-btn">     
