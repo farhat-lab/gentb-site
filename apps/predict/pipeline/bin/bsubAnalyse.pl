@@ -23,7 +23,8 @@ if ($pairend>0) {
 } else {
 	push @cmd, "stampy.py -g $refFile -h $refFile -o ${path}/$dataFile.sam -f sam -M ${path}/${dataFile}.fastq;";
 }
-push @cmd, "samtools view -bS ${path}/$dataFile.sam |samtools sort |samtools index ${path}/$dataFile.sorted.bam";
+push @cmd, "samtools view -bS ${path}/$dataFile.sam |samtools sort -o ${path}/$dataFile.sorted.bam"; 
+push @cmd, "samtools index ${path}/$dataFile.sorted.bam";
 push @cmd, "samtools depth -b $Bin/DR_regions.BED -Q 29 ${path}/$dataFile.sorted.bam >${path}/output/$dataFile.qc";
 push @cmd, "Platypus.py callVariants --bamFiles=${path}/$dataFile.sorted.bam --refFile=$refFile.fasta --output=${path}/$dataFile.h37rv.vcf";
 push @cmd, "perl $Bin/flatAnnotatorVAR.pl ${path}/$dataFile.h37rv.vcf 15 0.1 PASS";
@@ -33,7 +34,7 @@ push @cmd, "python $Bin/generate_matrix.py ${path}/output";
 push @cmd, "Rscript $Bin/TBpredict.R ".'"'."${path}/output/matrix.csv".'"';
 
 my $n=0;
-my @steps=('stampy','sam2bam_sort_index','QC','platypus','annotate','mvVar','mvVCF','genMatrix','Rpredict');
+my @steps=('stampy','sam2bam_sort', 'index','QC','platypus','annotate','mvVar','mvVCF','genMatrix','Rpredict');
 foreach my $cmd (@cmd) {
 	my $i=system($cmd);
 	if ($i>0) {
