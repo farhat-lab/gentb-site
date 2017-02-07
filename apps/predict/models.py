@@ -5,9 +5,10 @@ from hashlib import md5
 from os.path import join, isfile, isdir, basename
 
 from collections import defaultdict
+
+from django.db.models import *
 from model_utils.models import TimeStampedModel
 
-from django.db import models
 from django.conf import settings
 from django.utils.text import slugify
 from django.core import serializers
@@ -44,21 +45,21 @@ class PredictDataset(TimeStampedModel):
     STATUS = dict([(x, x) for x, st in STATUS_CHOICES])
     STATUS.update(dict([(str(st).upper().replace(' ', '_'), x) for x, st in STATUS_CHOICES]))
 
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='datasets')
-    md5 = models.CharField(max_length=40, blank=True, db_index=True,
+    user = ForeignKey(settings.AUTH_USER_MODEL, related_name='datasets')
+    md5 = CharField(max_length=40, blank=True, db_index=True,
             help_text='auto-filled on save')
-    title = models.CharField('Dataset Title', max_length=255)
-    file_type = models.CharField(choices=FILE_TYPES, max_length=25)
+    title = CharField('Dataset Title', max_length=255)
+    file_type = CharField(choices=FILE_TYPES, max_length=25)
 
-    fastq_type = models.CharField(max_length=50,\
+    fastq_type = CharField(max_length=50,\
         choices=FASTQ_FILE_TYPES, blank=True,\
         help_text='Only used for FastQ files')
 
-    description = models.TextField('Dataset description')
-    file_directory = models.CharField(max_length=255, blank=True)
-    has_prediction = models.BooleanField(default=False)
+    description = TextField('Dataset description')
+    file_directory = CharField(max_length=255, blank=True)
+    has_prediction = BooleanField(default=False)
 
-    status = models.PositiveIntegerField(default=1, choices=STATUS_CHOICES)
+    status = PositiveIntegerField(default=1, choices=STATUS_CHOICES)
     is_error = property(lambda self: self.status in [0, 4, 8])
     is_busy = property(lambda self: self.status in [3, 6])
 
@@ -404,9 +405,9 @@ class PredictDataset(TimeStampedModel):
 
 class PredictDatasetNote(TimeStampedModel):
     """Notes of background processes"""
-    dataset = models.ForeignKey(PredictDataset, related_name='notes')
-    title = models.CharField(max_length=255)
-    note = models.TextField()
+    dataset = ForeignKey(PredictDataset, related_name='notes')
+    title = CharField(max_length=255)
+    note = TextField()
 
     def __str__(self):
         return self.title
@@ -416,16 +417,16 @@ class PredictDatasetNote(TimeStampedModel):
 
 
 class DatasetScriptRun(TimeStampedModel):
-    dataset = models.ForeignKey(PredictDataset, related_name='runs')
-    md5 = models.CharField(max_length=40, blank=True, db_index=True)
+    dataset = ForeignKey(PredictDataset, related_name='runs')
+    md5 = CharField(max_length=40, blank=True, db_index=True)
 
-    notes = models.TextField(blank=True)
-    result_received = models.BooleanField(default=False)
-    result_success = models.BooleanField(default=False)
-    result_data = models.TextField(blank=True)
+    notes = TextField(blank=True)
+    result_received = BooleanField(default=False)
+    result_success = BooleanField(default=False)
+    result_data = TextField(blank=True)
 
-    process_start = models.DateTimeField(auto_now_add=True, null=True)
-    process_end = models.DateTimeField(null=True, blank=True)
+    process_start = DateTimeField(auto_now_add=True, null=True)
+    process_end = DateTimeField(null=True, blank=True)
 
     def __str__(self):
         return '%s' % self.dataset
@@ -472,9 +473,5 @@ class DatasetScriptRun(TimeStampedModel):
 
     class Meta:
         ordering = ('-modified', '-created')
-
-
-
-
 
 

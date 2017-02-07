@@ -46,7 +46,7 @@ $(document).ready(function() {
       success: function (json) {
         if(json.status == 'OK') {
           $('#note').val('');
-          $('#notepad').prepend('<li><hr/><strong class="pull-left primary-font">'+json.title+'</strong></br><span class="ui-state-default">'+json.note+'</span></li>')
+          $('#notepad').prepend('<li><hr/><strong class="pull-left primary-font">'+json.title+'</strong><small class="pull-right text-muted"><span class="glyphicon glyphicon-time"></span> Now</small></br><span class="ui-state-default">'+json.note+'</span></li>')
         } else {
           $('#note').addClass('has-error');
         }
