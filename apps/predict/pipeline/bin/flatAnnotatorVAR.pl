@@ -263,32 +263,55 @@ sub assign_allele{
  if ($strand{$genename} eq "+") {
   $cp = ($march - $start{$genename}) % 3; #within the codon 1,2
   $cp = 3 unless $cp; # 0->3;
+  #print STDERR "$cp", length($allele);
+  if ($cp == 3 || length($allele)== 1) {
+   my $ref_base=substr($ref_allele,$march-$from,1);
+   my $base=substr($allele,$march-$from,1);
+   ($name, $codon, $altcodon, $codpos)=&annotcoding($march, $genename, $ref_base, $base);
+  } elsif ($cp != 3 && length($allele)>1) {
+   if (($cp == 1 && length($allele)<=3) || ($cp ==2 && length($allele)<=2)) {
+    #print STDERR "HERE!!";
+    my $ref_base=substr($ref_allele,$march-$from, length($allele));
+    my $base=substr($allele,$march-$from,length($allele));
+    ($name, $codon, $altcodon, $codpos)=&annotcoding($march, $genename,$ref_base, $base);
+    $march=$march+length($allele)-1;
+   } elsif ($cp == 1 && length($allele)>3) {
+    my $ref_base=substr($ref_allele,$march-$from, 3);
+    my $base=substr($allele,$march-$from, 3);
+    ($name, $codon, $altcodon, $codpos)=&annotcoding($march, $genename,$ref_base, $base);
+    $march=$march+2;
+   } elsif ($cp == 2 && length($allele)>2) {
+    my $ref_base=substr($ref_allele,$march-$from, 2);
+    my $base=substr($allele,$march-$from,2);
+    ($name, $codon, $altcodon, $codpos)=&annotcoding($march, $genename,$ref_base, $base);
+    $march++;
+   }
+  }
  } elsif ($strand{$genename} eq "-") {
   $cp = ($end{$genename} - $march + 1) % 3;
   $cp = 3 unless $cp; # 0->3;
- }
- #print STDERR "$cp", length($allele);
- if ($cp ==	3 || length($allele)==1) {
-  my $ref_base=substr($ref_allele,$march-$from,1);
-  my $base=substr($allele,$march-$from,1);
-  ($name, $codon, $altcodon, $codpos)=&annotcoding($march, $genename, $ref_base, $base);
- } elsif ($cp != 3 && length($allele)>1) {
-  if (($cp == 1 && length($allele)<=3) || ($cp ==2 && length($allele)<=2)) {
-   #print STDERR "HERE!!";
-   my $ref_base=substr($ref_allele,$march-$from, length($allele));
-   my $base=substr($allele,$march-$from,length($allele));
-   ($name, $codon, $altcodon, $codpos)=&annotcoding($march, $genename,$ref_base, $base);
-   $march=$march+length($allele)-1;
-  } elsif ($cp == 1 && length($allele)>3) {
-   my $ref_base=substr($ref_allele,$march-$from, 3);
-   my $base=substr($allele,$march-$from, 3);
-   ($name, $codon, $altcodon, $codpos)=&annotcoding($march, $genename,$ref_base, $base);
-   $march=$march+2;
-  } elsif ($cp == 2 && length($allele)>2) {
-   my $ref_base=substr($ref_allele,$march-$from, 2);
-   my $base=substr($allele,$march-$from,2);
-   ($name, $codon, $altcodon, $codpos)=&annotcoding($march, $genename,$ref_base, $base);
-   $march++;
+  if ($cp == 1 || length($allele)== 1) {  #codon count for negative strand is 1,3,2,1,3,2
+   my $ref_base=substr($ref_allele,$march-$from,1);
+   my $base=substr($allele,$march-$from,1);
+   ($name, $codon, $altcodon, $codpos)=&annotcoding($march, $genename, $ref_base, $base);
+  } else { #$cp!=1 and length($allele)>1
+   if (($cp == 3 && length($allele)<=3) || ($cp ==2 && length($allele)<=2)) {
+    #print STDERR "HERE!!";
+    my $ref_base=substr($ref_allele,$march-$from, length($allele));
+    my $base=substr($allele,$march-$from,length($allele));
+    ($name, $codon, $altcodon, $codpos)=&annotcoding($march, $genename,$ref_base, $base);
+    $march=$march+length($allele)-1;
+   } elsif ($cp == 3 && length($allele)>3) {
+    my $ref_base=substr($ref_allele,$march-$from, 3);
+    my $base=substr($allele,$march-$from, 3);
+    ($name, $codon, $altcodon, $codpos)=&annotcoding($march, $genename,$ref_base, $base);
+    $march=$march+2;
+   } elsif ($cp == 2 && length($allele)>2) {
+    my $ref_base=substr($ref_allele,$march-$from, 2);
+    my $base=substr($allele,$march-$from,2);
+    ($name, $codon, $altcodon, $codpos)=&annotcoding($march, $genename,$ref_base, $base);
+    $march++;
+   }
   }
  }
  return ($name, $codon, $altcodon, $codpos, $march);
