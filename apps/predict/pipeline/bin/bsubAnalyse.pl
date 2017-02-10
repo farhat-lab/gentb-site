@@ -19,9 +19,9 @@ $refFile =~ s/\.fasta$//;
 my @cmd;
 
 if ($pairend>0) {
-#	push @cmd, "stampy.py -g $refFile -h $refFile -o ${path}/$dataFile.sam -f sam -M ${path}/${dataFile}${pex}1.fastq ${path}/${dataFile}${pex}2.fastq;";
+	push @cmd, "stampy.py -g $refFile -h $refFile -o ${path}/$dataFile.sam -f sam -M ${path}/${dataFile}${pex}1.fastq ${path}/${dataFile}${pex}2.fastq;";
 } else {
-#	push @cmd, "stampy.py -g $refFile -h $refFile -o ${path}/$dataFile.sam -f sam -M ${path}/${dataFile}.fastq;";
+	push @cmd, "stampy.py -g $refFile -h $refFile -o ${path}/$dataFile.sam -f sam -M ${path}/${dataFile}.fastq;";
 }
 push @cmd, "samtools view -bS ${path}/$dataFile.sam > ${path}/$dataFile.bam";
 push @cmd, "samtools sort ${path}/$dataFile.bam ${path}/$dataFile.sorted";
@@ -50,4 +50,3 @@ system("rm -f ${path}/$dataFile.sam");
 system("rm -f ${path}/$dataFile.sorted.bam");
 system("rm -f ${path}/$dataFile.sorted.bam.bai");
 system("rm -f ${path}/$dataFile.bam");
-
