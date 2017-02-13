@@ -1,29 +1,75 @@
 
-{% for script_run in object.runs.all %}
-{% if forloop.first %}<h3>Script Runs</h3>{% endif %}
+    <ul class="process">
+	<li>
+          <a>
+	    <!--span class="glyphicon glyphicon-file"></span-->
+            <div class="progress">
+              <div class="progress-bar progress-bar-primary" role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100" style="width: 60%">60%</div>
+            </div>
+            <h4>Something.vcf</h4>
+          </a>
+	</li>
+	<li class="completed">
+          <a>
+	    <span class="glyphicon glyphicon-ok"></span>
+	    <h4>Brief</h4>
+          </a>
+	</li>
+	
+	<li class="active">
+          <a>
+	    <span class="glyphicon glyphicon-cog"></span>
+	    <h4>Sketch</h3>
+          </a>
+	</li>
+       
+	<li>
+          <a>
+	    <span class="glyphicon glyphicon-time"></span>
+	    <h4>Build</h4>
+          </a>
+	</li>
+	<li>
+          <a>
+	    <span class="glyphicon glyphicon-time"></span>
+	    <h4>Deliver</h4>
+          </a>
+	</li>
+    </ul>
 
 
-<div class="panel panel-default">
-  <div class="panel-heading">
-    <h3 class="panel-title">{{ script_run.created }} <small>updated: {{ script_run.modified }}</small></h3>
-  </div>
-  <div class="panel-body">
-      {% if script_run.result_received %}
-            {% if script_run.result_success %}
-                <span class="label label-success">Success</span><br />
-            {% else %}
-                <span class="label label-warning">Fail</span><br />
-            {% endif %}
-      {% else %}
-          <span class="label label-info">Results not received</span><br />
-      {% endif %}
-      Command run: <div class="well">{{ script_run.notes }}</div>
-
-      {% if script_run.result_data %}
-      Results
-      <div class="well" id="result_div_{{ forloop.counter }}">{{ script_run.result_data }}</div>
-      {% endif %}
-  </div>
-</div>
-{% endfor %}
+    <ul class="process">
+	<li class="start">
+          <a>
+	    <span class="glyphicon glyphicon-file"></span>
+            <h4>Something.vcf</h4>
+          </a>
+	</li>
+	<li class="completed">
+          <a>
+	    <span class="glyphicon glyphicon-ok"></span>
+	    <h4>Brief</h4>
+          </a>
+	</li>
+	
+	<li class="error">
+          <a>
+	    <span class="glyphicon glyphicon-remove"></span>
+	    <h4>Research</h4>
+          </a>
+	</li>
+	
+	<li>
+          <a>
+	    <span class="glyphicon glyphicon-time"></span>
+	    <h4>Build</h4>
+          </a>
+	</li>
+	<li>
+          <a>
+	    <span class="glyphicon glyphicon-time"></span>
+	    <h4>Deliver</h4>
+          </a>
+	</li>
+    </ul>
 
