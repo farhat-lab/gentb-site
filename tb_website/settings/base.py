@@ -156,6 +156,7 @@ DJANGO_APPS = (
 SUPPORT_APPS = (
     'cachebuster',
     'django_spaghetti',
+    'adminsortable2',
     'autotest',
 )
 
@@ -164,6 +165,7 @@ LOCAL_APPS = (
     'tb_website',
     'apps.tb_users',
     'apps.predict',
+    'apps.pipeline',
     'apps.dropbox',
     'apps.mutations',
     'apps.maps',
