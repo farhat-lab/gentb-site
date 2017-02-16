@@ -1,6 +1,5 @@
 from django.template.loader import render_to_string
 from apps.utils.email_util import send_email_to_admins, send_mail_to_user_and_admins
-from apps.predict.models import DatasetScriptRun
 
 from .utils import get_site_url
 
@@ -26,8 +25,6 @@ def send_new_dataset_message_to_tb_admins(dataset):
 
 
 def send_dataset_run_message_to_tb_admins_and_user(dataset_script_run):
-
-    assert isinstance(dataset_script_run, DatasetScriptRun), "dataset_script_run must be a DatasetScriptRun instance"
 
     if dataset_script_run.result_success:
         subject = "genTB: New file processed (Success)"
