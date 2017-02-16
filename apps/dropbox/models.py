@@ -7,18 +7,14 @@ from urlparse import urlparse
 from django.db.models import *
 from django.utils.timezone import now
 
-from apps.predict.models import PredictDataset
-
 from .utils import Download
 
 
 class DropboxFile(Model):
-    dataset = ForeignKey(PredictDataset, related_name='files')
-
     url = URLField()
-    name = SlugField(max_length=32)
+    name = SlugField(max_length=128)
     filename = CharField(max_length=255, null=True)
-    fullpath = TextField(null=True, blank=True)
+    file_directory = CharField(max_length=255)
 
     size = PositiveIntegerField(null=True)
     icon = URLField(null=True)
@@ -31,16 +27,22 @@ class DropboxFile(Model):
     retrieval_error = TextField(blank=True)
 
     class Meta:
-        ordering = ('-created', 'dataset')
-        unique_together = ('filename', 'dataset')
+        ordering = ('-created', 'filename')
 
     def __str__(self):
-        return '{0} ({1})'.format(self.dataset, self.name)
+        return str(self.filename)
+
+    @property
+    def fullpath(self):
+        return os.path.join(self.file_directory, self.filename)
 
     def download_now(self):
         """
         Download the dropbox link offline.
         """
+        if not os.path.exists(self.file_directory):
+            os.makedirs(self.file_directory)
+
         self.retrieval_start = now()
         self.retrieval_error = ''
         self.save()
@@ -50,7 +52,7 @@ class DropboxFile(Model):
 
         try:
             download = Download(self.url)
-            download.save(self.dataset.file_directory, self.filename)
+            download.save(self.file_directory, self.filename)
             self.retrieval_end = now()
             if not download.filepath:
                 raise KeyError("No filename provided for download.")
@@ -58,8 +60,6 @@ class DropboxFile(Model):
             self.retrieval_error = str(error)
             return
 
-        # We save the original filename instead of the new django one
-        self.fullpath = download.filepath
         self.size = download.size
         self.save()
 
