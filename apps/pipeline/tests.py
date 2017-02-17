@@ -191,6 +191,11 @@ class ProgramTest(ExtraTestCase):
             for fn in dict(self.program.prepare_files(output_dir='/tmp')).values():
                 self.assertTrue(os.path.isfile(fn), "File doesn't exist: %s" % fn)
 
+    def test_brand_new_output(self):
+        """Test the use of outputs with a new name"""
+        self.program.command_line = 'ls > @{foo}'
+        files = dict(self.program.prepare_files(output_dir='/tmp', foo='gah.txt'))
+
     def test_prepare_from_list(self):
         self.program.files = [self.one, self.two]
         self.program.command_line = 'ls ${file}_one.txt ${file}_two.txt '\

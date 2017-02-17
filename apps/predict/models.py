@@ -240,6 +240,7 @@ class PredictStrain(Model):
             options['file'] = self.file_one.fullpath
             options['file_one'] = self.file_one.fullpath
         if self.file_two:
+            options['file'] = name
             options['file_two'] = self.file_two.fullpath
 
         name = "%s.%s" % (slugify(self.dataset.title), slugify(self.name))

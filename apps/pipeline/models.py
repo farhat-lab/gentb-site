@@ -171,12 +171,14 @@ class Program(Model):
                 files_in[name].append(file_in)
 
         for (io, prefix, name, suffix, start, end) in self.io():
+            # Generic finder pattern
+            pattern = "%s(?P<name>[^/]*)%s" % (prefix, suffix)
+
             if io == '$':
                 # Get the file input from a list of available files.
                 # It's reversed so the last added file is first.
                 fns = list(reversed(files_in[name]))
 
-                pattern = "%s(?P<name>[^/]*)%s" % (prefix, suffix)
 
                 for fn in fns:
                     ret = re.match(pattern, basename(fn))
@@ -199,6 +201,13 @@ class Program(Model):
                     new_name = ''.join([prefix, pout[name], suffix])
                     fn = join(output_dir, new_name)
                     yield ((io, name, start, end), fn)
+                elif name in files_in:
+                    # Allow variables from outside to make new filenames
+                    for fn in files_in[name]:
+                        if re.match(pattern, basename(fn)):
+                            if fn[0] != '/':
+                                fn = join(output_dir, fn)
+                            yield((io, name, start, end), fn)
                 else:
                     errors.append("Output '%s' unmatched from inputs." % name)
 
