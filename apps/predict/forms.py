@@ -91,14 +91,15 @@ class UploadForm(ModelForm):
             fn = fn[:-3]
         return ('file_one', fn.rsplit('.', 1)[0])
 
-    def save_dropbox(self, dataset, key):
-        data = self.cleaned_data.get(key, self.data.get(key, '[]'))
-        if data is None:
-            return
+    def save_dropbox(self, dataset, key, files=None):
+        if files is None:
+            data = self.cleaned_data.get(key, self.data.get(key, '[]'))
+            if data is None:
+                return
+            # Decode the data from the dropbox widget as json, this gives us
+            # the file size, icon and filename which is very useful later.
+            files = json.loads(data)
 
-        # Decode the data from the dropbox widget as json, this givesus the
-        # file size, icon and filename which is very useful later.
-        files = json.loads(data)
         for dropbox_file in files:
             (field, name) = self.get_strain_name(dropbox_file['name'])
             kw = {
@@ -136,14 +137,15 @@ class ManualInputForm(UploadForm):
         return output
 
     def save(self, *args, **kw):
-        obj = super(UploadForm, self).save(*args, **kw)
-        if obj and obj.pk:
-            path = os.path.join(obj.file_directory, 'output')
-            if not os.path.isdir(path):
-                os.makedirs(path)
-            with open(os.path.join(path, 'matrix.csv'), 'w') as fhl:
-                fhl.write(self.cleaned_data.get('genetic_information'))
-        return obj
+        dataset = super(UploadForm, self).save(*args, **kw)
+        if dataset and dataset.pk:
+            data = self.cleaned_data.get('genetic_information')
+            self.save_dropbox(dataset, 'manual', [
+                {'name': 'matrix.csv', 'link': '-', 'bytes': len(data), 'icon': None}
+            ])
+            # We save the matrix file directly.
+            dataset.strains.get().file_one.save_now(data)
+        return dataset
 
 
 class UploadVcfForm(UploadForm):

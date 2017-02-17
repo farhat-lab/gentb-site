@@ -46,6 +46,19 @@ class DropboxFile(Model):
         """Returns the percent done of the download"""
         return int(self.size_done() / float(self.size) * 100)
 
+    def save_now(self, data):
+        """Save the data as if this dropbox download was done"""
+        if not os.path.exists(self.file_directory):
+            os.makedirs(self.file_directory)
+
+        with open(self.fullpath, 'wb') as fhl:
+            fhl.write(data)
+
+        self.retrieval_start = now()
+        self.retrieval_end = now()
+        self.size = len(data)
+        self.save()
+
     def download_now(self):
         """
         Download the dropbox link offline.
