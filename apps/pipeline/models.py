@@ -145,7 +145,7 @@ class Program(Model):
           Yields a (name, filename) tuple suitable for a dictionary of both
           input and output filenames.
         """
-        errors, pout = [], {}
+        errors, files_out = [], {}
 
         # First take the files stored against this specific program.
         files_in = self.as_inputs(self.files)
@@ -171,49 +171,46 @@ class Program(Model):
                 files_in[name].append(file_in)
 
         for (io, prefix, name, suffix, start, end) in self.io():
-            # Generic finder pattern
-            pattern = "%s(?P<name>[^/]*)%s" % (prefix, suffix)
-
-            if io == '$':
-                # Get the file input from a list of available files.
-                # It's reversed so the last added file is first.
-                fns = list(reversed(files_in[name]))
-
-
-                for fn in fns:
-                    ret = re.match(pattern, basename(fn))
-                    if ret:
-                        yield ((io, name, start, end), fn)
-                        pout[name] = ret.groupdict()['name']
-                        break
-
-                if not fns:
-                    errors.append(self.ER3 % name)
-
-                elif name not in pout:
-                    errors.append(self.ER1 % (name, pattern))
-
-            elif io == '@':
-                # Populate / generate filename for output
-                if name in pout:
-                    # Make a new filename from the input's middle section
-                    # and the prefix and suffix named above.
-                    new_name = ''.join([prefix, pout[name], suffix])
-                    fn = join(output_dir, new_name)
-                    yield ((io, name, start, end), fn)
-                elif name in files_in:
-                    # Allow variables from outside to make new filenames
-                    for fn in files_in[name]:
-                        if re.match(pattern, basename(fn)):
-                            if fn[0] != '/':
-                                fn = join(output_dir, fn)
-                            yield((io, name, start, end), fn)
-                else:
-                    errors.append("Output '%s' unmatched from inputs." % name)
+            try:
+                args = (io, prefix, name, suffix)
+                fn = self.prepare_file(files_in, files_out, *args)
+                if '/' not in fn:
+                    fn = join(output_dir, fn)
+                yield ((io, name, start, end), fn)
+            except ValueError as err:
+                errors.append(str(err))
 
         if errors:
             raise ValueError("Error preparing command: \n * " + \
                     "\n * ".join(errors))
+
+    def prepare_file(self, files_in, files_out, io, prefix, name, suffix):
+        # Generic finder pattern
+        pattern = "%s(?P<name>[^/]*)%s" % (prefix, suffix)
+        # Get the file input from a list of available files.
+        # It's reversed so the last added file is first.
+        fns = list(reversed(files_in[name]))
+        for fn in fns:
+            ret = re.match(pattern, basename(fn))
+            if ret:
+                files_out[name] = ret.groupdict()['name']
+                if io == '$':
+                    return fn
+            elif io == '@' and '/' not in fn:
+                files_out[name] = fn
+
+        if io != '@':
+            if not fns:
+                raise ValueError(self.ER3 % name)
+            raise ValueError(self.ER1 % (name, pattern))
+
+        # Populate / generate filename for output
+        if name in files_out:
+            # Make a new filename from the input's middle section
+            # and the prefix and suffix named above.
+            return ''.join([prefix, files_out[name], suffix])
+        raise ValueError("Output '%s' unmatched from inputs. (%s, %s)" % (name, str(files_in), str(files_out)))
+
 
     def prepare_command(self, files):
         """
@@ -223,6 +220,8 @@ class Program(Model):
         # Now we have inputs and outputs prepared, we can construct a command
         # With all the input and output filenames in the right places.
         cmd = self.command_line
+        cmd = cmd.replace('\r', '').replace('\n\n', '\n')
+        cmd = cmd.replace('\n', ' && ')
 
         for match in reversed(list(self.PARSER.finditer(cmd))):
             data = match.groupdict()

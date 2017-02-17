@@ -193,8 +193,16 @@ class ProgramTest(ExtraTestCase):
 
     def test_brand_new_output(self):
         """Test the use of outputs with a new name"""
-        self.program.command_line = 'ls > @{foo}'
+        self.program.command_line = 'ls > @{foo}.sam'
         files = dict(self.program.prepare_files(output_dir='/tmp', foo='gah.txt'))
+        cmd = self.program.prepare_command(files)
+
+    def test_command_combination(self):
+        """New lines are considered command combinators"""
+        self.program.command_line = 'ls\nwc\nls'
+        files = dict(self.program.prepare_files(output_dir='/tmp'))
+        cmd = self.program.prepare_command(files)
+        self.assertEqual(cmd, "ls && wc && ls")
 
     def test_prepare_from_list(self):
         self.program.files = [self.one, self.two]
