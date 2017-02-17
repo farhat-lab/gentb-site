@@ -36,9 +36,10 @@ class JobManager(ManagerBase):
     """
     def __init__(self, pipedir=None):
         if pipedir is None:
-            pipedir = tempfile.mkdtemp(prefix='pipeline-')
+            self.pipedir = tempfile.mkdtemp(prefix='pipeline-')
             atexit.register(self.clean_up)
-        self.pipedir = pipedir
+        else:
+            self.pipedir = pipedir
 
     def clean_up(self):
         """Deletes all data in the piepline directory."""
@@ -58,6 +59,12 @@ class JobManager(ManagerBase):
                         fhl.read().strip())
         else:
             return (None, None)
+
+    def job_clean(self, job_id, ext):
+        """Delete files once finished with them"""
+        fn = self.job_fn(job_id, ext)
+        if os.path.isfile(fn):
+            os.unlink(fn)
 
     def job_write(self, job_id, ext, data):
         """Write the data to the given job_id record"""
@@ -145,7 +152,7 @@ class JobManager(ManagerBase):
         """Returns true if the process is still running"""
         return os.path.exists("/proc/%d/status" % int(pid))
 
-    def status(self, job_id):
+    def status(self, job_id, clean=False):
         """Returns a dictionary containing status information,
         can only be called once as it will clean up status files!"""
         (started, pid) = self.job_read(job_id, 'pid')
@@ -161,6 +168,11 @@ class JobManager(ManagerBase):
             return None
 
         status = self.state_and_clear(pid, status)
+
+        if clean and (finished or err):
+            self.job_clean(job_id, 'pid')
+            self.job_clean(job_id, 'ret')
+            self.job_clean(job_id, 'err')
 
         return {
           'status': status,

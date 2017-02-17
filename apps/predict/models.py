@@ -245,6 +245,7 @@ class PredictStrain(Model):
         name = "%s.%s" % (slugify(self.dataset.title), slugify(self.name))
         self.piperun = self.pipeline.run(name, **options)
         self.save()
+        return self.piperun.programs.filter(is_error=True).count() == 0
 
     def __str__(self):
         return str(self.name)

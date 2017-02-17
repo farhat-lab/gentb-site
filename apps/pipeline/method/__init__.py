@@ -22,10 +22,11 @@ from importlib import import_module
 from django.conf import settings
 
 module_id = getattr(settings, 'PIPELINE_MODULE', 'apps.pipeline.method.shell')
+pipe_root = getattr(settings, 'PIPELINE_ROOT', None)
 
 try:
     module = import_module(module_id)
-    JobManager = getattr(module, 'JobManager')()
+    JobManager = getattr(module, 'JobManager')(pipedir=pipe_root)
 except Exception as err:
     raise ValueError("Pipeline module is not a pipeline method or "
             "not configured correctly, %s: %s" % (module_id, str(err)))

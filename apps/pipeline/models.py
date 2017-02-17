@@ -342,7 +342,7 @@ class ProgramRun(TimeStampedModel):
     def update_status(self):
         """Take data from the job manager and populate the database"""
         if self.is_submitted and not self.is_complete:
-            data = JobManager.status(self.job_id)
+            data = JobManager.status(self.job_id, clean=True)
             if data and data['return'] is not None:
                 # The duration is
                 dur = data['finished'] - data['started']

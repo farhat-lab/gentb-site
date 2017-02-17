@@ -5,6 +5,7 @@ import time
 from django.core.management.base import BaseCommand, CommandError
 
 from apps.predict.models import PredictStrain
+from apps.pipeline.models import ProgramRun
 
 class Command(BaseCommand):
     help = """Schedule each of the pipeline tasks with the shell or LSF"""
@@ -25,4 +26,15 @@ class Command(BaseCommand):
             else:
                 sys.stderr.write("SUBMITTED [ERROR]\n")
             time.sleep(1)
+
+        sys.stderr.write("\n")
+
+        for piperun in ProgramRun.objects.filter(is_submitted=True, is_complete=False, is_error=False):
+            sys.stderr.write("Run Status: %s " % str(piperun))
+            if piperun.update_status():
+                sys.stderr.write(" [COMPLETE]\n")
+            elif piperun.is_error:
+                sys.stderr.write(" [ERROR]\n")
+            else:
+                sys.stderr.write(" [WAITING]\n")
 
