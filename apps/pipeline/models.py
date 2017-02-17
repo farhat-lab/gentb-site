@@ -16,6 +16,10 @@
 #
 
 import re
+import os
+
+import logging
+LOGGER = logging.getLogger('apps.pipeline')
 
 from os.path import getsize, isfile, basename, join
 from collections import defaultdict
@@ -27,9 +31,6 @@ from model_utils.models import TimeStampedModel
 from django.conf import settings
 from django.utils.timezone import now
 from django.utils.text import slugify
-
-import logging
-LOGGER = logging.getLogger('apps.pipeline')
 
 from apps.pipeline.method import JobManager
 

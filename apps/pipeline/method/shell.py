@@ -72,7 +72,8 @@ class JobManager(ManagerBase):
         with open(fn, 'w') as fhl:
             fhl.write(str(data))
 
-    DEP = 'watch -n 0.2 -g ls "%(fn)s"; grep \'^0$\' "%(fn)s" > /dev/null &&'
+    watch = os.path.join(os.path.dirname(__file__), 'watch.py')
+    DEP = watch + ' %(fn)s && '
     RET = '; echo $? > "%(fn)s"'
     def submit(self, job_id, cmd, depends=None):
         """

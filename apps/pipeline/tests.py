@@ -232,8 +232,8 @@ class PipelineTest(ExtraTestCase):
 
         self.assertTrue(result.is_submitted)
         self.assertTrue(result.is_complete)
-        self.assertFalse(result.is_error)
         self.assertEqual(result.error_text, '')
+        self.assertFalse(result.is_error)
 
         self.assertGreater(result.input_size, 0)
         self.assertGreater(result.output_size, 0)
