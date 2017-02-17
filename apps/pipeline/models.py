@@ -267,15 +267,22 @@ class PipelineRun(TimeStampedModel):
     def run(self, **kwargs):
         for pipe in self.pipeline.programs.all():
             run = ProgramRun.objects.create(piperun=self, **pipe.prepare(self.pk))
-            for (name, fn) in run.submit(**kwargs):
-                if name in kwargs:
-                    if isinstance(kwargs[name], list):
-                        kwargs[name].append(fn)
+            try:
+                for (name, fn) in run.submit(**kwargs):
+                    if name in kwargs:
+                        if isinstance(kwargs[name], list):
+                            kwargs[name].append(fn)
+                        else:
+                            kwargs[name] = [kwargs[name], fn]
                     else:
-                        kwargs[name] = [kwargs[name], fn]
-                else:
-                    kwargs[name] = [fn]
+                        kwargs[name] = [fn]
+            except ValueError as err:
+                run.is_error = True
+                run.error_text = str(err)
+                run.save()
+                return False
             kwargs['previous'] = run
+        return True
 
     def update_all(self):
         """
@@ -325,7 +332,7 @@ class ProgramRun(TimeStampedModel):
         if JobManager.submit(self.job_id, cmd, depends=self.previous_id):
             self.is_submitted = True
         else:
-            self.is_error = True
+            raise ValueError("Job could not be submitted to Job Manager.")
 
         self.save()
         # Return processed files so outputs can be used

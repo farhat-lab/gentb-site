@@ -232,6 +232,20 @@ class PredictStrain(Model):
     file_two = ForeignKey(DropboxFile, null=True, blank=True, related_name='link_b')
     files = property(lambda self: [a for a in (self.file_one, self.file_two) if a])
 
+    def run(self):
+        """Runs this pipeline as set (even if run before)"""
+        options = {'output_dir': self.dataset.file_directory}
+
+        if self.file_one:
+            options['file'] = self.file_one.fullpath
+            options['file_one'] = self.file_one.fullpath
+        if self.file_two:
+            options['file_two'] = self.file_two.fullpath
+
+        name = "%s.%s" % (slugify(self.dataset.title), slugify(self.name))
+        self.piperun = self.pipeline.run(name, **options)
+        self.save()
+
     def __str__(self):
         return str(self.name)
 

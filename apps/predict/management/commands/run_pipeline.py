@@ -1,52 +1,28 @@
 
-# pylint: disable=no-init,no-self-use
-"""
-Run the pipeline.
-"""
+import sys
+import time
 
 from django.core.management.base import BaseCommand, CommandError
 
-from apps.predict.models import LOGGER, PredictDataset
+from apps.predict.models import PredictStrain
 
 class Command(BaseCommand):
-    """Fires off the perl script to kick off the pipeline"""
-    help = """
-This fires off the perl script to kick off the pipeline for either
-FastQ or VCF file analysis.
-"""
-
-    def add_arguments(self, parser):
-        """No arguments for this command yet"""
-        pass
-
-    """
-    Given a PredictDataset, run the appropriate
-    cluster pipeline script to process it.
-    """
-    err_found = False
-    err_message_title = None
-    err_message = None
+    help = """Schedule each of the pipeline tasks with the shell or LSF"""
 
     def handle(self, **options):
-        """
-        (1) Retrieve the first PredictDataset with a status of: FILE_RETRIEVAL_SUCCESS
-        (2) If such a dataset exists, run it through the pipeline
-        """
-        LOGGER.info("Run pipeline check: next dataset")
-
-        # get some Dataset
-        COMPLETE = PredictDataset.STATUS['FILE_RETRIEVAL_SUCCESS']
-        dataset = PredictDataset.objects.filter(status=COMPLETE).first()
-
-        if dataset is None:
-            return LOGGER.info("Nothing to check")
-
-        # Run script
-        LOGGER.warning("Run pipeline for dataset: %s (%s)", dataset, dataset.pk)
-
-        (ret, msg) = dataset.run_command()
-        if not ret:
-            LOGGER.error(str(msg))
-        LOGGER.warning("OK")
-
+        for strain in PredictStrain.objects.filter(piperun__isnull=True):
+            sys.stderr.write("Strain: %s, " % str(strain))
+            for input_file in (strain.file_one, strain.file_two):
+                if input_file:
+                    if input_file.retrieval_error:
+                        sys.stderr.write("DOWNLOAD-ERROR [SKIP]\n")
+                        continue
+                    elif not input_file.retrieval_end:
+                        sys.stderr.write("NOT-READY [SKIP]\n")
+                        continue
+            if strain.run():
+                sys.stderr.write("SUBMITTED [OK]\n")
+            else:
+                sys.stderr.write("SUBMITTED [ERROR]\n")
+            time.sleep(1)
 

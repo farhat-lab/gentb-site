@@ -41,3 +41,13 @@ admin.site.register(Program, ProgramAdmin)
 
 admin.site.register(ProgramFile)
 
+class ProgramRunInline(admin.TabularInline):
+    fields = ('program', 'job_id', 'is_submitted', 'is_complete', 'is_error', 'error_text')
+    model = ProgramRun
+    extra = 0
+
+class PipelineRunAdmin(admin.ModelAdmin):
+    list_display = ('name', 'pipeline',)
+    inlines = (ProgramRunInline,)
+
+admin.site.register(PipelineRun, PipelineRunAdmin)
