@@ -16,6 +16,9 @@
 }
 .process .progress {
   margin-bottom: 0px;
+  margin-right: 8px;
+  background-color: #ddd;
+  border: 1px solid #fff;
 }
 @keyframes spin { 100% { transform:rotate(360deg); } }
 @keyframes flash-bg {
@@ -44,7 +47,10 @@
 .process>li h4 {
   margin-bottom: 0px;
 }
-
+.process>li.download h4.short {
+  margin-bottom: 4px;
+  margin-top: 4px;
+}
 .process>li {
   display: table-cell;
   vertical-align: middle;
@@ -64,9 +70,15 @@
   width: calc( 100% - 1px );
   background-color: hsla(0, 0%, 83%, 1);
   text-align: center;
-  text-transform: capitalize;
+  min-height: 80px;
 }
 
+.process li.download a {
+  background: #efa91b;
+}
+.process li.download a:after {
+  border-left: 30px solid #efa91b;
+}
 .process li.start a {
   background: brown;
   background: hsl(210, 57%, 51%);
@@ -88,6 +100,7 @@
 .process li.active a:after {
   border-left: 30px solid #efa91b;
 }
+
 
 .process li.error a {
   background-color: #d9534f;
@@ -142,8 +155,6 @@
   left: 98%;
   z-index: 2;
 }
-
-
 
 /* Notes */
 

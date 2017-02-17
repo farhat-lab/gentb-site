@@ -1,75 +1,42 @@
-
-    <ul class="process">
-	<li>
+    {% for strain in object.strains.all %}
+      <ul class="process">
+        <li class="download {% if strain.file_one.retrieval_error or strain.file_two.retrieval_error %}error{% endif %}">
           <a>
-	    <!--span class="glyphicon glyphicon-file"></span-->
-            <div class="progress">
-              <div class="progress-bar progress-bar-primary" role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100" style="width: 60%">60%</div>
-            </div>
-            <h4>Something.vcf</h4>
+          {% for file in strain.files %}
+            {% if file.retrieval_end and strain.files|length == 1 %}
+              <span class="glyphicon glyphicon-file"></span>
+              <h4>{{ file.filename }}</h4>
+            {% else %}
+              <h4 class="short"><span class="glyphicon glyphicon-{% if file.retrieval_error %}remove{% else %}file{% endif %}"></span> {{ file.filename }}</h4>
+              {% if file.retrieval_start and not file.retrieval_end %}
+                <div class="progress">
+                  <div class="progress-bar progress-bar-primary" role="progressbar" aria-valuenow="{{ file.percent_done }}" aria-valuemin="0" aria-valuemax="100" style="width: {{ file.percent_done }}%">{{ file.percent_done }}%</div>
+                </div>
+              {% elif not file.retrieval_end %}
+                <h6>Please wait for download...</h6>
+              {% endif %}
+            {% endif %}
+          {% endfor %}
           </a>
-	</li>
-	<li class="completed">
-          <a>
-	    <span class="glyphicon glyphicon-ok"></span>
-	    <h4>Brief</h4>
-          </a>
-	</li>
-	
-	<li class="active">
-          <a>
-	    <span class="glyphicon glyphicon-cog"></span>
-	    <h4>Sketch</h3>
-          </a>
-	</li>
-       
-	<li>
-          <a>
-	    <span class="glyphicon glyphicon-time"></span>
-	    <h4>Build</h4>
-          </a>
-	</li>
-	<li>
-          <a>
-	    <span class="glyphicon glyphicon-time"></span>
-	    <h4>Deliver</h4>
-          </a>
-	</li>
-    </ul>
-
-
-    <ul class="process">
-	<li class="start">
-          <a>
-	    <span class="glyphicon glyphicon-file"></span>
-            <h4>Something.vcf</h4>
-          </a>
-	</li>
-	<li class="completed">
-          <a>
-	    <span class="glyphicon glyphicon-ok"></span>
-	    <h4>Brief</h4>
-          </a>
-	</li>
-	
-	<li class="error">
-          <a>
-	    <span class="glyphicon glyphicon-remove"></span>
-	    <h4>Research</h4>
-          </a>
-	</li>
-	
-	<li>
-          <a>
-	    <span class="glyphicon glyphicon-time"></span>
-	    <h4>Build</h4>
-          </a>
-	</li>
-	<li>
-          <a>
-	    <span class="glyphicon glyphicon-time"></span>
-	    <h4>Deliver</h4>
-          </a>
-	</li>
-    </ul>
-
+        </li>
+        {% if strain.piperun %}
+          {% for run in strain.piperun.programs.all %}
+            <li class="{% if run.is_error %}error{% elif run.is_complete %}completed{% elif run.is_submitted %}active{% else %}{% endif %}">
+              <a>
+                <span class="glyphicon glyphicon-{% if run.is_error %}remove{% elif run.is_complete %}ok{% elif run.is_submitted %}cog{% else %}time{% endif %}"></span>
+                <h4>{{ run.program.name }}</h4>
+              </a>
+            </li>
+          {% endfor %}
+        {% else %}
+          {% for link in strain.pipeline.programs.all %}
+            <li>
+              <a title="{{ link.description }}">
+                <span class="glyphicon glyphicon-time"></span>
+                <h4>{{ link.program.name }}</h4>
+              </a>
+            </li>
+          {% endfor %}
+        {% endif %}
+      </ul>
+    {% endfor %}
