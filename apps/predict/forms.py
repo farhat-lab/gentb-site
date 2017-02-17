@@ -181,7 +181,8 @@ class UploadFastQPairForm(UploadForm):
     def get_strain_name(self, fn):
         # We need to save fastq pair ended together, they come in here
         # in two buckets, so we save them in two fields (for now)
-        return (['file_one', 'file_two']['R2' in fn], fn.split('R1')[0].split('R2')[0])
+        name = fn.split('R1')[0].split('R2')[0].strip('_- ')
+        return (['file_one', 'file_two']['R2' in fn], name)
 
     def clean_fastq_file(self):
         value = json.loads(self.cleaned_data['fastq_file'])
