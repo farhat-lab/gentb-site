@@ -70,7 +70,7 @@
   width: calc( 100% - 1px );
   background-color: hsla(0, 0%, 83%, 1);
   text-align: center;
-  min-height: 80px;
+  min-height: 90px;
 }
 
 .process li.download a {
