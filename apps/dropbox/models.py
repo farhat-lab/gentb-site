@@ -36,6 +36,15 @@ class DropboxFile(Model):
     def fullpath(self):
         return os.path.join(self.file_directory, self.filename)
 
+    def size_done(self):
+        if os.path.isfile(self.fullpath):
+            return os.path.getsize(self.fullpath)
+        return 0
+
+    def percent_done(self):
+        """Returns the percent done of the download"""
+        return int(self.size_done() / float(self.size) * 100)
+
     def download_now(self):
         """
         Download the dropbox link offline.
