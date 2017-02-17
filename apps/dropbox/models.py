@@ -1,4 +1,5 @@
 
+import os
 import logging
 logger = logging.getLogger('apps.dropbox.models')
 
@@ -63,12 +64,9 @@ class DropboxFile(Model):
             download = Download(self.url)
             download.save(self.file_directory, self.filename)
             self.retrieval_end = now()
-            if not download.filepath:
-                raise KeyError("No filename provided for download.")
+            self.size = download.size
         except Exception as error:
             self.retrieval_error = str(error)
-            return
 
-        self.size = download.size
         self.save()
 
