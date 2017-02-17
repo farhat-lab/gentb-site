@@ -150,6 +150,10 @@ class Program(Model):
         # First take the files stored against this specific program.
         files_in = self.as_inputs(self.files)
 
+        bins = getattr(settings, 'PIPELINE_BIN', None)
+        if bins is not None:
+            files_in['bin'] = [os.path.join(bins, d) for d in os.listdir(bins)]
+
         if output_dir is None:
             output_dir = '/tmp'
 
@@ -172,19 +176,19 @@ class Program(Model):
                 # It's reversed so the last added file is first.
                 fns = list(reversed(files_in[name]))
 
-                pattern = "%s(?P<name>[^/]+)%s" % (prefix, suffix)
+                pattern = "%s(?P<name>[^/]*)%s" % (prefix, suffix)
 
                 for fn in fns:
                     ret = re.match(pattern, basename(fn))
                     if ret:
                         yield ((io, name, start, end), fn)
                         pout[name] = ret.groupdict()['name']
+                        break
 
                 if not fns:
                     errors.append(self.ER3 % name)
 
                 elif name not in pout:
-                    print fns
                     errors.append(self.ER1 % (name, pattern))
 
             elif io == '@':

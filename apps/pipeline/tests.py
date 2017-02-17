@@ -28,6 +28,7 @@ from apps.pipeline.method.shell import JobManager as ShellManager
 from apps.pipeline.method import JobManager
 
 DIR = os.path.dirname(__file__)
+FIX = os.path.join(DIR, 'fixtures')
 
 class JobManagerTest(TestCase):
     def setUp(self):
@@ -182,6 +183,13 @@ class ProgramTest(ExtraTestCase):
         self.assertEqual(files[('@', 'foo', 24, 37)], output)
         cmd = self.program.prepare_command(files)
         self.assertEqual(cmd, "ls -l %s > %s" % (self.one_fn, output))
+
+    def test_bin_directory(self):
+        """Test the use of the custom BIN directory"""
+        with self.settings(PIPELINE_BIN=FIX):
+            self.program.command_line = 'sh ${bin}test.sh ${file}'
+            for fn in dict(self.program.prepare_files(output_dir='/tmp')).values():
+                self.assertTrue(os.path.isfile(fn), "File doesn't exist: %s" % fn)
 
     def test_prepare_from_list(self):
         self.program.files = [self.one, self.two]
