@@ -20,7 +20,7 @@
           </a>
         </li>
         {% if strain.piperun %}
-          {% for run in strain.piperun.programs.all %}
+          {% for run in strain.piperun.all_programs %}
             <li class="{% if run.is_error %}error{% elif run.is_complete %}completed{% elif run.is_submitted %}active{% else %}{% endif %}">
               <a {% if run.error_text %}data-toggle="tooltip" title="{{ run.error_text|linebreaks }}" data-html="true"{% endif %}>
                 <span class="glyphicon glyphicon-{% if run.is_error %}remove{% elif run.is_complete %}ok{% elif run.is_submitted %}cog{% else %}time{% endif %}"></span>

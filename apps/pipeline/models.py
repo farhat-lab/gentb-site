@@ -214,7 +214,7 @@ class Program(Model):
             data = match.groupdict()
             key = (data['io'], data['name']) + match.span()
             if key not in files:
-                raise KeyError("Can't find file %s in %s" % (str(key), str(files)))
+                raise ValueError("Can't find file %s in %s" % (str(key), str(files)))
             filename = files[key]
             if ' ' in filename:
                 filename = '"%s"' % filename
@@ -284,6 +284,14 @@ class PipelineRun(TimeStampedModel):
             kwargs['previous'] = run
         return True
 
+    def all_programs(self):
+        """Returns all the program runs with unrun pipelines appended"""
+        ret = []
+        runs = dict((p.program_id, p) for p in self.programs.all())
+        for pipe in self.pipeline.programs.all():
+            ret.append(runs.get(pipe.program_id, pipe))
+        return ret
+
     def update_all(self):
         """
         Update all pipeline project runs with their running status returns
@@ -312,7 +320,11 @@ class ProgramRun(TimeStampedModel):
 
     input_files = TextField(null=True, blank=True)
     output_files = TextField(null=True, blank=True)
-    error_text = TextField(null=True, blank=True)
+    debug_text = TextField("Command and Debug", null=True, blank=True)
+    error_text = TextField("Error", null=True, blank=True)
+
+    class Meta:
+        ordering = ['created']
 
     def __str__(self):
         return self.job_id
@@ -329,6 +341,8 @@ class ProgramRun(TimeStampedModel):
             self.previous_id = previous.job_id
 
         cmd = self.program.prepare_command(files)
+        self.debug_text = cmd
+
         if JobManager.submit(self.job_id, cmd, depends=self.previous_id):
             self.is_submitted = True
         else:
