@@ -3,11 +3,8 @@ Basic view mixins for predict views
 """
 
 from django.utils.decorators import method_decorator
-from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
-from django.http import JsonResponse
 
-from .remote_forms import RemoteForm
 from .models import PredictDataset
 
 class PredictMixin(object):
@@ -27,23 +24,4 @@ class PredictMixin(object):
             # Limit to my own predictions unless I have the md5
             qs = qs.filter(user_id=self.request.user.pk)
         return qs
-
-
-class CallbackMixin(object):
-    """A view called by the server itself"""
-    slug_field = 'md5'
-    model = PredictDataset
-
-    @method_decorator(csrf_exempt)
-    def dispatch(self, request, *args, **kwargs):
-        """Test IP address instead of csrf token"""
-        # XXX - Test ip address of requestor here
-        return super(CallbackMixin, self).dispatch(request, *args, **kwargs)
-
-    def render_to_response(self, context, **kw):
-        """Return a json object instead of a template"""
-        context.pop('view', None)
-        if 'form' in context:
-            context['form'] = RemoteForm(context['form']).as_dict()
-        return JsonResponse(context, **kw)
 
