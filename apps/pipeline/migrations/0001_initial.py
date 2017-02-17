@@ -48,7 +48,7 @@ class Migration(migrations.Migration):
             name='Program',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
-                ('name', models.SlugField(max_length=128)),
+                ('name', models.CharField(max_length=128)),
                 ('description', models.TextField(help_text=b'Describe the program and what it does in detail.', null=True, blank=True)),
                 ('requirements', models.TextField(help_text=b'List of requirements, one per line', null=True, blank=True)),
                 ('command_line', models.TextField(help_text=b'Write the command line using replacement syntax for inputs and outputs')),

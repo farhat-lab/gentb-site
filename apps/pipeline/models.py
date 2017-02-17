@@ -26,6 +26,7 @@ from model_utils.models import TimeStampedModel
 
 from django.conf import settings
 from django.utils.timezone import now
+from django.utils.text import slugify
 
 import logging
 LOGGER = logging.getLogger('apps.pipeline')
@@ -77,7 +78,7 @@ class Program(Model):
     PARSER = re.compile(r'(?P<io>\$|\@)(?P<prefix>[^{]*)' \
                         r'{(?P<name>\w+)\}(?P<suffix>[^\s;|>]*)')
 
-    name = SlugField(max_length=128)
+    name = CharField(max_length=128)
     description = TextField(null=True, blank=True,
             help_text='Describe the program and what it does in detail.')
     requirements = TextField(null=True, blank=True,
@@ -239,7 +240,7 @@ class PipelineProgram(Model):
         """Get the pipeline program ready for running"""
         return {
             'program': self.program,
-            'job_id': "run_%d_%s" % (pk, self.program.name)
+            'job_id': "run_%d_%s" % (pk, slugify(self.program.name))
         }
 
 
