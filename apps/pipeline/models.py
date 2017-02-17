@@ -220,9 +220,6 @@ class Program(Model):
         # Now we have inputs and outputs prepared, we can construct a command
         # With all the input and output filenames in the right places.
         cmd = self.command_line
-        cmd = cmd.replace('\r', '').replace('\n\n', '\n')
-        cmd = cmd.replace('\n', ' && ')
-
         for match in reversed(list(self.PARSER.finditer(cmd))):
             data = match.groupdict()
             key = (data['io'], data['name']) + match.span()
@@ -234,6 +231,10 @@ class Program(Model):
             # Replace the command line section that matches with out filename
             (start, end) = match.span()
             cmd = cmd[:start] + filename + cmd[end:]
+
+        # Do the line replacer after the matching to preserve file placements.
+        cmd = cmd.replace('\r', '').replace('\n\n', '\n')
+        cmd = cmd.replace('\n', ' && ')
 
         return cmd
 
