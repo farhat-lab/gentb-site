@@ -1,6 +1,9 @@
 import os
 import json
 
+import logging
+LOGGER = logging.getLogger('apps.predict')
+
 from hashlib import md5
 from os.path import join, isfile, isdir, basename
 
@@ -14,22 +17,28 @@ from django.utils.text import slugify
 from django.core import serializers
 from django.core.urlresolvers import reverse
 from django.utils.timezone import now
-
 from django.utils.translation import ugettext_lazy as _
+
+from apps.dropbox.models import DropboxFile
+from apps.pipeline.models import Pipeline, PipelineRun
 from apps.mutations.models import Drug
 from apps.mutations.utils import unpack_mutation_format
 
-from apps.utils.result_file_info import RESULT_FILE_NAME_DICT,\
-            EXPECTED_FILE_DESCRIPTIONS, RESULT_OUTPUT_DIRECTORY_NAME
-
-from .script_runner import run_script
-from .utils import *
-
-import logging
-LOGGER = logging.getLogger('apps.predict.pipeline')
-
 class PredictDataset(TimeStampedModel):
     """An uploaded predict dataset"""
+    BASE_DIR = settings.TB_SHARED_DATAFILE_DIRECTORY
+
+    FILE_TYPE_VCF = 'vcf'
+    FILE_TYPE_FASTQ = 'fastq'
+    FILE_TYPE_FASTQ2 = 'fastq-pair'
+    FILE_TYPE_MANUAL = 'manual'
+    FILE_TYPES = [ 
+      (FILE_TYPE_VCF, 'Variant Call Format (VCF)'),
+      (FILE_TYPE_FASTQ, 'FastQ Single Ended Nucleotide Sequence'),
+      (FILE_TYPE_FASTQ2, 'FastQ Pair Ended Nucleotide Sequences'),
+      (FILE_TYPE_MANUAL, 'Mutations Manual Entry'),
+    ]
+
     # These names are also keys, DO NOT CHANGE
     STATUS_CHOICES = list(enumerate([
       _('Dataset Deleted'),
@@ -51,46 +60,18 @@ class PredictDataset(TimeStampedModel):
     title = CharField('Dataset Title', max_length=255)
     file_type = CharField(choices=FILE_TYPES, max_length=25)
 
-    fastq_type = CharField(max_length=50,\
-        choices=FASTQ_FILE_TYPES, blank=True,\
-        help_text='Only used for FastQ files')
-
     description = TextField('Dataset description')
     file_directory = CharField(max_length=255, blank=True)
-    has_prediction = BooleanField(default=False)
 
     status = PositiveIntegerField(default=1, choices=STATUS_CHOICES)
     is_error = property(lambda self: self.status in [0, 4, 8])
     is_busy = property(lambda self: self.status in [3, 6])
 
     def __str__(self):
-        return self.title
+        return str(self.title)
 
     def get_absolute_url(self):
         return reverse('predict:view_single_dataset', kwargs=dict(slug=self.md5))
-
-    @property
-    def result_files(self):
-        """Returns a list of all files in the output directory"""
-        return list(self.get_files('output'))
-
-    @property
-    def all_files(self):
-        """Returns a list of all files not in the results output directory"""
-        return list(self.get_files())
-
-    def get_files(self, prefix='.'):
-        base_url = self.media_url
-        base_path = join(self.file_directory, prefix)
-        try:
-            # We could use walktree here, but we'll keep it flat for now.
-            for filename in os.listdir(base_path):
-                subpath = join(base_path, filename)
-                if os.path.isfile(subpath):
-                    url = join(base_url, prefix, filename)
-                    yield (url, filename)
-        except OSError:
-            pass
 
     @property
     def media_url(self):
@@ -102,160 +83,12 @@ class PredictDataset(TimeStampedModel):
         """Returns true if the file_directory exists"""
         return os.path.isdir(self.file_directory)
 
-    def check_for_prediction(self):
-        if isfile(join(self.file_directory, 'output', 'matrix.json')):
-            self.has_prediction = True
-            self.save()
+    @property
+    def has_prediction(self):
+        return isfile(join(self.file_directory, 'output', 'matrix.json'))
 
     def is_manual(self):
         return self.file_type == 'manual'
-
-    def get_script_command(self):
-        """
-        Using dataset information, to decide whether to run:
-            (1) script for a VCF file
-            (2) script for FastQ files
-            (3) script for Manual input
-        """
-        if self.file_type == FILE_TYPE_VCF:
-            command_to_run = self.get_vcf_script_command()
-        elif self.file_type == FILE_TYPE_FASTQ:
-            command_to_run = self.get_fastq_script_command()
-        elif self.file_type == FILE_TYPE_MANUAL:
-            command_to_run = self.get_manual_script_command()
-
-        return command_to_run
-
-    def get_pipeline_command(self):
-        """
-        Return the full pipeline command to run the appropriate analyze script
-        for this dataset's files
-        """
-        try:
-            return (True, self.get_script_command())
-        except Exception as err:
-            return (False, err.args[0])
-
-    def get_fastq_script_command(self):
-        """
-        Run the command for FastQ files.
-        e.g. perl analyseNGS.pl (directory name)
-        """
-        # (1) Make sure the 'analyseNGS.pl' command is in the
-        #   specified 'Pipeline Scripts Directory'
-        #
-        script_cmd = join(SCRIPT_DIR, FASTQ_ANALYSIS_SCRIPT)
-        if not isfile(script_cmd):
-            err_title = 'The "%s" file was not found' % (FASTQ_ANALYSIS_SCRIPT)
-            err_note = """The "%s" file was not found at this location: \n%s\n
-            To change the path to the script, please go into the admin control\
-             panel and modify the 'Pipeline Scripts Directory'.\n\
-            Talk to your administrator for details.""" % (FASTQ_ANALYSIS_SCRIPT, script_cmd)
-            #err_msg_obj = self.record_error(err_title, err_note)
-            self.record_error(err_title, err_note)
-            return None
-
-        return ' '.join(['perl', script_cmd,
-            str(int(self.fastq_type == FASTQ_PAIR_ENDED)),
-            FASTQ_PAIR_END[self.fastq_type],
-            self.file_directory])
-
-    def get_manual_script_command(self):
-        """Manual script processing"""
-        script_cmd = join(SCRIPT_DIR, MANUAL_ANALYSIS_SCRIPT)
-        return 'perl {0} {1}'.format(script_cmd, self.file_directory)
-
-    def get_vcf_script_command(self):
-        """
-        Run the command for a VCF file.
-        e.g. perl analyseVCF.pl (directory name)
-        """
-        # (1) Make sure the 'analyseVCF.pl' command is in the
-        #   specified 'Pipeline Scripts Directory'
-        #
-        script_cmd = join(SCRIPT_DIR, VCF_ANALYSIS_SCRIPT)
-        if not isfile(script_cmd):
-            err_title = 'The "%s" file was not found' % (VCF_ANALYSIS_SCRIPT)
-            err_note = """The "%s" file was not found at this location: \n%s\n
-            To change the path to the script, please go into the admin control\
-             panel and modify the 'Pipeline Scripts Directory'.\n\
-            Talk to your administrator for details.""" % (VCF_ANALYSIS_SCRIPT, script_cmd)
-            #err_msg_obj = self.record_error(err_title, err_note)
-            self.record_error(err_title, err_note)
-            return None
-
-        # Format the full command with target containing
-        #   input files
-        #
-        command_str = 'perl {0} {1}'.format(script_cmd,\
-                self.file_directory)
-
-        return command_str
-
-    def run_command(self):
-        """
-        - (1) Create a DatasetScriptRun object
-        - (2) Make a custom callback script add the dataset file directory
-        - (3) Update the Dataset status
-        - (4) Run the script
-        """
-        ready, command_to_run = self.get_pipeline_command()
-        if not ready:
-            return (False, command_to_run)
-
-        # (1) Create a run object and save the command being run
-        #
-        dsr = DatasetScriptRun(dataset=self)
-        dsr.notes = command_to_run
-        dsr.save()
-
-        # ---------------------------------------------------------
-        # (2) Place a callback script with the Dataset directory
-        #   - contains callback url + md5
-        #   - called after the analyse scripts are Run
-        # ---------------------------------------------------------
-
-        # Get callback args
-        template_dict = dict(callback_info_dict=dsr.callback_info())
-        template_dict.update(RESULT_FILE_NAME_DICT)
-        template_dict['RESULT_OUTPUT_DIRECTORY_NAME'] = RESULT_OUTPUT_DIRECTORY_NAME
-        template_dict['EXPECTED_FILE_DESCRIPTIONS'] = EXPECTED_FILE_DESCRIPTIONS
-        
-        print('-' * 40)
-        print(template_dict)
-        print('-' * 40)
-
-        # Place script in dataset file_directory
-        script_fullname = join(self.file_directory, 'feedback.json')
-        fhandler = open(script_fullname, 'w')
-        fhandler.write(json.dumps(template_dict))
-        fhandler.close()
-
-        # (3) Update the dataset status to 'in process'
-        #
-        self.set_status('PROCESSING_STARTED')
-
-        # (4) Run the script -- not waiting for output
-        #
-        full_args = command_to_run.split()
-        print ('full_args', full_args)
-        run_script(full_args)
-        return (True, "DONE")
-
-    def record_error(self, msg_title, msg):
-        """
-        Record an error:
-            - within this non-persistnt object
-            - in the log files
-            - in the database in a PredictDatasetNote object
-        """
-        # Write to the logs
-        #
-        LOGGER.error(msg_title)
-        LOGGER.error(msg)
-
-        # Write to the database
-        self.notes.create(title=msg_title, note=msg)
 
     def make_scatter(self, locusts, data):
         regions = defaultdict(list)
@@ -339,51 +172,24 @@ class PredictDataset(TimeStampedModel):
             return self.user.email
         return 'n/a'
 
-    def create_dataset_directory_name(self):
-        """
-        Create a directory based on the id of this object.
-
-        e.g. id = 5
-        dirname = 'tbdata_00000005'
-        Attempt to create the directory under settings.TB_SHARED_DATAFILE_DIRECTORY
-        """
-        assert self.id is not None, "The object must be saved (and have an 'id') before this method is called."
-
-        # zero pad the object id
-        #
-        job_num = str(self.id).zfill(8)
-
-        # directory name is (tb_file_system_storage + "tb_data_" + job_num)
-        #
-        dirname = join(settings.TB_SHARED_DATAFILE_DIRECTORY, 'tbdata_{0}'.format(job_num))
-
-        # create the new directory (if it doesn't exist)
-        if not isdir(dirname):
-            os.makedirs(dirname)
-
-        return dirname
-
     def save(self, *args, **kwargs):
         if not self.id:
             super(PredictDataset, self).save(*args, **kwargs)
 
-        # Set the md5
-        self.md5 = md5('%s%s' % (self.id, self.title)).hexdigest()
+        if not self.md5:
+            self.md5 = md5('%s%s' % (self.id, self.title)).hexdigest()
 
-        # -----------------------------
-        # Initialize the file directory
-        # for this dataset
-        # -----------------------------
         if not self.file_directory:
-            self.file_directory = self.create_dataset_directory_name()
+            # We make a new directory in the BASE_DIR based on this object's
+            # primary-key ID padded with zeros to make them fixed width.
+            job_name = 'tbdata_' + str(self.id).zfill(8)
+            self.file_directory = join(self.BASE_DIR, job_name)
+            if not isdir(self.file_directory):
+                os.makedirs(self.file_directory)
 
-        super(PredictDataset, self).save(*args, **kwargs)
-
+        return super(PredictDataset, self).save(*args, **kwargs)
 
     def get_full_json(self):
-        """
-        Need to serialize the PredictDataset
-        """
         return serializers.serialize('json', PredictDataset.objects.filter(id=self.id))
 
     def set_status(self, status, save=True):
@@ -403,6 +209,33 @@ class PredictDataset(TimeStampedModel):
         ordering = ('-created', 'title')
 
 
+class PredictPipeline(Model):
+    """Each file type can have possible pipelines, this provides a selection"""
+    pipeline = ForeignKey(Pipeline)
+    file_type = CharField(choices=PredictDataset.FILE_TYPES, max_length=25)
+    is_default = BooleanField(default=False)
+
+    def __str__(self):
+        return "Pipeline %s" % str(self.pipeline)
+
+
+class PredictStrain(Model):
+    """Each strain uploaded for a dataset"""
+    name = CharField(max_length=128)
+
+    dataset = ForeignKey(PredictDataset, related_name='strains')
+    pipeline = ForeignKey(Pipeline)
+    piperun = ForeignKey(PipelineRun, null=True, blank=True)
+    
+    # We need two file slots for pair ended fastq files
+    file_one = ForeignKey(DropboxFile, null=True, blank=True, related_name='link_a')
+    file_two = ForeignKey(DropboxFile, null=True, blank=True, related_name='link_b')
+    files = property(lambda self: [a for a in (self.file_one, self.file_two) if a])
+
+    def __str__(self):
+        return str(self.name)
+
+
 class PredictDatasetNote(TimeStampedModel):
     """Notes of background processes"""
     dataset = ForeignKey(PredictDataset, related_name='notes')
@@ -410,68 +243,8 @@ class PredictDatasetNote(TimeStampedModel):
     note = TextField()
 
     def __str__(self):
-        return self.title
+        return str(self.title)
 
     class Meta:
         ordering = ('-modified', '-created')
-
-
-class DatasetScriptRun(TimeStampedModel):
-    dataset = ForeignKey(PredictDataset, related_name='runs')
-    md5 = CharField(max_length=40, blank=True, db_index=True)
-
-    notes = TextField(blank=True)
-    result_received = BooleanField(default=False)
-    result_success = BooleanField(default=False)
-    result_data = TextField(blank=True)
-
-    process_start = DateTimeField(auto_now_add=True, null=True)
-    process_end = DateTimeField(null=True, blank=True)
-
-    def __str__(self):
-        return '%s' % self.dataset
-
-    def callback_info(self):
-        """
-        Creates a dictionary of data to send which links back to us here.
-        """
-        pk = self.dataset.pk
-        admin_url = reverse('admin:predict_predictdataset_change', args=[pk])
-
-        slug = {'slug': self.md5}
-        callback_url = get_site_url(internal=True) + \
-                reverse('predict:callback', kwargs=slug)
-
-        return dict(
-             dataset_id=pk,
-             file_directory=self.dataset.file_directory,
-             callback_url=callback_url,
-             user_email=self.dataset.user.email,
-             admin_url=get_site_url() + admin_url,
-             run_md5=self.md5
-         )
-
-    @property
-    def process_time(self):
-        if self.process_end and self.process_start:
-            return self.process_end - self.process_start
-
-    def save(self, *args, **kwargs):
-        if not self.md5:
-            self.md5 = md5('%s%s' % (self.dataset.pk, self.created)).hexdigest()
-
-        if self.result_received:
-            if not self.process_end:
-                self.process_end = now()
-            if self.result_success:
-                self.dataset.check_for_prediction()
-                self.dataset.set_status('PROCESSING_SUCCESS')
-            else:
-                self.dataset.set_status('PROCESSING_FAILED')
-
-        super(DatasetScriptRun, self).save(*args, **kwargs)
-
-    class Meta:
-        ordering = ('-modified', '-created')
-
 

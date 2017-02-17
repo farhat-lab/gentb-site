@@ -30,13 +30,11 @@ class PredictBasicTest(TestCase):
 
         test_params = {
             u'status': PredictDataset.STATUS['FILE_RETRIEVAL_SUCCESS'],
-            u'has_prediction': False,\
             u'description': u'ok',\
             u'file_type': u'vcf',\
             u'title': u'vcf - embed',\
             u'file_directory':\
                 u'/some-dir-to-add-files/test_setup/tb_uploaded_files/tbdata_00000013',\
-            u'fastq_type': u'',\
             u'user': self.test_user}
 
         self.dataset_vcf = PredictDataset(**test_params)
@@ -44,7 +42,6 @@ class PredictBasicTest(TestCase):
 
         test_params2 = test_params.copy()
         test_params2['file_type'] = FILE_TYPE_FASTQ
-        test_params2['fastq_type'] = FASTQ_PAIR_ENDED
         self.dataset_fastq = PredictDataset(**test_params2)
         self.dataset_fastq.save()
 
