@@ -13,10 +13,10 @@ from django.views.generic import (
 )
 from django.core.urlresolvers import reverse
 from django.http.response import JsonResponse
+from django.http import Http404
 
-from .models import PredictDataset, DatasetScriptRun, PredictDatasetNote
-from .mixins import PredictMixin, CallbackMixin
-from .message_helper import send_dataset_run_message_to_tb_admins_and_user
+from .models import PredictDataset, PredictDatasetNote
+from .mixins import PredictMixin
 from .forms import *
 
 
@@ -33,13 +33,13 @@ class DatasetView(PredictMixin, DetailView):
 
 
 class Heatmap(PredictMixin, DetailView):
-    queryset = PredictDataset.objects.filter(has_prediction=True)
+    queryset = PredictDataset.objects.all()
     template_name = 'predict/heatmap.html'
 
 
 class UploadChoices(PredictMixin, TemplateView):
     template_name = 'predict/predictdataset_upload.html'
-
+    forms = UploadForm.all_forms()
     title = "Create Prediction"
     parent = Datasets
 
@@ -47,17 +47,31 @@ class UploadChoices(PredictMixin, TemplateView):
     def get_absolute_url(cls):
         return reverse('predict:upload')
 
-class UploadManual(PredictMixin, CreateView):
-    template_name = 'predict/predictdataset_manual.html'
-    form_class = ManualInputForm
+
+class UploadView(PredictMixin, CreateView):
+    model = PredictDataset
     parent = UploadChoices
-    title = "Create Manual Prediction"
+
+    def get_title(self):
+        return self.form_class.title
+
+    def get_template_names(self):
+        default = super(UploadView, self).get_template_names()
+        default = ['predict/predictdataset_%s.html' % self.kwargs['type']] + default
+        return default
+
+    @property
+    def form_class(self):
+        for form in UploadForm.all_forms():
+            if form.my_file_type == self.kwargs['type']:
+                return form
+        raise Http404("No input type: %s" % self.kwargs['type'])
 
     def get_initial(self):
         return {
           'user': self.request.user,
-          'status': PredictDataset.STATUS['FILE_RETRIEVAL_SUCCESS'],
-          'file_type': 'manual',
+          'status': self.form_class().my_status,
+          'file_type': self.kwargs['type'],
         }
 
 
@@ -78,58 +92,4 @@ class AddNote(PredictMixin, CreateView):
           'title': obj.title,
           'note': obj.note,
         })
-
-
-class UploadView(PredictMixin, CreateView):
-    model = PredictDataset
-    parent = UploadChoices
-
-    def get_title(self):
-        return self.form_class.title
-
-    @property
-    def form_class(self):
-        if self.kwargs['type'] == 'fastq':
-            if self.kwargs['fastq'] == 'pair-end':
-                return UploadFastQPairForm
-            return UploadFastQSingleForm
-        return UploadVcfForm
-
-    def get_initial(self):
-        return {
-          'user': self.request.user,
-          'status': PredictDataset.STATUS['DATASET_CONFIRMED'],
-          'file_type': self.kwargs['type'],
-          'fastq_type': self.kwargs.get('fastq', None),
-        }
-
-
-class Callback(CallbackMixin, FormView):
-    """
-    When the files have been processed, we callback and update statuses.
-    """
-    form_class = NotificationForm
-
-    def failure(self, msg, status=400):
-        return self.render_to_response({'success': False, 'message': msg},
-                status=status)
-
-    def form_valid(self, form):
-        try:
-            dataset_run = DatasetScriptRun.objects.get(md5=self.kwargs['slug'])
-        except DatasetScriptRun.DoesNotExist:
-            return self.failure("The ScriptRun was not found", 404)
-
-        if dataset_run.result_received:
-            return self.failure("This script has already run")
-
-        dataset_run.result_received = True
-        dataset_run.result_success = form.was_run_successful()
-        dataset_run.result_data = form.get_result_data()
-        dataset_run.save()
-
-        send_dataset_run_message_to_tb_admins_and_user(dataset_run)
-        #send_dataset_run_message_to_tb_admins(dataset_run)
-
-        return self.render_to_response({'success': True, 'message': "OK"})
 

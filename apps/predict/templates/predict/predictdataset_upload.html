@@ -11,50 +11,25 @@
       <p>To examine the frequency of individual mutations by drug resistance you can consult the <a href="{% url 'maps:map' %}">Map function</a> for country specific data, and the <a href="{% url 'explore:home' %}">Explore function</a>  to examine their frequency in all of the data.</p>
 
     <table class="table-condensed content-to-top">
+      {% for form in view.forms %}
         <tr>
           <td>
-            <a class="btn btn-success" href="{% url "predict:upload" "fastq" "pair-end" %}">
-              <img src="{% static 'images/fastq.svg' %}"/>
+            <a class="btn btn-{{ form.btn|default:"success" }}" href="{% url "predict:upload" form.my_file_type %}" {% if not form.enabled %} disabled{% endif %}>
+              <img src="{% static form.icon %}"/>
             </a>
           </td>
           <td>
-            <h3>FastQ Pair-Ended Prediction</h3>
-            <p>Create a prediction from a set of pair-ended FastQ genetic sequences. This option involves the largest files and takes more time to process that the VCF or manual options.</p>
+            <h3>{{ form.title }}</h3>
+            <p>{{ form.doc|safe }}
+            {% if not form.enabled %}
+              <div class="alert alert-danger">
+                <strong>Disabled!</strong> This pipeline is currently disabled. Please ask the systems administrator to enable it.
+              </div>
+            {% endif %}
+            </p>
           </td>
         </tr>
-        <tr>
-          <td>
-            <a class="btn btn-success" href="{% url "predict:upload" "fastq" "single-end" %}">
-              <img src="{% static 'images/fastq-single.svg' %}"/>
-            </a>
-          </td>
-          <td>
-            <h3>FastQ Single-Ended Prediction</h3>
-            <p>Create a prediction from a single-ended FastQ genetic sequence file. This option involves a large file and takes more time to process that the VCF or manual options.</p>
-          </td>
-        </tr>
-        <tr>
-          <td>
-            <a class="btn btn-primary" href="{% url "predict:upload" "vcf" %}">
-              <img src="{% static 'images/vcf.svg' %}"/>
-            </a>
-          </td>
-          <td>
-            <h3>Variant Call Format (VCF) Prediction</h3>
-            <p>Minimal genotypic information for accurate resistance predictions are below. Genetic regions are listed in order of decreasing importance. For more detailed list of genetic variants see reference <a href="http://www.ncbi.nlm.nih.gov/pubmed/26910495">Farhat MR, Sultana R et al. Genetic Determinants of Drug Resistance in Mycobacterium tuberculosis and Their Diagnostic Value. AJRCCM 2016</a> and get <a href="https://en.wikipedia.org/wiki/Variant_Call_Format">more information</a> about the VCF format.</p>
-          </td>
-        </tr>
-        <tr>
-          <td>
-            <a class="btn btn-default" href="{% url "predict:upload_manual" %}">
-              <img src="{% static 'images/manual_entry.svg' %}"/>
-            </a>
-          </td>
-          <td>
-            <h3>Manually Entered Prediction</h3>
-            <p>Create a prediction though manual selection of 1 or more mutations from a list. This option involves the shortest processing time but does assume that any non-entered mutations have been tested for and are absent.</p>
-          </td>
-        </tr>
+      {% endfor %}
     </table>
     </div>
   </div>

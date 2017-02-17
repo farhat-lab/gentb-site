@@ -27,7 +27,7 @@
             <th colspan="2" class="text-center">Dataset information</th>
           </tr>
           {% for field in form.visible_fields %}
-            <tr {% if field.id_for_label == 'id_fastq_type' %}id="row_id_fastq_type" style="display:none;"{% endif %}>
+            <tr>
               <th class="text-primary">{{ field.label_tag }}{% if field.field.required %} <span class="text-warning">*</span>{% endif %}</th>
               <td class="field">{{ field }}
                 {% if field.help_text %}

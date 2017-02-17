@@ -10,10 +10,11 @@ from django.core.urlresolvers import reverse_lazy
 from django.forms import * 
 
 from apps.dropbox.widgets import DropboxChooserWidget
+from apps.dropbox.models import DropboxFile
 from apps.mutations.fields import GeneticInputField
 from apps.mutations.models import Mutation
 
-from .models import PredictDataset
+from .models import PredictDataset, PredictStrain, PredictPipeline
 
 FASTQ_FILES = ['.fastq', '.fastq.gz']
 VCF_FILES = ['.vcf', '.vcf.gz']
@@ -22,15 +23,55 @@ class UploadForm(ModelForm):
     """
     Form for a user to enter a title, description, and dropbox files.
     """
+    do_not_call_in_templates = True
+    pipeline = ModelChoiceField(queryset=PredictPipeline.objects.all())
+    my_status = PredictDataset.STATUS['DATASET_CONFIRMED']
+    my_file_type = None
+    ordered = 100
+
     class Meta:
         model = PredictDataset
-        fields = ('title', 'description', 'status', 'user', 'file_type', 'fastq_type')
+        fields = ('title', 'description', 'status', 'user', 'file_type')
         widgets = {
           'status': HiddenInput(),
           'user': HiddenInput(),
           'file_type': HiddenInput(),
-          'fastq_type': HiddenInput(),
         }
+
+    icon = classmethod(lambda cls: 'forms/%s.svg' % cls.my_file_type)
+    enabled = classmethod(lambda cls: cls.pipeline_queryset().count() > 0)
+
+    def __init__(self, *args, **kw):
+        super(UploadForm, self).__init__(*args, **kw)
+        pl = self.fields['pipeline']
+        pl.queryset = self.pipeline_queryset()
+        if pl.queryset.count() == 0:
+            raise ValueError("No pipeline for type '%s'" % self.my_file_type)
+        elif pl.queryset.count() == 1:
+            pl.widget = HiddenInput()
+            pl.initial = pl.queryset.get().pk
+        else:
+            try:
+                pl.initial = pl.queryset.filter(is_default=True).get().pk
+            except PredictPipeline.DoesNotExist:
+                pass
+
+    @classmethod
+    def pipeline_queryset(cls):
+        return PredictPipeline.objects.filter(file_type=cls.my_file_type)
+
+    @classmethod
+    def all_forms(cls):
+        """Returns all the form classes inheriting this one"""
+        subclasses = set()
+        work = [cls]
+        while work:
+            parent = work.pop()
+            for child in parent.__subclasses__():
+                if child not in subclasses:
+                    subclasses.add(child)
+                    work.append(child)
+        return sorted(subclasses, cmp=lambda a,b: cmp(a.ordered, b.ordered))
 
     def save(self, **kw):
         dataset = super(UploadForm, self).save(**kw)
@@ -44,26 +85,46 @@ class UploadForm(ModelForm):
                     self.save_dropbox(dataset, key)
         return dataset
 
+    def get_strain_name(self, fn):
+        """Gets the default name of the strain from the given filename"""
+        if fn.endswith('.gz'):
+            fn = fn[:-3]
+        return ('file_one', fn.rsplit('.', 1)[0])
+
     def save_dropbox(self, dataset, key):
         data = self.cleaned_data.get(key, self.data.get(key, '[]'))
         if data is None:
             return
+
+        # Decode the data from the dropbox widget as json, this givesus the
+        # file size, icon and filename which is very useful later.
         files = json.loads(data)
         for dropbox_file in files:
-            dataset.files.create(
+            (field, name) = self.get_strain_name(dropbox_file['name'])
+            kw = {
+              'pipeline': self.cleaned_data['pipeline'].pipeline,
+            }
+            (strain, _) = dataset.strains.get_or_create(name=name, defaults=kw)
+
+            setattr(strain, field, DropboxFile.objects.create(
               name=key,
+              file_directory=dataset.file_directory,
               filename=dropbox_file['name'],
               url=dropbox_file['link'],
               size=dropbox_file['bytes'],
               icon=dropbox_file['icon'],
-            )
+            ))
+            strain.save()
 
 
 class ManualInputForm(UploadForm):
-    """
-    Manually enter genetic information for prediction.
-    """
+    my_file_type = PredictDataset.FILE_TYPE_MANUAL
+    my_status = PredictDataset.STATUS['FILE_RETRIEVAL_SUCCESS']
+    title = "Manually Entered Prediction"
+    doc = "Create a prediction though manual selection of 1 or more mutations from a list. This option involves the shortest processing time but does assume that any non-entered mutations have been tested for and are absent."
     genetic_information = GeneticInputField(reverse_lazy('genes:json'))
+    ordered = 20
+    btn = 'default'
 
     def clean_genetic_information(self):
         data = self.cleaned_data.get('genetic_information')
@@ -86,18 +147,39 @@ class ManualInputForm(UploadForm):
 
 
 class UploadVcfForm(UploadForm):
+    my_file_type = PredictDataset.FILE_TYPE_VCF
     title = "Create VCF Prediction"
+    doc = 'Minimal genotypic information for accurate resistance predictions are below. Genetic regions are listed in order of decreasing importance. For more detailed list of genetic variants see reference <a href="http://www.ncbi.nlm.nih.gov/pubmed/26910495">Farhat MR, Sultana R et al. Genetic Determinants of Drug Resistance in Mycobacterium tuberculosis and Their Diagnostic Value. AJRCCM 2016</a> and get <a href="https://en.wikipedia.org/wiki/Variant_Call_Format">more information</a> about the VCF format.'
     vcf_file = CharField(widget=DropboxChooserWidget(VCF_FILES), required=True,
         label="VCF Files", help_text="Variant Call Formated sequence data file. Multiple files can be selected, one vcf file per stain to compare.")
+    ordered = 10
+    btn = 'primary'
+
+
+class UploadFastQSingleForm(UploadForm):
+    my_file_type = PredictDataset.FILE_TYPE_FASTQ
+    title = "Create FastQ Single-Ended Prediction"
+    doc = "Create a prediction from a single-ended FastQ genetic sequence file. This option involves a large file and takes more time to process that the VCF or manual options."
+    fastq_file = CharField(widget=DropboxChooserWidget(FASTQ_FILES), required=True,
+        label="FastQ Files", help_text="FastQ files containing the single sequence read. Multiple files can be selected, one fastq file per strain to compare.")
+    ordered = 5
 
 
 class UploadFastQPairForm(UploadForm):
+    my_file_type = PredictDataset.FILE_TYPE_FASTQ2
     title = "Create FastQ Pair-Ended Prediction"
+    doc = "Create a prediction from a set of pair-ended FastQ genetic sequences. This option involves the largest files and takes more time to process that the VCF or manual options."
     fastq_file = CharField(widget=DropboxChooserWidget(FASTQ_FILES, buckets=[
         ('forward', "_R1.fastq _R1.fastq.gz", "Forward FastQ Files"),
         ('backward', "_R2.fastq _R2.fastq.gz", "Backward FastQ Files")]),
         required=True, label="FastQ Files",
         help_text="FastQ file containing the forward and backward sequence. Multiple strains can be selected for comparison.")
+    ordered = 6
+
+    def get_strain_name(self, fn):
+        # We need to save fastq pair ended together, they come in here
+        # in two buckets, so we save them in two fields (for now)
+        field = ['file_one', 'file_two'][bucket]
 
     def clean_fastq_file(self):
         value = json.loads(self.cleaned_data['fastq_file'])
@@ -118,13 +200,6 @@ class UploadFastQPairForm(UploadForm):
             if not name.endswith(key):
                 raise ValidationError("Filename '%s' invalid, remember to include R1 or R2 suffix in each filename." % fastq_file['name'])
             yield name[:0-len(key)]
-
-
-class UploadFastQSingleForm(UploadForm):
-    title = "Create FastQ Single-Ended Prediction"
-    fastq_file = CharField(widget=DropboxChooserWidget(FASTQ_FILES), required=True,
-        label="FastQ Files", help_text="FastQ files containing the single sequence read. Multiple files can be selected, one fastq file per strain to compare.")
-
 
 class NotificationForm(Form):
     success = BooleanField(required=False)
