@@ -3,14 +3,22 @@
 ## Call as:
 ## Rscript TBpredict.R "testinputfile.csv"
 
-
 arg <- commandArgs(trailingOnly = TRUE)
+
+options <- commandArgs(trailingOnly = FALSE)
+prefix <- "--file="
+script.name <- sub(prefix, "", options[grep(prefix, options)])
+script.basename <- dirname(script.name)
+
+# Set the location of the libs to relative to this script's location
+libs <- file.path(script.basename, '../data/Rlib/R.2.15.3.lib')
+print(libs)
 
 #aa <- Sys.time()
 
 library(foreign)
-library(jsonlite, quietly=TRUE, lib.loc="/home/mo131/website/data/Rlib/R.2.15.3.lib")
-suppressPackageStartupMessages(library("randomForest", lib.loc="/home/mo131/website/data/Rlib/R.2.15.3.lib"))
+library(jsonlite, quietly=TRUE, lib.loc=libs)
+suppressPackageStartupMessages(library("randomForest", lib.loc=libs))
 
 predictfunction<-function(filename){
   set.seed(5414)
