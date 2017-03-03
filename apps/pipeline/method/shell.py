@@ -187,3 +187,4 @@ class JobManager(ManagerBase):
               'X': 'finished', # Pining for the fyords
             }[data['State'][0]]
         return default
+

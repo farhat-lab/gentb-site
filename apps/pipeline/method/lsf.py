@@ -40,7 +40,7 @@ class Manager(ManagerBase):
         Open the command locally using bash shell.
         """
         Popen(['bsub', '-J', job_id, '-g', self.group, '-q', QUEUE,
-            '-W', '2:00', cmd],
+            '-o', self.fh(job_id, 'err'), '-W', '2:00', cmd],
             shell=False, stdout=None, stderr=None, close_fds=True)
 
     def stop(self, job_id):
@@ -49,16 +49,6 @@ class Manager(ManagerBase):
 
     def status(self, job_id):
         """Returns if the job is running, how long it took or is taking and other details."""
-        """
-        started - datetime
-        finished - datetime
-        pid - integer
-        job_id - string
-        status - string / fixed list
-        return code - number
-        error - multi-line string (stderr)
-        """
-
         # Get the status for the listed job, how long it took and everything
         p = Popen(['bjobs', '-J', job_id, '-a', '-W'], stdout=PIPE, stderr=None)
         (out, err) = p.communicate()
@@ -83,8 +73,24 @@ class Manager(ManagerBase):
             else:
                 data[dkey] = datetime.strptime(year + data[dkey], '%Y/%m/%d-%H:%M:%S')
 
-        data['running'] = data.pop('stat') == 'RUN'
+        status = {
+            'RUN': 'running', # Active
+            'PEND': 'pending', # Stopped because we asked it to be
+            'PSUSP': 'finished',
+            'SSUSP': 'finished',
+            'DONE': 'finished', # Pining for the fyords
+            'EXIT': 'finished',
+        }.get(data['stat'])
 
-        return data
+        ret = 0 if data['stat'] == 'DONE' else 1
+
+        return {
+            'submitted': data['submit_time'],
+            'started': data['start_time'],
+            'finished': data['finish_time'],
+            'pid': data['JOBID'],
+            'status': status,
+            'return': ret,
+        }
         
 
