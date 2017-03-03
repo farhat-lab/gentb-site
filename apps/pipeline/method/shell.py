@@ -19,10 +19,8 @@ This is the most basic way of running jobs, in the local shell.
 """
 
 import os
-import atexit
 import shutil
 import signal
-import tempfile
 
 from subprocess import Popen
 from datetime import datetime
@@ -34,21 +32,10 @@ class JobManager(ManagerBase):
     The job is submitted to the raw system and is controlled via it's pid.
     This pid must be stored in the pipeline-shell directory in tmp.
     """
-    def __init__(self, pipedir=None):
-        if pipedir is None:
-            self.pipedir = tempfile.mkdtemp(prefix='pipeline-')
-            atexit.register(self.clean_up)
-        else:
-            self.pipedir = pipedir
-
     def clean_up(self):
         """Deletes all data in the piepline directory."""
         if os.path.isdir(self.pipedir):
             shutil.rmtree(self.pipedir)
-
-    def job_fn(self, job_id, ext='pid'):
-        """Return the filename of the given job_id and type"""
-        return os.path.join(self.pipedir, job_id + '.' + ext)
 
     def job_read(self, job_id, ext='pid'):
         """Returns the content of the specific job file"""

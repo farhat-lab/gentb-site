@@ -39,8 +39,8 @@ class Manager(ManagerBase):
         """
         Open the command locally using bash shell.
         """
-        Popen(['bsub', '-J', job_id, '-g', self.group,
-                       '-q', QUEUE, '-W', '2:00', cmd],
+        Popen(['bsub', '-J', job_id, '-g', self.group, '-q', QUEUE,
+            '-W', '2:00', cmd],
             shell=False, stdout=None, stderr=None, close_fds=True)
 
     def stop(self, job_id):
@@ -49,7 +49,6 @@ class Manager(ManagerBase):
 
     def status(self, job_id):
         """Returns if the job is running, how long it took or is taking and other details."""
-        # XXX We must return this:
         """
         started - datetime
         finished - datetime

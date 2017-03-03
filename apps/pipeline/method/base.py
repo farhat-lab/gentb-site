@@ -18,7 +18,22 @@
 The base functions for a pipeline method manager.
 """
 
+import os
+import tempfile
+import atexit
+
 class ManagerBase(object):
+    def __init__(self, pipedir=None):
+        if pipedir is None:
+            self.pipedir = tempfile.mkdtemp(prefix='pipeline-')
+            atexit.register(self.clean_up)
+        else:
+            self.pipedir = pipedir
+
+    def job_fn(self, job_id, ext='pid'):
+        """Return the filename of the given job_id and type"""
+        return os.path.join(self.pipedir, job_id + '.' + ext)
+
     @property
     def name(self):
         return type(self).__module__.split('.')[-1]
