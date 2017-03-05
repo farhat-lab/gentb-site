@@ -225,11 +225,11 @@ class PredictStrain(Model):
 
     dataset = ForeignKey(PredictDataset, related_name='strains')
     pipeline = ForeignKey(Pipeline)
-    piperun = ForeignKey(PipelineRun, null=True, blank=True)
+    piperun = ForeignKey(PipelineRun, null=True, blank=True, on_delete=SET_NULL)
     
     # We need two file slots for pair ended fastq files
-    file_one = ForeignKey(DropboxFile, null=True, blank=True, related_name='link_a')
-    file_two = ForeignKey(DropboxFile, null=True, blank=True, related_name='link_b')
+    file_one = ForeignKey(DropboxFile, null=True, blank=True, related_name='link_a', on_delete=SET_NULL)
+    file_two = ForeignKey(DropboxFile, null=True, blank=True, related_name='link_b', on_delete=SET_NULL)
     files = property(lambda self: [a for a in (self.file_one, self.file_two) if a])
 
     def run(self):
