@@ -75,9 +75,13 @@ class DropboxFile(Model):
 
         try:
             download = Download(self.url)
-            download.save(self.file_directory, self.filename)
-            self.retrieval_end = now()
-            self.size = download.size
+            if download.is_ok():
+                download.save(self.file_directory, self.filename)
+                self.retrieval_end = now()
+                self.size = download.size
+            else:
+                self.retrieval_error = download.io.text
+
         except Exception as error:
             self.retrieval_error = str(error)
 

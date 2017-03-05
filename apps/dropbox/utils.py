@@ -11,6 +11,9 @@ class Download(object):
         self.filepath = None
         self.io = requests.get(url, stream=True)
 
+    def is_ok(self):
+        return self.io.status_code == 200
+
     def save(self, path, filename):
         """Perform the download in chunks"""
         storage = FileSystemStorage(location=path)
