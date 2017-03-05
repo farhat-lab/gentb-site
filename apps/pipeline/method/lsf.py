@@ -94,15 +94,20 @@ class JobManager(ManagerBase):
                 data[dkey] = datetime.strptime(year + data[dkey], '%Y/%m/%d-%H:%M:%S')
 
         status = {
-            'RUN': 'running', # Active
-            'PEND': 'pending', # Stopped because we asked it to be
+            'RUN': 'running',
+            'PEND': 'pending',
             'PSUSP': 'finished',
             'SSUSP': 'finished',
-            'DONE': 'finished', # Pining for the fyords
+            'DONE': 'finished',
             'EXIT': 'finished',
         }.get(data['stat'])
 
-        ret = 0 if data['stat'] == 'DONE' else 1
+        ret = None
+        if data['stat'] == 'DONE':
+            ret = 0
+        elif status == 'finished':
+            ret = 1
+
         (_, err) = self.job_read(job_id, 'err')
 
         if status == 'finished' and clean:
