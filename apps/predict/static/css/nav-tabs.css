@@ -93,6 +93,13 @@
 .process li.completed a:after {
   border-left: 30px solid hsla(153, 57%, 51%, 1);
 }
+.process li.submitted a {
+  background: grey;
+  background: hsl(230, 6%, 62%);
+}
+.process li.submitted a:after {
+  border-left: 30px solid hsl(230, 6%, 62%);
+}
 
 .process li.active a {
   background: #efa91b;

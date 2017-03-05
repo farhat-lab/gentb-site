@@ -1,6 +1,6 @@
     {% for strain in object.strains.all %}
       <ul class="process">
-        <li class="download {% if strain.file_one.retrieval_error or strain.file_two.retrieval_error %}error{% endif %}">
+        <li class="download {% if strain.file_one.retrieval_error or strain.file_two.retrieval_error %}error{% elif strain.file_one.retrieval_end %}completed{% endif %}">
           <a>
           {% for file in strain.files %}
             {% if file.retrieval_end and strain.files|length == 1 %}
@@ -21,9 +21,9 @@
         </li>
         {% if strain.piperun %}
           {% for run in strain.piperun.all_programs %}
-            <li class="{% if run.is_error %}error{% elif run.is_complete %}completed{% elif run.is_submitted %}active{% else %}{% endif %}">
+            <li class="{% if run.is_error %}error{% elif run.is_complete %}completed{% elif run.is_started %}active{% elif run.is_submitted %}submitted{% endif %}">
               <a {% if run.error_text %}data-toggle="tooltip" title="{{ run.error_text|linebreaks }}" data-html="true"{% endif %}>
-                <span class="glyphicon glyphicon-{% if run.is_error %}remove{% elif run.is_complete %}ok{% elif run.is_submitted %}cog{% else %}time{% endif %}"></span>
+                <span class="glyphicon glyphicon-{% if run.is_error %}remove{% elif run.is_complete %}ok{% elif run.is_started %}cog{% elif run.is_submitted %}pause{% else %}time{% endif %}"></span>
                 <h4>{{ run.program.name }}</h4>
               </a>
             </li>
