@@ -1,0 +1,15 @@
+{% extends "modal.html" %}
+{% load i18n %}
+
+{% block "title" %}{% trans "Offline" %}{% endblock %}
+
+{% block "dialog-title" %}
+<h1>
+  <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span> {% trans "Offline" %}
+</h1>
+{% endblock %}
+
+{% block "dialog-body" %}
+  <p>{% trans "The website is currently down for maintenance. Please come back later when hopefully we will be finished with the update and fixes." %}</p>
+{% endblock %}
+

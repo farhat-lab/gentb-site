@@ -18,15 +18,18 @@ urlpatterns = patterns('',
     url(r'^data/info/$', Tv.as_view(template_name='info.html'), name="info"),
     url(r'^terms/$', Tv.as_view(template_name='terms.html'), name="terms"),
 
+    url(r'^gentb-admin/', include(admin.site.urls)),
+    url(r'^models/', include('django_spaghetti.urls')),
+    url(r'^user/', include('apps.tb_users.urls', namespace='users')),
+    url(r'^auth/', include('apps.tb_users.auth_urls')),
+
+    url(r'.+', Tv.as_view(template_name='offline.html'), name="offline"),
+
     url(r'^explore/', include('apps.explore.urls', namespace='explore')),
     url(r'^predict/', include('apps.predict.urls', namespace='predict')),
     url(r'^genes/', include('apps.mutations.urls', namespace='genes')),
-    url(r'^user/', include('apps.tb_users.urls', namespace='users')),
-    url(r'^auth/', include('apps.tb_users.auth_urls')),
     url(r'^maps/', include('apps.maps.urls', namespace='maps')),
-    url(r'^models/', include('django_spaghetti.urls')),
 
-    url(r'^gentb-admin/', include(admin.site.urls)),
 )
 
 if settings.DEBUG:
