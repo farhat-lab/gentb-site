@@ -19,8 +19,10 @@ The base functions for a pipeline method manager.
 """
 
 import os
-import tempfile
 import atexit
+import shutil
+import tempfile
+from datetime import datetime
 
 class ManagerBase(object):
     def __init__(self, pipedir=None):
@@ -33,6 +35,34 @@ class ManagerBase(object):
     def job_fn(self, job_id, ext='pid'):
         """Return the filename of the given job_id and type"""
         return os.path.join(self.pipedir, job_id + '.' + ext)
+
+    def clean_up(self):
+        """Deletes all data in the piepline directory."""
+        if os.path.isdir(self.pipedir):
+            shutil.rmtree(self.pipedir)
+
+    def job_read(self, job_id, ext='pid'):
+        """Returns the content of the specific job file"""
+        fn = self.job_fn(job_id, ext)
+        if os.path.isfile(fn):
+            with open(fn, 'r') as fhl:
+                return (datetime.fromtimestamp(os.path.getmtime(fn)),
+                        fhl.read().strip())
+        else:
+            return (None, None)
+
+    def job_clean(self, job_id, ext):
+        """Delete files once finished with them"""
+        fn = self.job_fn(job_id, ext)
+        if os.path.isfile(fn):
+            os.unlink(fn)
+
+    def job_write(self, job_id, ext, data):
+        """Write the data to the given job_id record"""
+        fn = self.job_fn(job_id, ext)
+        with open(fn, 'w') as fhl:
+            fhl.write(str(data))
+
 
     @property
     def name(self):

@@ -32,33 +32,6 @@ class JobManager(ManagerBase):
     The job is submitted to the raw system and is controlled via it's pid.
     This pid must be stored in the pipeline-shell directory in tmp.
     """
-    def clean_up(self):
-        """Deletes all data in the piepline directory."""
-        if os.path.isdir(self.pipedir):
-            shutil.rmtree(self.pipedir)
-
-    def job_read(self, job_id, ext='pid'):
-        """Returns the content of the specific job file"""
-        fn = self.job_fn(job_id, ext)
-        if os.path.isfile(fn):
-            with open(fn, 'r') as fhl:
-                return (datetime.fromtimestamp(os.path.getmtime(fn)),
-                        fhl.read().strip())
-        else:
-            return (None, None)
-
-    def job_clean(self, job_id, ext):
-        """Delete files once finished with them"""
-        fn = self.job_fn(job_id, ext)
-        if os.path.isfile(fn):
-            os.unlink(fn)
-
-    def job_write(self, job_id, ext, data):
-        """Write the data to the given job_id record"""
-        fn = self.job_fn(job_id, ext)
-        with open(fn, 'w') as fhl:
-            fhl.write(str(data))
-
     watch = os.path.join(os.path.dirname(__file__), 'watch.py')
     DEP = watch + ' %(fn)s && '
     RET = '; echo $? > "%(fn)s"'

@@ -20,34 +20,51 @@ This is the LSF process for submitting jobs to a compute cluster.
 This is used by orchestra's compute cloud.
 """
 
-from datetime import datetime
+import os
+import shutil
+import logging
 
+from datetime import datetime
 from subprocess import Popen, PIPE
+from django.conf import settings
 
 from .base import ManagerBase
 
-LSF_QUEUE = 'short'
+def which(file):
+    """In python3.3+ this can be replaced"""
+    for path in os.environ["PATH"].split(os.pathsep):
+        if os.path.exists(os.path.join(path, file)):
+            return os.path.join(path, file)
 
-class Manager(ManagerBase):
-    def __init__(self):
-        # XXX check is bsub and bjobs are available commands
-        # TODO check is bsub has queues and if it has the configured queu
-        self.group = 'pipeline' # TODO Get this from the django settings.
-        self.ready = True
 
-    def submit(self, job_id, cmd):
+class JobManager(ManagerBase):
+    def __init__(self, *args, **kw):
+        for prog in ('bsub', 'bjobs'):
+            if not which(prog):
+                logging.warn("%s program is not available!" % prog)
+
+        self.group = getattr(settings, 'PIPELINE_LSF_GROUP', 'pipeline')
+        self.queue = getattr(settings, 'PIPELINE_LSF_QUEUE', 'short')
+
+        super(JobManager, self).__init__(*args, **kw)
+
+    def submit(self, job_id, cmd, depends=None):
         """
         Open the command locally using bash shell.
         """
-        Popen(['bsub', '-J', job_id, '-g', self.group, '-q', QUEUE,
-            '-o', self.fh(job_id, 'err'), '-W', '2:00', cmd],
+        extra = []
+        if depends:
+            extra += ['-w', 'done(%s)' % depends]
+        Popen(['bsub', '-J', job_id, '-g', self.group, '-q', self.queue] + \
+              extra + ['-o', self.job_fn(job_id, 'err'), '-W', '2:00', cmd],
             shell=False, stdout=None, stderr=None, close_fds=True)
+        return True
 
     def stop(self, job_id):
         """Stop the given process using bkill"""
         Popen(['bkill', '-J', job_id, '-g', self.group])
 
-    def status(self, job_id):
+    def status(self, job_id, clean=False):
         """Returns if the job is running, how long it took or is taking and other details."""
         # Get the status for the listed job, how long it took and everything
         p = Popen(['bjobs', '-J', job_id, '-a', '-W'], stdout=PIPE, stderr=None)
@@ -61,6 +78,9 @@ class Manager(ManagerBase):
 
         # Turn the output into a dictionary useful
         lines = out.split('\n')
+        if len(lines) <= 1:
+            return {}
+
         data = zip(lines[0].lower().split(), lines[1].split())
 
         # When getting date-times from lsf, we have to convert and add the year (very odd)
@@ -83,6 +103,10 @@ class Manager(ManagerBase):
         }.get(data['stat'])
 
         ret = 0 if data['stat'] == 'DONE' else 1
+        (_, err) = self.job_read(job_id, 'err')
+
+        if status == 'finished' and clean:
+            self.job_clean(job_id, 'err')
 
         return {
             'submitted': data['submit_time'],
@@ -91,6 +115,7 @@ class Manager(ManagerBase):
             'pid': data['JOBID'],
             'status': status,
             'return': ret,
+            'error': err,
         }
         
 

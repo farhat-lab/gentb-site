@@ -322,6 +322,7 @@ class ProgramRun(TimeStampedModel):
     previous_id = SlugField(max_length=255, help_text="Name or ID of the previous job we depend on")
     
     is_submitted = BooleanField(default=False)
+    is_started = BooleanField(default=False)
     is_complete = BooleanField(default=False)
     is_error = BooleanField(default=False)
 
@@ -370,25 +371,25 @@ class ProgramRun(TimeStampedModel):
     def update_status(self):
         """Take data from the job manager and populate the database"""
         if self.is_submitted and not self.is_complete:
+            dur = None
             data = JobManager.status(self.job_id, clean=True)
-            if data and data['return'] is not None:
-                # The duration is
+            if data.get('return', None) is not None:
                 dur = data['finished'] - data['started']
-
+                self.duration = dur.total_seconds() + int(dur.microseconds > 0)
                 self.is_complete = True
                 self.is_error = data['return'] != 0
                 self.error_text = data['error']
                 self.input_size = self.update_size(self.input_files) / 1024.0
                 self.output_size = self.update_size(self.output_files) / 1024.0
-            elif data:
+
+            if data.get('started', None) is not None:
+                self.started = True
                 # Save the duration so far
                 dur = datetime.now() - data['started']
-
-            if data:
                 # Round up any microseconds, useful for testing non-zero time
                 self.duration = dur.total_seconds() + int(dur.microseconds > 0)
-                self.save()
 
+            self.save()
         return self.is_complete
 
     def update_size(self, files):
