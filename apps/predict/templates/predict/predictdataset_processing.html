@@ -30,21 +30,21 @@
               </li>
             {% elif run.is_complete %}
               <li class="completed">
-                <a data-toggle="tooltip" title="Program run complete. <br><strong>Run Time:</strong> {{ run.dur }}s" data-html="true">
+                <a data-toggle="tooltip" title="Program run complete. <br><strong>Wait Time:</strong> {{ run.wait_time }}s<br><strong>Run Time:</strong> {{ run.run_time }}s" data-html="true">
                   <span class="glyphicon glyphicon-ok"></span>
                   <h4>{{ run.program.name }}</h4>
                 </a>
               </li>
             {% elif run.is_started %}
               <li class="active">
-                <a data-toggle="tooltip" title="Program is running right now. Run Time: {{ run.dur }}s">
+                <a data-toggle="tooltip" title="Program is running right now. <br><strong>Run Time:</strong> {{ run.run_time }}s" data-html="true">
                   <span class="glyphicon glyphicon-cog"></span>
                   <h4>{{ run.program.name }}</h4>
                 </a>
               </li>
             {% elif run.is_submitted %}
               <li class="submitted">
-                <a data-toggle="tooltip" title="Program is held in a queue or waiting for a previous job to finish.">
+                <a data-toggle="tooltip" title="Program is held in a queue or waiting for a previous job to finish.<br><strong>Wait Time:</strong> {{ run.wait_time }}s" data-html="true">
                   <span class="glyphicon glyphicon-pause"></span>
                   <h4>{{ run.program.name }}</h4>
                 </a>

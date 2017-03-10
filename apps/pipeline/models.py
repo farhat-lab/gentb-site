@@ -31,6 +31,7 @@ from model_utils.models import TimeStampedModel
 from django.conf import settings
 from django.utils.timezone import now
 from django.utils.text import slugify
+from django.utils.timezone import now
 
 from apps.pipeline.method import JobManager
 
@@ -333,6 +334,10 @@ class ProgramRun(TimeStampedModel):
     duration = PositiveIntegerField(null=True, blank=True,
             help_text='Number of seconds to run.')
 
+    submitted = DateTimeField(null=True, blank=True)
+    started = DateTimeField(null=True, blank=True)
+    completed = DateTimeField(null=True, blank=True)
+
     input_files = TextField(null=True, blank=True)
     output_files = TextField(null=True, blank=True)
     debug_text = TextField("Command and Debug", null=True, blank=True)
@@ -344,9 +349,18 @@ class ProgramRun(TimeStampedModel):
     def __str__(self):
         return self.job_id
 
-    def dur(self):
+    def run_time(self):
         if self.duration:
             return str(timedelta(seconds=self.duration))
+        if self.started:
+            return now() - self.started
+        return "-"
+
+    def wait_time(self):
+        if self.started:
+            return str(self.started - self.submitted)
+        if self.submitted:
+            return now() - self.submitted
         return "-"
 
     def submit(self, previous=None, **kwargs):
@@ -365,6 +379,7 @@ class ProgramRun(TimeStampedModel):
 
         if JobManager.submit(self.job_id, cmd, depends=self.previous_id):
             self.is_submitted = True
+            self.submitted = now()
         else:
             raise ValueError("Job could not be submitted to Job Manager.")
 
@@ -381,6 +396,7 @@ class ProgramRun(TimeStampedModel):
             if data.get('return', None) is not None:
                 dur = data['finished'] - data['started']
                 self.duration = dur.total_seconds() + int(dur.microseconds > 0)
+                self.completed = data['finished']
                 self.is_complete = True
                 self.is_error = data['return'] != 0
                 self.error_text = data['error'][:10240] # Limit errors to 10k
@@ -388,7 +404,9 @@ class ProgramRun(TimeStampedModel):
                 self.output_size = self.update_size(self.output_files) / 1024.0
 
             if data.get('started', None) is not None:
-                self.is_started = True
+                if not self.is_started:
+                    self.is_started = True
+                    self.started = data['started']
                 # Save the duration so far
                 dur = datetime.now() - data['started']
                 # Round up any microseconds, useful for testing non-zero time
