@@ -393,6 +393,7 @@ class ProgramRun(TimeStampedModel):
         if self.is_submitted and not self.is_complete:
             dur = None
             data = JobManager.status(self.job_id, clean=True)
+
             if data.get('return', None) is not None:
                 dur = data['finished'] - data['started']
                 self.duration = dur.total_seconds() + int(dur.microseconds > 0)
@@ -411,6 +412,12 @@ class ProgramRun(TimeStampedModel):
                 dur = datetime.now() - data['started']
                 # Round up any microseconds, useful for testing non-zero time
                 self.duration = dur.total_seconds() + int(dur.microseconds > 0)
+
+            if data and self.previous_id:
+                prev = ProgramRun.objects.get(job_id=self.previous_id)
+                if prev.is_error:
+                    JobManager.stop(self.job_id)
+                    self.is_error = True
 
             self.save()
         return self.is_complete

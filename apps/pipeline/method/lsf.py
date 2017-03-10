@@ -64,8 +64,7 @@ class JobManager(ManagerBase):
 
     def stop(self, job_id):
         """Stop the given process using bkill"""
-        p = Popen(['bkill', '-J', job_id, '-g', self.group])
-        return p.wait() == 0
+        return Popen(['bkill', '-J', job_id]).wait() == 0
 
     def status(self, job_id, clean=False):
         """Returns if the job is running, how long it took or is taking and other details."""
