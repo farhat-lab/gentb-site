@@ -47,7 +47,13 @@ class ProgramRunInline(admin.TabularInline):
     extra = 0
 
 class PipelineRunAdmin(admin.ModelAdmin):
+    actions = ['all_stop']
     list_display = ('name', 'pipeline',)
     inlines = (ProgramRunInline,)
+
+    def all_stop(modeladmin, request, queryset):
+        for run in queryset.all():
+            run.stop_all(msg='Admin Stopped this Program')
+    all_stop.short_description = "Emergency All Stop"
 
 admin.site.register(PipelineRun, PipelineRunAdmin)

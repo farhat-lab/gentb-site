@@ -317,6 +317,10 @@ class PipelineRun(TimeStampedModel):
             ret.append(runs.get(pipe.program_id, pipe))
         return ret
 
+    def stop_all(self, msg='All Stopped'):
+        """Forcefully stop all processes in this pipeline run"""
+        return all([program.stop(msg=msg) for program in self.programs.all()])
+
     def update_all(self):
         """
         Update all pipeline project runs with their running status returns
@@ -397,7 +401,19 @@ class ProgramRun(TimeStampedModel):
             raise ValueError("Job could not be re-submitted to Job Manager")
         self.save()
 
+    def stop(self, msg='Stopped'):
+        """Stop this program from running"""
+        if self.is_submitted and not self.is_complete:
+            ret = JobManager.stop(self.job_id)
+            self.is_error = True
+            self.is_complete = True
+            self.error_text = msg
+            self.save()
+            return ret
+        return True
+
     def submit(self, previous=None, **kwargs):
+        """Submit this job to the configured JobManager"""
         files = dict(self.program.prepare_files(**kwargs))
         
         # Save all the input and output files into database
