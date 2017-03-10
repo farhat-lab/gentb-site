@@ -39,9 +39,11 @@ def which(file):
 
 class JobManager(ManagerBase):
     def __init__(self, *args, **kw):
+        self.ready = True
         for prog in ('bsub', 'bjobs'):
             if not which(prog):
                 logging.warn("%s program is not available!" % prog)
+                self.ready = False
 
         self.group = getattr(settings, 'PIPELINE_LSF_GROUP', 'pipeline')
         self.queue = getattr(settings, 'PIPELINE_LSF_QUEUE', 'short')
@@ -52,6 +54,9 @@ class JobManager(ManagerBase):
         """
         Open the command locally using bash shell.
         """
+        if not ready:
+            return False
+
         extra = []
         if depends:
             extra += ['-w', 'done(%s)' % depends]
@@ -66,6 +71,9 @@ class JobManager(ManagerBase):
 
     def status(self, job_id, clean=False):
         """Returns if the job is running, how long it took or is taking and other details."""
+        if not ready:
+            return False
+
         # Get the status for the listed job, how long it took and everything
         p = Popen(['bjobs', '-J', job_id, '-a', '-W'], stdout=PIPE, stderr=None)
         (out, err) = p.communicate()
