@@ -12,8 +12,8 @@ script.basename <- dirname(script.name)
 
 # Set the location of the libs to relative to this script's location
 libs <- file.path(script.basename, '../data/Rlib/R.2.15.3.lib')
-print(libs)
 
+data_dir <- file.path(script.basename, '../data/predict_rdata')
 #aa <- Sys.time()
 
 library(foreign)
@@ -44,7 +44,7 @@ predictfunction<-function(filename){
     for (i in 1:length(druglist)){
       drug <- druglist[i]
       #print(drug)
-      load(paste(drug, "_finalpredict.RData", sep="")) #contains for each drug:
+      load(paste(data_dir, "/", drug, "_finalpredict.RData", sep="")) #contains for each drug:
       # Can't get what's in RF
       #cat(toJSON(drugg.full.rf, pretty = TRUE), "\n", file = paste0(drug, "-drugg.full.rf.json"))
 
