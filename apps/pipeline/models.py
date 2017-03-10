@@ -375,6 +375,16 @@ class ProgramRun(TimeStampedModel):
 
     def resubmit(self, previous=None):
         """Resubmit the same command as before"""
+        self.is_error = False
+        self.is_started = False
+        self.is_complete = False
+        self.error_text = ''
+
+        # Delete all old output files
+        for fn in self.output_files.split("\n"):
+            if isfile(fn):
+                os.unlink(fn)
+
         if JobManager.submit(self.job_id, self.debug_text, depends=previous):
             self.is_submitted = True
             self.submitted = now()
