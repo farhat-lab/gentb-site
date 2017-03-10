@@ -47,10 +47,16 @@
 .process>li h4 {
   margin-bottom: 0px;
 }
-.process>li.download h4.short {
-  margin-bottom: 4px;
-  margin-top: 4px;
+.process>li.download h4.short:first-child {
+  margin-top: 0px;
 }
+.process>li.download h4.short:last-child {
+  margin-bottom: 0px;
+}
+.process>li.download h4.short {
+  font-size: 90%;
+}
+
 .process>li {
   display: table-cell;
   vertical-align: middle;
