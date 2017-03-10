@@ -6,7 +6,6 @@ use warnings;
 
 ### example command ./flatAnnotatorVAR.pl test.vcf qual{0-255} hetero{0-1} platypusfilter{PASS|ALL} (output will be test.var) 
 use FindBin qw($Bin);
-$Bin='/www/gentb.hms.harvard.edu/apps/predict/pipeline/bin/';
 
 $/="\n";
 $,="\t";
