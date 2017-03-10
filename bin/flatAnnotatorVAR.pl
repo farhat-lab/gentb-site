@@ -15,8 +15,9 @@ my %tt11;
 &create_translation_table11(\%tt11);
 
 my $reference = "h37rv"; #this may need to be changed in the future
-my $Creference = "$Bin/$reference"."_genome_summary.txt";
-my $Nreference = "$Bin/$reference"."_noncoding_summary.txt";
+my $ref_file = shift @ARGV;
+my $Creference = shift @ARGV; #"$Bin/$reference"."_genome_summary.txt";
+my $Nreference = shift @ARGV; #"$Bin/$reference"."_noncoding_summary.txt";
 my $snpfile = shift @ARGV;
 #my $refPath= shift @ARGV;
 #my $dofiltering = shift @ARGV;
@@ -390,7 +391,7 @@ sub annotcoding{
    $codpos = 3 unless $codpos; # 0->3;
    my $codonStart = int(($from - $txStart - 1)/3)*3 + $txStart + 1; #genomic coordinate of first base in the first codon affected (int truncates anything after the point)
    my $codonEnd = int(($from + (length($allele)-1) - $txStart - 1)/3)*3 + $txStart + 3; #genomic coordinate of last base in last codon affected was=$codonStart + 2;
-   $codon = `perl $Bin/get_seq_coord.pl -coord $codonStart-$codonEnd -nodefline $Bin/${reference}.fasta`; #h37rv.fasta is reference fasta file this and get_seq_coord.pl should be in the $Bin folder
+   $codon = `perl $Bin/get_seq_coord.pl -coord $codonStart-$codonEnd -nodefline $ref_file`; #h37rv.fasta is reference fasta file this and get_seq_coord.pl should be in the $Bin folder
    chomp $codon;
    $codon=~s/\n//g;
    my $ref_base = substr($codon,$codpos-1,1);
@@ -406,7 +407,7 @@ sub annotcoding{
    $codpos = 3 unless $codpos; # 0->3;
    my $codonStart = $txEnd - int(($txEnd - $from)/3)*3 -2;
    my $codonEnd = $txEnd - int(($txEnd - $from -length($allele)+1)/3)*3; #genomic coordinate of last base in last codon affected was=$codonStart + 2;
-   $codon = `perl $Bin/get_seq_coord.pl -coord $codonStart-$codonEnd -nodefline $Bin/${reference}.fasta`; #h37rv.fasta is reference fasta file this and get_seq_coord.pl should be in the $Bin folder
+   $codon = `perl $Bin/get_seq_coord.pl -coord $codonStart-$codonEnd -nodefline $ref_file`; #h37rv.fasta is reference fasta file this and get_seq_coord.pl should be in the $Bin folder
    chomp $codon;
    $codon = &revcomp($codon); #reverse complement
    my $codposrev;
