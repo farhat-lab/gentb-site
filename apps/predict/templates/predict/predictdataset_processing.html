@@ -21,17 +21,47 @@
         </li>
         {% if strain.piperun %}
           {% for run in strain.piperun.all_programs %}
-            <li class="{% if run.is_error %}error{% elif run.is_complete %}completed{% elif run.is_started %}active{% elif run.is_submitted %}submitted{% endif %}">
-              <a {% if run.error_text %}data-toggle="tooltip" title="{{ run.error_text|linebreaks }}" data-html="true"{% endif %}>
-                <span class="glyphicon glyphicon-{% if run.is_error %}remove{% elif run.is_complete %}ok{% elif run.is_started %}cog{% elif run.is_submitted %}pause{% else %}time{% endif %}"></span>
-                <h4>{{ run.program.name }}</h4>
-              </a>
-            </li>
+            {% if run.is_error %}
+              <li class="error">
+                <a data-toggle="tooltip" title="Error running this program, click for details.">
+                  <span class="glyphicon glyphicon-remove"></span>
+                  <h4>{{ run.program.name }}</h4>
+                </a>
+              </li>
+            {% elif run.is_complete %}
+              <li class="completed">
+                <a data-toggle="tooltip" title="Program run complete. <br><strong>Run Time:</strong> {{ run.dur }}s" data-html="true">
+                  <span class="glyphicon glyphicon-ok"></span>
+                  <h4>{{ run.program.name }}</h4>
+                </a>
+              </li>
+            {% elif run.is_started %}
+              <li class="active">
+                <a data-toggle="tooltip" title="Program is running right now. Run Time: {{ run.dur }}s">
+                  <span class="glyphicon glyphicon-cog"></span>
+                  <h4>{{ run.program.name }}</h4>
+                </a>
+              </li>
+            {% elif run.is_submitted %}
+              <li class="submitted">
+                <a data-toggle="tooltip" title="Program is held in a queue or waiting for a previous job to finish.">
+                  <span class="glyphicon glyphicon-pause"></span>
+                  <h4>{{ run.program.name }}</h4>
+                </a>
+              </li>
+            {% else %}
+              <li>
+                <a data-toggle="tooltip" title="Program has not been submitted yet, please wait.">
+                  <span class="glyphicon glyphicon-cog"></span>
+                  <h4>{{ run.program.name }}</h4>
+                </a>
+              </li>
+            {% endif %}
           {% endfor %}
         {% else %}
           {% for link in strain.pipeline.programs.all %}
             <li>
-              <a title="{{ link.description }}">
+              <a data-toggle="tooltip" title="Entire pipeline has not been submitted yet, please wait.">
                 <span class="glyphicon glyphicon-time"></span>
                 <h4>{{ link.program.name }}</h4>
               </a>

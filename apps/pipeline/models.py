@@ -22,8 +22,8 @@ import logging
 LOGGER = logging.getLogger('apps.pipeline')
 
 from os.path import getsize, isfile, basename, join
+from datetime import datetime, timedelta
 from collections import defaultdict
-from datetime import datetime
 
 from django.db.models import *
 from model_utils.models import TimeStampedModel
@@ -343,6 +343,11 @@ class ProgramRun(TimeStampedModel):
 
     def __str__(self):
         return self.job_id
+
+    def dur(self):
+        if self.duration:
+            return str(timedelta(seconds=self.duration))
+        return "-"
 
     def submit(self, previous=None, **kwargs):
         files = dict(self.program.prepare_files(**kwargs))
