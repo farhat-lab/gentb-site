@@ -379,11 +379,16 @@ class ProgramRun(TimeStampedModel):
         self.is_started = False
         self.is_complete = False
         self.error_text = ''
+        self.submitted = None
+        self.started = None
+        self.completed = None
+        self.save()
 
         # Delete all old output files
-        for fn in self.output_files.split("\n"):
-            if isfile(fn):
-                os.unlink(fn)
+        if self.output_files:
+            for fn in self.output_files.split("\n"):
+                if isfile(fn):
+                    os.unlink(fn)
 
         if JobManager.submit(self.job_id, self.debug_text, depends=previous):
             self.is_submitted = True
