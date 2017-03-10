@@ -78,7 +78,7 @@ class Program(Model):
     ER3 = "Input '%s' not available in inputs"
 
     PARSER = re.compile(r'(?P<io>\$|\@)(?P<prefix>[^{]*)' \
-                        r'{(?P<name>\w+)\}(?P<suffix>[^\s;|>]*)')
+                        r'{(?P<name>[-\w]+)\}(?P<suffix>[^\s;|>]*)')
 
     name = CharField(max_length=128)
     description = TextField(null=True, blank=True,
