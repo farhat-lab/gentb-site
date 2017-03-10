@@ -22,12 +22,21 @@
         {% if strain.piperun %}
           {% for run in strain.piperun.all_programs %}
             {% if run.is_error %}
-              <li class="error">
-                <a data-toggle="tooltip" title="Error running this program, click for details.">
-                  <span class="glyphicon glyphicon-remove"></span>
-                  <h4>{{ run.program.name }}</h4>
-                </a>
-              </li>
+              {% if run.is_started %}
+                <li class="error">
+                  <a data-toggle="tooltip" title="Error running this program, click for details.">
+                    <span class="glyphicon glyphicon-remove"></span>
+                    <h4>{{ run.program.name }}</h4>
+                  </a>
+                </li>
+              {% else %}
+                <li>
+                  <a data-toggle="tooltip" title="Stopped due to previous pipeline program error.">
+                    <span class="glyphicon glyphicon-remove"></span>
+                    <h4>{{ run.program.name }}</h4>
+                  </a>
+                </li>
+              {% endif %}
             {% elif run.is_complete %}
               <li class="completed">
                 <a data-toggle="tooltip" title="Program run complete. <br><strong>Wait Time:</strong> {{ run.wait_time }}s<br><strong>Run Time:</strong> {{ run.run_time }}s" data-html="true">
