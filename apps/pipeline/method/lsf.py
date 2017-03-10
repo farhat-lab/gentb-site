@@ -30,18 +30,20 @@ from django.conf import settings
 
 from .base import ManagerBase
 
-LSF_ENV = getattr(settings, 'PIPELINE_LSF_SOURCE', None)
 
-def lsfOpen(*args, **kw):
-    """Encap the lsf runs with the lsf environment"""
-    if LSF_ENV is not None:
-        kw['shell'] = True
-        return Popen(['source', LSF_ENV, ';'] + list(args), **kw)
-    return Popen(args, **kw)
+LSF_ENV = getattr(settings, 'PIPELINE_LSF_SOURCE', None)
+if LSF_ENV is not None:
+    # This modifies the current working environment, this is VERY BAD
+    # But it's pretty much a requirement for setting up LSF.
+    pipe = Popen(". %s && env -0" % LSF_ENV, stdout=PIPE, shell=True)
+    output = pipe.communicate()[0].split('\0')
+    env = [line.split("=", 1) for line in output if '=' in line]
+    os.environ.update(dict(env))
+
 
 class JobManager(ManagerBase):
     def __init__(self, *args, **kw):
-        self.group = getattr(settings, 'PIPELINE_LSF_GROUP', 'pipeline')
+        self.group = getattr(settings, 'PIPELINE_LSF_GROUP', None)
         self.queue = getattr(settings, 'PIPELINE_LSF_QUEUE', 'short')
 
         super(JobManager, self).__init__(*args, **kw)
@@ -50,22 +52,25 @@ class JobManager(ManagerBase):
         """
         Open the command locally using bash shell.
         """
-        extra = []
+        bcmd = ['bsub', '-J', job_id, '-q', self.queue]
+        if self.group:
+            bcmd += ['-g', self.group]
         if depends:
-            extra += ['-w', 'done(%s)' % depends]
-        lsfOpen(['bsub', '-J', job_id, '-g', self.group, '-q', self.queue] + \
-              extra + ['-o', self.job_fn(job_id, 'err'), '-W', '2:00', cmd],
-            shell=False, stdout=None, stderr=None, close_fds=True)
-        return True
+            bcmd += ['-w', 'done(%s)' % depends]
+        bcmd += ['-o', self.job_fn(job_id, 'err'), '-W', '2:00', cmd]
+
+        p = Popen(bcmd, shell=False, stdout=None, stderr=None, close_fds=True)
+        return p.wait() == 0
 
     def stop(self, job_id):
         """Stop the given process using bkill"""
-        lsfOpen(['bkill', '-J', job_id, '-g', self.group])
+        p = Popen(['bkill', '-J', job_id, '-g', self.group])
+        return p.wait() == 0
 
     def status(self, job_id, clean=False):
         """Returns if the job is running, how long it took or is taking and other details."""
         # Get the status for the listed job, how long it took and everything
-        p = lsfOpen(['bjobs', '-J', job_id, '-a', '-W'], stdout=PIPE, stderr=None)
+        p = Popen(['bjobs', '-J', job_id, '-a', '-W'], stdout=PIPE, stderr=None)
         (out, err) = p.communicate()
 
         #JOBID      USER    STAT  QUEUE      FROM_HOST   EXEC_HOST   JOB_NAME   SUBMIT_TIME  PROJ_NAME CPU_USED MEM SWAP PIDS START_TIME FINISH_TIME
@@ -80,6 +85,7 @@ class JobManager(ManagerBase):
             return {}
 
         data = zip(lines[0].lower().split(), lines[1].split())
+        data = dict(data)
 
         # When getting date-times from lsf, we have to convert and add the year (very odd)
         year = "%d/" % datetime.now().year
@@ -115,7 +121,7 @@ class JobManager(ManagerBase):
             'submitted': data['submit_time'],
             'started': data['start_time'],
             'finished': data['finish_time'],
-            'pid': data['JOBID'],
+            'pid': data['jobid'],
             'status': status,
             'return': ret,
             'error': err,
