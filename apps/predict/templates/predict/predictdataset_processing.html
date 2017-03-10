@@ -23,21 +23,21 @@
           {% for run in strain.piperun.all_programs %}
             {% if run.is_error %}
               {% if not run.is_submitted %}
-                <li>
+                <li data-toggle="collapse" data-target="#{{ run.job_id }}">
                   <a data-toggle="tooltip" title="Scheduled for re-run (after error).">
                     <span class="glyphicon glyphicon-refresh"></span>
                     <h4>{{ run.program.name }}</h4>
                   </a>
                 </li>
               {% elif run.is_started %}
-                <li class="error">
+                <li class="error" data-toggle="collapse" data-target="#{{ run.job_id }}">
                   <a data-toggle="tooltip" title="Error running this program, click for details.">
                     <span class="glyphicon glyphicon-remove"></span>
                     <h4>{{ run.program.name }}</h4>
                   </a>
                 </li>
               {% else %}
-                <li>
+              <li data-toggle="collapse" data-target="#{{ run.job_id }}">
                   <a data-toggle="tooltip" title="Stopped due to previous pipeline program error.">
                     <span class="glyphicon glyphicon-remove"></span>
                     <h4>{{ run.program.name }}</h4>
@@ -85,4 +85,15 @@
           {% endfor %}
         {% endif %}
       </ul>
+      {% for run in strain.piperun.all_programs %}
+        {% if run.error_text %}
+
+        <div class="alert {% if run.is_error %}alert-danger{% else %}alert-info{% endif %} collapse" id="{{ run.job_id }}">
+          <span class="glyphicon glyphicon glyphicon-list-alt" style="margin-right: 12px;"></span>
+           <samp>
+            {{ run.error_text }}
+           </samp>
+         </div>
+        {% endif %}
+      {% endfor %}
     {% endfor %}
