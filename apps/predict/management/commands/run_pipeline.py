@@ -29,6 +29,16 @@ class Command(BaseCommand):
 
         sys.stderr.write("\n")
 
+        for strain in PredictStrain.objects.filter(
+                piperun__programs__is_submitted=False,
+                piperun__programs__is_error=True).distinct(): 
+            sys.stderr.write("Re-Strain: %s " % str(strain))
+            if strain.piperun.rerun():
+                sys.stderr.write("SUBMITTED [OK]\n")
+            else:
+                sys.stderr.write("SUBMITTED [ERROR]\n")
+            time.sleep(1)
+
         for piperun in ProgramRun.objects.filter(is_submitted=True, is_complete=False, is_error=False):
             sys.stderr.write("Run Status: %s " % str(piperun))
             if piperun.update_status():

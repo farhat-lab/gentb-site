@@ -297,6 +297,18 @@ class PipelineRun(TimeStampedModel):
             kwargs['previous'] = run
         return True
 
+    def rerun(self, **kwargs):
+        for run in self.programs.filter(is_submitted=False, is_error=True):
+            try:
+                run.resubmit(**kwargs)
+            except Exception as err:
+                run.is_error = True
+                run.error_text = str(err)
+                run.save()
+                return False
+            kwargs['previous'] = run
+        return True
+
     def all_programs(self):
         """Returns all the program runs with unrun pipelines appended"""
         ret = []
@@ -360,6 +372,15 @@ class ProgramRun(TimeStampedModel):
         if self.submitted:
             return now() - self.submitted
         return "-"
+
+    def resubmit(self, previous=None):
+        """Resubmit the same command as before"""
+        if JobManager.submit(self.job_id, self.debug_text, depends=previous):
+            self.is_submitted = True
+            self.submitted = now()
+        else:
+            raise ValueError("Job could not be re-submitted to Job Manager")
+        self.save()
 
     def submit(self, previous=None, **kwargs):
         files = dict(self.program.prepare_files(**kwargs))
