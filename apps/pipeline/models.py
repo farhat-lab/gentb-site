@@ -53,7 +53,7 @@ class Pipeline(Model):
         Run this pipeline for this named identifier,
         the id should be unique.
         """
-        runner = self.runs.create(name=name)
+        runner = self.runs.create(name=slugify(name))
         runner.run(**kwargs)
         return runner
 
