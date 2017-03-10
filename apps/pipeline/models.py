@@ -395,8 +395,9 @@ class ProgramRun(TimeStampedModel):
             data = JobManager.status(self.job_id, clean=True)
 
             if data.get('return', None) is not None:
-                dur = data['finished'] - data['started']
-                self.duration = dur.total_seconds() + int(dur.microseconds > 0)
+                if data['finished'] and data['started']:
+                    dur = data['finished'] - data['started']
+                    self.duration = dur.total_seconds() + int(dur.microseconds > 0)
                 self.completed = data['finished']
                 self.is_complete = True
                 self.is_error = data['return'] != 0
