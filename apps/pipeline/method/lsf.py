@@ -123,6 +123,10 @@ class JobManager(ManagerBase):
                     elif 'Exited with exit code' in page:
                         ret = int(page.split('exit code ')[-1].split('.')[0])
 
+        # Just in case
+        if ret is None and status == 'finished':
+            ret = 404
+
         return {
             'submitted': data['submit_time'],
             'started': data['start_time'],
