@@ -83,33 +83,25 @@
 
         {% block footer_content %}
             <!-- Footer -->
-            <hr>
-            <footer>
-                <div class="row">
-                    <div class="col-lg-12">
+            <hr/>
+            <footer style="margin-bottom: 30px;">
+              <div class="row">
+                <div class="col-lg-12">
+                  <center>
+                    &copy; {% now "Y" %} genTB. All Rights Reserved
+                    &nbsp;|&nbsp; <a href="{% url 'terms' %}">Terms of Use</a>
+                    &nbsp;|&nbsp; <a href="mailto:tbpredict@gmail.com">Contact</a><br>
+                  </center>
 
-                    <center>
-                        &copy; {% now "Y" %} genTB. All Rights Reserved
-                        &nbsp;|&nbsp; <a href="{% url 'terms' %}">Terms of Use</a>
-                        &nbsp;|&nbsp; <a href="mailto:tbpredict@gmail.com">Contact</a><br>
-                    </center>
+                  <hr/>
 
-                    <div style="float: right;">
-                    <div style="float: right;">
-                        <a href="https://www.iq.harvard.edu"><img src="{% static 'images/iqss-logo.png' %}" alt="Built by IQSS" height="50" style="PADDING-RIGHT: 15px"></a>
-                    </div>
-                    <div style="float: right;">
-                        <a href="http://dataverse.org"><img src="{% static 'images/dataverse_project_logo.png' %}" alt="Data Archived by Dataverse" height="50" style="PADDING-RIGHT: 15px"></a>
-                    </div>
-                    <div style="float: right;">
-                        <a href="https://datascience.iq.harvard.edu/about-tworavens"><img src="{% static 'images/TwoRavens.png' %}" alt="Analysis with TwoRavens" height="40" style="PADDING-RIGHT: 15px"></a>
-                    </div>
-
-                    </div>
-
-                        <br /><small>({% now "F jS, Y f:s a" %})</small>
-                    </div>
+                  <center>
+                    <a href="https://www.iq.harvard.edu"><img src="{% static 'images/iqss-logo.png' %}" alt="Built by IQSS" height="50" style="PADDING-RIGHT: 15px"></a>
+                    <a href="http://dataverse.org"><img src="{% static 'images/dataverse_project_logo.png' %}" alt="Data Archived by Dataverse" height="50" style="PADDING-RIGHT: 15px"></a>
+                    <a href="https://datascience.iq.harvard.edu/about-tworavens"><img src="{% static 'images/TwoRavens.png' %}" alt="Analysis with TwoRavens" height="40" style="PADDING-RIGHT: 15px"></a>
+                  </center>
                 </div>
+              </div>
             </footer>
         {% endblock %}
     </div>
