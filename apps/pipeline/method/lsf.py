@@ -30,21 +30,17 @@ from django.conf import settings
 
 from .base import ManagerBase
 
-def which(file):
-    """In python3.3+ this can be replaced"""
-    for path in os.environ["PATH"].split(os.pathsep):
-        if os.path.exists(os.path.join(path, file)):
-            return os.path.join(path, file)
+LSF_ENV = getattr(settings, 'PIPELINE_LSF_SOURCE', None)
 
+def lsfOpen(*args, **kw):
+    """Encap the lsf runs with the lsf environment"""
+    if LSF_ENV is not None:
+        kw['shell'] = True
+        return Popen(['source', LSF_ENV, ';'] + list(args), **kw)
+    return Popen(args, **kw)
 
 class JobManager(ManagerBase):
     def __init__(self, *args, **kw):
-        self.ready = True
-        for prog in ('bsub', 'bjobs'):
-            if not which(prog):
-                logging.warn("%s program is not available!" % prog)
-                self.ready = False
-
         self.group = getattr(settings, 'PIPELINE_LSF_GROUP', 'pipeline')
         self.queue = getattr(settings, 'PIPELINE_LSF_QUEUE', 'short')
 
@@ -54,28 +50,22 @@ class JobManager(ManagerBase):
         """
         Open the command locally using bash shell.
         """
-        if not ready:
-            return False
-
         extra = []
         if depends:
             extra += ['-w', 'done(%s)' % depends]
-        Popen(['bsub', '-J', job_id, '-g', self.group, '-q', self.queue] + \
+        lsfOpen(['bsub', '-J', job_id, '-g', self.group, '-q', self.queue] + \
               extra + ['-o', self.job_fn(job_id, 'err'), '-W', '2:00', cmd],
             shell=False, stdout=None, stderr=None, close_fds=True)
         return True
 
     def stop(self, job_id):
         """Stop the given process using bkill"""
-        Popen(['bkill', '-J', job_id, '-g', self.group])
+        lsfOpen(['bkill', '-J', job_id, '-g', self.group])
 
     def status(self, job_id, clean=False):
         """Returns if the job is running, how long it took or is taking and other details."""
-        if not ready:
-            return False
-
         # Get the status for the listed job, how long it took and everything
-        p = Popen(['bjobs', '-J', job_id, '-a', '-W'], stdout=PIPE, stderr=None)
+        p = lsfOpen(['bjobs', '-J', job_id, '-a', '-W'], stdout=PIPE, stderr=None)
         (out, err) = p.communicate()
 
         #JOBID      USER    STAT  QUEUE      FROM_HOST   EXEC_HOST   JOB_NAME   SUBMIT_TIME  PROJ_NAME CPU_USED MEM SWAP PIDS START_TIME FINISH_TIME
