@@ -31,7 +31,7 @@ class Command(BaseCommand):
 
         for strain in PredictStrain.objects.filter(
                 piperun__programs__is_submitted=False,
-                piperun__programs__is_completed=True,
+                piperun__programs__is_complete=True,
                 piperun__programs__is_error=True,
                 ).distinct():
             sys.stderr.write("Re-Strain: %s " % str(strain))
