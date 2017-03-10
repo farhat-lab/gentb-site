@@ -1,10 +1,10 @@
 #!/usr/bin/perl
 use strict;
-use warnings;
+#use warnings;
 #use DBI;
-### script that takes in .vcf file and produces a .snp file. Filters and combines the mutation data in .vcf file with data from 2 genome coordinate files (with headers) #####(one for coding ###regions and one for non coding regions) to add functional data. Also requires h37rv.fasta file (there reference genome sequence file) and ###get_seq_coord.pl script to exist ###in the same folder
+### script that takes in .vcf file and produces a .var file. Filters and combines the mutation data in .vcf file with data from 2 genome coordinate files (with headers) #####(one for coding ###regions and one for non coding regions) to add functional data. Also requires h37rv.fasta file (there reference genome sequence file) and ###get_seq_coord.pl script to exist ###in the same folder
 
-### example command ./flatAnnotatorVAR.pl test.vcf qual{0-255} hetero{0-1} platypusfilter{PASS|ALL} (output will be test.var) 
+### example command ./flatAnnotatorVAR.pl test.vcf qual{0-255} hetero{0-1} platypusfilter{PASS|ALL} (PASS now includes badReads output will be test.var) 
 use FindBin qw($Bin);
 
 $/="\n";
@@ -24,7 +24,7 @@ my $qualThresh = (shift@ARGV)||0;
 my $heteroThresh = (shift@ARGV)||0;
 my $platypusFilter = (shift@ARGV)||'PASS';
 if ($platypusFilter =~ m/pass/i) {
-  $platypusFilter = "PASS";
+  $platypusFilter = 'PASS|badReads|alleleBias';
 } else {
   #$platypusFilter =~ s/\-/\|/g;
   #$platypusFilter = "qr/(?!\A.*$platypusFilter.*\z)/"; 
@@ -153,101 +153,104 @@ while (<IN>) {
  if ($hqr_var == 0 && $hqr_var ==0) { # to protect against division by zero error
  	$hqr_ref=1;
  }
- #print STDERR $filter;
- if ($snpqual >$qualThresh && $hqr_var/($hqr_var+$hqr_ref) >$heteroThresh && $filter =~ m/$platypusFilter/) { 
-  my ($genename,$codon,$codpos,$altcodon,$name);#$nucpos
-  my ($type,$before_gene,$after_gene);
-  if (length($ref_allele)==length($allele)) {#SNP
-   my $march=$from;
-   while ($march<=$from+length($allele)-1) {
-    while (my ($gname, $genomicPos) = each %start) {
-     if ($genomicPos <$march && $end{$gname}>=$march) { #for zero based coordinates
-       $genename=$gname;
-     }
-    }
-    if ($genename =~ /^Rv/i) { #coding
-     #print STDERR "march is $march before";
-     ($name, $codon, $altcodon, $codpos, $march)=&assign_allele($genename, $ref_allele, $allele, $march, $from);
-     #print STDERR "march is $march after";
-    } else { ## 1 noncoding variant
-     my $ref_base=substr($ref_allele,$march-$from,1);
-     my $base=substr($allele,$march-$from,1);
-     ($name, $codon, $altcodon, $codpos)=&annotnoncoding($march, $genename,$ref_base, $base);
-    }
-    print SNP $reference,$genename,$symbol{$genename},$name,$desc{$genename},$snpqual,$depth,$bidir,$hqr_var,$hqr_ref,$fq,$codon,$altcodon,$codpos,$filter;    
-    $march++;
-   }
-  } elsif (length($allele)!=length($ref_allele)) { #indel may or may not also have SNP
-   if ($allele eq '.') {
-    $allele='';
-   } elsif ($ref_allele eq ".") {
-    $ref_allele='';
-   }
-   if (length($ref_allele)>0 && substr($allele,0,length($ref_allele)) eq $ref_allele) {
-    $allele=substr($allele,length($ref_allele));
-    $ref_allele='';
-    $from++;
-   }
-   if (length($allele)>0 && substr($ref_allele,0,length($allele)) eq $allele) {
-    $ref_allele=substr($ref_allele,length($allele));
-    $allele='';
-    $from++;
-   }
-   if (length($allele)>0 && length($ref_allele)>0) {
+ if ($filter =~ m/;/) {
+	#print STDERR $filter;
+ } else {
+  if ($snpqual >$qualThresh && $hqr_var/($hqr_var+$hqr_ref) >$heteroThresh && $filter =~ m/$platypusFilter/ ) { 
+   my ($genename,$codon,$codpos,$altcodon,$name);#$nucpos
+   my ($type,$before_gene,$after_gene);
+   if (length($ref_allele)==length($allele)) {#SNP
     my $march=$from;
-    if (length($allele)>length($ref_allele)) { #at least partly an insertion
-     while ($march <=$from+length($ref_allele)-1) {
-      while (my ($gname, $genomicPos) = each %start) {
-       if ($genomicPos <$march && $end{$gname}>=$march) { #for zero based coordinates
+    while ($march<=$from+length($allele)-1) {
+     while (my ($gname, $genomicPos) = each %start) {
+      if ($genomicPos <$march && $end{$gname}>=$march) { #for zero based coordinates
         $genename=$gname;
-       }
       }
-      my $ref_base=substr($ref_allele,$march-$from,1);
-      my $base=substr($allele,$march-$from,1);
-      if ($genename =~ /^Rv/i) { # 1 gene
-       ($name, $codon, $altcodon, $codpos)=&assign_allele($genename, $ref_allele, $allele, $march, $from);
-      } else { ## 1 noncoding variant
-       ($name, $codon, $altcodon, $codpos)=&annotnoncoding($march, $genename,$ref_base, $base);
-      }
-      print SNP $reference,$genename,$symbol{$genename},$name,$desc{$genename},$snpqual,$depth,$bidir,$hqr_var,$hqr_ref,$fq,$codon,$altcodon,$codpos,$filter;
-      $march++;
-     } 
-    } elsif (length($ref_allele)>length($allele)) { #at least partly a deletion
-     while ($march <=$from+length($allele)-1) {
-      while (my ($gname, $genomicPos) = each %start) {
-       if ($genomicPos <$march && $end{$gname}>=$march) { #for zero based coordinates
-        $genename=$gname;
-       }
-      }
-      my $ref_base=substr($ref_allele,$march-$from,1);
-      my $base=substr($allele,$march-$from,1);
-      if ($genename =~ /^Rv/i) { # 1 gene
-       ($name, $codon, $altcodon, $codpos, $march)=&assign_allele($genename, $ref_allele, $allele, $march, $from);
-      } else { ## 1 noncoding variant
-       ($name, $codon, $altcodon, $codpos)=&annotnoncoding($march, $genename,$ref_base, $base);
-      }
-      print SNP $reference,$genename,$symbol{$genename},$name,$desc{$genename},$snpqual,$depth,$bidir,$hqr_var,$hqr_ref,$fq,$codon,$altcodon,$codpos,$filter;
-      $march++;
-     } 
-    } #completes SNP porition of INS or DEL $march variable marks where we are
-    while (my ($gname, $genomicPos) = each %start) {
-     if ($genomicPos <$march && $end{$gname}>=$march) { #for zero based coordinates
-      $genename=$gname;
      }
+     if ($genename =~ /^Rv/i) { #coding
+      #print STDERR "march is $march before";
+      ($name, $codon, $altcodon, $codpos, $march)=&assign_allele($genename, $ref_allele, $allele, $march, $from);
+      #print STDERR "march is $march after";
+     } else { ## 1 noncoding variant
+      my $ref_base=substr($ref_allele,$march-$from,1);
+      my $base=substr($allele,$march-$from,1);
+      ($name, $codon, $altcodon, $codpos)=&annotnoncoding($march, $genename,$ref_base, $base);
+     }
+     print SNP $reference,$genename,$symbol{$genename},$name,$desc{$genename},$snpqual,$depth,$bidir,$hqr_var,$hqr_ref,$fq,$codon,$altcodon,$codpos,$filter;    
+     $march++;
     }
-    ($name,$codon,$altcodon,$codpos) = &annotindel($from,$genename,$ref_allele, $allele);
-    print SNP $reference,$genename,$symbol{$genename},$name,$desc{$genename},$snpqual,$depth,$bidir,$hqr_var,$hqr_ref,$fq,$codon,$altcodon,$codpos,$filter; 
-   } else { #completes INDEL portion of combo SNP/indel
-    while (my ($gname, $genomicPos) = each %start) {
-     if ($genomicPos <$from && $end{$gname}>=$from) { #for zero based coordinates
+   } elsif (length($allele)!=length($ref_allele)) { #indel may or may not also have SNP
+    if ($allele eq '.') {
+     $allele='';
+    } elsif ($ref_allele eq ".") {
+     $ref_allele='';
+    }
+    if (length($ref_allele)>0 && substr($allele,0,length($ref_allele)) eq $ref_allele) {
+     $allele=substr($allele,length($ref_allele));
+     $ref_allele='';
+     $from++;
+    }
+    if (length($allele)>0 && substr($ref_allele,0,length($allele)) eq $allele) {
+     $ref_allele=substr($ref_allele,length($allele));
+     $allele='';
+     $from++;
+    }
+    if (length($allele)>0 && length($ref_allele)>0) {
+     my $march=$from;
+     if (length($allele)>length($ref_allele)) { #at least partly an insertion
+      while ($march <=$from+length($ref_allele)-1) {
+       while (my ($gname, $genomicPos) = each %start) {
+        if ($genomicPos <$march && $end{$gname}>=$march) { #for zero based coordinates
+         $genename=$gname;
+        }
+       }
+       my $ref_base=substr($ref_allele,$march-$from,1);
+       my $base=substr($allele,$march-$from,1);
+       if ($genename =~ /^Rv/i) { # 1 gene
+        ($name, $codon, $altcodon, $codpos)=&assign_allele($genename, $ref_allele, $allele, $march, $from);
+       } else { ## 1 noncoding variant
+        ($name, $codon, $altcodon, $codpos)=&annotnoncoding($march, $genename,$ref_base, $base);
+       }
+       print SNP $reference,$genename,$symbol{$genename},$name,$desc{$genename},$snpqual,$depth,$bidir,$hqr_var,$hqr_ref,$fq,$codon,$altcodon,$codpos,$filter;
+       $march++;
+      } 
+     } elsif (length($ref_allele)>length($allele)) { #at least partly a deletion
+      while ($march <=$from+length($allele)-1) {
+       while (my ($gname, $genomicPos) = each %start) {
+        if ($genomicPos <$march && $end{$gname}>=$march) { #for zero based coordinates
+         $genename=$gname;
+        }
+       }
+       my $ref_base=substr($ref_allele,$march-$from,1);
+       my $base=substr($allele,$march-$from,1);
+       if ($genename =~ /^Rv/i) { # 1 gene
+        ($name, $codon, $altcodon, $codpos, $march)=&assign_allele($genename, $ref_allele, $allele, $march, $from);
+       } else { ## 1 noncoding variant
+        ($name, $codon, $altcodon, $codpos)=&annotnoncoding($march, $genename,$ref_base, $base);
+       }
+       print SNP $reference,$genename,$symbol{$genename},$name,$desc{$genename},$snpqual,$depth,$bidir,$hqr_var,$hqr_ref,$fq,$codon,$altcodon,$codpos,$filter;
+       $march++;
+      } 
+     } #completes SNP porition of INS or DEL $march variable marks where we are
+     while (my ($gname, $genomicPos) = each %start) {
+      if ($genomicPos <$march && $end{$gname}>=$march) { #for zero based coordinates
        $genename=$gname;
+      }
      }
+     ($name,$codon,$altcodon,$codpos) = &annotindel($from,$genename,$ref_allele, $allele);
+     print SNP $reference,$genename,$symbol{$genename},$name,$desc{$genename},$snpqual,$depth,$bidir,$hqr_var,$hqr_ref,$fq,$codon,$altcodon,$codpos,$filter; 
+    } else { #completes INDEL portion of combo SNP/indel
+     while (my ($gname, $genomicPos) = each %start) {
+      if ($genomicPos <$from && $end{$gname}>=$from) { #for zero based coordinates
+        $genename=$gname;
+      }
+     }
+     ($name,$codon,$altcodon,$codpos) = &annotindel($from,$genename,$ref_allele, $allele);
+     print SNP $reference,$genename,$symbol{$genename},$name,$desc{$genename},$snpqual,$depth,$bidir,$hqr_var,$hqr_ref,$fq,$codon,$altcodon,$codpos,$filter;
     }
-    ($name,$codon,$altcodon,$codpos) = &annotindel($from,$genename,$ref_allele, $allele);
-    print SNP $reference,$genename,$symbol{$genename},$name,$desc{$genename},$snpqual,$depth,$bidir,$hqr_var,$hqr_ref,$fq,$codon,$altcodon,$codpos,$filter;
-   }
-  } #close indel
- } #close high Quality
+   } #close indel
+  } #close high Quality
+ } #close no semicolon
 } #vcf file complete
 
 close SNP;
