@@ -23,7 +23,7 @@ urlpatterns = patterns('',
     url(r'^user/', include('apps.tb_users.urls', namespace='users')),
     url(r'^auth/', include('apps.tb_users.auth_urls')),
 
-    url(r'.+', Tv.as_view(template_name='offline.html'), name="offline"),
+    #url(r'.+', Tv.as_view(template_name='offline.html'), name="offline"),
 
     url(r'^explore/', include('apps.explore.urls', namespace='explore')),
     url(r'^predict/', include('apps.predict.urls', namespace='predict')),

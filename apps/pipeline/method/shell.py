@@ -126,7 +126,7 @@ class JobManager(ManagerBase):
                 status = 'stopped'
 
         if pid is None and ret is None:
-            return None
+            return {}
 
         status = self.state_and_clear(pid, status)
 
