@@ -83,8 +83,6 @@ class Program(Model):
     name = CharField(max_length=128)
     description = TextField(null=True, blank=True,
             help_text='Describe the program and what it does in detail.')
-    requirements = TextField(null=True, blank=True,
-            help_text='List of requirements, one per line')
 
     command_line = TextField(
             help_text='Write the command line using replacement syntax '
