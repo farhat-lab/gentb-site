@@ -383,7 +383,7 @@ class ProgramRun(TimeStampedModel):
                 self.duration = dur.total_seconds() + int(dur.microseconds > 0)
                 self.is_complete = True
                 self.is_error = data['return'] != 0
-                self.error_text = data['error']
+                self.error_text = data['error'][:10240] # Limit errors to 10k
                 self.input_size = self.update_size(self.input_files) / 1024.0
                 self.output_size = self.update_size(self.output_files) / 1024.0
 

@@ -117,6 +117,13 @@ class JobManager(ManagerBase):
         if status == 'finished' and clean:
             self.job_clean(job_id, 'err')
 
+        if err:
+            # Split out the lsf output, not needed.
+            errs = err.split('-'*60)
+            # TODO Figure out if we want to do anything with the rest
+            # of the LSF error output. It might actually be a good status file.
+            err = errs[0]
+
         return {
             'submitted': data['submit_time'],
             'started': data['start_time'],
