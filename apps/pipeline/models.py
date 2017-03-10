@@ -383,7 +383,7 @@ class ProgramRun(TimeStampedModel):
                 self.output_size = self.update_size(self.output_files) / 1024.0
 
             if data.get('started', None) is not None:
-                self.started = True
+                self.is_started = True
                 # Save the duration so far
                 dur = datetime.now() - data['started']
                 # Round up any microseconds, useful for testing non-zero time
