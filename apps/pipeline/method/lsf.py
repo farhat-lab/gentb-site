@@ -106,11 +106,6 @@ class JobManager(ManagerBase):
         }.get(data['stat'])
 
         ret = None
-        if data['stat'] == 'DONE':
-            ret = 0
-        elif status == 'finished':
-            ret = 1
-
         (_, err) = self.job_read(job_id, 'err')
 
         if status == 'finished' and clean:
@@ -119,9 +114,14 @@ class JobManager(ManagerBase):
         if err:
             # Split out the lsf output, not needed.
             errs = err.split('-'*60)
-            # TODO Figure out if we want to do anything with the rest
-            # of the LSF error output. It might actually be a good status file.
             err = errs[0]
+            for page in errs[1:]:
+                # Get return code from output pages
+                if 'Resource usage summary' in page:
+                    if 'Successfully completed' in page:
+                        ret = 0
+                    elif 'Exited with exit code' in page:
+                        ret = int(page.split('exit code ')[-1].split('.')[0])
 
         return {
             'submitted': data['submit_time'],
