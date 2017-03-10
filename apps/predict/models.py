@@ -248,6 +248,12 @@ class PredictStrain(Model):
         self.save()
         return self.piperun.programs.filter(is_error=True).count() == 0
 
+    def update_status(self):
+        """Update the statuses for each of the piperun programs"""
+        if self.piperun:
+            # Update all program runs in the piperun
+            self.piperun.update_all()
+
     def __str__(self):
         return str(self.name)
 
