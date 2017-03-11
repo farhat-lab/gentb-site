@@ -84,8 +84,15 @@ class PredictDataset(TimeStampedModel):
         return os.path.isdir(self.file_directory)
 
     @property
+    def output_files(self):
+        for name in os.listdir(self.file_directory):
+            yield os.path.join(self.file_directory, name)
+
+    @property
     def has_prediction(self):
-        return isfile(join(self.file_directory, 'output', 'matrix.json'))
+        for fn in self.output_files:
+            if fn.endswith('.json'):
+                return True
 
     def is_manual(self):
         return self.file_type == 'manual'
