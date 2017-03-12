@@ -96,11 +96,6 @@ class PredictDataset(TimeStampedModel):
         return reverse('predict:view_single_dataset', kwargs=dict(slug=self.md5))
 
     @property
-    def media_url(self):
-        """Return the location of the file directory accessable via url"""
-        return join(settings.MEDIA_URL, 'data', basename(self.file_directory.rstrip('/')))
-
-    @property
     def directory_exists(self):
         """Returns true if the file_directory exists"""
         return os.path.isdir(self.file_directory)
@@ -108,6 +103,10 @@ class PredictDataset(TimeStampedModel):
     @property
     def has_prediction(self):
         return any([strain.has_prediction for strain in self.strains.all()])
+
+    @property
+    def has_output_files(self):
+        return any([list(strain.output_files) for strain in self.strains.all()]) 
 
     def is_manual(self):
         return self.file_type == 'manual'
@@ -234,21 +233,30 @@ class PredictStrain(Model):
 
     @property
     def has_prediction(self):
-        """Returns the prediction data if available"""
-        fn = self.prediction_file
-        if fn is not None:
-            return os.path.isfile(fn)
-        return False
+        """Returns thrue if prediction data is available"""
+        return bool(self.prediction_file)
 
     @property
     def prediction_file(self):
         """Return a detected prediction file for this strain"""
+        for (url, fn) in self.output_files:
+	    if fn.endswith('matrix.json'):
+		return fn
+        return None
+
+    @property
+    def output_files(self):
+        """Iterate over all output files and return media url and filename"""
+        root_path = self.dataset.BASE_DIR
+        root_url = join(settings.MEDIA_URL, 'data')
         if self.piperun:
             for run in self.piperun.programs.all():
                 for fn in run.output_fn:
-                    if fn.endswith('matrix.json'):
-                        return fn
-        return None
+                    if os.path.isfile(fn):
+                        url = None
+                        if root_path in fn:
+                            url = fn.replace(root_path, root_url)
+                        yield (url, fn)
 
     def get_raw_prediction(self):
         """Get the raw data slightly bound better"""
