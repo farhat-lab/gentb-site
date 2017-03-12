@@ -453,8 +453,8 @@ class ProgramRun(TimeStampedModel):
                 self.is_error = data['return'] != 0
                 if data['error']:
                     self.error_text = data['error'][:10240] # Limit errors to 10k
-                self.input_size = self.update_size(self.input_files) / 1024.0
-                self.output_size = self.update_size(self.output_files) / 1024.0
+                self.input_size = self.update_size(*self.input_fn) / 1024.0
+                self.output_size = self.update_size(*self.output_fn) / 1024.0
 
             if data.get('started', None) is not None:
                 if not self.is_started:
@@ -474,8 +474,21 @@ class ProgramRun(TimeStampedModel):
             self.save()
         return self.is_complete
 
-    def update_size(self, files):
+    @property
+    def output_fn(self):
+        """Returns a list of output filenames"""
+        if self.output_files is not None:
+            return [fn for fn in self.output_files.split("\n") if isfile(fn)]
+        return []
+
+    @property
+    def input_fn(self):
+        """Returns a list of output filenames"""
+        if self.input_files is not None:
+            return [fn for fn in self.input_files.split("\n") if isfile(fn)]
+        return []
+
+    def update_size(self, *files):
         """Takes a list of files as a string and returns the size in Kb"""
-        return 1024 + sum([getsize(fn)
-            for fn in files.split("\n") if isfile(fn)])
+        return 1024 + sum([getsize(fn) for fn in files])
 
