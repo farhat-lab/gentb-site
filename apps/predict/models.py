@@ -231,6 +231,18 @@ class PredictStrain(Model):
         self.save()
         return self.piperun.programs.filter(is_error=True).count() == 0
 
+    def check_download(self):
+        """Return True if the files are ready for this pipeline,
+           False if they are still downloading and
+           None if there was an error downloading the files."""
+	for input_file in (self.file_one, self.file_two):
+	    if input_file is not None:
+		if input_file.retrieval_error:
+		    return None
+		elif not input_file.retrieval_end:
+		    return False
+	return True
+
     @property
     def has_prediction(self):
         """Returns thrue if prediction data is available"""
