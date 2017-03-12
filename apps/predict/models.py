@@ -244,10 +244,10 @@ class PredictStrain(Model):
     def prediction_file(self):
         """Return a detected prediction file for this strain"""
         if self.piperun:
-            run = self.piperun.programs.last()
-            for fn in run.output_fn:
-                if fn.endswith('matrix.json'):
-                    return fn
+            for run in self.piperun.programs.all():
+                for fn in run.output_fn:
+                    if fn.endswith('matrix.json'):
+                        return fn
         return None
 
     def get_raw_prediction(self):
