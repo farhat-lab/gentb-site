@@ -461,7 +461,7 @@ class ProgramRun(TimeStampedModel):
                     self.is_started = True
                     self.started = data['started']
                 # Save the duration so far
-                dur = datetime.now() - data['started']
+                dur = now() - data['started']
                 # Round up any microseconds, useful for testing non-zero time
                 self.duration = dur.total_seconds() + int(dur.microseconds > 0)
 

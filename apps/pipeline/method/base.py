@@ -24,6 +24,9 @@ import shutil
 import tempfile
 from datetime import datetime
 
+from django.utils.timezone import make_aware, utc
+
+
 class ManagerBase(object):
     def __init__(self, pipedir=None):
         if pipedir is None:
@@ -46,8 +49,8 @@ class ManagerBase(object):
         fn = self.job_fn(job_id, ext)
         if os.path.isfile(fn):
             with open(fn, 'r') as fhl:
-                return (datetime.fromtimestamp(os.path.getmtime(fn)),
-                        fhl.read().strip())
+                dt = datetime.fromtimestamp(os.path.getmtime(fn))
+                return (make_aware(dt, utc), fhl.read().strip())
         else:
             return (None, None)
 

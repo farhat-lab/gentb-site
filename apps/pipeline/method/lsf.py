@@ -27,6 +27,7 @@ import logging
 from datetime import datetime
 from subprocess import Popen, PIPE
 from django.conf import settings
+from django.utils.timezone import make_aware, utc
 
 from .base import ManagerBase
 
@@ -94,7 +95,8 @@ class JobManager(ManagerBase):
             if data[dkey] == '-':
                 data[dkey] = None
             else:
-                data[dkey] = datetime.strptime(year + data[dkey], '%Y/%m/%d-%H:%M:%S')
+                dt = datetime.strptime(year + data[dkey], '%Y/%m/%d-%H:%M:%S')
+                data[dkey] = make_aware(dt, utc)
 
         status = {
             'RUN': 'running',
