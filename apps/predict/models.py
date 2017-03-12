@@ -239,7 +239,7 @@ class PredictStrain(Model):
     @property
     def prediction_file(self):
         """Return a detected prediction file for this strain"""
-        for (url, fn) in self.output_files:
+        for (url, fn, name) in self.output_files:
 	    if fn.endswith('matrix.json'):
 		return fn
         return None
@@ -256,7 +256,7 @@ class PredictStrain(Model):
                         url = None
                         if root_path in fn:
                             url = fn.replace(root_path, root_url)
-                        yield (url, fn)
+                        yield (url, fn, basename(fn))
 
     def get_raw_prediction(self):
         """Get the raw data slightly bound better"""

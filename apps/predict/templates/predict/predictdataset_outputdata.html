@@ -1,62 +1,19 @@
+{% load static %}
 
-<table class="table table-condensed table-bordered">
-  <tr>
-    <th class="text-primary">Local Dataset Directory</th>
-    <td>
-      {% if object.directory_exists %}
-        <span class="label label-success">OK</span>
-      {% else %}
-        <span class="label label-danger">Missing!</span>
-      {% endif %}
-      {{ object.file_directory }}
-    </td>
-  </tr>
-    <tr>
-        <th class="text-primary">Results Files</th>
-        <td>
-          {% for url, name in object.result_files %}
-            {% if forloop.first %}
-                <span class="label label-success">OK</span> &nbsp;<br />
-            {% endif %}
-            ({{ forloop.counter }}) {{ name }}
-            <a href="{{ url }}"><span class="glyphicon glyphicon-download"></span></a>
-            <br />
-          {% empty %}
-            <span class="label label-info">No files</span> &nbsp;
-            The directory is currently empty.  Have the Dropbox files been
-            retrieved?
-          {% endfor %}
-        </td>
-    </tr>
-    <tr>
-        <th class="text-primary">Other Files</th>
-        <td>
-          {% for url, name in object.all_files %}
-            ({{ forloop.counter }}) {{ name }}
-            <a href="{{ url }}"><span class="glyphicon glyphicon-download"></span></a>
-            <br />
-          {% endfor %}
-        </td>
-    </tr>
-    <tr>
-        <th class="text-primary">Pipeline Command</th>
-        <td>
-            {% if object.get_pipeline_command.0 %}
-                <span class="label label-info">OK</span> &nbsp;
-                <br />{{ pipeline_command }}
-            {% else %}
-                <span class="label label-danger">Error</span>
-                {{ pipeline_command_err|linebreaks }}
-            {% endif %}
-        </td>
-    </tr>
-    <tr>
-        <th class="text-primary">Created</th>
-        <td>{{ object.created }}</td>
-    </tr>
-    <tr>
-        <th class="text-primary">Modified</th>
-        <td>{{ object.modified }}</td>
-    </tr>
-</table>
-
+{% for strain in object.strains.all %}
+  <div class="well files">
+    <div class="row">
+      <label class="">{{ strain.name }}</label>
+    </div>
+    <div class="row">
+      {% for url, fn, name in strain.output_files %}
+        <a href="{{ url }}" class="btn btn-default">
+	  <!--img src="{% static "images/files/base.png" %}"-->
+          <h1 class="glyphicon glyphicon-file"></h1>
+          <br/>
+	  <p href="{{ url }}">{{ name }}</p>
+        </a>
+      {% endfor %}
+    </div>
+  </div>
+{% endfor %}
