@@ -195,6 +195,13 @@
   
 }
 
+h3.well-label {
+  top: 15px;
+  left: 5px;
+  position: relative;
+  margin-top: -10px;
+}
+
 /********************************************************************/
 /*** PANEL DEFAULT ***/
 .nav-tabs > li > a,

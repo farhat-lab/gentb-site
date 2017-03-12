@@ -1,10 +1,8 @@
 {% load static %}
 
 {% for strain in object.strains.all %}
+  <h3 class="well-label"><span class="label label-success">{{ strain.name }}</span></h3>
   <div class="well files">
-    <div class="row">
-      <label class="">{{ strain.name }}</label>
-    </div>
     <div class="row">
       {% for url, fn, name in strain.output_files %}
         <a href="{{ url }}" class="btn btn-default">
