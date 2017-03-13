@@ -326,8 +326,14 @@ class PipelineRun(TimeStampedModel):
         Update all pipeline project runs with their running status returns
         True if all programs are complete. False if any are still running.
         """
-        return all([program.update_status()
-            for program in self.programs.all()])
+        qs = self.programs.filter(Q(is_submitted=False) | Q(is_complete=False))
+        if all([program.update_status() for program in qs]):
+            if qs.count():
+                # Clean up step for all programs
+                for program in self.programs.filter(program__keep=False):
+                    program.delete_output_files()
+            return True
+        return False
 
 
 class ProgramRun(TimeStampedModel):
@@ -389,10 +395,7 @@ class ProgramRun(TimeStampedModel):
         self.save()
 
         # Delete all old output files
-        if self.output_files:
-            for fn in self.output_files.split("\n"):
-                if isfile(fn):
-                    os.unlink(fn)
+        self.delete_output_files()
 
         if JobManager.submit(self.job_id, self.debug_text, depends=previous):
             self.is_submitted = True
@@ -491,4 +494,9 @@ class ProgramRun(TimeStampedModel):
     def update_size(self, *files):
         """Takes a list of files as a string and returns the size in Kb"""
         return 1024 + sum([getsize(fn) for fn in files])
+
+    def delete_output_files(self):
+        """Deletes any of the output files"""
+        for fn in self.output_fn:
+            os.unlink(fn)
 

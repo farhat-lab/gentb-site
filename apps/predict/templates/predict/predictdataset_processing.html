@@ -21,39 +21,39 @@
             {% if run.is_error %}
               {% if not run.is_submitted %}
                 <li data-toggle="collapse" data-target="#{{ run.job_id }}">
-                  <span class="glyphicon glyphicon-refresh" data-toggle="tooltip" title="Scheduled for re-run (after error)."></span>
+                  <span class="glyphicon glyphicon-refresh" data-container="body" data-toggle="tooltip" title="Scheduled for re-run (after error)."></span>
                   <h4>{{ run.program.name }}</h4>
                 </li>
               {% elif run.is_started %}
                 <li class="error" data-toggle="collapse" data-target="#{{ run.job_id }}">
-                  <span class="glyphicon glyphicon-remove" data-toggle="tooltip" title="Error running this program, click for details."></span>
+                  <span class="glyphicon glyphicon-remove" data-container="body" data-toggle="tooltip" title="Error running this program, click for details."></span>
                   <h4>{{ run.program.name }}</h4>
                 </li>
               {% else %}
               <li data-toggle="collapse" data-target="#{{ run.job_id }}">
-                  <span class="glyphicon glyphicon-remove" data-toggle="tooltip" title="Stopped due to previous pipeline program error."></span>
+                  <span class="glyphicon glyphicon-remove" data-container="body" data-toggle="tooltip" title="Stopped due to previous pipeline program error."></span>
                   <h4>{{ run.program.name }}</h4>
                 </li>
               {% endif %}
             {% elif run.is_complete %}
               <li class="completed">
-                <span class="glyphicon glyphicon-ok" data-toggle="tooltip" title="Program run complete. <br><strong>Wait Time:</strong> {{ run.wait_time }}s<br><strong>Run Time:</strong> {{ run.run_time }}s" data-html="true"></span>
+                <span class="glyphicon glyphicon-ok" data-container="body" data-toggle="tooltip" title="Program run complete. <br><strong>Wait Time:</strong> {{ run.wait_time }}s<br><strong>Run Time:</strong> {{ run.run_time }}s" data-html="true"></span>
                 <h4>{{ run.program.name }}</h4>
               </li>
             {% elif run.is_started %}
               <li class="active">
-                <span class="glyphicon glyphicon-cog" data-toggle="tooltip" title="Program is running right now. <br><strong>Run Time:</strong> {{ run.run_time }}s" data-html="true"></span>
+                <span class="glyphicon glyphicon-cog" data-container="body" data-toggle="tooltip" title="Program is running right now. <br><strong>Run Time:</strong> {{ run.run_time }}s" data-html="true"></span>
                 <h4>{{ run.program.name }}</h4>
               </li>
             {% elif run.is_submitted %}
               <li class="submitted">
-                  <span class="glyphicon glyphicon-pause" data-toggle="tooltip" title="Program is held in a queue or waiting for a previous job to finish.<br><strong>Wait Time:</strong> {{ run.wait_time }}s" data-html="true"></span>
+                  <span class="glyphicon glyphicon-pause" data-container="body" data-toggle="tooltip" title="Program is held in a queue or waiting for a previous job to finish.<br><strong>Wait Time:</strong> {{ run.wait_time }}s" data-html="true"></span>
                   <h4>{{ run.program.name }}</h4>
                 </a>
               </li>
             {% else %}
               <li>
-                <span class="glyphicon glyphicon-cog" data-toggle="tooltip" title="Program has not been submitted yet, please wait."></span>
+                <span class="glyphicon glyphicon-cog" data-container="body" data-toggle="tooltip" title="Program has not been submitted yet, please wait."></span>
                 <h4>{{ run.program.name }}</h4>
               </li>
             {% endif %}
@@ -61,7 +61,7 @@
         {% else %}
           {% for link in strain.pipeline.programs.all %}
             <li>
-              <span class="glyphicon glyphicon-time" data-toggle="tooltip" title="Entire pipeline has not been submitted yet, please wait."></span>
+              <span class="glyphicon glyphicon-time" data-container="body" data-toggle="tooltip" title="Entire pipeline has not been submitted yet, please wait."></span>
               <h4>{{ link.program.name }}</h4>
             </li>
           {% endfor %}
