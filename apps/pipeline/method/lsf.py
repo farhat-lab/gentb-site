@@ -124,6 +124,9 @@ class JobManager(ManagerBase):
                         ret = 0
                     elif 'Exited with exit code' in page:
                         ret = int(page.split('exit code ')[-1].split('.')[0])
+            if 'User defined signal 2' in err:
+                err = 'Pipeline stopped by computer cluster ' +\
+                    'for taking too long.'
 
         # Just in case
         if ret is None and status == 'finished':
