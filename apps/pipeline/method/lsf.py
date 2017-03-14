@@ -46,6 +46,9 @@ class JobManager(ManagerBase):
     def __init__(self, *args, **kw):
         self.group = getattr(settings, 'PIPELINE_LSF_GROUP', None)
         self.queue = getattr(settings, 'PIPELINE_LSF_QUEUE', 'short')
+        self.limit = getattr(settings, 'PIPELINE_LSF_LIMIT', '12:00')
+        if isinstance(self.limit, int):
+            self.limit = "%s:00" % self.limit
 
         super(JobManager, self).__init__(*args, **kw)
 
@@ -58,7 +61,7 @@ class JobManager(ManagerBase):
             bcmd += ['-g', self.group]
         if depends:
             bcmd += ['-w', 'done(%s)' % depends]
-        bcmd += ['-o', self.job_fn(job_id, 'err'), '-W', '2:00', cmd]
+        bcmd += ['-o', self.job_fn(job_id, 'err'), '-W', self.limit, cmd]
 
         p = Popen(bcmd, shell=False, stdout=None, stderr=None, close_fds=True)
         return p.wait() == 0
