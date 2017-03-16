@@ -8,7 +8,7 @@ from django.db.models import Count
 
 from .json_view import JsonView
 from .models import Country, Place
-from apps.mutations.models import Drug, RESISTANCE
+from apps.mutations.models import Drug, StrainSource, RESISTANCE
 
 
 class MapPage(TemplateView):
