@@ -1,22 +1,43 @@
+/*
+ * Copyright 2017, Maha Farhat
+ *
+ * This file is part of the software inkscape-web, consisting of custom 
+ * code for the Inkscape project's django-based website.
+ *
+ * inkscape-web is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * inkscape-web is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with inkscape-web.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 $(document).ready(function() {
   $('div.maps').each(function() {
     var map = $(this);
     $.getJSON(map.data('map'), function(data) {
-      $.getJSON(map.data('polygons'), function(polygons) {
-        makeMap(map, data, polygons);
-      });
+      makeMap(map, data);
     });
   });
 });
 
 function matchKey(datapoint, key_variable) {
-  return (parseFloat(key_variable[0][datapoint]));
+  if(key_variable[0]) {
+      return (parseFloat(key_variable[0][datapoint]));
+  }
+  return "black";
 }
 
-function makeMap(target, data_1, gjson_1) {
+function makeMap(target, gjson_1) {
 
   var color = d3.scale.threshold()
-    .domain([5, 10, 15, 20])
+    .domain([10, 20, 30, 40])
     .range(['#FFFFCC', '#C7E9B4', '#7FCDBB', '#41B6C4', '#1D91C0']);
 
   var map = L.map(target[0].id).setView([12, 25], 2);
@@ -28,7 +49,7 @@ function makeMap(target, data_1, gjson_1) {
 
   function style_1(feature) {
     return {
-      fillColor: color(matchKey(feature.id, data_1)),
+      fillColor: color(feature.properties.values.Total),
       weight: 1,
       opacity: 0.5,
       color: 'black',
@@ -37,7 +58,17 @@ function makeMap(target, data_1, gjson_1) {
   }
 
   function onEachFeature(feature, layer) {
-    layer.bindPopup(feature.id + ': ' + feature.popupContent);
+    ret = '<h4>' + feature.properties.name + '</h4>';
+    $.each(['Sensitive', 'MDR', 'XDR', 'TDR'], function(key, value) {
+      if (feature.properties.values[value]) {
+        ret += '<div><span>' + value + ':</span><span>' + feature.properties.values[value] + "</span></div>";
+      }
+    });
+    if(Object.keys(feature.properties.values).length > 2) {
+      ret += "<hr/><div class='total'><span>Total: </span><span>" + feature.properties.values.Total + "</span></div>";
+    }
+    ret += "<hr/><button class='btn btn-primary btn-xs disabled'>Select Country</button>"
+    layer.bindPopup(ret);
   }
   gJson_layer_1 = L.geoJson(gjson_1, {
     style: style_1,
@@ -52,11 +83,10 @@ function makeMap(target, data_1, gjson_1) {
     var div = L.DomUtil.create('div', 'legend');
     return div
   };
-
   legend.addTo(map);
 
   var x = d3.scale.linear()
-    .domain([0, 22])
+    .domain([0, 40])
     .range([0, 400]);
 
   var xAxis = d3.svg.axis()

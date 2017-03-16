@@ -18,3 +18,18 @@
 .leaflet-control-attribution {
   display: none !important;
 }
+
+.leaflet-popup-content hr {
+  margin-top: 3px;
+  margin-bottom: 3px;
+}
+.leaflet-popup-content h4 {
+  border-bottom: thin solid #eee;
+  padding-bottom: 4px;
+  margin-bottom: 4px;
+  font-family: Tahoma, Geneva, sans-serif;
+  color: #43464C;
+}
+.leaflet-popup-content {
+  
+}
