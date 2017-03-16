@@ -3,16 +3,16 @@
 
 {% block extra_css %}
   <link rel="stylesheet" href="{% static "css/leaflet.css" %}"/>
-  <link rel="stylesheet" href="{% static "css/leaflet_map.css" %}"/>
-  <link rel="stylesheet" href="{% static "css/leaflet.markercluster.css" %}"/>
+  <link rel="stylesheet" href="{% static "css/genetics-map.css" %}"/>
   <link rel="stylesheet" href="{% static "css/vertical-tabs.css" %}"/>
 {% endblock %}
 {% block extra_js %}
   <script src="{% static "js/d3.js" %}"></script>
-  <script src="{% static "js/leaflet.js" %}"></script>
-  <script src="{% static "js/leaflet_map.js" %}"></script>
-  <script src="{% static "js/leaflet.markercluster.js" %}"></script>
+  <script src="{% static "js/nv.d3.js" %}"></script>
   <script src="{% static "js/vertical-tabs.js" %}"></script>
+  <script src="{% static "js/leaflet.js" %}"></script>
+  <script src="{% static "js/genetics-map.js" %}"></script>
+  <script src="{% static "js/drugs-chart.js" %}"></script>
 {% endblock %}
 
 {% block content %}
@@ -23,12 +23,12 @@
         <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 vertical-tab-container">
             <div class="col-lg-1 col-md-3 col-sm-3 col-xs-3 vertical-tab-menu">
               <div class="list-group">
-                <a href="#" class="list-group-item active text-center">
+                <a href="#" class="list-group-item text-center active">
                   <h3 class="glyphicon glyphicon-globe"></h3>
                   <p>World</p>
                 </a>
                 <a href="#" class="list-group-item text-center">
-                  <h3 class="icon-gene"></h3>
+                  <h3 class="icon-helix"></h3>
                   <p>Gene</p>
                 </a>
                 <a href="#" class="list-group-item text-center">
@@ -36,20 +36,19 @@
                   <p>Lineage</p>
                 </a>
                 <a href="#" class="list-group-item text-center">
-                  <h3 class="icon-adenine"></h3>
+                  <h3 class="icon-mutation"></h3>
                   <p>Mutation</p>
                 </a>
               </div>
             </div>
             <div class="col-lg-11 col-md-9 col-sm-9 col-xs-9 vertical-tab max-width">
                 <div class="vertical-tab-content active">
-                  <div class="maps" id="mapid" data-map="{% static "map_data/tb_data_01.json" %}" data-polygons="{% url 'maps:map.countries' %}">
-                </div>
-
+                  <div class="maps" id="mapid" data-map="{% url 'maps:map.places' %}"></div>
                 </div>
                 <div class="vertical-tab-content">
-                    <center>
-                    </center>
+                  <div class="d3graph">
+                    <svg class="drugs" id="drugs" data-drug="{% url 'maps:map.drugs' %}"></svg>
+                  </div>
                 </div>
                 <div class="vertical-tab-content">
                     <center>
