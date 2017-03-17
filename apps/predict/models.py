@@ -273,7 +273,7 @@ class PredictStrain(Model):
     def get_raw_prediction(self):
         """Get the raw data slightly bound better"""
         matrix_fn = self.prediction_file
-        if os.path.isfile(matrix_fn):
+        if matrix_fn and os.path.isfile(matrix_fn):
             with open(matrix_fn, 'r') as fhl:
                 (pr, m_A, m_B) = json.loads(fhl.read())
 
