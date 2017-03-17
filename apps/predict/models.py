@@ -275,7 +275,11 @@ class PredictStrain(Model):
         matrix_fn = self.prediction_file
         if matrix_fn and os.path.isfile(matrix_fn):
             with open(matrix_fn, 'r') as fhl:
-                (pr, m_A, m_B) = json.loads(fhl.read())
+                try:
+                    (pr, m_A, m_B) = json.loads(fhl.read())
+                except ValueError:
+                    logging.error("Can't load prediction file: %s" % matrix_fn)
+                    m_A = []
 
                 # Rotate mutation matrix 90 degrees
                 for name in m_A:

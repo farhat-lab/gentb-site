@@ -113,8 +113,8 @@ class JobManager(ManagerBase):
         ret = None
         (_, err) = self.job_read(job_id, 'err')
 
-        if status == 'finished' and clean:
-            self.job_clean(job_id, 'err')
+        #if status == 'finished' and clean:
+        #    self.job_clean(job_id, 'err')
 
         if err:
             # Split out the lsf output, not needed.
