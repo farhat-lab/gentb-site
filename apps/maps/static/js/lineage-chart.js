@@ -19,20 +19,20 @@
  */
 
 $(document).ready(function() {
-  var svg = $('svg.drugs');
-  $.getJSON(svg.data('drug'), function(data) {
-    makeDrugChart(data.data);
+  var svg = $('svg.lineages');
+  $.getJSON(svg.data('lineage'), function(data) {
+    makeLineageChart(data.data);
   });
 });
 
-function makeDrugChart(data) {
+function makeLineageChart(data) {
     var chart = nv.models.multiBarChart()
       .reduceXTicks(false);
 
     var width = 1000;
     var height = 600;
 
-    chart.margin({top: 20, right: 0, bottom: 60, left: 80});
+    chart.margin({top: 20, right: 0, bottom: 120, left: 80});
     chart.height(height);
     chart.width(width);
     chart.yAxis.scale(100).orient("left")
@@ -40,7 +40,7 @@ function makeDrugChart(data) {
         .tickFormat(d3.format("d"));
 
     chart.xAxis
-        .axisLabel("Drug Codename")
+        .axisLabel("Spoliofamily Name")
         .rotateLabels(-45);
 
     chart.showLegend(true);
@@ -54,7 +54,7 @@ function makeDrugChart(data) {
       return ret + "</table>";
     });
 
-    var svg = d3.select('svg.drugs')
+    var svg = d3.select('svg.lineages')
           .attr('perserveAspectRatio', 'xMinYMid')
           .attr('width', width)
           .attr('height', height)

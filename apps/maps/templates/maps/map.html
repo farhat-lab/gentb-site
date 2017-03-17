@@ -13,6 +13,8 @@
   <script src="{% static "js/leaflet.js" %}"></script>
   <script src="{% static "js/genetics-map.js" %}"></script>
   <script src="{% static "js/drugs-chart.js" %}"></script>
+  <script src="{% static "js/lineage-chart.js" %}"></script>
+  <script src="{% static "js/mutations-chart.js" %}"></script>
 {% endblock %}
 
 {% block content %}
@@ -24,19 +26,19 @@
             <div class="col-lg-1 col-md-3 col-sm-3 col-xs-3 vertical-tab-menu">
               <div class="list-group">
                 <a href="#" class="list-group-item text-center active">
-                  <h3 class="glyphicon glyphicon-globe"></h3>
+                  <h2 class="glyphicon glyphicon-globe"></h2>
                   <p>World</p>
                 </a>
                 <a href="#" class="list-group-item text-center">
-                  <h3 class="icon-helix"></h3>
-                  <p>Gene</p>
+                  <h2 class="icon-flask"></h2>
+                  <p>Drug</p>
                 </a>
                 <a href="#" class="list-group-item text-center">
-                  <h3 class="icon-graph"></h3>
+                  <h2 class="icon-graph"></h2>
                   <p>Lineage</p>
                 </a>
                 <a href="#" class="list-group-item text-center">
-                  <h3 class="icon-mutation"></h3>
+                  <h2 class="icon-mutation"></h2>
                   <p>Mutation</p>
                 </a>
               </div>
@@ -51,12 +53,14 @@
                   </div>
                 </div>
                 <div class="vertical-tab-content">
-                    <center>
-                    </center>
+                  <div class="d3graph">
+                    <svg class="lineages" id="lineages" data-lineage="{% url 'maps:map.lineages' %}"></svg>
+                  </div>
                 </div>
                 <div class="vertical-tab-content">
-                    <center>
-                    </center>
+                  <div class="d3graph">
+                    <svg class="mutations" id="mutations" data-mutation="{% url 'maps:map.mutations' %}"></svg>
+                  </div>
                 </div>
             </div>
         </div>

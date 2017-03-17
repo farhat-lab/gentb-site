@@ -261,6 +261,21 @@ class StrainSource(Model):
         return self.name or self.patient_id or ("Unnamed %d" % self.pk)
 
 
+class SpoligoType(Model):
+    name = CharField(max_length=64, db_index=True,
+        help_text="Human readable name for this Spoligo Type")
+    octal = CharField(validators=[is_octal], max_length=32,
+        null=True, blank=True, db_index=True,
+        help_text="Octal identifier for this Spoligo Type")
+    spid = IntegerField(null=True, blank=True, db_index=True) 
+    parent = ForeignKey("self", null=True, blank=True,
+        help_text="Family parent strain type")
+    notes = TextField(blank=True)
+
+    def __str__(self):
+        return self.name
+
+
 class StrainMutation(Model):
     # id (link to StrainSource imported data)
     strain = ForeignKey(StrainSource, related_name='mutations')

@@ -8,11 +8,11 @@ from django.db.models import Count
 
 from .json_view import JsonView
 from .models import Country, Place
-from apps.mutations.models import Drug, StrainSource, RESISTANCE
+from apps.mutations.models import Drug, StrainSource, Mutation, RESISTANCE
 
 
 class MapPage(TemplateView):
-    template_name = 'maps/basic_map.html'
+    template_name = 'maps/map.html'
 
 class DataSlicerMixin(object):
     """
@@ -75,23 +75,17 @@ class Places(JsonView, DataSlicerMixin):
            ],
         }            
 
-
-class Drugs(JsonView, DataSlicerMixin):
-    model = Drug
-    order = ['name', 'kind']
-    values = ['name', 'code', 'strains__resistance']
-    dr_key = dict(RESISTANCE)
-
-    def get_context_data(self, **kw):
+class GraphData(list):
+    """Format three columns into a format suitable for d3 graphs"""
+    def __init__(self, qs, x, y, z, z_keys={}):
         data = defaultdict(lambda: defaultdict(int))
         cols = set()
-        for dd in self.get_data().annotate(count=Count('strains__pk')):
-            if dd['count'] > 0:
-                cols.add(dd['code'])
-                data[dd['strains__resistance']][dd['code']] += dd['count']
+        for dd in qs:
+            if dd[y] > 0:
+                cols.add(dd[x])
+                data[dd.get(z, None)][dd[x]] += dd[y]
         
         # Make the data structure square and convert from defaultdicts to OrderedDicts
-        ret = []
         for key in data:
             ret2 = []
             for col in cols:
@@ -99,20 +93,56 @@ class Drugs(JsonView, DataSlicerMixin):
                   "x": col,
                   "y": data[key][col],
                 })
-            ret.append({
-              "key": self.dr_key[key],
+            self.append({
+              "key": z_keys.get(key, key),
               "values": ret2,
             })
 
+class Drugs(JsonView, DataSlicerMixin):
+    model = Drug
+    order = ['name', 'kind']
+    values = ['name', 'code', 'strains__resistance']
+
+    def get_context_data(self, **kw):
         return {
-          'drugs': ret,
+          'data': GraphData(
+            self.get_data().annotate(count=Count('strains__pk')),
+            'code', 'count', 'strains__resistance',
+            z_keys=dict(RESISTANCE),
+          )
         }
 
 class Lineages(JsonView, DataSlicerMixin):
     model = StrainSource
-    order = ['name', 'kind']
+    order = ['spoligotype_family']
     values = ['spoligotype_family']
 
+    def get_queryset(self):
+        qs = super(Lineages, self).get_queryset()
+        return qs.filter(spoligotype_family__isnull=False)
+
+    def get_context_data(self, **kw):
+        return {
+          'data': GraphData(
+            self.get_data().annotate(count=Count('pk')),
+            'spoligotype_family', 'count', None,
+            z_keys={None: 'All Families'},
+          )
+        }
+
 class Mutations(JsonView, DataSlicerMixin):
-    pass
+    model = Mutation
+    order = None
+    values = ['name']
+
+    def get_context_data(self, **kw):
+        return {
+          'data': GraphData(
+            self.get_data()\
+                .annotate(count=Count('strain_mutations__strain__pk'))
+                [:20],
+            'name', 'count', None,
+            z_keys={None: 'All Mutations'},
+          )
+        }
 

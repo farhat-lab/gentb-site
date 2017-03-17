@@ -19,13 +19,13 @@
  */
 
 $(document).ready(function() {
-  var svg = $('svg.drugs');
-  $.getJSON(svg.data('drug'), function(data) {
-    makeDrugChart(data.data);
+  var svg = $('svg.mutations');
+  $.getJSON(svg.data('mutation'), function(data) {
+    makeMutationChart(data.data);
   });
 });
 
-function makeDrugChart(data) {
+function makeMutationChart(data) {
     var chart = nv.models.multiBarChart()
       .reduceXTicks(false);
 
@@ -40,7 +40,7 @@ function makeDrugChart(data) {
         .tickFormat(d3.format("d"));
 
     chart.xAxis
-        .axisLabel("Drug Codename")
+        .axisLabel("Mutation Name")
         .rotateLabels(-45);
 
     chart.showLegend(true);
@@ -54,7 +54,7 @@ function makeDrugChart(data) {
       return ret + "</table>";
     });
 
-    var svg = d3.select('svg.drugs')
+    var svg = d3.select('svg.mutations')
           .attr('perserveAspectRatio', 'xMinYMid')
           .attr('width', width)
           .attr('height', height)
