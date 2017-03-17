@@ -33,3 +33,6 @@
 .leaflet-popup-content {
   
 }
+.nv-legend-symbol {
+  cursor: pointer;
+}

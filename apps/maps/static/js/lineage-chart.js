@@ -18,6 +18,7 @@
  * along with inkscape-web.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+
 $(document).ready(function() {
   var svg = $('svg.lineages');
   $.getJSON(svg.data('lineage'), function(data) {
@@ -39,9 +40,13 @@ function makeLineageChart(data) {
         .axisLabel('Number of strains')
         .tickFormat(d3.format("d"));
 
+    // Single click selection of chart type
+    chart.legend.radioButtonMode(true);
+    // Disable the stacked/unstacked option
+    chart.showControls(false);
+
     chart.xAxis
-        .axisLabel("Spoliofamily Name")
-        .rotateLabels(-45);
+        .rotateLabels(-20);
 
     chart.showLegend(true);
 
@@ -60,8 +65,15 @@ function makeLineageChart(data) {
           .attr('height', height)
           .attr('viewBox', '0 0 ' + width + ' ' + height)
           .datum(data)
-          .transition().duration(1200)
+          .transition().duration(0)
           .call(chart);
+
+    // Select the first category by "clicking" on it
+    var evt = new MouseEvent("click");
+    var node = d3.select('svg.lineages').selectAll('.nv-series')
+        .filter(function(d, i){return i == 0;}).node().dispatchEvent(evt);
+
+    svg.transition().duration(1200)
 }
 
 
