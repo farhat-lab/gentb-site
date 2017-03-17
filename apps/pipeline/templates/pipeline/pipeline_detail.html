@@ -39,7 +39,7 @@
               {% endif %}
 
                 <div class="alert alert-info">
-                  <h4><span class="glyphicon glyphicon-cog" aria-hidden="true"></span> Command Template</h4>
+                  <h4><span class="glyphicon glyphicon-paperclip" aria-hidden="true"></span> Command Template</h4>
                   <p>{{ program.program.command_line }}</p>
                   {% if program.debug_text %}
                     <hr/>
@@ -52,7 +52,11 @@
                 <h4>Output Files</h4>
                 <ul class="list-group">
                   {% for fn in program.output_filenames %}
-                    <li class="list-group-item">{{ fn }}</li>
+                    {% if program.program.keep %}
+                      <li class="list-group-item list-group-item-success"><span class="glyphicon glyphicon-ok" aria-hidden="true"> {{ fn }}</li>
+                    {% else %}
+                      <li class="list-group-item list-group-item-danger"><span class="glyphicon glyphicon-remove" aria-hidden="true"> {{ fn }}</li>
+                    {% endif %}
                   {% endfor %}
                 </ul>
               {% endif %}
