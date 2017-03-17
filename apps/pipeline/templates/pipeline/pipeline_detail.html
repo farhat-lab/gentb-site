@@ -8,9 +8,9 @@
 {% block content %}
   <div class="row">
     <div class="col-lg-12">
-      <h1 class="page-header">{{ title }}</h1>
+      <h1 class="page-header">{{ title }} <small>Pipeline Test</small></h1>
 
-      <p>Pipeline report and test, this will run through an example pipeline run and explain all the things that will happen during the pipeline.</p>
+      <p>{{ object.description }}</p>
 
       <div class="col-lg-12 col-sm-12">
         {% for program in run.test_programs %}
