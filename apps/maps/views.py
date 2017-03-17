@@ -77,20 +77,25 @@ class Places(JsonView, DataSlicerMixin):
 
 class GraphData(list):
     """Format three columns into a format suitable for d3 graphs"""
-    def __init__(self, qs, x, y, z, z_keys={}):
+    def __init__(self, qs, x, y, z, x_keys={}, z_keys={}):
         data = defaultdict(lambda: defaultdict(int))
         cols = set()
         for dd in qs:
-            if dd[y] > 0:
+            # Collapse multiple fields into categories
+            if isinstance(x, list):
+                for tx in x:
+                    data[tx][dd[tx]] += dd[y]
+            # Or take categories from one field
+            elif dd[y] > 0:
                 cols.add(dd[x])
                 data[dd.get(z, None)][dd[x]] += dd[y]
         
         # Make the data structure square and convert from defaultdicts to OrderedDicts
         for key in data:
             ret2 = []
-            for col in cols:
+            for col in (cols or data[key]):
                 ret2.append({
-                  "x": col,
+                  "x": x_keys.get(col, col),
                   "y": data[key][col],
                 })
             self.append({
@@ -115,7 +120,7 @@ class Drugs(JsonView, DataSlicerMixin):
 class Lineages(JsonView, DataSlicerMixin):
     model = StrainSource
     order = ['spoligotype_family']
-    values = ['spoligotype_family']
+    values = ['spoligotype_family', 'rflp_family', 'principle_group', 'wgs_group']
 
     def get_queryset(self):
         qs = super(Lineages, self).get_queryset()
@@ -125,8 +130,9 @@ class Lineages(JsonView, DataSlicerMixin):
         return {
           'data': GraphData(
             self.get_data().annotate(count=Count('pk')),
-            'spoligotype_family', 'count', None,
-            z_keys={None: 'All Families'},
+            self.values, 'count', True,
+            z_keys=dict(zip(self.values, ['Spoligo', 'RFLP', 'PGG', 'WGS'])),
+            x_keys={None: "Not Available"},
           )
         }
 
@@ -143,6 +149,7 @@ class Mutations(JsonView, DataSlicerMixin):
                 [:20],
             'name', 'count', None,
             z_keys={None: 'All Mutations'},
+            x_keys={None: "Not Available"},
           )
         }
 

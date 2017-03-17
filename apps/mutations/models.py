@@ -251,6 +251,7 @@ class StrainSource(Model):
     rflp_family     = CharField("Restriction fragment length polymorphism family", max_length=10, null=True, blank=True)
     insert_type     = IntegerField("Insertion sequence 6110 type", null=True, blank=True)
 
+    wgs_group = CharField("Whole Gnome Sequence Group", max_length=10, null=True, blank=True)
     principle_group = IntegerField("Principle Generic Group", null=True, blank=True)
     resistance_group = CharField(max_length=4, choices=RESISTANCE_GROUP, null=True, blank=True)
     targeting = ForeignKey(TargetSet, null=True, blank=True)
