@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% load cachebuster %}
+
+{% block extra_css %}
+  <!--link href="{% static 'css/pipeline.css' %}" rel="stylesheet"-->
+{% endblock %}
+
+{% block content %}
+  <div class="row">
+    <div class="col-lg-12">
+      <h1 class="page-header">{{ title }}</h1>
+
+      <p>Pipeline report and test, this will run through an example pipeline run and explain all the things that will happen during the pipeline.</p>
+
+      <div class="col-lg-12 col-sm-12">
+        {% for program in run.test_programs %}
+          <div class="panel panel-default">
+            <div class="panel-heading">
+              <h2><span class="glyphicon glyphicon-tasks" aria-hidden="true"></span> {{ program.program.name }}</h2>
+            </div>
+
+            <div class="panel-body">
+              {% if program.error_text %}
+                <div class="alert alert-danger">
+                  <h4><span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span> Errors</h4>
+                  {{ program.error_text|linebreaks }}
+                  {% if program.kwargs %}
+                    <hr/>
+                    <h4><span class="glyphicon glyphicon-file" aria-hidden="true"></span> File Arguments</h4>
+                    <ul class="list-group">
+                      {% for name, value in program.kwargs.items %}
+                        {% for in_val in value %}
+                          <li class="list-group-item">{{ name }}: {{ in_val }}</li>
+                        {% endfor %}
+                      {% endfor %}
+                    </ul>
+                  {% endif %}
+                </div>
+              {% endif %}
+
+                <div class="alert alert-info">
+                  <h4><span class="glyphicon glyphicon-cog" aria-hidden="true"></span> Command Template</h4>
+                  <p>{{ program.program.command_line }}</p>
+                  {% if program.debug_text %}
+                    <hr/>
+                    <h4><span class="glyphicon glyphicon-cog" aria-hidden="true"></span> Generated Command</h4>
+                    <p>{{ program.debug_text }}</p>
+                  {% endif %}
+                </div>
+
+              {% if program.output_files %}
+                <h4>Output Files</h4>
+                <ul class="list-group">
+                  {% for fn in program.output_filenames %}
+                    <li class="list-group-item">{{ fn }}</li>
+                  {% endfor %}
+                </ul>
+              {% endif %}
+
+              {% if program.input_files %}
+                <h4>Input Files</h4>
+                <ul class="list-group">
+                  {% for fn in program.input_filenames %}
+                    <li class="list-group-item">{{ fn }}</li>
+                  {% endfor %}
+                </ul>
+              {% endif %}
+            </div>
+
+          </div>
+        {% endfor %}
+      </div>
+
+    </div>
+  </div>
+{% endblock %}
+
