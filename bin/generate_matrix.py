@@ -51,7 +51,7 @@ for s in strains:
        else:
              output2.write(",0")
    elif parts[1] in ['CF']: #coding frameshifts pool all that occur at the same nucleotide start
-       pattern=re.compile(parts[2] + '_[^\s\,]+_' + parts[5])
+       pattern=re.compile(parts[1] + '_' + parts[2] + '_[^\s\,]+_' + parts[5])
        if re.search(pattern, "\t".join(d[s])):
              output2.write(",1")
 #             print 'here!', s, v #>>sys.stderr, v
