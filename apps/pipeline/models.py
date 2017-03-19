@@ -14,6 +14,24 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
+"""
+Pipeline is constructed from a pipeline pattern:
+
+  Pipeline
+    - Program
+    - Program
+    - Program
+
+Each pipeline can then be run with PipelineFiles and outputside files
+to produce a mirror record of a piepline being run:
+
+  PipelineRun
+    - ProgramRun
+    - ProgramRun
+    - ProgramRun
+
+Testing is done by including PipelineFiles as testing files.
+"""
 
 import re
 import os
@@ -28,12 +46,24 @@ from collections import defaultdict
 from django.db.models import *
 from model_utils.models import TimeStampedModel
 
+from django.core.urlresolvers import reverse
 from django.conf import settings
 from django.utils.timezone import now
 from django.utils.text import slugify
 from django.utils.timezone import now
 
 from apps.pipeline.method import JobManager
+
+def file_as_inputs(m2m, save_to=None):
+    """Adds each m2m to the save_to dictionary"""
+    if not save_to:
+        save_to = defaultdict(list)
+    for pf in m2m.all():
+        try:
+            save_to[pf.name].append(unicode(pf.store.file))
+        except IOError:
+            save_to[pf.name].append('XX:%s' % pf.store.name)
+    return save_to
 
 class Pipeline(Model):
     """
@@ -48,13 +78,20 @@ class Pipeline(Model):
     def __str__(self):
         return self.name
 
-    def run(self, name, **kwargs):
+    def get_absolute_url(self):
+        return reverse('pipeline:detail', kwargs={'pk': self.pk})
+
+    def run(self, name, commit=True, for_test=False, **kwargs):
         """
         Run this pipeline for this named identifier,
         the id should be unique.
         """
-        runner = self.runs.create(name=slugify(name))
-        runner.run(**kwargs)
+        runner = PipelineRun(name=slugify(name), pipeline=self)
+        if commit:
+            runner.save()
+        if for_test:
+            kwargs.update(file_as_inputs(self.test_files))
+        runner.run(commit=commit, for_test=for_test, **kwargs)
         return runner
 
 
@@ -119,14 +156,6 @@ class Program(Model):
         for data in outs:
             yield data
 
-    def as_inputs(self, m2m, save_to=None):
-        """Adds each m2m to the save_to dictionary"""
-        if not save_to:
-            save_to = defaultdict(list)
-        for pf in m2m.all():
-            save_to[pf.name].append(unicode(pf.store.file))
-        return save_to
-
     def prepare_files(self, for_test=False, output_dir=None, **inputs):
         """
         Prepares the files by testing the command line's required filenames
@@ -147,7 +176,7 @@ class Program(Model):
         errors, files_out = [], {}
 
         # First take the files stored against this specific program.
-        files_in = self.as_inputs(self.files)
+        files_in = file_as_inputs(self.files)
 
         bins = getattr(settings, 'PIPELINE_BIN', None)
         if bins is not None:
@@ -158,7 +187,7 @@ class Program(Model):
 
         # When running tests, we include inputs from the test files too.
         if for_test is True:
-            self.as_inputs(self.test_files, files_in)
+            file_as_inputs(self.test_files, files_in)
 
         # Override both files and test_files with inputs from the caller.
         # This is so programs can have reasonable defaults when running as
@@ -195,7 +224,10 @@ class Program(Model):
                 files_out[name] = ret.groupdict()['name']
                 if io == '$':
                     return fn
-            elif io == '@' and '/' not in fn:
+
+            # For the pair-ended files, the file input is actually not a real
+            # file input, but it needs to be made available to the output
+            elif io == '@' and name not in files_out:
                 files_out[name] = fn
 
         if io != '@':
@@ -208,7 +240,8 @@ class Program(Model):
             # Make a new filename from the input's middle section
             # and the prefix and suffix named above.
             return ''.join([prefix, files_out[name], suffix])
-        raise ValueError("Output '%s' unmatched from inputs. (%s, %s)" % (name, str(files_in), str(files_out)))
+
+        raise ValueError("Output '%s' unmatched from inputs." % name)
 
 
     def prepare_command(self, files):
@@ -251,6 +284,8 @@ class PipelineProgram(Model):
 
     def prepare(self, pk):
         """Get the pipeline program ready for running"""
+        if pk is None:
+            pk = 0
         return {
             'program': self.program,
             'job_id': "run_%d_%s" % (pk, slugify(self.program.name))
@@ -267,7 +302,7 @@ class ProgramFile(Model):
             help_text='Describe the file is and what it does in detail.')
 
     def __str__(self):
-        return self.name
+        return "%s (%s)" % (self.name, os.path.basename(self.store.name))
 
 
 class PipelineRun(TimeStampedModel):
@@ -277,11 +312,17 @@ class PipelineRun(TimeStampedModel):
     def __str__(self):
         return "Pipeline Run %s" % self.name
 
-    def run(self, **kwargs):
+    def run(self, commit=True, **kwargs):
+        if not commit:
+            self.test_programs = []
         for pipe in self.pipeline.programs.all():
-            run = ProgramRun.objects.create(piperun=self, **pipe.prepare(self.pk))
+            run = ProgramRun(piperun=self, **pipe.prepare(self.pk))
+            if commit:
+                run.save()
+            else:
+                self.test_programs.append(run)
             try:
-                for (name, fn) in run.submit(**kwargs):
+                for (name, fn) in run.submit(commit=commit, **kwargs):
                     if name in kwargs:
                         if isinstance(kwargs[name], list):
                             kwargs[name].append(fn)
@@ -292,7 +333,16 @@ class PipelineRun(TimeStampedModel):
             except ValueError as err:
                 run.is_error = True
                 run.error_text = str(err)
-                run.save()
+                run.kwargs = {}
+                for key in kwargs:
+                    if key is 'output_dir':
+                        continue
+                    if isinstance(kwargs[key], (str, unicode)):
+                        run.kwargs[key] = [kwargs[key]]
+                    elif isinstance(kwargs[key], (list, tuple)):
+                        run.kwargs[key] = kwargs[key]
+                if commit:
+                    run.save()
                 return False
             kwargs['previous'] = run
         return True
@@ -326,8 +376,14 @@ class PipelineRun(TimeStampedModel):
         Update all pipeline project runs with their running status returns
         True if all programs are complete. False if any are still running.
         """
-        return all([program.update_status()
-            for program in self.programs.all()])
+        qs = self.programs.filter(Q(is_submitted=False) | Q(is_complete=False))
+        if all([program.update_status() for program in qs]):
+            if qs.count():
+                # Clean up step for all programs
+                for program in self.programs.filter(program__keep=False):
+                    program.delete_output_files()
+            return True
+        return False
 
 
 class ProgramRun(TimeStampedModel):
@@ -389,10 +445,7 @@ class ProgramRun(TimeStampedModel):
         self.save()
 
         # Delete all old output files
-        if self.output_files:
-            for fn in self.output_files.split("\n"):
-                if isfile(fn):
-                    os.unlink(fn)
+        self.delete_output_files()
 
         if JobManager.submit(self.job_id, self.debug_text, depends=previous):
             self.is_submitted = True
@@ -412,7 +465,7 @@ class ProgramRun(TimeStampedModel):
             return ret
         return True
 
-    def submit(self, previous=None, **kwargs):
+    def submit(self, commit=True, previous=None, job_manager=JobManager, **kwargs):
         """Submit this job to the configured JobManager"""
         files = dict(self.program.prepare_files(**kwargs))
         
@@ -427,18 +480,19 @@ class ProgramRun(TimeStampedModel):
         cmd = self.program.prepare_command(files)
         self.debug_text = cmd
 
-        if JobManager.submit(self.job_id, cmd, depends=self.previous_id):
+        if job_manager.submit(self.job_id, cmd, depends=self.previous_id):
             self.is_submitted = True
             self.submitted = now()
         else:
             raise ValueError("Job could not be submitted to Job Manager.")
 
-        self.save()
+        if commit:
+            self.save()
         # Return processed files so outputs can be used
         # as inputs to the next command in the pipeline
         return [(a[1], b) for (a,b) in files.items()]
 
-    def update_status(self):
+    def update_status(self, commit=True):
         """Take data from the job manager and populate the database"""
         if self.is_submitted and not self.is_complete:
             dur = None
@@ -453,15 +507,15 @@ class ProgramRun(TimeStampedModel):
                 self.is_error = data['return'] != 0
                 if data['error']:
                     self.error_text = data['error'][:10240] # Limit errors to 10k
-                self.input_size = self.update_size(self.input_files) / 1024.0
-                self.output_size = self.update_size(self.output_files) / 1024.0
+                self.input_size = self.update_size(*self.input_fn) / 1024.0
+                self.output_size = self.update_size(*self.output_fn) / 1024.0
 
             if data.get('started', None) is not None:
                 if not self.is_started:
                     self.is_started = True
                     self.started = data['started']
                 # Save the duration so far
-                dur = datetime.now() - data['started']
+                dur = now() - data['started']
                 # Round up any microseconds, useful for testing non-zero time
                 self.duration = dur.total_seconds() + int(dur.microseconds > 0)
 
@@ -470,12 +524,36 @@ class ProgramRun(TimeStampedModel):
                 if prev.is_error:
                     JobManager.stop(self.job_id)
                     self.is_error = True
-
-            self.save()
+            if commit:
+                self.save()
         return self.is_complete
 
-    def update_size(self, files):
+    @property
+    def output_fn(self):
+        """Returns a list of output filenames"""
+        if self.output_files is not None:
+            return [fn for fn in self.output_filenames() if isfile(fn)]
+        return []
+
+    @property
+    def input_fn(self):
+        """Returns a list of output filenames"""
+        if self.input_files is not None:
+            return [fn for fn in self.input_filenames() if isfile(fn)]
+        return []
+
+    def input_filenames(self):
+        return self.input_files.split("\n")
+
+    def output_filenames(self):
+        return self.output_files.split("\n")
+
+    def update_size(self, *files):
         """Takes a list of files as a string and returns the size in Kb"""
-        return 1024 + sum([getsize(fn)
-            for fn in files.split("\n") if isfile(fn)])
+        return 1024 + sum([getsize(fn) for fn in files])
+
+    def delete_output_files(self):
+        """Deletes any of the output files"""
+        for fn in self.output_fn:
+            os.unlink(fn)
 

@@ -40,6 +40,7 @@ div.vertical-tab-menu div.list-group>a.active {
   background-color: #5A55A3;
   background-image: #5A55A3;
   color: #ffffff;
+  z-index: 1000;
 }
 div.vertical-tab-menu div.list-group>a.active:after{
   content: '';
@@ -71,3 +72,6 @@ div.vertical-tab-container div.max-width
   margin: 0px;
 }
 
+div.d3graph {
+  padding: 20px 10px 30px 20px;
+}

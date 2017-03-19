@@ -23,7 +23,6 @@ import shutil
 import signal
 
 from subprocess import Popen
-from datetime import datetime
 
 from .base import ManagerBase
 

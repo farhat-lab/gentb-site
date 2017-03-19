@@ -27,6 +27,7 @@ import logging
 from datetime import datetime
 from subprocess import Popen, PIPE
 from django.conf import settings
+from django.utils.timezone import make_aware, get_current_timezone
 
 from .base import ManagerBase
 
@@ -45,6 +46,9 @@ class JobManager(ManagerBase):
     def __init__(self, *args, **kw):
         self.group = getattr(settings, 'PIPELINE_LSF_GROUP', None)
         self.queue = getattr(settings, 'PIPELINE_LSF_QUEUE', 'short')
+        self.limit = getattr(settings, 'PIPELINE_LSF_LIMIT', '12:00')
+        if isinstance(self.limit, int):
+            self.limit = "%s:00" % self.limit
 
         super(JobManager, self).__init__(*args, **kw)
 
@@ -57,7 +61,7 @@ class JobManager(ManagerBase):
             bcmd += ['-g', self.group]
         if depends:
             bcmd += ['-w', 'done(%s)' % depends]
-        bcmd += ['-o', self.job_fn(job_id, 'err'), '-W', '2:00', cmd]
+        bcmd += ['-o', self.job_fn(job_id, 'err'), '-W', self.limit, cmd]
 
         p = Popen(bcmd, shell=False, stdout=None, stderr=None, close_fds=True)
         return p.wait() == 0
@@ -94,7 +98,8 @@ class JobManager(ManagerBase):
             if data[dkey] == '-':
                 data[dkey] = None
             else:
-                data[dkey] = datetime.strptime(year + data[dkey], '%Y/%m/%d-%H:%M:%S')
+                dt = datetime.strptime(year + data[dkey], '%Y/%m/%d-%H:%M:%S')
+                data[dkey] = make_aware(dt, get_current_timezone())
 
         status = {
             'RUN': 'running',
@@ -108,8 +113,8 @@ class JobManager(ManagerBase):
         ret = None
         (_, err) = self.job_read(job_id, 'err')
 
-        if status == 'finished' and clean:
-            self.job_clean(job_id, 'err')
+        #if status == 'finished' and clean:
+        #    self.job_clean(job_id, 'err')
 
         if err:
             # Split out the lsf output, not needed.
@@ -122,6 +127,9 @@ class JobManager(ManagerBase):
                         ret = 0
                     elif 'Exited with exit code' in page:
                         ret = int(page.split('exit code ')[-1].split('.')[0])
+            if 'User defined signal 2' in err:
+                err = 'Pipeline stopped by computer cluster ' +\
+                    'for taking too long.'
 
         # Just in case
         if ret is None and status == 'finished':

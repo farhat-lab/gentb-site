@@ -1,11 +1,13 @@
 
+from datetime import timedelta
+
 from django.core.serializers.json import DjangoJSONEncoder
+from django.db.models.query import ValuesQuerySet
 from django.views.decorators.cache import cache_page
 from django.views.generic import View
 
 from django.http import JsonResponse, HttpResponse
 from django.conf import settings
-
 
 class DjangoJSONEncoder2(DjangoJSONEncoder):
     """A json encoder to deal with the python objects we may want to encode"""
@@ -14,6 +16,8 @@ class DjangoJSONEncoder2(DjangoJSONEncoder):
             ARGS = ('days', 'seconds', 'microseconds')
             return {'__type__': 'datetime.timedelta',
                     'args': [getattr(obj, a) for a in ARGS]}
+        if isinstance(obj, ValuesQuerySet):
+            return [item for item in obj]
 	return DjangoJSONEncoder.default(self, obj)
 
 

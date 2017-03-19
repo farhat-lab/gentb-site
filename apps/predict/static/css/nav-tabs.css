@@ -42,6 +42,7 @@
   margin-top: 20px;
   margin-bottom: 20px;
   border-radius: 4px;
+  position: relative;
 }
 
 .process>li h4 {
@@ -57,116 +58,41 @@
   font-size: 90%;
 }
 
-.process>li {
+.process > li {
   display: table-cell;
   vertical-align: middle;
   width: 1%;
-}
-
-.process>li+li:before {
-  padding: 0;
-}
-
-.process li a {
   color: white;
-  text-decoration: none;
-  padding: 10px 0 10px 45px;
-  position: relative;
-  display: inline-block;
-  width: calc( 100% - 1px );
+  padding: 10px 0 10px 0px;
+  border-right: 2px solid white;
   background-color: hsla(0, 0%, 83%, 1);
   text-align: center;
-  min-height: 90px;
+}
+.process > li:last-child {
+  border-right: none;
 }
 
-.process li.download a {
+.process > li.download {
   background: #efa91b;
 }
-.process li.download a:after {
-  border-left: 30px solid #efa91b;
-}
-.process li.start a {
+.process > li.start {
   background: brown;
   background: hsl(210, 57%, 51%);
 }
-.process li.start a:after {
-  border-left: 30px solid hsl(210, 57%, 51%);
-}
-.process li.completed a {
+.process > li.completed {
   background: brown;
   background: hsla(153, 57%, 51%, 1);
 }
-.process li.completed a:after {
-  border-left: 30px solid hsla(153, 57%, 51%, 1);
-}
-.process li.submitted a {
+.process > li.submitted {
   background: grey;
   background: hsl(230, 6%, 62%);
 }
-.process li.submitted a:after {
-  border-left: 30px solid hsl(230, 6%, 62%);
-}
-
-.process li.active a {
+.process > li.active {
   background: #efa91b;
 }
-.process li.active a:after {
-  border-left: 30px solid #efa91b;
-}
-
-
-.process li.error a {
+.process > li.error {
   background-color: #d9534f;
   animation: flash-bg 0.5s alternate infinite;
-}
-.process li.error a:after {
-  border-left: 30px solid #d9534f;
-  animation: flash-fg 0.5s alternate infinite;
-}
-
-.process li:first-child a {
-  padding-left: 15px;
-}
-.process li:last-of-type a {
-  width: calc( 100% - 38px );
-}
-.process li:last-child a:after {
-  border-left-color: transparent;
-}
-.process li:last-child a {
-  width: 100%;
-  padding-right: 15px;
-}
-
-.process li a:before {
-  content: " ";
-  display: block;
-  width: 0;
-  height: 0;
-  border-top: 50px solid transparent;
-  border-bottom: 50px solid transparent;
-  border-left: 30px solid white;
-  position: absolute;
-  top: 50%;
-  margin-top: -50px;
-  margin-left: 1px;
-  left: 100%;
-  z-index: 1;
-}
-
-.process li a:after {
-  content: " ";
-  display: block;
-  width: 0;
-  height: 0;
-  border-top: 50px solid transparent;
-  border-bottom: 50px solid transparent;
-  border-left: 30px solid hsla(0, 0%, 83%, 1);
-  position: absolute;
-  top: 50%;
-  margin-top: -50px;
-  left: 98%;
-  z-index: 2;
 }
 
 /* Notes */
@@ -193,6 +119,13 @@
 
 .nav-tabs li.disabled a:hover {
   
+}
+
+h3.well-label {
+  top: 15px;
+  left: 5px;
+  position: relative;
+  margin-top: -10px;
 }
 
 /********************************************************************/

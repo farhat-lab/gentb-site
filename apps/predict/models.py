@@ -1,4 +1,26 @@
+#
+# Copyright (C) 2017 Maha Farhat
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+"""
+Provide prediction app using the pipeline for building predictions and the
+dropbox app to download large data files from the users.
+"""
+
 import os
+import sys
 import json
 
 import logging
@@ -7,7 +29,7 @@ LOGGER = logging.getLogger('apps.predict')
 from hashlib import md5
 from os.path import join, isfile, isdir, basename
 
-from collections import defaultdict
+from collections import defaultdict, OrderedDict
 
 from django.db.models import *
 from model_utils.models import TimeStampedModel
@@ -74,88 +96,49 @@ class PredictDataset(TimeStampedModel):
         return reverse('predict:view_single_dataset', kwargs=dict(slug=self.md5))
 
     @property
-    def media_url(self):
-        """Return the location of the file directory accessable via url"""
-        return join(settings.MEDIA_URL, 'data', basename(self.file_directory.rstrip('/')))
-
-    @property
     def directory_exists(self):
         """Returns true if the file_directory exists"""
         return os.path.isdir(self.file_directory)
 
     @property
     def has_prediction(self):
-        return isfile(join(self.file_directory, 'output', 'matrix.json'))
+        return any([strain.has_prediction for strain in self.strains.all()])
+
+    @property
+    def has_output_files(self):
+        return any([list(strain.output_files) for strain in self.strains.all()]) 
 
     def is_manual(self):
         return self.file_type == 'manual'
 
-    def make_scatter(self, locusts, data):
-        regions = defaultdict(list)
-        for gene in data:
-            if gene:
-                (index, region, mutation) = unpack_mutation_format(gene)
-                regions[region].append(gene)
-
-
-        for x, locust in enumerate(locusts):
-            ret = {"x": x, "y": 0, "size": 5, "tip": ["No mutations"]}
-            if locust in regions:
-                ret["y"] = len(regions[locust])
-                ret["size"] = 9
-                ret["tip"] = regions[locust]
-            yield ret
-
     def get_heatmap(self):
-        data = None
-        maf = os.path.join(self.file_directory, 'output', 'matrix.json')
-        if not os.path.isfile(maf):
-            return None
-
-        ret = defaultdict(list)
-        drugs = list()
-        with open(maf, 'r') as fhl:
-            data = json.loads(fhl.read())
-        for row in data[0]:
-            ret['data'].append(row[2])
-            ret['extra'].append([row[3], row[4]])
-            if row[0] not in ret['rows']:
-                ret['rows'].append(row[0])
-            if row[1] not in ret['cols']:
-                ret['cols'].append(row[1])
-
-            try:
-                drugs.append(Drug.objects.get(code__iexact=row[1]))
-            except Drug.DoesNotExist:
-                import sys
-                sys.stderr.write("Can't find drug %s\n" % row[1])
-                drugs.append(None)
-
-        ret['dim'] = [len(ret['rows']), len(ret['cols'])]
-
-        output = defaultdict(lambda: defaultdict(lambda: [None] * 2))
-        for series, rows in enumerate(data[1:]):
-            for row in rows:
-                for col, datum in enumerate(zip(*rows[row])):
-                    drug = drugs[col]
-                    if drug is None:
-                        output[row][col][series] = {}
-                        continue
-                    
-                    locusts = list(drug.mutations.values_list('gene_locus__name', flat=True).distinct())
-                    output[row][col][series] = {
-                        "cols": locusts,
-                        "key": ["Important", "Other"][series],
-                        "color": ["rgba(255, 0, 0, 0.8)", "rgba(0, 0, 255, 0.17)"][series],
-                        "yAxis": "1",
-                        "values": list(self.make_scatter(locusts, datum)),
-                    }
-
-
-        ret['scatter'] = {
-          'data': output,
+        """Return data in the heatmap format with embeded graphs"""
+        output = {
+          'dim': [self.strains.count(), 0],
+          'rows': [],
+          'cols': [],
+          'extra': [],
+          'data': [],
+          'scatter': {'data': {}},
         }
-        return ret
+        for strain in self.strains.all():
+            scatter = {}
+            output['scatter']['data'][strain.name] = scatter
+            output['rows'].append(strain.name)
+            for drug, (dr, fp, fn, graph) in strain.get_prediction():
+                if drug not in output['cols']:
+                    output['cols'].append(drug)
+
+                # XXX We should be able to match up the drug to it's column
+                # To provide correct display for non-hemoginous results.
+                #i = output['cols'].index(drug)
+
+                output['data'].append(dr)
+                output['extra'].append([fp, fn])
+                scatter[str(len(scatter))] = graph
+
+        output['dim'] = (len(output['rows']), len(output['cols']))
+        return output
 
     def user_name(self):
         if self.user:
@@ -247,6 +230,104 @@ class PredictStrain(Model):
         self.piperun = self.pipeline.run(name, **options)
         self.save()
         return self.piperun.programs.filter(is_error=True).count() == 0
+
+    def check_download(self):
+        """Return True if the files are ready for this pipeline,
+           False if they are still downloading and
+           None if there was an error downloading the files."""
+	for input_file in (self.file_one, self.file_two):
+	    if input_file is not None:
+		if input_file.retrieval_error:
+		    return None
+		elif not input_file.retrieval_end:
+		    return False
+	return True
+
+    @property
+    def has_prediction(self):
+        """Returns thrue if prediction data is available"""
+        return bool(self.prediction_file)
+
+    @property
+    def prediction_file(self):
+        """Return a detected prediction file for this strain"""
+        for (url, fn, name) in self.output_files:
+	    if fn.endswith('matrix.json'):
+		return fn
+        return None
+
+    @property
+    def output_files(self):
+        """Iterate over all output files and return media url and filename"""
+        root_path = self.dataset.BASE_DIR
+        root_url = join(settings.MEDIA_URL, 'data')
+        if self.piperun:
+            for run in self.piperun.programs.all():
+                for fn in run.output_fn:
+                    if os.path.isfile(fn):
+                        url = None
+                        if root_path in fn:
+                            url = fn.replace(root_path, root_url)
+                        yield (url, fn, basename(fn))
+
+    def get_raw_prediction(self):
+        """Get the raw data slightly bound better"""
+        matrix_fn = self.prediction_file
+        if matrix_fn and os.path.isfile(matrix_fn):
+            with open(matrix_fn, 'r') as fhl:
+                try:
+                    (pr, m_A, m_B) = json.loads(fhl.read())
+                except ValueError:
+                    logging.error("Can't load prediction file: %s" % matrix_fn)
+                    m_A = []
+
+                # Rotate mutation matrix 90 degrees
+                for name in m_A:
+                    yield (name, zip(
+                      [(b,c,d,e) for (a,b,c,d,e) in pr if a == name],
+                      zip(*m_A[name]),
+                      zip(*m_B[name]),
+                    ))
+
+    def get_prediction(self):
+        """Get the prediction data formatted for heatmap and scatter plots"""
+        for name, dat in self.get_raw_prediction():
+            for (drug_code, dr, fp, fn), A, B in dat:
+                try:
+                    drug = Drug.objects.get(code__iexact=drug_code)
+                except Drug.DoesNotExist:
+                    sys.stderr.write("Can't find drug %s\n" % row[1])
+                    continue
+                yield (drug_code, (dr, fp, fn, self.get_graph(drug, A, B)))
+
+    def get_graph(self, drug, A, B):
+        all_names = drug.mutations.values_list('gene_locus__name', flat=True)
+        locusts = list(all_names.distinct())
+        return [{
+            "yAxis": "1",
+            "cols": locusts,
+            "key": key,
+            "color": color,
+            "values": list(self.make_scatter(locusts, datum)),
+        } for key, color, datum in (
+            ("Important", "255, 0, 0, 0.8", A),
+            ("Other", "0, 0, 255, 0.17)", B))
+        ]
+
+    def make_scatter(self, locusts, data):
+        regions = defaultdict(list)
+        for gene in data:
+            if gene:
+                (index, region, mutation) = unpack_mutation_format(gene)
+                regions[region].append(gene)
+
+        for x, locust in enumerate(locusts):
+            ret = {"x": x, "y": 0, "size": 5, "tip": ["No mutations"]}
+            if locust in regions:
+                ret["y"] = len(regions[locust])
+                ret["size"] = 9
+                ret["tip"] = regions[locust]
+            yield ret
 
     def update_status(self):
         """Update the statuses for each of the piperun programs"""
