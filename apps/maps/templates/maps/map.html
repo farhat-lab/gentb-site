@@ -14,6 +14,7 @@
   <script src="{% static "js/genetics-map.js" %}"></script>
   <script src="{% static "js/drugs-chart.js" %}"></script>
   <script src="{% static "js/lineage-chart.js" %}"></script>
+  <script src="{% static "js/lister.js" %}"></script>
   <script src="{% static "js/mutations-chart.js" %}"></script>
 {% endblock %}
 
@@ -25,19 +26,19 @@
         <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 vertical-tab-container">
             <div class="col-lg-1 col-md-3 col-sm-3 col-xs-3 vertical-tab-menu">
               <div class="list-group">
-                <a href="#" class="list-group-item text-center active">
+                <a href="#" class="list-group-item text-center active" id="map-store">
                   <h2 class="glyphicon glyphicon-globe"></h2>
                   <p>World</p>
                 </a>
-                <a href="#" class="list-group-item text-center">
+                <a href="#" class="list-group-item text-center" id="drug-store">
                   <h2 class="icon-flask"></h2>
                   <p>Drug</p>
                 </a>
-                <a href="#" class="list-group-item text-center">
+                <a href="#" class="list-group-item text-center" id="lineage-store">
                   <h2 class="icon-graph"></h2>
                   <p>Lineage</p>
                 </a>
-                <a href="#" class="list-group-item text-center">
+                <a href="#" class="list-group-item text-center" id="mutation-store">
                   <h2 class="icon-mutation"></h2>
                   <p>Mutation</p>
                 </a>
@@ -59,7 +60,8 @@
                 </div>
                 <div class="vertical-tab-content">
                   <div class="d3graph">
-                    <svg class="mutations" id="mutations" data-mutation="{% url 'maps:map.mutations' %}"></svg>
+                    <textarea class="lister" id="mselect" data-data-url="{% url 'genes:json' %}" style="display: none;"></textarea>
+                    <svg class="mutations" id="mutations"></svg>
                   </div>
                 </div>
             </div>

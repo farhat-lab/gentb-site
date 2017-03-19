@@ -267,6 +267,7 @@ class PredictStrain(Model):
                     if os.path.isfile(fn):
                         url = None
                         if root_path in fn:
+                            root_path = root_path.rstrip('/')
                             url = fn.replace(root_path, root_url)
                         yield (url, fn, basename(fn))
 

@@ -20,12 +20,10 @@
 
 $(document).ready(function() {
   var svg = $('svg.mutations');
-  $.getJSON(svg.data('mutation'), function(data) {
-    makeMutationChart(data.data);
-  });
+  makeMutationChart();
 });
 
-function makeMutationChart(data) {
+function makeMutationChart() {
     var chart = nv.models.multiBarChart()
       .reduceXTicks(false);
 
@@ -41,18 +39,11 @@ function makeMutationChart(data) {
 
     chart.xAxis
         .axisLabel("Mutation Name")
-        .rotateLabels(-45);
+        .rotateLabels(-20);
 
     chart.showLegend(true);
 
-    chart.tooltip.contentGenerator(function (data) {
-      ret = "<table>";
-      if(data.data) {
-        ret += "<tr><th align=\"right\">" + data.data.x + "</th></tr>";
-        ret += "<tr><th align=\"right\">" + data.data.y + "</th></tr>";
-      }   
-      return ret + "</table>";
-    });
+    var data = [{'values': [], key: 'Resistant'}];
 
     var svg = d3.select('svg.mutations')
           .attr('perserveAspectRatio', 'xMinYMid')
@@ -60,8 +51,22 @@ function makeMutationChart(data) {
           .attr('height', height)
           .attr('viewBox', '0 0 ' + width + ' ' + height)
           .datum(data)
-          .transition().duration(1200)
+          .transition().duration(500)
           .call(chart);
+
+    var ready = false;
+    var x = 0;
+    setInterval(function(){
+     if(!ready){return}
+     data[0].values.push({ x: 'SNP'+x, y: Math.random() * 100});
+     if (data[0].values.length > 5) data[0].values.shift();
+     console.log("VAL");
+     d3.select('svg.mutations').datum(data).call(chart);
+     x++;
+    }, 3000);
+
+    nv.utils.windowResize(chart.update);
+    ready = true;
 }
 
 
