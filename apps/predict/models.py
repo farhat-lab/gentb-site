@@ -308,11 +308,11 @@ class PredictStrain(Model):
             "yAxis": "1",
             "cols": locusts,
             "key": key,
-            "color": color,
+            "color": "rgba(%s)" % color,
             "values": list(self.make_scatter(locusts, datum)),
         } for key, color, datum in (
             ("Important", "255, 0, 0, 0.8", A),
-            ("Other", "0, 0, 255, 0.17)", B))
+            ("Other", "0, 0, 255, 0.17", B))
         ]
 
     def make_scatter(self, locusts, data):
