@@ -36,41 +36,39 @@ for s in strains:
  output2.write(s)
  for v in variants:
    parts=v.split('_')
-   if parts[1] in ['CN','CS','CZ']: #coding snps pool changes that cause the same aachange
-       #print parts[4]+"_"+parts[5]
-       if re.search('\.$', parts[4]): #for to stop changes
-	     parts[4]=parts[4][0:(len(parts[4])-1)] +"*"
-       if re.search('^\.', parts[4]): #for stop to changes
-	     parts[4]="*"+parts[4][1:]
-       if re.search('\.$', parts[5]): #for oxyR'
-             parts[5]=parts[5][0:(len(parts[5])-1)] +"'"	
-       pattern=re.escape(parts[4])+"_"+re.escape(parts[5])	
-       if re.search(pattern,"\t".join(d[s])):
-             output2.write(",1")
-             #print >>sys.stderr, v
-       else:
-             output2.write(",0")
+   if v in d[s]:
+      output2.write(",1")
+   elif parts[1] in ['CN','CS','CZ']: #coding snps pool changes that cause the same aachange
+      #print parts[4]+"_"+parts[5]
+      if re.search('\.$', parts[4]): #for to stop changes
+         parts[4]=parts[4][0:(len(parts[4])-1)] +"*"
+      if re.search('^\.', parts[4]): #for stop to changes
+         parts[4]="*"+parts[4][1:]
+      if re.search('\.$', parts[5]): #for oxyR'
+         parts[5]=parts[5][0:(len(parts[5])-1)] +"'"
+      pattern=re.escape(parts[4])+"_"+re.escape(parts[5])
+      if re.search(pattern,"\t".join(d[s])):
+         output2.write(",1")
+         #print >>sys.stderr, v
+      else:
+         output2.write(",0")
    elif parts[1] in ['CF']: #coding frameshifts pool all that occur at the same nucleotide start
-       pattern=re.compile(parts[1] + '_' + parts[2] + '_[^\s\,]+_' + parts[5])
-       if re.search(pattern, "\t".join(d[s])):
-             output2.write(",1")
-#             print 'here!', s, v #>>sys.stderr, v
-       else:
-             output2.write(",0")
-#	     print >>sys.stderr, v
+      pattern=re.compile(parts[1] + '_' + parts[2] + '_[^\s\,]+_' + parts[5])
+      if re.search(pattern, "\t".join(d[s])):
+         output2.write(",1")
+         #print 'here!', s, v #>>sys.stderr, v
+      else:
+         output2.write(",0")
+         #print >>sys.stderr, v
    elif parts[1] == 'P': #promoter (to maintain compatibility with old naming used in randomforest built from MIP data
-       operon=parts[5].split('.')
-       pattern=parts[3]+'_'+parts[4]+'_'+operon[0]	
-       if re.search(pattern, "\t".join(d[s])):
-             output2.write(",1")
-       else:
-             output2.write(",0")
-   else: #non coding, ribosomal changes SNPs or indels, and coding non frame shift indels have to be identical
-       if v in d[s]:
-           output2.write(",1")
-           #print >>sys.stderr, v
-       else:
-           output2.write(",0")
+      operon=parts[5].split('.')
+      pattern=parts[3]+'_'+parts[4]+'_'+operon[0]
+      if re.search(pattern, "\t".join(d[s])):
+         output2.write(",1")
+      else:
+         output2.write(",0")
+   else: #non coding, ribosomal changes SNPs or indels, and coding non frame shift indels have to be identical so if they didnot match in original if statement, status=0
+         output2.write(",0")
  output2.write("\n")
 
 
