@@ -1,0 +1,10 @@
+{% extends "modal.html" %}
+{% load i18n %}
+
+{% block "title" %}{% trans "Page Not Found" %}{% endblock %}
+
+{% block "dialog-body" %}
+  <p>{% trans "The page you have asked for is not found. This could be because your url is slightly wrong or because the link you have is no longer valid. Please check the url carefully for errors and reffer back to the page you came from." %}</p>
+  <p>{% trans "If you have found an error, please contact the systems administrator so we can fix it." %}</p>
+{% endblock %}
+

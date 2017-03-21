@@ -1,0 +1,9 @@
+{% extends "modal.html" %}
+{% load i18n %}
+
+{% block "title" %}{% trans "Server Error" %}{% endblock %}
+
+{% block "dialog-body" %}
+  <p>{% trans "The website has caused a serious error. The administrator and programmers have been contacted with details of the problem and hopefully will be able to fix it soon." %}</p>
+{% endblock %}
+

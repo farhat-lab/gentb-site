@@ -1,0 +1,9 @@
+{% extends "modal.html" %}
+{% load i18n %}
+
+{% block "title" %}{% trans "Permission Denied" %}{% endblock %}
+
+{% block "dialog-body" %}
+  <p>{% trans "You are not allowed to view this page. Please make sure you are logged in as the correct user." %}</p>
+{% endblock %}
+
