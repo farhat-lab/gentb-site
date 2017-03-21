@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 use strict;
-#use warnings;
+use warnings;
 #use DBI;
 ### script that takes in .vcf file and produces a .var file. Filters and combines the mutation data in .vcf file with data from 2 genome coordinate files (with headers) #####(one for coding ###regions and one for non coding regions) to add functional data. Also requires h37rv.fasta file (there reference genome sequence file) and ###get_seq_coord.pl script to exist ###in the same folder
 
@@ -380,6 +380,10 @@ sub annotcoding{
  my $altcodon;
  if ($genesymbol =~ /rr[sl]/) {
   $cnc = 'N';
+  $sns = '';
+  $codon = '\N';
+  $altcodon = '\N';
+  $codpos = '\N';
   if ($strand  eq '+') {
    $nucpos = $from - $txStart;
   }else{
