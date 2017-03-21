@@ -39,13 +39,16 @@ class DropDownData(JsonView):
                 'name': str(drug),
                 'children': [],
             })
-            loci = drug.mutations.values_list('gene_locus__name', flat=True).distinct()
+            qs = drug.mutations.all()
+            if not self.request.GET.get('all', False):
+                qs = qs.filter(predictor=True)
+            loci = qs.values_list('gene_locus__name', flat=True).distinct()
             for locus in GeneLocus.objects.filter(name__in=loci):
                 ret['children'][-1]['children'].append({
                   'name': str(locus),
                   'children': [],
                 })
-                for mutation in locus.mutations.all():
+                for mutation in qs:
                     ret['children'][-1]['children'][-1]['children'].append({
                       'name': str(mutation),
                       'value': mutation.name,
