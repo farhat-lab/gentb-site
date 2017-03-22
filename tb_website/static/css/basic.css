@@ -39,3 +39,6 @@ th[scope="row"] label {
   margin-bottom: -15px;
 }
 
+.modal-body .modal-footer {
+  padding: 15px 0px 0px 0px;
+}
