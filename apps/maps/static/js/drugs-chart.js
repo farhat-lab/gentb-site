@@ -45,16 +45,6 @@ function makeDrugChart(data) {
 
     chart.showLegend(true);
 
-    chart.tooltip.contentGenerator(function (data) {
-      console.log("Yep");
-      ret = "<table>";
-      if(data.data) {
-        ret += "<tr><th align=\"right\">" + data.data.x + "</th></tr>";
-        ret += "<tr><th align=\"right\">" + data.data.y + "</th></tr>";
-      }   
-      return ret + "</table>";
-    });
-
     var svg = d3.select('svg.drugs')
           .attr('perserveAspectRatio', 'xMinYMid')
           .attr('width', width)

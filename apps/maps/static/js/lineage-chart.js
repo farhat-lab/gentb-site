@@ -50,15 +50,6 @@ function makeLineageChart(data) {
 
     chart.showLegend(true);
 
-    chart.tooltip.contentGenerator(function (data) {
-      ret = "<table>";
-      if(data.data) {
-        ret += "<tr><th align=\"right\">" + data.data.x + "</th></tr>";
-        ret += "<tr><th align=\"right\">" + data.data.y + "</th></tr>";
-      }   
-      return ret + "</table>";
-    });
-
     var svg = d3.select('svg.lineages')
           .attr('perserveAspectRatio', 'xMinYMid')
           .attr('width', width)

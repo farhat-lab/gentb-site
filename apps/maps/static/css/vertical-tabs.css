@@ -76,7 +76,3 @@ div.d3graph {
   padding: 20px 10px 30px 20px;
 }
 
-/* Show tooltips over everything */
-.nvtooltip {
-  z-index: 20;
-}
