@@ -58,17 +58,58 @@ function makeMap(target, gjson_1) {
   }
 
   function onEachFeature(feature, layer) {
-    ret = '<h4>' + feature.properties.name + '</h4>';
+    id_cls = 'country-' + feature.properties.value
+    layer.setStyle({className: id_cls});
+
+    ret = $('<div></div>');
+    ret.append($('<h4>' + feature.properties.name + '</h4>'));
     $.each(['Sensitive', 'MDR', 'XDR', 'TDR'], function(key, value) {
       if (feature.properties.values[value]) {
-        ret += '<div><span>' + value + ':</span><span>' + feature.properties.values[value] + "</span></div>";
+        ret.append($('<div><span>' + value + ':</span><span>' + feature.properties.values[value] + "</span></div>"));
       }
     });
     if(Object.keys(feature.properties.values).length > 2) {
-      ret += "<hr/><div class='total'><span>Total: </span><span>" + feature.properties.values.Total + "</span></div>";
+      ret.append($("<hr/><div class='total'><span>Total: </span><span>" + feature.properties.values.Total + "</span></div>"));
     }
-    ret += "<hr/><button class='btn btn-primary btn-xs disabled'>Select Country</button>"
-    layer.bindPopup(ret);
+    var button1 = $("<button class='btn btn-primary btn-xs'>Select Country</button>").click(function() {
+        // WARNING: jquery class selectors and addClass/removeClass DO NOT work here
+        var previous = $('*[class~="countrySelect"]');
+        if(previous.length > 0) { previous.data('deselect')(); }
+
+        var next = $('.country-'+feature.properties.value);
+        // Set element id just in case it's useful later
+        next[0].id = feature.properties.value;
+
+        // Add the countrySelect class to highlight it
+        next.attr('class', next.attr('class') + ' countrySelect');
+        next.data('deselect', function() { button2.click(); });
+
+        // Set the usable data for other charts
+        $('#map-store').data('country', feature.properties.value)
+        $('#map-store p').text(feature.properties.name);
+        $('#map-store h2').attr('class', 'glyphicon glyphicon-flag');
+
+        button1.hide();
+        button2.show();
+        map.closePopup();
+    });
+    var button2 = $("<button class='btn btn-danger btn-xs' style='display: none;'>Deselect</button>").click(function() {
+        // WARNING: jquery class selectors and addClass/removeClass DO NOT work here
+        var previous = $('.country-'+feature.properties.value);
+        previous.attr('class', previous.attr('class').replace(' countrySelect', ''));
+
+        $('#map-store').data('country', null);
+        $('#map-store p').text("World");
+        $('#map-store h2').attr('class', 'glyphicon glyphicon-globe');
+
+        button1.show();
+        button2.hide();
+        map.closePopup();
+    });
+    ret.append($("<hr/>"));
+    ret.append(button1);
+    ret.append(button2);
+    layer.bindPopup(ret[0]);
   }
   gJson_layer_1 = L.geoJson(gjson_1, {
     style: style_1,

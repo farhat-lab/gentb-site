@@ -70,7 +70,7 @@ class Places(JsonView, DataSlicerMixin):
               "popupContent": country.name,
               "type": "Feature",
               "id": country.id,
-              "properties": {"name": country.name, "values": ret[country.iso2]},
+              "properties": {"name": country.name, "value": country.iso2, "values": ret[country.iso2]},
             } for country in Country.objects.filter(iso2__in=list(ret))
            ],
         }            

@@ -14,7 +14,6 @@
   <script src="{% static "js/genetics-map.js" %}"></script>
   <script src="{% static "js/drugs-chart.js" %}"></script>
   <script src="{% static "js/lineage-chart.js" %}"></script>
-  <script src="{% static "js/lister.js" %}"></script>
   <script src="{% static "js/mutations-chart.js" %}"></script>
 {% endblock %}
 
@@ -25,7 +24,7 @@
       <div class="row">
         <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 vertical-tab-container">
             <div class="col-lg-1 col-md-3 col-sm-3 col-xs-3 vertical-tab-menu">
-              <div class="list-group">
+              <div class="list-group" id="data-store">
                 <a href="#" class="list-group-item text-center active" id="map-store">
                   <h2 class="glyphicon glyphicon-globe"></h2>
                   <p>World</p>
@@ -60,8 +59,8 @@
                 </div>
                 <div class="vertical-tab-content">
                   <div class="d3graph">
-                    <textarea class="lister" id="mselect" data-data-url="{% url 'genes:json' %}" style="display: none;"></textarea>
-                    <svg class="mutations" id="mutations"></svg>
+                    <div class="lister" id="mselect" data-mutations="{% url 'genes:json' %}"></div>
+                    <svg class="mutations" id="mutations" data-resistance="{% url 'maps:map.mutations' %}"></svg>
                   </div>
                 </div>
             </div>
