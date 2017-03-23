@@ -45,6 +45,10 @@ function makeDrugChart(data) {
 
     chart.showLegend(true);
 
+    chart.multibar.dispatch.on("elementClick", function(e) {
+        console.log(e.data);
+    });
+
     var svg = d3.select('svg.drugs')
           .attr('perserveAspectRatio', 'xMinYMid')
           .attr('width', width)

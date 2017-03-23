@@ -85,9 +85,7 @@ function makeMap(target, gjson_1) {
         next.data('deselect', function() { button2.click(); });
 
         // Set the usable data for other charts
-        $('#map-store').data('country', feature.properties.value)
-        $('#map-store p').text(feature.properties.name);
-        $('#map-store h2').attr('class', 'glyphicon glyphicon-flag');
+        setTabData('map', feature.properties.value, feature.properties.name, 'flag');
 
         button1.hide();
         button2.show();
@@ -97,11 +95,7 @@ function makeMap(target, gjson_1) {
         // WARNING: jquery class selectors and addClass/removeClass DO NOT work here
         var previous = $('.country-'+feature.properties.value);
         previous.attr('class', previous.attr('class').replace(' countrySelect', ''));
-
-        $('#map-store').data('country', null);
-        $('#map-store p').text("World");
-        $('#map-store h2').attr('class', 'glyphicon glyphicon-globe');
-
+        unsetTabData('map');
         button1.show();
         button2.hide();
         map.closePopup();
