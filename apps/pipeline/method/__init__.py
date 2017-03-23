@@ -18,16 +18,34 @@
 Gets the configured pipeline module and initialises it.
 """
 
+import inspect
+
 from importlib import import_module
 from django.conf import settings
+from .base import ManagerBase
 
-module_id = getattr(settings, 'PIPELINE_MODULE', 'apps.pipeline.method.shell')
-pipe_root = getattr(settings, 'PIPELINE_ROOT', None)
+DEFAULT = 'apps.pipeline.method.shell'
 
-try:
-    module = import_module(module_id)
-    JobManager = getattr(module, 'JobManager')(pipedir=pipe_root)
-except Exception as err:
-    raise ValueError("Pipeline module is not a pipeline method or "
-            "not configured correctly, %s: %s" % (module_id, str(err)))
+def get_job_manager(module_id=None, pipe_root=None):
+    if pipe_root is None:
+        pipe_root = getattr(settings, 'PIPELINE_ROOT', None)
+    if module_id is None:
+        module_id = getattr(settings, 'PIPELINE_MODULE', DEFAULT)
+
+    # Already a job manager, so return
+    if isinstance(module_id, ManagerBase):
+        return module_id
+
+    # A job manager class, create object and return
+    if inspect.isclass(module_id):
+        return module_id(pipedir=pipe_root)
+
+    # A name to a job manage, import and create
+    try:
+        module = import_module(module_id)
+        obj = getattr(module, 'JobManager')(pipedir=pipe_root)
+        return  obj
+    except Exception as err:
+        raise ValueError("Pipeline module is not a pipeline method or "
+                "not configured correctly, %s: %s" % (module_id, str(err)))
 

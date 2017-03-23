@@ -42,7 +42,7 @@ class JobManager(ManagerBase):
             (_, pid) = self.job_read(depends, 'pid')
             (_, ret) = self.job_read(depends, 'ret')
             if pid:
-                if ret not in (0, None):
+                if ret not in (0, None, '0'):
                     # Refuse to submit job if the dependant job failed
                     return False
                 elif ret is None:

@@ -20,6 +20,8 @@ This allows tests to operate pipelines without doing anything.
 from django.utils.timezone import now
 from .base import ManagerBase
 
+COMMAND, IS_SLEEP, IS_STARTED, IS_COMPLETE, RETURN_CODE, ERROR_OUT = range(6)
+
 class JobManager(ManagerBase):
     cmds = {}
 
@@ -27,24 +29,27 @@ class JobManager(ManagerBase):
         if 'bad-submit' in job_id:
             return False
         # Command, sleeping, started, completed, err
-        self.cmds[job_id] = (cmd, False, False, False, False)
+        self.cmds[job_id] = [cmd, None, None, None, None, '']
         return True
 
     def run_all(self):
         for job_id in self.cmds:
-            self.cmds[job_id][2] = True
+            self.cmds[job_id][IS_STARTED] = now()
 
-    def finish_all(self):
+    def finish_all(self, status=0, err=''):
         for job_id in self.cmds:
-            self.cmds[job_id][3] = True
+            self.cmds[job_id][IS_COMPLETE] = now()
+            self.cmds[job_id][RETURN_CODE] = status
+            self.cmds[job_id][ERROR_OUT] = err
 
     def clean_up(self):
         self.cmds = {}
 
     def stop(self, job_id):
-        if self.cmds[job_id][2] and not self.cmds[job_id][3]:
-            self.cmds[job_id][3] = True
-            self.cmds[job_id][4] = True
+        if self.cmds[job_id][IS_STARTED] and not self.cmds[job_id][IS_COMPLETE]:
+            self.cmds[job_id][IS_COMPLETE] = True
+            self.cmds[job_id][RETURN_CODE] = 127
+            self.cmds[job_id][ERROR_OUT] = 'STOPPED'
 
     def status(self, job_id, clean=False):
         if job_id in self.cmds:
@@ -69,10 +74,10 @@ class JobManager(ManagerBase):
             status = 'running'
 
         return {
-          'status': 'finished',
-          'started': now() if cmd[2] else None,
-          'finished': now() if cmd[3] else None,
-          'return': int(cmd[4]),
-          'error': '',
+          'status': status,
+          'started': cmd[IS_STARTED],
+          'finished': cmd[IS_COMPLETE],
+          'return': cmd[RETURN_CODE],
+          'error': cmd[ERROR_OUT],
         }
 
