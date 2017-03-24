@@ -59,7 +59,7 @@ div.vertical-tab-menu div.list-group>a:after {
   border-bottom: 13px solid transparent;
   border-top: 13px solid transparent;
   border-left: 0px solid #fff;
-  transition: border-left 0.5s ease;
+  transition: border-left-color 0.5s ease, border-left-width 0.4s linear;
 }
 div.vertical-tab-menu div.list-group>a.active:after,
 div.vertical-tab-menu div.list-group>a.selected:after {
