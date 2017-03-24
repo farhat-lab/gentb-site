@@ -17,24 +17,41 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with inkscape-web.  If not, see <http://www.gnu.org/licenses/>.
  */
+(function($) {
+  $.fn.addOption = function(name, value) {
+    var opt = $("<option></option>");
+    $(this).append(opt);
+    opt.attr("value", value);
+    opt.text(name);
+    return opt;
+  }
+  $.fn.replaceOptions = function(options) {
+    this.empty();
+    var self = this;
+    if($(self).is('select')) {
+      $(self).addOption("---", '---');
+    }
+    $.each(options, function(index, option) {
+      var opt = $(self).addOption(option.name, option.value);
+      opt.data('children', option.children);
+    }); 
+  }
 
-$(document).ready(function() {
-  var svg = $('svg.mutations');
-  makeMutationChart();
-  $('#mutation-store').click(mutationRefresh());
-});
+  $(document).ready(function() {
+    var svg = $('svg.mutations');
+    makeMutationChart();
+    $('#mutation-store').click(mutationRefresh());
+  });
 
 function mutationRefresh() {
-  var filters = $('#data-store > a').data();
-  //console.log(filters);
   // The goal here is to list all mutations within the
   // selected drug, lineage or country
   $('.lister').each(function() {
-    /*var last_id = null;
+    var last_id = null;
     var previous = null;
     var target = $(this);
     var container = $(this).parent();
-    $.getJSON($(this).data('data-url'), function(data) {
+    $.getJSON($(this).data('mutations'), function(data) {
       target.data('data', data);
       $.each(data.levels, function(index, level) {
         if(index == 2) {
@@ -111,7 +128,7 @@ function mutationRefresh() {
       $('#level-0').replaceOptions(data.children);
       $('#level-0').show();
       $('#level-0').change();
-    });*/
+    });
   });
 }
 
@@ -160,21 +177,4 @@ function makeMutationChart() {
     ready = true;
 }
 
-$.fn.addOption = function(name, value) {
-    var opt = $("<option></option>");
-    $(this).append(opt);
-    opt.attr("value", value);
-    opt.text(name);
-    return opt;
-}
-$.fn.replaceOptions = function(options) {
-    this.empty();
-    var self = this;
-    if($(self).is('select')) {
-      $(self).addOption("---", '---');
-    }
-    $.each(options, function(index, option) {
-      var opt = $(self).addOption(option.name, option.value);
-      opt.data('children', option.children);
-    }); 
-}
+})(jQuery);
