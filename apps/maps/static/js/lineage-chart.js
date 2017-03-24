@@ -72,7 +72,7 @@ function initialiseLineageChart(svg) {
           .attr('viewBox', '0 0 ' + width + ' ' + height);
 
     chart.multibar.dispatch.on("elementClick", function(e) {
-        setTabData('lineage', e.data.x, e.data.x, 'ok-circle')
+        setTabData('lineage', e.data.x, e.data.x, 'ok-circle', e.series.key)
     });
 
     $('#lineages').parent().click(function(e) {

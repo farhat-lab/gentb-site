@@ -20,6 +20,8 @@
 var all_tabs = 'div.vertical-tab-menu > div.list-group > a';
 
 $(document).ready(function() {
+  // DEBUG
+  $.ajaxSetup({ cache: false });
   $(all_tabs).click(function(e) {
     var tab = $(this);
     e.preventDefault();
@@ -50,23 +52,29 @@ function getAllTabData(except) {
   $(all_tabs).each(function() {
     if(this.id != except) {
       if($(this).data('value')) {
-        data[this.id.replace('-store', '')] = $(this).data('value');
+        var column = this.id.replace('-store', '');
+        if($(this).data('column')) {
+          column = $(this).data('column')
+        }
+        data[column] = $(this).data('value');
       }
     }
   });
   return data;
 }
 
-function setTabData(key, value, text, icon) {
+function setTabData(key, value, text, icon, column) {
   var store = $('#'+key+'-store');
 
   if(!store.data('original-text')) {
     store.data('original', store.data('value'));
+    store.data('original-column', store.data('column'));
     store.data('original-text', $('p', store).text());
     store.data('original-icon', $('h2', store).attr('class'));
   }
   store.addClass('selected');
   store.data('value', value)
+  store.data('column', column)
   $('p', store).text(text);
   $('h2', store).attr('class', 'glyphicon glyphicon-'+icon);
 
@@ -78,9 +86,12 @@ function unsetTabData(key) {
   var store = $('#'+key+'-store');
   store.removeClass('selected');
   $(all_tabs).not(store).data('done', false);
+  store.removeData('value');
+  store.removeData('column');
 
   if(store.data('original-text')) {
     store.data('value', store.data('original'));
+    store.data('column', store.data('original-column'));
     $('p', store).text(store.data('original-text'));
     $('h2', store).attr('class', store.data('original-icon'));
   }
