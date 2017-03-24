@@ -19,14 +19,17 @@
  */
 
 $(document).ready(function() {
-  var svg = $('svg.drugs');
-  $.getJSON(svg.data('drug'), function(data) {
-    makeDrugChart(data.data);
+  var svg = 'svg.drugs';
+  var chart = initialiseDrugChart(svg);
+  $('#drug-store').data('json-signal', function(data) {
+    console.log("Drugging up!");
+    chartData(svg, chart, data.data);
   });
 });
 
-function makeDrugChart(data) {
+function initialiseDrugChart(svg) {
     var chart = nv.models.multiBarChart()
+      .stacked(true)
       .reduceXTicks(false);
 
     var width = 1000;
@@ -45,12 +48,12 @@ function makeDrugChart(data) {
 
     chart.showLegend(true);
 
-    var svg = d3.select('svg.drugs')
+    var svg = d3.select(svg)
           .attr('perserveAspectRatio', 'xMinYMid')
           .attr('width', width)
           .attr('height', height)
           .attr('viewBox', '0 0 ' + width + ' ' + height)
-          .datum(data)
+          .datum([])
           .transition().duration(1200)
           .call(chart);
 
@@ -61,6 +64,6 @@ function makeDrugChart(data) {
     $('#drugs').parent().click(function(e) {
       unsetTabData('drug');
     });
+
+    return chart;
 }
-
-

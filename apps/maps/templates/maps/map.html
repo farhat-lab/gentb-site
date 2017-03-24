@@ -26,19 +26,19 @@
         <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 vertical-tab-container">
             <div class="col-lg-1 col-md-3 col-sm-3 col-xs-3 vertical-tab-menu">
               <div class="list-group" id="data-store">
-                <a href="#" class="list-group-item text-center active" id="map-store">
+                <a href="#" class="list-group-item text-center active" id="map-store" data-json-url="{% url 'maps:map.places' %}">
                   <h2 class="glyphicon glyphicon-globe"></h2>
                   <p>World</p>
                 </a>
-                <a href="#" class="list-group-item text-center" id="drug-store">
+                <a href="#" class="list-group-item text-center" id="drug-store" data-json-url="{% url 'maps:map.drugs' %}">
                   <h2 class="icon-flask"></h2>
                   <p>Drug</p>
                 </a>
-                <a href="#" class="list-group-item text-center" id="lineage-store">
+                <a href="#" class="list-group-item text-center" id="lineage-store" data-json-url="{% url 'maps:map.lineages' %}">
                   <h2 class="icon-graph"></h2>
                   <p>Lineage</p>
                 </a>
-                <a href="#" class="list-group-item text-center" id="mutation-store">
+                <a href="#" class="list-group-item text-center" id="mutation-store" data-json-url="{% url 'genes:json' %}">
                   <h2 class="icon-mutation"></h2>
                   <p>Mutation</p>
                 </a>
@@ -46,21 +46,21 @@
             </div>
             <div class="col-lg-11 col-md-9 col-sm-9 col-xs-9 vertical-tab max-width">
                 <div class="vertical-tab-content active">
-                  <div class="maps" id="mapid" data-map="{% url 'maps:map.places' %}"></div>
+                  <div class="maps" id="mapid"></div>
                 </div>
                 <div class="vertical-tab-content">
                   <div class="d3graph">
-                    <svg class="drugs" id="drugs" data-drug="{% url 'maps:map.drugs' %}"></svg>
+                    <svg class="drugs" id="drugs"></svg>
                   </div>
                 </div>
                 <div class="vertical-tab-content">
                   <div class="d3graph">
-                    <svg class="lineages" id="lineages" data-lineage="{% url 'maps:map.lineages' %}"></svg>
+                    <svg class="lineages" id="lineages"></svg>
                   </div>
                 </div>
                 <div class="vertical-tab-content">
                   <div class="d3graph">
-                    <div class="lister" id="mselect" data-mutations="{% url 'genes:json' %}"></div>
+                    <div class="lister" id="mselect"></div>
                     <svg class="mutations" id="mutations" data-resistance="{% url 'maps:map.mutations' %}"></svg>
                   </div>
                 </div>

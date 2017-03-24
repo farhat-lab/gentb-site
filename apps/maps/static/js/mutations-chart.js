@@ -134,6 +134,7 @@ function mutationRefresh() {
 
 function makeMutationChart() {
     var chart = nv.models.multiBarChart()
+      .stacked(true)
       .reduceXTicks(false);
 
     var width = 1000;
