@@ -42,7 +42,7 @@ function chartLineageData(svg, chart, data) {
 
 function initialiseLineageChart(svg) {
     var chart = nv.models.multiBarChart()
-      .stacked(true)
+      .stacked(false) // Do not stack!
       .reduceXTicks(false);
 
     var width = 1000;
@@ -69,9 +69,7 @@ function initialiseLineageChart(svg) {
           .attr('perserveAspectRatio', 'xMinYMid')
           .attr('width', width)
           .attr('height', height)
-          .attr('viewBox', '0 0 ' + width + ' ' + height)
-          .datum([])
-          .call(chart);
+          .attr('viewBox', '0 0 ' + width + ' ' + height);
 
     chart.multibar.dispatch.on("elementClick", function(e) {
         setTabData('lineage', e.data.x, e.data.x, 'ok-circle')
