@@ -45,10 +45,6 @@ function makeDrugChart(data) {
 
     chart.showLegend(true);
 
-    chart.multibar.dispatch.on("elementClick", function(e) {
-        console.log(e.data);
-    });
-
     var svg = d3.select('svg.drugs')
           .attr('perserveAspectRatio', 'xMinYMid')
           .attr('width', width)
@@ -57,6 +53,14 @@ function makeDrugChart(data) {
           .datum(data)
           .transition().duration(1200)
           .call(chart);
+
+    chart.multibar.dispatch.on("elementClick", function(e) {
+        setTabData('drug', e.data.x, e.data.x, 'map-marker')
+    });
+
+    $('#drugs').parent().click(function(e) {
+      unsetTabData('drug');
+    });
 }
 
 

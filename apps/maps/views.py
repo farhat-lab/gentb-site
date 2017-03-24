@@ -103,6 +103,7 @@ class GraphData(list):
               "values": ret2,
             })
 
+
 class Drugs(JsonView, DataSlicerMixin):
     model = Drug
     order = ['name', 'kind']

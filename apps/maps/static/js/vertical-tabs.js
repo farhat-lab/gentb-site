@@ -37,6 +37,7 @@ function setTabData(key, value, text, icon) {
     store.data('original-text', $('p', store).text());
     store.data('original-icon', $('h2', store).attr('class'));
   }
+  store.addClass('selected');
   store.data('value', value)
   $('p', store).text(text);
   $('h2', store).attr('class', 'glyphicon glyphicon-'+icon);
@@ -44,6 +45,7 @@ function setTabData(key, value, text, icon) {
 
 function unsetTabData(key) {
   var store = $('#'+key+'-store');
+  store.removeClass('selected');
 
   if(store.data('original-text')) {
     store.data('value', store.data('original'));

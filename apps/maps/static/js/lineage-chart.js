@@ -65,6 +65,15 @@ function makeLineageChart(data) {
         .filter(function(d, i){return i == 0;}).node().dispatchEvent(evt);
 
     svg.transition().duration(1200)
+
+
+    chart.multibar.dispatch.on("elementClick", function(e) {
+        setTabData('lineage', e.data.x, e.data.x, 'ok-circle')
+    });
+
+    $('#lineage').parent().click(function(e) {
+      unsetTabData('lineage');
+    });
 }
 
 
