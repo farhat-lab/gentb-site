@@ -41,6 +41,7 @@ div.vertical-tab-menu div.list-group>a.selected {
   background-color: #5A55A3;
   color: #ffffff;
   z-index: 1000;
+  transition: background-color 0.5s ease;
 }
 div.vertical-tab-menu div.list-group>a.selected {
   background-color: #3E8944;
@@ -48,8 +49,7 @@ div.vertical-tab-menu div.list-group>a.selected {
 div.vertical-tab-menu div.list-group>a.selected.active {
   background-color: #50a558;
 }
-div.vertical-tab-menu div.list-group>a.active:after,
-div.vertical-tab-menu div.list-group>a.selected:after {
+div.vertical-tab-menu div.list-group>a:after {
   content: '';
   position: absolute;
   left: 100%;
@@ -58,6 +58,11 @@ div.vertical-tab-menu div.list-group>a.selected:after {
   border-left: 0;
   border-bottom: 13px solid transparent;
   border-top: 13px solid transparent;
+  border-left: 0px solid #fff;
+  transition: border-left 0.5s ease;
+}
+div.vertical-tab-menu div.list-group>a.active:after,
+div.vertical-tab-menu div.list-group>a.selected:after {
   border-left: 10px solid #5A55A3;
 }
 div.vertical-tab-menu div.list-group>a.selected:after {
@@ -66,8 +71,6 @@ div.vertical-tab-menu div.list-group>a.selected:after {
 div.vertical-tab-menu div.list-group>a.selected.active:after {
   border-left: 10px solid #50a558;
 }
-
-
 
 div.vertical-tab-content{
   background-color: #ffffff;

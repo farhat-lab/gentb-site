@@ -71,7 +71,7 @@ function makeLineageChart(data) {
         setTabData('lineage', e.data.x, e.data.x, 'ok-circle')
     });
 
-    $('#lineage').parent().click(function(e) {
+    $('#lineages').parent().click(function(e) {
       unsetTabData('lineage');
     });
 }
