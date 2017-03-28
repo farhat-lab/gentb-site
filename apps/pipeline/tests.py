@@ -20,19 +20,18 @@ import time
 import signal
 import tempfile
 
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from autotest.base import ExtraTestCase
 
 from apps.pipeline.models import Program, ProgramFile, Pipeline
-from apps.pipeline.method.shell import JobManager as ShellManager
-from apps.pipeline.method import JobManager
+from apps.pipeline.method import get_job_manager
 
 DIR = os.path.dirname(__file__)
 FIX = os.path.join(DIR, 'fixtures')
 
 class JobManagerTest(TestCase):
     def setUp(self):
-        self.manager = ShellManager()
+        self.manager = get_job_manager('apps.pipeline.method.shell')
         self.fn = tempfile.mktemp(prefix='test-job-')
 
     def tearDown(self):
@@ -55,7 +54,7 @@ class JobManagerTest(TestCase):
     def test_non_existant_id(self):
         """what happens when the job doesn't exist"""
         data = self.manager.status('sleep_test_0')
-        self.assertEqual(data, None)
+        self.assertEqual(data, {})
         self.manager.stop('sleep_test_0')
 
     def test_error_output(self):
@@ -83,7 +82,7 @@ class JobManagerTest(TestCase):
         while job < len(cmds):
             data = self.manager.status('a%d' % job)
             if data.get('status', None) in ('finished', 'stopped', None):
-                ret.append("%s:%s" % (data.get('status', None), str(data.get('return', -1))))
+                ret.append("%s:%s" % (data.get('status', 'No'), str(data.get('return', -1))))
                 job += 1
                 continue
             time.sleep(0.1)
@@ -234,11 +233,6 @@ class PipelineTest(ExtraTestCase):
         for pos, program in enumerate(self.programs):
             self.pipeline.programs.create(order=pos, program=program)
 
-    def tearDown(self):
-        pids = JobManager.clean_up()
-        if pids:
-            raise IOError("Processes still running: %s" % str(pids))
-
     def assertProgram(self, result, inputs, outputs, data=None):
         def content(fn):
             with open(fn, 'r') as fhl:
@@ -253,13 +247,14 @@ class PipelineTest(ExtraTestCase):
 
         self.assertTrue(result.is_submitted)
         self.assertTrue(result.is_complete)
-        self.assertEqual(result.error_text, '')
+        self.assertEqual(result.error_text, None)
         self.assertFalse(result.is_error)
 
         self.assertGreater(result.input_size, 0)
         self.assertGreater(result.output_size, 0)
         self.assertGreater(result.duration, 0)
 
+    @override_settings(PIPELINE_MODULE='apps.pipeline.method.fake')
     def test_pipeline(self):
         """Test the pipeline generation"""
         self.setupPipeline(
@@ -271,6 +266,10 @@ class PipelineTest(ExtraTestCase):
         result = self.pipeline.run("pipe", output_dir=self.dir, file=self.fn)
         limit = 40
         while not result.update_all():
+            if limit == 40:
+                get_job_manager().run_all()
+            elif limit == 35:
+                get_job_manager().finish_all()
             time.sleep(0.2)
             limit -= 1
             self.assertTrue(limit > 0, "Pipeline test timed out.")
@@ -283,17 +282,16 @@ class PipelineTest(ExtraTestCase):
         self.assertProgram(results[2], [fn % "ls", self.fn, fn % "c"], fn % "out")
         self.assertProgram(results[3], fn % "out", fn % "out")
 
+    @override_settings(PIPELINE_MODULE='apps.pipeline.method.fake')
     def test_duration(self):
         """Test the duration during a run"""
         self.setupPipeline(('DUR', 'sleep 5'))
         results = self.pipeline.run("pipe", output_dir=self.dir)
         result = results.programs.get()
+        get_job_manager().run_all()
         for x in range(5):
             result.update_status()
             self.assertEqual(int(result.duration), x+1)
             time.sleep(1)
-        while not results.update_all():
-            time.sleep(0.2)
-
 
 

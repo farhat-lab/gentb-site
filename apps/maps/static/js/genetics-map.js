@@ -20,9 +20,15 @@
 
 $(document).ready(function() {
   $('div.maps').each(function() {
-    var map = $(this);
-    $.getJSON(map.data('map'), function(data) {
-      makeMap(map, data);
+    var map = L.map(this.id).setView([12, 25], 2);
+    var color = d3.scale.threshold()
+        .domain([10, 20, 30, 40])
+        .range(['#FFFFCC', '#C7E9B4', '#7FCDBB', '#41B6C4', '#1D91C0']);
+
+    initialiseStrainMap(map, color);
+    $('#map-store').data('json-signal', function(data) {
+      console.log("Re-mapping!");
+      mapStrainData(map, color, data);
     });
   });
 });
@@ -34,46 +40,12 @@ function matchKey(datapoint, key_variable) {
   return "black";
 }
 
-function makeMap(target, gjson_1) {
-
-  var color = d3.scale.threshold()
-    .domain([10, 20, 30, 40])
-    .range(['#FFFFCC', '#C7E9B4', '#7FCDBB', '#41B6C4', '#1D91C0']);
-
-  var map = L.map(target[0].id).setView([12, 25], 2);
+function initialiseStrainMap(map, color) {
 
   L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 18,
     attribution: '' //Map tiles (c) <a href="http://openstreetmap.org">OpenStreetMap</a>, Map data (c) genTB'
   }).addTo(map);
-
-  function style_1(feature) {
-    return {
-      fillColor: color(feature.properties.values.Total),
-      weight: 1,
-      opacity: 0.5,
-      color: 'black',
-      fillOpacity: 0.35
-    };
-  }
-
-  function onEachFeature(feature, layer) {
-    ret = '<h4>' + feature.properties.name + '</h4>';
-    $.each(['Sensitive', 'MDR', 'XDR', 'TDR'], function(key, value) {
-      if (feature.properties.values[value]) {
-        ret += '<div><span>' + value + ':</span><span>' + feature.properties.values[value] + "</span></div>";
-      }
-    });
-    if(Object.keys(feature.properties.values).length > 2) {
-      ret += "<hr/><div class='total'><span>Total: </span><span>" + feature.properties.values.Total + "</span></div>";
-    }
-    ret += "<hr/><button class='btn btn-primary btn-xs disabled'>Select Country</button>"
-    layer.bindPopup(ret);
-  }
-  gJson_layer_1 = L.geoJson(gjson_1, {
-    style: style_1,
-    onEachFeature: onEachFeature
-  }).addTo(map)
 
   var legend = L.control({
     position: 'topright'
@@ -128,5 +100,76 @@ function makeMap(target, gjson_1) {
     .attr("class", "caption")
     .attr("y", 21)
     .text('Cases');
+}
 
-};
+var map_layer = null;
+function mapStrainData(map, color, data) {
+  if(map_layer) {
+    // Remove previous layer
+    map.removeLayer(map_layer);
+  }
+
+  function get_style(feature) {
+    return {
+      fillColor: color(feature.properties.values.Total),
+      weight: 1,
+      opacity: 0.5,
+      color: 'black',
+      fillOpacity: 0.35
+    };
+  }
+
+  function onEachFeature(feature, layer) {
+    id_cls = 'country-' + feature.properties.value
+    layer.setStyle({className: id_cls});
+
+    ret = $('<div></div>');
+    ret.append($('<h4>' + feature.properties.name + '</h4>'));
+    $.each(['Sensitive', 'MDR', 'XDR', 'TDR'], function(key, value) {
+      if (feature.properties.values[value]) {
+        ret.append($('<div><span>' + value + ':</span><span>' + feature.properties.values[value] + "</span></div>"));
+      }
+    });
+    if(Object.keys(feature.properties.values).length > 2) {
+      ret.append($("<hr/><div class='total'><span>Total: </span><span>" + feature.properties.values.Total + "</span></div>"));
+    }
+    var button1 = $("<button class='btn btn-primary btn-xs'>Select Country</button>").click(function() {
+        // WARNING: jquery class selectors and addClass/removeClass DO NOT work here
+        var previous = $('*[class~="countrySelect"]');
+        if(previous.length > 0) { previous.data('deselect')(); }
+
+        var next = $('.country-'+feature.properties.value);
+        // Set element id just in case it's useful later
+        next[0].id = feature.properties.value;
+
+        // Add the countrySelect class to highlight it
+        next.attr('class', next.attr('class') + ' countrySelect');
+        next.data('deselect', function() { button2.click(); });
+
+        // Set the usable data for other charts
+        setTabData('map', feature.properties.value, feature.properties.name, 'flag');
+
+        button1.hide();
+        button2.show();
+        map.closePopup();
+    });
+    var button2 = $("<button class='btn btn-danger btn-xs' style='display: none;'>Deselect</button>").click(function() {
+        // WARNING: jquery class selectors and addClass/removeClass DO NOT work here
+        var previous = $('.country-'+feature.properties.value);
+        previous.attr('class', previous.attr('class').replace(' countrySelect', ''));
+        unsetTabData('map');
+        button1.show();
+        button2.hide();
+        map.closePopup();
+    });
+    ret.append($("<hr/>"));
+    ret.append(button1);
+    ret.append(button2);
+    layer.bindPopup(ret[0]);
+  }
+
+  map_layer = L.geoJson(data, {
+    style: get_style,
+    onEachFeature: onEachFeature
+  }).addTo(map)
+}

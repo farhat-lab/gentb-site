@@ -38,7 +38,7 @@
             {% elif run.is_complete %}
               <li class="completed">
                 <span class="glyphicon glyphicon-ok" data-container="body" data-toggle="tooltip" title="Program run complete. <br><strong>Wait Time:</strong> {{ run.wait_time }}s<br><strong>Run Time:</strong> {{ run.run_time }}s" data-html="true"></span>
-                <h4>{{ run.program.name }}</h4>
+                <h4 data-container="body" data-toggle="tooltip" title="{{ run.program.description }}">{{ run.program.name }}</h4>
               </li>
             {% elif run.is_started %}
               <li class="active">

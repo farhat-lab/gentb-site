@@ -20,14 +20,29 @@
 
 
 $(document).ready(function() {
-  var svg = $('svg.lineages');
-  $.getJSON(svg.data('lineage'), function(data) {
-    makeLineageChart(data.data);
-  });
+  var svg = 'svg.lineages';
+  var chart = initialiseLineageChart(svg);
+  $('#lineage-store').data('json-signal', function(data) {
+    console.log("Lineage ahoy!");
+    chartLineageData(svg, chart, data.data);
+  }); 
 });
 
-function makeLineageChart(data) {
+function chartLineageData(svg, chart, data) {
+    var svg_n = chartData(svg, chart, data);
+
+    svg_n.transition().duration(0);
+    // Select the first category by "clicking" on it
+    var evt = new MouseEvent("click");
+    var node = d3.select(svg).selectAll('.nv-series')
+        .filter(function(d, i){return i == 0;}).node().dispatchEvent(evt);
+
+    svg_n.transition().duration(1200);
+}
+
+function initialiseLineageChart(svg) {
     var chart = nv.models.multiBarChart()
+      .stacked(false) // Do not stack!
       .reduceXTicks(false);
 
     var width = 1000;
@@ -50,30 +65,20 @@ function makeLineageChart(data) {
 
     chart.showLegend(true);
 
-    chart.tooltip.contentGenerator(function (data) {
-      ret = "<table>";
-      if(data.data) {
-        ret += "<tr><th align=\"right\">" + data.data.x + "</th></tr>";
-        ret += "<tr><th align=\"right\">" + data.data.y + "</th></tr>";
-      }   
-      return ret + "</table>";
-    });
-
-    var svg = d3.select('svg.lineages')
+    var svg = d3.select(svg)
           .attr('perserveAspectRatio', 'xMinYMid')
           .attr('width', width)
           .attr('height', height)
-          .attr('viewBox', '0 0 ' + width + ' ' + height)
-          .datum(data)
-          .transition().duration(0)
-          .call(chart);
+          .attr('viewBox', '0 0 ' + width + ' ' + height);
 
-    // Select the first category by "clicking" on it
-    var evt = new MouseEvent("click");
-    var node = d3.select('svg.lineages').selectAll('.nv-series')
-        .filter(function(d, i){return i == 0;}).node().dispatchEvent(evt);
+    chart.multibar.dispatch.on("elementClick", function(e) {
+        setTabData('lineage', e.data.x, e.data.x, 'ok-circle', e.series.key)
+    });
 
-    svg.transition().duration(1200)
+    $('#lineages').parent().click(function(e) {
+      unsetTabData('lineage');
+    });
+    return chart;
 }
 
 

@@ -33,6 +33,9 @@
 .leaflet-popup-content {
   
 }
+.countrySelect {
+  fill: red !important;
+}
 .nv-legend-symbol {
   cursor: pointer;
 }

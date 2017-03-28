@@ -81,6 +81,9 @@ class PredictDataset(TimeStampedModel):
             help_text='auto-filled on save')
     title = CharField('Dataset Title', max_length=255)
     file_type = CharField(choices=FILE_TYPES, max_length=25)
+    delete_sources = BooleanField(default=False,
+            help_text="If this is checked, we will delete all your input files"
+            " downloaded from dropbox after running the predict.")
 
     description = TextField('Dataset description')
     file_directory = CharField(max_length=255, blank=True)

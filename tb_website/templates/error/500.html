@@ -1,9 +1,20 @@
 {% extends "modal.html" %}
-{% load i18n %}
+{% load i18n static %}
 
 {% block "title" %}{% trans "Server Error" %}{% endblock %}
 
 {% block "dialog-body" %}
-  <p>{% trans "The website has caused a serious error. The administrator and programmers have been contacted with details of the problem and hopefully will be able to fix it soon." %}</p>
+  <div class="row">
+    <div class="col-md-5">
+      <img src="{% static "images/error-500.png" %}" title="That wasn't supposed to happen!"/>
+    </div>
+    <div class="col-md-7">
+      <p>{% trans "The website has caused a serious error. The administrator and programmers have been contacted with details of the problem and hopefully will be able to fix it soon." %}</p>
+    </div>
+  </div>
+{% endblock %}
+
+{% block "dialog-buttons" %}
+  <a href="mailto:tbpredict@gmail.com" class="btn btn-primary">Contact Us</a>
 {% endblock %}
 

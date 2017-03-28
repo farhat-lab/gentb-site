@@ -46,7 +46,7 @@ class UploadForm(ModelForm):
 
     class Meta:
         model = PredictDataset
-        fields = ('title', 'description', 'status', 'user', 'file_type')
+        fields = ('title', 'description', 'status', 'user', 'file_type', 'delete_sources')
         widgets = {
           'status': HiddenInput(),
           'user': HiddenInput(),

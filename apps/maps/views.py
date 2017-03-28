@@ -10,6 +10,8 @@ from .json_view import JsonView
 from .models import Country, Place
 from apps.mutations.models import Drug, StrainSource, Mutation, RESISTANCE
 
+LINEAGE_COLS = ['spoligotype_family', 'rflp_family', 'principle_group', 'wgs_group']
+LINEAGE_NAMES= ['Spoligo', 'RFLP', 'PGG', 'WGS']
 
 class MapPage(TemplateView):
     template_name = 'maps/map.html'
@@ -35,30 +37,34 @@ class DataSlicerMixin(object):
         filters = dict([(filtr, self.request.GET[key])
             for (key, filtr) in self.filters.items()
                 if key in self.request.GET])
+        if self.order:
+            qs = qs.order_by(*self.order)
         return qs.filter(**filters)
 
     def get_data(self):
         qs = self.get_queryset()
-        if self.order:
-            qs = qs.order_by(*self.order)
         if self.values:
             return qs.values(*self.values)
         return qs
 
 class Places(JsonView, DataSlicerMixin):
-    model = Country
-    order = ['name', 'region']
-    values = ['iso2', 'sources__resistance_group']
+    model = StrainSource
+    order = ['country__name', 'country__region']
+    values = ['country__iso2', 'resistance_group']
+    filters = dict(
+        [('drug', 'drugs__drug__code')] +
+        zip(LINEAGE_NAMES, LINEAGE_COLS)
+    )
 
     def get_context_data(self, **kw):
         ret = defaultdict(lambda: defaultdict(int))
-        for row in self.get_data().annotate(count=Count('sources__pk')):
-            group = row['sources__resistance_group']
+        for row in self.get_data().annotate(count=Count('pk')):
+            group = row['resistance_group']
             if group == 'S':
                 group = 'Sensitive'
             if group is not None:
-                ret[row['iso2']][group] = row['count']
-                ret[row['iso2']]['Total'] += row['count']
+                ret[row['country__iso2']][group] = row['count']
+                ret[row['country__iso2']]['Total'] += row['count']
 
         return {
           "type": "FeatureCollection",
@@ -70,7 +76,7 @@ class Places(JsonView, DataSlicerMixin):
               "popupContent": country.name,
               "type": "Feature",
               "id": country.id,
-              "properties": {"name": country.name, "values": ret[country.iso2]},
+              "properties": {"name": country.name, "value": country.iso2, "values": ret[country.iso2]},
             } for country in Country.objects.filter(iso2__in=list(ret))
            ],
         }            
@@ -103,16 +109,21 @@ class GraphData(list):
               "values": ret2,
             })
 
+
 class Drugs(JsonView, DataSlicerMixin):
-    model = Drug
-    order = ['name', 'kind']
-    values = ['name', 'code', 'strains__resistance']
+    model = StrainSource
+    order = ['drugs__drug__name', 'drugs__drug__kind']
+    values = ['drugs__drug__name', 'drugs__drug__code', 'drugs__resistance']
+    filters = dict(
+        [('map', 'country__iso2')] +
+        zip(LINEAGE_NAMES, LINEAGE_COLS)
+    )
 
     def get_context_data(self, **kw):
         return {
           'data': GraphData(
-            self.get_data().annotate(count=Count('strains__pk')),
-            'code', 'count', 'strains__resistance',
+            self.get_data().annotate(count=Count('pk')),
+            'drugs__drug__code', 'count', 'drugs__resistance',
             z_keys=dict(RESISTANCE),
           )
         }
@@ -120,7 +131,11 @@ class Drugs(JsonView, DataSlicerMixin):
 class Lineages(JsonView, DataSlicerMixin):
     model = StrainSource
     order = ['spoligotype_family']
-    values = ['spoligotype_family', 'rflp_family', 'principle_group', 'wgs_group']
+    values = LINEAGE_COLS
+    filters = {
+      'map': 'country__iso2',
+      'drug': 'drugs__drug__code',
+    }
 
     def get_queryset(self):
         qs = super(Lineages, self).get_queryset()
@@ -131,7 +146,7 @@ class Lineages(JsonView, DataSlicerMixin):
           'data': GraphData(
             self.get_data().annotate(count=Count('pk')),
             self.values, 'count', True,
-            z_keys=dict(zip(self.values, ['Spoligo', 'RFLP', 'PGG', 'WGS'])),
+            z_keys=dict(zip(self.values, LINEAGE_NAMES)),
             x_keys={None: "Not Available"},
           )
         }

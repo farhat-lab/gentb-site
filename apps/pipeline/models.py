@@ -52,7 +52,7 @@ from django.utils.timezone import now
 from django.utils.text import slugify
 from django.utils.timezone import now
 
-from apps.pipeline.method import JobManager
+from apps.pipeline.method import get_job_manager
 
 def file_as_inputs(m2m, save_to=None):
     """Adds each m2m to the save_to dictionary"""
@@ -447,7 +447,7 @@ class ProgramRun(TimeStampedModel):
         # Delete all old output files
         self.delete_output_files()
 
-        if JobManager.submit(self.job_id, self.debug_text, depends=previous):
+        if get_job_manager().submit(self.job_id, self.debug_text, depends=previous):
             self.is_submitted = True
             self.submitted = now()
         else:
@@ -457,7 +457,7 @@ class ProgramRun(TimeStampedModel):
     def stop(self, msg='Stopped'):
         """Stop this program from running"""
         if self.is_submitted and not self.is_complete:
-            ret = JobManager.stop(self.job_id)
+            ret = get_job_manager().stop(self.job_id)
             self.is_error = True
             self.is_complete = True
             self.error_text = msg
@@ -465,9 +465,10 @@ class ProgramRun(TimeStampedModel):
             return ret
         return True
 
-    def submit(self, commit=True, previous=None, job_manager=JobManager, **kwargs):
-        """Submit this job to the configured JobManager"""
+    def submit(self, commit=True, previous=None, job_manager=None, **kwargs):
+        """Submit this job to the configured Job Manager"""
         files = dict(self.program.prepare_files(**kwargs))
+        job_manager = get_job_manager(job_manager)
         
         # Save all the input and output files into database
         fs = files.items()
@@ -496,7 +497,8 @@ class ProgramRun(TimeStampedModel):
         """Take data from the job manager and populate the database"""
         if self.is_submitted and not self.is_complete:
             dur = None
-            data = JobManager.status(self.job_id, clean=True)
+            job_manager = get_job_manager()
+            data = job_manager.status(self.job_id, clean=True)
 
             if data.get('return', None) is not None:
                 if data['finished'] and data['started']:
@@ -522,7 +524,7 @@ class ProgramRun(TimeStampedModel):
             if data and self.previous_id:
                 prev = ProgramRun.objects.get(job_id=self.previous_id)
                 if prev.is_error:
-                    JobManager.stop(self.job_id)
+                    job_manager.stop(self.job_id)
                     self.is_error = True
             if commit:
                 self.save()

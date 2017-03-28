@@ -6,7 +6,6 @@ div.vertical-tab-container{
   border-radius: 4px;
   -moz-border-radius: 4px;
   border:1px solid #ddd;
-  margin-top: 20px;
   -webkit-box-shadow: 0 6px 12px rgba(0,0,0,.175);
   box-shadow: 0 6px 12px rgba(0,0,0,.175);
   -moz-box-shadow: 0 6px 12px rgba(0,0,0,.175);
@@ -36,13 +35,20 @@ div.vertical-tab-menu div.list-group>a:last-child{
   border-bottom-right-radius: 0;
   -moz-border-bottom-right-radius: 0;
 }
-div.vertical-tab-menu div.list-group>a.active {
+div.vertical-tab-menu div.list-group>a.active,
+div.vertical-tab-menu div.list-group>a.selected {
   background-color: #5A55A3;
-  background-image: #5A55A3;
   color: #ffffff;
   z-index: 1000;
+  transition: background-color 0.5s ease;
 }
-div.vertical-tab-menu div.list-group>a.active:after{
+div.vertical-tab-menu div.list-group>a.selected {
+  background-color: #3E8944;
+}
+div.vertical-tab-menu div.list-group>a.selected.active {
+  background-color: #50a558;
+}
+div.vertical-tab-menu div.list-group>a:after {
   content: '';
   position: absolute;
   left: 100%;
@@ -51,7 +57,18 @@ div.vertical-tab-menu div.list-group>a.active:after{
   border-left: 0;
   border-bottom: 13px solid transparent;
   border-top: 13px solid transparent;
+  border-left: 0px solid #fff;
+  transition: border-left-color 0.5s ease, border-left-width 0.4s linear;
+}
+div.vertical-tab-menu div.list-group>a.active:after,
+div.vertical-tab-menu div.list-group>a.selected:after {
   border-left: 10px solid #5A55A3;
+}
+div.vertical-tab-menu div.list-group>a.selected:after {
+  border-left: 10px solid #3E8944;
+}
+div.vertical-tab-menu div.list-group>a.selected.active:after {
+  border-left: 10px solid #50a558;
 }
 
 div.vertical-tab-content{
@@ -75,3 +92,4 @@ div.vertical-tab-container div.max-width
 div.d3graph {
   padding: 20px 10px 30px 20px;
 }
+
