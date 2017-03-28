@@ -124,9 +124,9 @@ while (<REF>) {
 #print STDERR "reading file $snpfile" if $DEBUG;
 open IN,"<$snpfile";
 my $asnpfile  = $snpfile;
-$asnpfile =~ s/\.vcf$/.var/;
-open SNP,">$asnpfile";
-print SNP "reference\tregionid\tgenesymbol\tvarname\tdesc\tqual\tdepth\tbidir\thqr\thqr_ref\tfq\tcodon\taltcodon\tcodpos\tplatypusfilter";
+#$asnpfile =~ s/\.vcf$/.var/;
+#open SNP,">$asnpfile";
+print STDOUT "reference\tregionid\tgenesymbol\tvarname\tdesc\tqual\tdepth\tbidir\thqr\thqr_ref\tfq\tcodon\taltcodon\tcodpos\tplatypusfilter";
 while (<IN>) {
  next if m/^#/;
  chomp;
@@ -176,7 +176,7 @@ while (<IN>) {
       my $base=substr($allele,$march-$from,1);
       ($name, $codon, $altcodon, $codpos)=&annotnoncoding($march, $genename,$ref_base, $base);
      }
-     print SNP $reference,$genename,$symbol{$genename},$name,$desc{$genename},$snpqual,$depth,$bidir,$hqr_var,$hqr_ref,$fq,$codon,$altcodon,$codpos,$filter;    
+     print STDOUT $reference,$genename,$symbol{$genename},$name,$desc{$genename},$snpqual,$depth,$bidir,$hqr_var,$hqr_ref,$fq,$codon,$altcodon,$codpos,$filter;    
      $march++;
     }
    } elsif (length($allele)!=length($ref_allele)) { #indel may or may not also have SNP
@@ -211,7 +211,7 @@ while (<IN>) {
        } else { ## 1 noncoding variant
         ($name, $codon, $altcodon, $codpos)=&annotnoncoding($march, $genename,$ref_base, $base);
        }
-       print SNP $reference,$genename,$symbol{$genename},$name,$desc{$genename},$snpqual,$depth,$bidir,$hqr_var,$hqr_ref,$fq,$codon,$altcodon,$codpos,$filter;
+       print STDOUT $reference,$genename,$symbol{$genename},$name,$desc{$genename},$snpqual,$depth,$bidir,$hqr_var,$hqr_ref,$fq,$codon,$altcodon,$codpos,$filter;
        $march++;
       } 
      } elsif (length($ref_allele)>length($allele)) { #at least partly a deletion
@@ -228,7 +228,7 @@ while (<IN>) {
        } else { ## 1 noncoding variant
         ($name, $codon, $altcodon, $codpos)=&annotnoncoding($march, $genename,$ref_base, $base);
        }
-       print SNP $reference,$genename,$symbol{$genename},$name,$desc{$genename},$snpqual,$depth,$bidir,$hqr_var,$hqr_ref,$fq,$codon,$altcodon,$codpos,$filter;
+       print STDOUT $reference,$genename,$symbol{$genename},$name,$desc{$genename},$snpqual,$depth,$bidir,$hqr_var,$hqr_ref,$fq,$codon,$altcodon,$codpos,$filter;
        $march++;
       } 
      } #completes SNP porition of INS or DEL $march variable marks where we are
@@ -238,7 +238,7 @@ while (<IN>) {
       }
      }
      ($name,$codon,$altcodon,$codpos) = &annotindel($from,$genename,$ref_allele, $allele);
-     print SNP $reference,$genename,$symbol{$genename},$name,$desc{$genename},$snpqual,$depth,$bidir,$hqr_var,$hqr_ref,$fq,$codon,$altcodon,$codpos,$filter; 
+     print STDOUT $reference,$genename,$symbol{$genename},$name,$desc{$genename},$snpqual,$depth,$bidir,$hqr_var,$hqr_ref,$fq,$codon,$altcodon,$codpos,$filter; 
     } else { #completes INDEL portion of combo SNP/indel
      while (my ($gname, $genomicPos) = each %start) {
       if ($genomicPos <$from && $end{$gname}>=$from) { #for zero based coordinates
@@ -246,14 +246,14 @@ while (<IN>) {
       }
      }
      ($name,$codon,$altcodon,$codpos) = &annotindel($from,$genename,$ref_allele, $allele);
-     print SNP $reference,$genename,$symbol{$genename},$name,$desc{$genename},$snpqual,$depth,$bidir,$hqr_var,$hqr_ref,$fq,$codon,$altcodon,$codpos,$filter;
+     print STDOUT $reference,$genename,$symbol{$genename},$name,$desc{$genename},$snpqual,$depth,$bidir,$hqr_var,$hqr_ref,$fq,$codon,$altcodon,$codpos,$filter;
     }
    } #close indel
   } #close high Quality
  } #close no semicolon
 } #vcf file complete
 
-close SNP;
+#close SNP;
 close IN;
 
 sub assign_allele{
@@ -400,12 +400,14 @@ sub annotcoding{
    $codon = `perl $Bin/get_seq_coord.pl -coord $codonStart-$codonEnd -nodefline $ref_file`; #h37rv.fasta is reference fasta file this and get_seq_coord.pl should be in the $Bin folder
    chomp $codon;
    $codon=~s/\n//g;
-   my $ref_base = substr($codon,$codpos-1,1);
-   my $input_base = substr($ref_allele,0,1);
-   unless (uc($ref_base) eq uc($input_base)) {
+   #my $ref_base = substr($codon,$codpos-1,1);
+   #my $input_base = substr($ref_allele,0,1);
+   #unless (uc($ref_base) eq uc($input_base)) {
     #print STDERR "Reference base at $from ($ref_base) is different than then SNP reference ($input_base)!";
-   }
+   #}
    $checkallele=$allele;
+   $altcodon=$codon;
+   substr($altcodon, $codpos-1, length($checkallele))=$checkallele;
   }else{ # '-' strand
    $nucpos = $txEnd - $from + 1;
    $aapos = int(($txEnd - $from) / 3) + 1;
@@ -415,25 +417,28 @@ sub annotcoding{
    my $codonEnd = $txEnd - int(($txEnd - $from -length($allele)+1)/3)*3; #genomic coordinate of last base in last codon affected was=$codonStart + 2;
    $codon = `perl $Bin/get_seq_coord.pl -coord $codonStart-$codonEnd -nodefline $ref_file`; #h37rv.fasta is reference fasta file this and get_seq_coord.pl should be in the $Bin folder
    chomp $codon;
-   $codon = &revcomp($codon); #reverse complement
+   #$codon = &revcomp($codon); #reverse complement
    my $codposrev;
    $codposrev = 3 if ($codpos==1);
    $codposrev = 1 if ($codpos==3);
    $codposrev = 2 if ($codpos==2);
-   my $ref_base = &revcomp(substr($codon,-$codposrev,1));
-   my $input_base = substr($ref_allele,0,1);
-   unless (uc($ref_base) eq uc($input_base)) {
-    #print STDERR "Reference base at $from ($ref_base) is different than then SNP reference ($input_base), allele is ($allele) ref allele is ($ref_allele), codon ($codon) start at pos $codpos of $codonStart ends at $codonEnd!";
+   #my $ref_base = &revcomp(substr($codon,-$codposrev,1));
+   #my $input_base = substr($ref_allele,0,1);
+   #unless (uc($ref_base) eq uc($input_base)) {
+   # print STDERR "Reference base at $from ($ref_base) is different than then SNP reference ($input_base), allele is ($allele) ref allele is ($ref_allele), codon ($codon) start at pos $codpos of $codonStart ends at $codonEnd!";
    # if (uc(substr($ref_allele,0,1)) eq &revcomp(uc($ref_base))) {
    #  print STDERR "  Assuming the SNP is reported in reverse complement.";
    #  $ref_allele = &revcomp($ref_allele);
    #  $allele = &revcomp($allele);
    # }
-   }
-   $checkallele = &revcomp($allele);
+   #}
+   $altcodon=$codon;
+   $checkallele = $allele;
+   substr($altcodon, $codposrev-1,length($checkallele))=$checkallele;
+   $codon=&revcomp($codon);
+   $altcodon=&revcomp($altcodon);
   }
-  $altcodon = $codon;
-  substr($altcodon,$codpos-1,length($checkallele)) = $checkallele;
+  #print STDERR "altcodon is $altcodon , codon is $codon, $codpos, $allele, $checkallele\n";
   if (&check_synonymous($codon,$aapos,$altcodon)) { ##assigns aasnp variable
    $sns = 'S'; #synonymous
   }else{
