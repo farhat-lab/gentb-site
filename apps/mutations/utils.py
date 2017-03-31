@@ -178,6 +178,7 @@ def unpack_mutation_format(name):
 
     raise ValueError("Must be promoter, intergenic or CN, CD, CF, CI, CS, CZ or N, ND, NI, NF")
 
+
 class defaultlist(defaultdict):
     """Like a defaultdict, but generates a list of items with the same key"""
     def __init__(self, generator):

@@ -74,7 +74,6 @@ class GeneLocus(Model):
       ('R', 'RNA'),
     )
 
-    #drug = ForeignKey(Drug, related_name='gene_locuses')
     genome = ForeignKey(Genome, related_name='gene_locuses', null=True, blank=True)
     name = CharField(max_length=255, db_index=True)
     previous_id = CharField(max_length=64, db_index=True, null=True, blank=True)
