@@ -33,8 +33,13 @@ class DataSlicerMixin(object):
 
     def get_queryset(self):
         """Applies any filters from the request query to the given model"""
+        def get_value(filtr, key):
+            if filtr.endswith('__in'):
+                return self.request.GET.getlist(key)
+            return self.request.GET.get(key)
+
         qs = self.get_model().objects.all()
-        filters = dict([(filtr, self.request.GET[key])
+        filters = dict([(filtr, get_value(filtr, key))
             for (key, filtr) in self.filters.items()
                 if key in self.request.GET])
         if self.order:
@@ -152,36 +157,33 @@ class Lineages(JsonView, DataSlicerMixin):
         }
 
 class Mutations(JsonView, DataSlicerMixin):
-    model = StrainSource
+    model = Mutation
     order = None
     values = ['pk']
-    filters = Drugs.filters
+    filters = {
+      'drug': 'drugs__code',
+    }
 
     def get_context_data(self, **kw):
-        qs = Mutation.objects.all()
-        if 'drug' in self.request.GET:
-	    qs = qs.filter(drugs__code=self.request.GET['drug'])
-
-        if any([k in self.request.GET for k in self.filters]):
-            # XXX TODO Limit the mutations to just those in these strain sources.
-            pass
+        qs = self.get_data()
 
         ret = { 
           'levels': ['Gene Locus', 'Mutation'],
           'children': [], 
         }
 
-	loci = qs.values_list('gene_locus__name', flat=True).distinct().limit(1000)
-	for locus in GeneLocus.objects.filter(name__in=loci):
-	    ret['children'].append({
-	      'name': str(locus),
-	      'children': [], 
-	    })
-	    for mutation in qs: 
-		ret['children'][-1]['children'].append({
-		  'name': str(mutation),
-		  'value': mutation.name,
-		})
+        mutations = qs[:1000].values_list('name', 'gene_locus__name')
+
+        out = defaultdict(list)
+        for mutation, locus in mutations:
+            out[locus].append(mutation)
+
+        for locus in sorted(out):
+            ret['children'].append({
+              'name': locus,
+              'children': [{'name': m, 'value': m} for m in out[locus]],
+            })
+
         return ret 
 
 
@@ -196,15 +198,25 @@ class Mutations(JsonView, DataSlicerMixin):
           )
         }
 
-class MutationView(JsonView):
-    @property
-    def snps(self):
-        return self.request.GET.get('snp', '').split(',')
+class MutationView(JsonView, DataSlicerMixin):
+    model = StrainSource
+    values = ['mutations__mutation__name', 'resistance_group']
+    filters = {
+        'mutations[]': 'mutations__mutation__name__in',
+            #  'map': 'country__iso2',
+            #  'drug': 'drugs__drug__code',
+    }
 
     def get_context_data(self, **kw):
-        drug = self.request.GET.get('drug', None)
-        Mutation.objects.filter(name__in=self.snps).values('code')
+        qs = self.get_data()
+        if 'mutations[]' not in self.request.GET:
+            qs = qs.filter(name='NOOP')
+        #drug = self.request.GET.get('drug', None)
+        #Mutation.objects.filter(name__in=self.snps).values('code')
         return {
-           'data': data,
-        }
+           'data': GraphData(
+               qs.annotate(count=Count('pk')),
+                   'mutations__mutation__name', 'count', 'resistance_group',
+                 )
+               }
 

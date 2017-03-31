@@ -17,46 +17,70 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with inkscape-web.  If not, see <http://www.gnu.org/licenses/>.
  */
-(function($) {
-  $.fn.addOption = function(name, value) {
+
+function addOption(self, name, value) {
     var opt = $("<option></option>");
-    $(this).append(opt);
+    $(self).append(opt);
     opt.attr("value", value);
     opt.text(name);
     return opt;
-  }
-  $.fn.replaceOptions = function(options) {
-    this.empty();
-    var self = this;
+}
+function replaceOptions(self, options) {
+    self.empty();
     if($(self).is('select')) {
-      $(self).addOption("---", '---');
+      addOption($(self), "---", '---');
     }
     $.each(options, function(index, option) {
-      var opt = $(self).addOption(option.name, option.value);
+      var opt = addOption($(self), option.name, option.value);
       opt.data('children', option.children);
     }); 
-  }
+}
+function unique(array) {
+    return $.grep(array, function(el, index) {
+        return index === $.inArray(el, array);
+    });
+}
 
-  $(document).ready(function() {
+$(document).ready(function() {
     var svg = 'svg.mutations';
     var chart = initialiseMutationChart(svg);
     $('#mutation-store').data('json-signal', function(data) {
-      console.log("Mutate mate!");
-      refreshMutation(svg, chart, data.data);
+      if($('#level-0').length == 0) {
+        initialiseMutationList(data, function(mutations) {
+          
+        $.getJSON($(svg).data('json-url'), {'mutations': mutations})
+          .done(function(json) {
+              chartData(svg, chart, json.data);
+          })
+          .fail(function(jqxhr, textStatus, error) {
+            var err = textStatus + ", " + error;
+            console.log("Request Failed: " + err);
+          });
+        });
+      }
+      refreshMutation(svg, chart, data);
     }); 
-  });
+});
 
 function refreshMutation(svg, chart, data) {
   // The goal here is to list all mutations within the
   // selected drug, lineage or country
-  $('.lister').each(function() {
+  $('#mselect').each(function() {
+      replaceOptions($('#level-0'), data.children);
+      $('#level-0').show();
+      $('#level-0').change();
+  });
+  $('#clear-mutation').click();
+}
+
+function initialiseMutationList(data, refreshNow) {
+  $('#mselect').each(function() {
     var last_id = null;
     var previous = null;
     var target = $(this);
     var container = $(this).parent();
-    $.getJSON($(this).data('mutations'), function(data) {
-      target.data('data', data);
-      $.each(data.levels, function(index, level) {
+    target.data('data', data);
+    $.each(data.levels, function(index, level) {
         if(index == 2) {
             var input = $('<input type="text"></input>');
             input.attr('id', "level-"+index);
@@ -83,10 +107,9 @@ function refreshMutation(svg, chart, data) {
             select.data('previous', index - 1);
             select.data('next', index + 1);
             select.attr('title', level);
-            select.attr('style', 'width: 50%;');
             select.attr('id', 'level-' + index);
             select.insertBefore(target);
-            select.replaceOptions([]);
+            replaceOptions(select, []);
 
             select.change(function() {
               var selected = this.selectedOptions;
@@ -105,9 +128,9 @@ function refreshMutation(svg, chart, data) {
                 var list = $('#list-' + next_id);
                 if(children) {
                   if(list.length == 1) {
-                      list.replaceOptions(children);
+                      replaceOptions(list, children);
                   } else {
-                      next.replaceOptions(children);
+                      replaceOptions(next, children);
                   }
                 }
               }
@@ -117,21 +140,23 @@ function refreshMutation(svg, chart, data) {
         }
       });
 
-      var add_button = $('<a class="btn btn-success btn-sm">Add</button>');
+
+      var add_button = $('<a class="btn btn-success btn-sm" id="add-mutation">Add</button>');
       add_button.insertBefore(target);
-      add_button.attr('id', 'level-button');
-      add_button.attr('style', 'width: 45;');
       add_button.click(function() {
-        var value = $('#level-2').val();
-        if(value && value != '---') {
-          $(target).val(value + '\n' + $(target).val());
-          $('#level-2').val('').select();
-        }
+        var value = $('#level-1').val();
+        var mutations = $('#mutation-store').data('value');
+        mutations.push(value);
+        mutations = unique(mutations);
+        $('#mutation-store').data('value', mutations);
+        refreshNow(mutations);
       });
-      $('#level-0').replaceOptions(data.children);
-      $('#level-0').show();
-      $('#level-0').change();
-    });
+      var clear_button = $('<a class="btn btn-danger btn-sm" id="clear-mutation">Clear</button>');
+      clear_button.insertBefore(target);
+      clear_button.click(function() {
+          $('#mutation-store').data('value', new Array());
+          refreshNow(new Array());
+      }).click();
   });
 }
 
@@ -143,7 +168,7 @@ function initialiseMutationChart() {
     var width = 1000;
     var height = 600;
 
-    chart.margin({top: 20, right: 0, bottom: 60, left: 80});
+    chart.margin({top: 40, right: 20, bottom: 120, left: 80});
     chart.height(height);
     chart.width(width);
     chart.yAxis.scale(100).orient("left")
@@ -168,6 +193,5 @@ function initialiseMutationChart() {
           .call(chart);
 
     nv.utils.windowResize(chart.update);
+    return chart;
 }
-
-})(jQuery);
