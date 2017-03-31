@@ -38,12 +38,15 @@
   }
 
   $(document).ready(function() {
-    var svg = $('svg.mutations');
-    makeMutationChart();
-    $('#mutation-store').click(mutationRefresh());
+    var svg = 'svg.mutations';
+    var chart = initialiseMutationChart(svg);
+    $('#mutation-store').data('json-signal', function(data) {
+      console.log("Mutate mate!");
+      refreshMutation(svg, chart, data.data);
+    }); 
   });
 
-function mutationRefresh() {
+function refreshMutation(svg, chart, data) {
   // The goal here is to list all mutations within the
   // selected drug, lineage or country
   $('.lister').each(function() {
@@ -132,7 +135,7 @@ function mutationRefresh() {
   });
 }
 
-function makeMutationChart() {
+function initialiseMutationChart() {
     var chart = nv.models.multiBarChart()
       .stacked(true)
       .reduceXTicks(false);
@@ -164,18 +167,7 @@ function makeMutationChart() {
           .transition().duration(500)
           .call(chart);
 
-    var ready = false;
-    var x = 0;
-    setInterval(function(){
-     if(!ready){return}
-     data[0].values.push({ x: 'SNP'+x, y: Math.random() * 100});
-     if (data[0].values.length > 5) data[0].values.shift();
-     d3.select('svg.mutations').datum(data).call(chart);
-     x++;
-    }, 3000);
-
     nv.utils.windowResize(chart.update);
-    ready = true;
 }
 
 })(jQuery);

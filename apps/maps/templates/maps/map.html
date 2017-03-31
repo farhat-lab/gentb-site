@@ -37,7 +37,7 @@
                   <h2 class="icon-graph"></h2>
                   <p>Lineage</p>
                 </a>
-                <a href="#" class="list-group-item text-center" id="mutation-store" data-json-url="{% url 'genes:json' %}">
+                <a href="#" class="list-group-item text-center" id="mutation-store" data-json-url="{% url 'genes:map.mutations' %}">
                   <h2 class="icon-mutation"></h2>
                   <p>Mutation</p>
                 </a>
@@ -60,7 +60,7 @@
                 <div class="vertical-tab-content">
                   <div class="d3graph">
                     <div class="lister" id="mselect"></div>
-                    <svg class="mutations" id="mutations" data-resistance="{% url 'maps:map.mutations' %}"></svg>
+                    <svg class="mutations" id="mutations" data-resistance="{% url 'maps:map.mutation' %}"></svg>
                   </div>
                 </div>
             </div>

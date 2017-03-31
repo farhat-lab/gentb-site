@@ -8,7 +8,7 @@ from django.db.models import Count
 
 from .json_view import JsonView
 from .models import Country, Place
-from apps.mutations.models import Drug, StrainSource, Mutation, RESISTANCE
+from apps.mutations.models import Drug, StrainSource, GeneLocus, Mutation, RESISTANCE
 
 LINEAGE_COLS = ['spoligotype_family', 'rflp_family', 'principle_group', 'wgs_group']
 LINEAGE_NAMES= ['Spoligo', 'RFLP', 'PGG', 'WGS']
@@ -85,7 +85,7 @@ class GraphData(list):
     """Format three columns into a format suitable for d3 graphs"""
     def __init__(self, qs, x, y, z, x_keys={}, z_keys={}):
         data = defaultdict(lambda: defaultdict(int))
-        cols = set()
+        cols = OrderedDict()
         for dd in qs:
             # Collapse multiple fields into categories
             if isinstance(x, list):
@@ -93,7 +93,7 @@ class GraphData(list):
                     data[tx][dd[tx]] += dd[y]
             # Or take categories from one field
             elif dd[y] > 0:
-                cols.add(dd[x])
+                cols[dd[x]] = 1
                 data[dd.get(z, None)][dd[x]] += dd[y]
         
         # Make the data structure square and convert from defaultdicts to OrderedDicts
@@ -152,11 +152,39 @@ class Lineages(JsonView, DataSlicerMixin):
         }
 
 class Mutations(JsonView, DataSlicerMixin):
-    model = Mutation
+    model = StrainSource
     order = None
-    values = ['name']
+    values = ['pk']
+    filters = Drugs.filters
 
     def get_context_data(self, **kw):
+        qs = Mutation.objects.all()
+        if 'drug' in self.request.GET:
+	    qs = qs.filter(drugs__code=self.request.GET['drug'])
+
+        if any([k in self.request.GET for k in self.filters]):
+            # XXX TODO Limit the mutations to just those in these strain sources.
+            pass
+
+        ret = { 
+          'levels': ['Gene Locus', 'Mutation'],
+          'children': [], 
+        }
+
+	loci = qs.values_list('gene_locus__name', flat=True).distinct().limit(1000)
+	for locus in GeneLocus.objects.filter(name__in=loci):
+	    ret['children'].append({
+	      'name': str(locus),
+	      'children': [], 
+	    })
+	    for mutation in qs: 
+		ret['children'][-1]['children'].append({
+		  'name': str(mutation),
+		  'value': mutation.name,
+		})
+        return ret 
+
+
         return {
           'data': GraphData(
             self.get_data()\
@@ -166,5 +194,17 @@ class Mutations(JsonView, DataSlicerMixin):
             z_keys={None: 'All Mutations'},
             x_keys={None: "Not Available"},
           )
+        }
+
+class MutationView(JsonView):
+    @property
+    def snps(self):
+        return self.request.GET.get('snp', '').split(',')
+
+    def get_context_data(self, **kw):
+        drug = self.request.GET.get('drug', None)
+        Mutation.objects.filter(name__in=self.snps).values('code')
+        return {
+           'data': data,
         }
 
