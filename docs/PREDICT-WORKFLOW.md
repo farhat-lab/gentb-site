@@ -89,7 +89,6 @@ Preparation for this run includes the creation of a file named feedback.conf whi
 **Purpose:** On a successful run, the pipeline scripts should create the output files described in [result_file_info.py](https://github.com/IQSS/gentb-site/blob/master/gentb_website/tb_website/apps/utils/result_file_info.py).  As of this writing (12/18/2015), these files include:
   - result.json   (predict script result)
   - matrix.csv    (pipeline analyze result)
-  - heatmap.html  (predict script result)
 
 
 The process is:

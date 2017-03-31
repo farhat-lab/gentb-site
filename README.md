@@ -5,7 +5,6 @@ Basic django site to facilitate the contribution and analysis of fastQ and VCF f
 Docs:
  - Basic informational web pages (this README.md)
  - Set-up/Updates on Orchestra: [docs/README-SETUP-ORCHESTRA](docs/README-SETUP-ORCHESTRA.md)
- - Shiny Maps (shinyapp.io): [Set-up/Updates](shinyapps.io/NOTES-SHINY.md)
  - Predict workflow: [docs/README-PREDICT-WORKFLOW.md](docs/README-PREDICT-WORKFLOW.md)
 
 ---
@@ -36,19 +35,6 @@ A basic view/template combination.  The template includes embedded [Dataverse Wi
   - Template: [tb_website/templates/data_page.html](tb_website/templates/data_page.html)
 
 ![Share Page screenshot](screen-shots/genTB-data.png?raw=true "genTB Data page")
-
-
-### Map
-
-A basic view/template combination.  The maps are actually hosted by a Shiny application and embedded in an iframe.  The url to the iframe is written directly into the template.
-
-  - View: "map" [tb_website/apps/maps/views.py](tb_website/apps/maps/views.py)
-  - Template: [tb_website/templates/maps/basic_map.html](tb_website/templates/maps/basic_map.html)
-
-- **Note**: The Shiny app url is currently https://hmdc.shinyapps.io/genTB and part of the IQSS Shinyapps.io service
-    - For more information, see [shinyapps.io/NOTES-SHINY.md](shinyapps.io/NOTES-SHINY.md)
-
-![Map Page screenshot](screen-shots/genTB-map.png?raw=true "genTB Map page")
 
 
 ### Explore (TwoRavens)
