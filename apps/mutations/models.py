@@ -187,7 +187,7 @@ RESISTANCE_GROUP = (
    ('S', 'Sensitive'),
    ('MDR', 'Multi Drug Resistant'),
    ('XDR', 'Extensively Drug Resistant'),
-   ('TDR', 'Total Drug Resistant'),
+   #('TDR', 'Total Drug Resistant'),
 )
 
 
