@@ -35,6 +35,31 @@ function replaceOptions(self, options) {
       opt.data('children', option.children);
     }); 
 }
+/*
+ * This format function allows us to format our tooltips using a basic
+ * templating. Basically each tooltip will be a full text field with html
+ * and the values that go into the various parts of the text will be in the
+ * format {field_name:format} and will come from the point data source.
+ */
+String.prototype.format = function (values) {
+  return this.replace(/{(([^}:]+):)?([^}]*?)?}/g, function () {
+    var name = (arguments[2] || "value").split('.');
+    var format = arguments[3] || "s";
+
+    var datum = values;
+    for(var i = 0; i < name.length; i++) {
+      datum = datum[name[i]];
+    }
+    var value = datum;
+    if(format != 's') {
+      value = d3.format(format)(datum);
+    }
+    if(value == 'NaN' || typeof value == "NaN") {
+      value = datum;
+    }   
+    return typeof value != 'undefined' ? value : ''; 
+  }); 
+};
 function unique(array) {
     return $.grep(array, function(el, index) {
         return index === $.inArray(el, array);
@@ -48,7 +73,7 @@ $(document).ready(function() {
       if($('#level-0').length == 0) {
         initialiseMutationList(data, function(mutations) {
           
-        $.getJSON($(svg).data('json-url'), {'mutations': mutations})
+        $.getJSON($(svg).data('json-url'), getAllTabData())
           .done(function(json) {
               chartData(svg, chart, json.data);
           })
@@ -156,7 +181,7 @@ function initialiseMutationList(data, refreshNow) {
       clear_button.click(function() {
           $('#mutation-store').data('value', new Array());
           refreshNow(new Array());
-      }).click();
+      });
   });
 }
 
@@ -172,8 +197,23 @@ function initialiseMutationChart() {
     chart.height(height);
     chart.width(width);
     chart.yAxis.scale(100).orient("left")
-        .axisLabel('Number of strains')
-        .tickFormat(d3.format("d"));
+        .axisLabel('Percent of strains')
+        .tickFormat(d3.format(".2%"));
+
+    chart.tooltip.contentGenerator(function (data) {
+	data.extra = {
+	   'head': chart.tooltip.headerFormatter()(data.value),
+	   'y': chart.tooltip.valueFormatter()(data.data.y),
+	};
+	template = '<table><thead>' +
+	  '<tr><th colspan="3">{extra.head:s}</th></tr>' +
+	  '<tr><td class="legend-color-guide">' +
+	    '<div style="background-color:{color:s}"></div></td>' +
+	    '<td><strong>{data.key:s}</strong></td>' +
+	  '<td>{extra.y:s}</td><td>{data.value:d}</td></tr></thead></table>';
+        return template.format(data);
+    });
+
 
     chart.xAxis
         .axisLabel("Mutation Name")

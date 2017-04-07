@@ -1,56 +1,41 @@
+#
+# Copyright (C) 2017  Dr. Maha Farhat
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as
+# published by the Free Software Foundation, either version 3 of the 
+# License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the 
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+"""
+Views for the mapping application
+"""
+
 from __future__ import print_function
 
+import sys
 import json
 from collections import defaultdict, OrderedDict
 from django.views.generic import TemplateView
 from django.db.models import Count
 
-
-from .json_view import JsonView
+from .mixins import JsonView, DataSlicerMixin
+from .utils import GraphData
 from .models import Country, Place
-from apps.mutations.models import Drug, StrainSource, GeneLocus, Mutation, RESISTANCE
+from apps.mutations.models import Drug, StrainSource, GeneLocus, Mutation, RESISTANCE, RESISTANCE_GROUP
 
 LINEAGE_COLS = ['spoligotype_family', 'rflp_family', 'principle_group', 'wgs_group']
 LINEAGE_NAMES= ['Spoligo', 'RFLP', 'PGG', 'WGS']
 
 class MapPage(TemplateView):
     template_name = 'maps/map.html'
-
-class DataSlicerMixin(object):
-    """
-    Provide a way to slice up a given model based on inputs.
-    """
-    filters = {}
-    order = []
-    values = []
-
-    def get_model(self):
-        """Return the basic model to slice"""
-        try:
-            return self.model
-        except:
-            raise NotImplementedError("You must provide a model to slice.")
-
-    def get_queryset(self):
-        """Applies any filters from the request query to the given model"""
-        def get_value(filtr, key):
-            if filtr.endswith('__in'):
-                return self.request.GET.getlist(key)
-            return self.request.GET.get(key)
-
-        qs = self.get_model().objects.all()
-        filters = dict([(filtr, get_value(filtr, key))
-            for (key, filtr) in self.filters.items()
-                if key in self.request.GET])
-        if self.order:
-            qs = qs.order_by(*self.order)
-        return qs.filter(**filters)
-
-    def get_data(self):
-        qs = self.get_queryset()
-        if self.values:
-            return qs.values(*self.values)
-        return qs
 
 class Places(JsonView, DataSlicerMixin):
     model = StrainSource
@@ -84,35 +69,7 @@ class Places(JsonView, DataSlicerMixin):
               "properties": {"name": country.name, "value": country.iso2, "values": ret[country.iso2]},
             } for country in Country.objects.filter(iso2__in=list(ret))
            ],
-        }            
-
-class GraphData(list):
-    """Format three columns into a format suitable for d3 graphs"""
-    def __init__(self, qs, x, y, z, x_keys={}, z_keys={}):
-        data = defaultdict(lambda: defaultdict(int))
-        cols = OrderedDict()
-        for dd in qs:
-            # Collapse multiple fields into categories
-            if isinstance(x, list):
-                for tx in x:
-                    data[tx][dd[tx]] += dd[y]
-            # Or take categories from one field
-            elif dd[y] > 0:
-                cols[dd[x]] = 1
-                data[dd.get(z, None)][dd[x]] += dd[y]
-        
-        # Make the data structure square and convert from defaultdicts to OrderedDicts
-        for key in data:
-            ret2 = []
-            for col in (cols or data[key]):
-                ret2.append({
-                  "x": x_keys.get(col, col),
-                  "y": data[key][col],
-                })
-            self.append({
-              "key": z_keys.get(key, key),
-              "values": ret2,
-            })
+        }
 
 
 class Drugs(JsonView, DataSlicerMixin):
@@ -129,8 +86,7 @@ class Drugs(JsonView, DataSlicerMixin):
           'data': GraphData(
             self.get_data().annotate(count=Count('pk')),
             'drugs__drug__code', 'count', 'drugs__resistance',
-            z_keys=dict(RESISTANCE),
-          )
+          ).set_keys('z', RESISTANCE).to_graph(),
         }
 
 class Lineages(JsonView, DataSlicerMixin):
@@ -142,7 +98,7 @@ class Lineages(JsonView, DataSlicerMixin):
       'drug': 'drugs__drug__code',
     }
 
-    def get_queryset(self):
+    def get_queryset(self, without=None):
         qs = super(Lineages, self).get_queryset()
         return qs.filter(spoligotype_family__isnull=False)
 
@@ -150,10 +106,10 @@ class Lineages(JsonView, DataSlicerMixin):
         return {
           'data': GraphData(
             self.get_data().annotate(count=Count('pk')),
-            self.values, 'count', True,
-            z_keys=dict(zip(self.values, LINEAGE_NAMES)),
-            x_keys={None: "Not Available"},
-          )
+            self.values, 'count', True)
+              .set_keys('z', zip(self.values, LINEAGE_NAMES))
+              .set_keys('x', [(None, "Not Available")])
+              .to_graph()
         }
 
 class Mutations(JsonView, DataSlicerMixin):
@@ -166,13 +122,11 @@ class Mutations(JsonView, DataSlicerMixin):
 
     def get_context_data(self, **kw):
         qs = self.get_data()
-
         ret = { 
           'levels': ['Gene Locus', 'Mutation'],
           'children': [], 
         }
-
-        mutations = qs[:1000].values_list('name', 'gene_locus__name')
+        mutations = qs[:3000].values_list('name', 'gene_locus__name')
 
         out = defaultdict(list)
         for mutation, locus in mutations:
@@ -183,40 +137,38 @@ class Mutations(JsonView, DataSlicerMixin):
               'name': locus,
               'children': [{'name': m, 'value': m} for m in out[locus]],
             })
-
         return ret 
 
 
-        return {
-          'data': GraphData(
-            self.get_data()\
-                .annotate(count=Count('strain_mutations__strain__pk'))
-                [:20],
-            'name', 'count', None,
-            z_keys={None: 'All Mutations'},
-            x_keys={None: "Not Available"},
-          )
-        }
-
 class MutationView(JsonView, DataSlicerMixin):
     model = StrainSource
-    values = ['mutations__mutation__name', 'resistance_group']
+    required = ['mutation[]',]
     filters = {
-        'mutations[]': 'mutations__mutation__name__in',
-            #  'map': 'country__iso2',
-            #  'drug': 'drugs__drug__code',
+        'mutation[]': 'mutations__mutation__name__in',
+        'drug': 'drugs__drug__code',
     }
+    @property
+    def values(self):
+        if 'drug' in self.request.GET:
+            return ['mutations__mutation__name', 'drugs__resistance']
+        return ['mutations__mutation__name', 'resistance_group']
+
+    @property
+    def categories(self):
+        if 'drug' in self.request.GET:
+            return dict(RESISTANCE)
+        return dict(RESISTANCE_GROUP)
 
     def get_context_data(self, **kw):
-        qs = self.get_data()
-        if 'mutations[]' not in self.request.GET:
-            qs = qs.filter(name='NOOP')
-        #drug = self.request.GET.get('drug', None)
-        #Mutation.objects.filter(name__in=self.snps).values('code')
+        mutations = self.request.GET.getlist(self.required[0])
+        totals = self.get_data(without=self.values[0]).annotate(count=Count('pk'))
+        totals = [(row[self.values[1]], row['count']) for row in totals]
         return {
-           'data': GraphData(
-               qs.annotate(count=Count('pk')),
-                   'mutations__mutation__name', 'count', 'resistance_group',
-                 )
-               }
+          'data': GraphData(self.get_data().annotate(count=Count('pk')),
+            'mutations__mutation__name', 'count', self.values[-1])
+            .set_keys('z', self.categories)
+            .set_keys('x', mutations)
+            .set_keys('y', totals)
+            .to_graph()
+        }
 
