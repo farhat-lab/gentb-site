@@ -40,15 +40,13 @@ class UploadForm(ModelForm):
     """
     do_not_call_in_templates = True
     pipeline = ModelChoiceField(queryset=PredictPipeline.objects.all())
-    my_status = PredictDataset.STATUS['DATASET_CONFIRMED']
     my_file_type = None
     ordered = 100
 
     class Meta:
         model = PredictDataset
-        fields = ('title', 'description', 'status', 'user', 'file_type', 'delete_sources')
+        fields = ('title', 'description', 'user', 'file_type', 'delete_sources')
         widgets = {
-          'status': HiddenInput(),
           'user': HiddenInput(),
           'file_type': HiddenInput(),
         }
@@ -135,7 +133,6 @@ class UploadForm(ModelForm):
 
 class ManualInputForm(UploadForm):
     my_file_type = PredictDataset.FILE_TYPE_MANUAL
-    my_status = PredictDataset.STATUS['FILE_RETRIEVAL_SUCCESS']
     title = "Manually Entered Prediction"
     doc = "Create a prediction though manual selection of 1 or more mutations from a list. This option involves the shortest processing time but does assume that any non-entered mutations have been tested for and are absent."
     genetic_information = GeneticInputField(reverse_lazy('genes:json'))
