@@ -18,8 +18,7 @@ class PredictMixin(object):
 
     def get_queryset(self):
         """Limit queryset to the user's own predictions only"""
-        deleted = PredictDataset.STATUS['DATASET_DELETED']
-        qs = PredictDataset.objects.exclude(status=deleted)
+        qs = PredictDataset.objects.all()
         if 'slug' not in self.kwargs:
             # Limit to my own predictions unless I have the md5
             qs = qs.filter(user_id=self.request.user.pk)

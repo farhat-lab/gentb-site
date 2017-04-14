@@ -61,21 +61,6 @@ class PredictDataset(TimeStampedModel):
       (FILE_TYPE_MANUAL, 'Mutations Manual Entry'),
     ]
 
-    # These names are also keys, DO NOT CHANGE
-    STATUS_CHOICES = list(enumerate([
-      _('Dataset Deleted'),
-      _('Dataset Not Ready'),
-      _('Dataset Confirmed'),
-      _('File Retrieval Started'),
-      _('File Retrieval Failed'),
-      _('File Retrieval Success'),
-      _('Processing Started'),
-      _('Processing Success'),
-      _('Processing Failed'),
-    ]))
-    STATUS = dict([(x, x) for x, st in STATUS_CHOICES])
-    STATUS.update(dict([(str(st).upper().replace(' ', '_'), x) for x, st in STATUS_CHOICES]))
-
     user = ForeignKey(settings.AUTH_USER_MODEL, related_name='datasets')
     md5 = CharField(max_length=40, blank=True, db_index=True,
             help_text='auto-filled on save')
@@ -87,10 +72,6 @@ class PredictDataset(TimeStampedModel):
 
     description = TextField('Dataset description')
     file_directory = CharField(max_length=255, blank=True)
-
-    status = PositiveIntegerField(default=1, choices=STATUS_CHOICES)
-    is_error = property(lambda self: self.status in [0, 4, 8])
-    is_busy = property(lambda self: self.status in [3, 6])
 
     def __str__(self):
         return str(self.title)
@@ -177,19 +158,6 @@ class PredictDataset(TimeStampedModel):
 
     def get_full_json(self):
         return serializers.serialize('json', PredictDataset.objects.filter(id=self.id))
-
-    def set_status(self, status, save=True):
-        """Set the status of this Dataset.
-        
-           status - Can be integer (0-9) or a tag such as 'FILE_RETRIEVAL_SUCCESS'
-           save   - Boolean, if save should be called (default=True)
-        """
-        try:
-            self.status = self.STATUS[status]
-            if save:
-                self.save()
-        except KeyError:
-            raise ValueError("Status %s not acceptable choice" % str(status))
 
     class Meta:
         ordering = ('-created', 'title')
