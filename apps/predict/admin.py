@@ -33,14 +33,6 @@ class PredictDatasetAdmin(admin.ModelAdmin):
     def get_status(self, obj):
         return obj.get_status_display()
 
-    fieldsets = [
-        (None, {'fields': ['title', 'status',]}),
-        ('Description', {'fields': ['description']}),
-        ('Files', {'fields': ['file_type', 'file_directory',]}),
-        ('User', {'fields': [('user', 'user_affiliation'), ('user_name', 'user_email')]}),
-        ('Timestamps/md5', {'fields': [('created', 'modified'), 'md5']}),
-    ]
-
 admin.site.register(PredictDataset, PredictDatasetAdmin)
 
 
