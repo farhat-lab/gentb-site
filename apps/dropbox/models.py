@@ -37,14 +37,23 @@ class DropboxFile(Model):
     def fullpath(self):
         return os.path.join(self.file_directory, self.filename)
 
+    @property
+    def is_file(self):
+        return os.path.isfile(self.fullpath)
+
     def size_done(self):
-        if os.path.isfile(self.fullpath):
+        if self.is_file:
             return os.path.getsize(self.fullpath)
         return 0
 
     def percent_done(self):
         """Returns the percent done of the download"""
         return int(self.size_done() / float(self.size) * 100)
+
+    def delete_now(self):
+        """Remove the saved file from the disk if possible"""
+        if self.filename and self.is_file:
+            os.unlink(self.fullpath)
 
     def save_now(self, data):
         """Save the data as if this dropbox download was done"""

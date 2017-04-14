@@ -41,6 +41,7 @@ class Command(BaseCommand):
             sys.stderr.write("Run Status: %s " % str(piperun))
             if piperun.update_status():
                 sys.stderr.write(" [COMPLETE]\n")
+                piperun.predictstrain_set.first().update_status()
             elif piperun.is_error:
                 sys.stderr.write(" [ERROR]\n")
             else:

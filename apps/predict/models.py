@@ -234,16 +234,19 @@ class PredictStrain(Model):
         self.save()
         return self.piperun.programs.filter(is_error=True).count() == 0
 
+    @property
+    def files(self):
+        return [fh for fh in (self.file_one, self.file_two) if fh is not None]
+
     def check_download(self):
         """Return True if the files are ready for this pipeline,
            False if they are still downloading and
            None if there was an error downloading the files."""
-	for input_file in (self.file_one, self.file_two):
-	    if input_file is not None:
-		if input_file.retrieval_error:
-		    return None
-		elif not input_file.retrieval_end:
-		    return False
+	for input_file in self.files:
+            if input_file.retrieval_error:
+                return None
+            elif not input_file.retrieval_end:
+                return False
 	return True
 
     @property
@@ -337,7 +340,10 @@ class PredictStrain(Model):
         """Update the statuses for each of the piperun programs"""
         if self.piperun:
             # Update all program runs in the piperun
-            self.piperun.update_all()
+            if self.piperun.update_all():
+                if self.dataset.delete_sources:
+                    for source in self.files:
+                        source.delete_now()
 
     def __str__(self):
         return str(self.name)

@@ -3,9 +3,15 @@
         <li class="download {% if strain.file_one.retrieval_error or strain.file_two.retrieval_error %}error{% elif strain.file_one.retrieval_end %}completed{% endif %}">
           {% for file in strain.files %}
             {% if file.retrieval_end and strain.files|length == 1 %}
-            <h2><span class="glyphicon glyphicon-file"></span><!-- {{ file.filename }}--></h2>
+              {% if file.is_file %}
+                <h2><span class="glyphicon glyphicon-file" data-container="body" data-toggle="tooltip" title="{{ file.filename }} Saved"></span></h2>
+              {% else %}
+                <h2><span class="glyphicon glyphicon-remove" data-container="body" data-toggle="tooltip" title="{{ file.filename }} Deleted after use"></span></h2>
+              {% endif %}
             {% else %}
-              <h4 class="short"><span class="glyphicon glyphicon-{% if file.retrieval_error %}remove{% else %}file{% endif %}"></span> {{ file.filename }}</h4>
+            <h4 class="short"><span class="glyphicon glyphicon-{% if file.retrieval_error %}remove{% else %}file{% endif %}"></span>
+              {{ file.filename }}
+            </h4>
               {% if file.retrieval_start and not file.retrieval_end %}
                 <div class="progress">
                   <div class="progress-bar progress-bar-primary" role="progressbar" aria-valuenow="{{ file.percent_done }}" aria-valuemin="0" aria-valuemax="100" style="width: {{ file.percent_done }}%">{{ file.percent_done }}%</div>
