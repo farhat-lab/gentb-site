@@ -31,10 +31,12 @@ $(document).ready(function() {
     $("div.vertical-tab>div.vertical-tab-content").removeClass("active");
     $("div.vertical-tab>div.vertical-tab-content").eq(index).addClass("active");
 
-    if(tab.data('json-url') && !tab.data('done')) {
-      $.getJSON(tab.data('json-url'), getAllTabData(this.id))
-        .done(function(json) {
-          tab.data('json-signal')(json);
+    var url = tab.data('json-url');
+    if(url && !tab.data('done')) {
+      var data = getAllTabData(this.id);
+
+      $.getJSON(url, data).done(function(json) {
+          tab.data('json-signal')(json, url, data);
           tab.data('done', true);
         })
         .fail(function(jqxhr, textStatus, error) {
