@@ -46,6 +46,21 @@ from apps.pipeline.models import Pipeline, PipelineRun
 from apps.mutations.models import Drug
 from apps.mutations.utils import unpack_mutation_format
 
+# Basic status matrix, file_status + processing_status
+STATUS_LABELS = [
+  _('Dataset Confirmed'),       # STATUS_WAIT
+  _('File Retrieval Started'),  # STATUS_START
+  _('File Retrieval Failed'),   # STATUS_ERROR
+  _('File Retrieval Success'),  # STATUS_DONE + STATUS_WAIT
+  _('Processing Started'),      # STATUS_DONE + STATUS_START
+  _('Processing Failed'),       # STATUS_DONE + STATUS_ERROR
+  _('Processing Success'),      # STATUS_DONE + STATUS_DONE
+  _('Prediction Ready'),        # STATUS_READY
+  _('No Strains to process'),   # STATUS_NONE
+]
+(STATUS_WAIT, STATUS_START, STATUS_ERROR, STATUS_DONE) = range(4)
+(STATUS_READY, STATUS_NONE) = range(len(STATUS_LABELS) - 2, len(STATUS_LABELS))
+
 class PredictDataset(TimeStampedModel):
     """An uploaded predict dataset"""
     BASE_DIR = settings.TB_SHARED_DATAFILE_DIRECTORY
@@ -78,6 +93,11 @@ class PredictDataset(TimeStampedModel):
 
     def get_absolute_url(self):
         return reverse('predict:view_single_dataset', kwargs=dict(slug=self.md5))
+
+    def get_status(self):
+        """Returns the status as a string"""
+        status = min([strain.status for strain in self.strains.all()] + [STATUS_NONE])
+        return STATUS_LABELS[status]
 
     @property
     def directory_exists(self):
@@ -206,16 +226,61 @@ class PredictStrain(Model):
     def files(self):
         return [fh for fh in (self.file_one, self.file_two) if fh is not None]
 
-    def check_download(self):
-        """Return True if the files are ready for this pipeline,
-           False if they are still downloading and
-           None if there was an error downloading the files."""
+    @property
+    def status(self):
+        """
+        Returns the status of this strain prediction run. A combination of
+        the files_status and run_status, with an extra status if a prediction
+        file is detected.
+        """
+        files_status = self.files_status
+        if files_status == STATUS_DONE:
+            run_status = self.run_status
+            if run_status == STATUS_DONE and self.has_prediction:
+                return STATUS_READY
+            return run_status + files_status
+        return files_status
+
+    def get_status(self):
+        return STATUS_LABELS[self.status]
+
+    @property
+    def files_status(self):
+        """
+        Returns
+          - 0: Downloading not started yet
+          - 1: The files are still downloading
+          - 2: There was an error downloading the files.
+          - 3: The files are ready for this pipeline
+        """
 	for input_file in self.files:
+            if not input_file.retrieval_start:
+                return STATUS_WAIT
+            if not input_file.retrieval_end:
+                return STATUS_START
             if input_file.retrieval_error:
-                return None
-            elif not input_file.retrieval_end:
-                return False
-	return True
+                return STATUS_ERROR
+	return STATUS_DONE
+
+    @property
+    def run_status(self):
+        """Return the pipeline run status without updating"""
+        """
+        Returns
+          - 0: Pipeline not started yet
+          - 1: Pipeline program is submitted or started
+          - 2: Pipeline program is not complete yet
+          - 3: The files are ready for this pipeline
+	"""
+        qs = self.piperun.programs.all() if self.piperun else []
+        for program in qs:
+            if not program.is_submitted:
+                return STATUS_WAIT
+            if not program.is_complete:
+                return STATUS_START
+            if program.is_error:
+                return STATUS_ERROR
+	return STATUS_DONE
 
     @property
     def has_prediction(self):

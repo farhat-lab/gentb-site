@@ -26,12 +26,9 @@ class PredictDatasetAdmin(admin.ModelAdmin):
     save_on_top = True
     search_fields = ('title', 'user__first_name', 'user__last_name',)
     list_display = ('title', 'user', 'get_status', 'has_prediction', 'file_directory', 'created', 'modified')
-    list_filter = ['status',]
+    list_filter = []
     readonly_fields = [ 'created', 'modified', 'md5', 'file_directory',
                         'user_name', 'user_email', 'user_affiliation',]
-
-    def get_status(self, obj):
-        return obj.get_status_display()
 
 admin.site.register(PredictDataset, PredictDatasetAdmin)
 
