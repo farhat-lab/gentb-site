@@ -117,27 +117,25 @@ class Mutations(JsonView, DataSlicerMixin):
     order = None
     values = ['pk']
     filters = {
-      'drug': 'drugs__code',
+      'snp': 'name__icontains',
+      'locus': 'gene_locus__name',
     }
 
     def get_context_data(self, **kw):
         qs = self.get_data()
-        ret = { 
-          'levels': ['Gene Locus', 'Mutation'],
-          'children': [], 
+        if 'snp' not in self.request.GET:
+            return {
+                'values': self.get_list(qs, 'gene_locus__name'),
+            }
+        elif qs.count() == 0:
+            return {'msg': 'None found'}
+        elif qs.count() > 200:
+            return {'msg': 'Too many (%d)' % qs.count()}
+
+        return {
+            'msg': "Found %d mutations" % qs.count(),
+            'values': self.get_list(qs, 'name'),
         }
-        mutations = qs[:3000].values_list('name', 'gene_locus__name')
-
-        out = defaultdict(list)
-        for mutation, locus in mutations:
-            out[locus].append(mutation)
-
-        for locus in sorted(out):
-            ret['children'].append({
-              'name': locus,
-              'children': [{'name': m, 'value': m} for m in out[locus]],
-            })
-        return ret 
 
 
 class MutationView(JsonView, DataSlicerMixin):
@@ -156,16 +154,16 @@ class MutationView(JsonView, DataSlicerMixin):
     @property
     def categories(self):
         if 'drug' in self.request.GET:
-            return dict(RESISTANCE)
-        return dict(RESISTANCE_GROUP)
+            return OrderedDict(RESISTANCE)
+        return OrderedDict(RESISTANCE_GROUP)
 
     def get_context_data(self, **kw):
         mutations = self.request.GET.getlist(self.required[0])
         totals = self.get_data(without=self.values[0]).annotate(count=Count('pk'))
         totals = [(row[self.values[1]], row['count']) for row in totals]
+        qs = self.get_data().annotate(count=Count('pk'))
         return {
-          'data': GraphData(self.get_data().annotate(count=Count('pk')),
-            'mutations__mutation__name', 'count', self.values[-1])
+          'data': GraphData(qs, self.values[0], 'count', self.values[-1], trim=True)
             .set_keys('z', self.categories)
             .set_keys('x', mutations)
             .set_keys('y', totals)

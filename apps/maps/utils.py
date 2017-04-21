@@ -38,9 +38,10 @@ class OrderlyDict(OrderedDict):
 
 class GraphData(defaultdict):
     """Format three columns into a format suitable for d3 graphs"""
-    def __init__(self, qs, x, y, z):
+    def __init__(self, qs, x, y, z, trim=False):
         super(GraphData, self).__init__(lambda: defaultdict(int))
         self.keys = defaultdict(OrderedDict)
+        self.trim = trim
 
         for dd in qs:
             # Collapse multiple fields into categories
@@ -69,23 +70,27 @@ class GraphData(defaultdict):
     def get_y_value(self, cat, col):
         total = self.keys['y'].get(cat)
         value = self[cat][col]
+        #print("For total: %s, value: %s, cat: %s, col: %s\n" % (str(total), str(value), str(cat), str(col)))
         if total is not None:
             if total is 0:
-                return 0, value
+                return 0, value, total
             else:
-                return value / float(total), value
-        return value, value
+                return value / float(total), value, total
+        return value, value, -1
 
     def get_values(self, cat):
         """Generator returning all values in this category"""
         for col, name in self.get_x_cols(cat).items():
-            y, value = self.get_y_value(cat, col)
-            yield {"col": col, "x": name, "y": y, "value": value}
+            y, value, total = self.get_y_value(cat, col)
+            if value or not self.trim:
+                yield {"col": col, "x": name, "y": y, "value": value, "total": total}
 
     @to(list)
     def to_graph(self):
         """Make the data structure square and convert from defaultdicts to OrderedDicts"""
         for cat, name in self.get_z_cats().items():
-            yield {"key": name, "values": list(self.get_values(cat))}
+            values = list(self.get_values(cat))
+            if values or not self.trim:
+                yield {"key": name, "values": values}
 
 

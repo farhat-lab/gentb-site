@@ -21,18 +21,17 @@
 function addOption(self, name, value) {
     var opt = $("<option></option>");
     $(self).append(opt);
-    opt.attr("value", value);
-    opt.text(name);
+    opt.attr("value", name.value || value || name);
+    opt.text(name.name || name);
     return opt;
 }
 function replaceOptions(self, options) {
     self.empty();
     if($(self).is('select')) {
-      addOption($(self), "---", '---');
+      addOption($(self), "---");
     }
     $.each(options, function(index, option) {
-      var opt = addOption($(self), option.name, option.value);
-      opt.data('children', option.children);
+      addOption($(self), option).data('children', option.children);
     }); 
 }
 /*
@@ -67,12 +66,16 @@ function unique(array) {
 }
 
 $(document).ready(function() {
+    $('body').tooltip({
+        selector: 'input#snp'
+    });
+
     var svg = 'svg.mutations';
     var chart = initialiseMutationChart(svg);
-    $('#mutation-store').data('json-signal', function(data) {
+    $('#mutation-store').data('json-signal', function(data, url, args) {
       if($('#level-0').length == 0) {
-        initialiseMutationList(data, function(mutations) {
-          
+        initialiseMutationList(data, url, args, function(mutations) {
+
         $.getJSON($(svg).data('json-url'), getAllTabData())
           .done(function(json) {
               chartData(svg, chart, json.data);
@@ -91,103 +94,98 @@ function refreshMutation(svg, chart, data) {
   // The goal here is to list all mutations within the
   // selected drug, lineage or country
   $('#mselect').each(function() {
-      replaceOptions($('#level-0'), data.children);
-      $('#level-0').show();
-      $('#level-0').change();
+      //replaceOptions($('#level-0'), data.children);
+      //$('#level-0').show();
+      //$('#level-0').change();
   });
   $('#clear-mutation').click();
 }
 
-function initialiseMutationList(data, refreshNow) {
+function initialiseMutationList(data, url, args, refresh_function) {
   $('#mselect').each(function() {
-    var last_id = null;
-    var previous = null;
-    var target = $(this);
-    var container = $(this).parent();
-    target.data('data', data);
-    $.each(data.levels, function(index, level) {
-        if(index == 2) {
-            var input = $('<input type="text"></input>');
-            input.attr('id', "level-"+index);
-            input.attr('list', "list-"+index);
-            input.attr('title', level);
-            input.data('next', 'button');
-            input.attr('style', 'width: calc(100% - 45px);');
-            input.insertBefore(target);
+    var container = $(this);
 
-            var select = $('<datalist></datalist>');
-            select.attr('id', "list-"+index);
-            select.insertBefore(target);
+    var select = $('<select id="locus"></select>');
+    var input = $('<input type="text" list="mutation-list" id="snp" style="width: 300px;" data-container="body" data-toggle="tooltip" title="Select a locus to continue"/>');
+    var datalist = $('<datalist id="mutation-list"></datalist>');
+    var button_del = $('<a class="btn btn-danger btn-sm pull-right" id="clear-mutation">Clear</button>');
 
-            input.select(function() {
-              var value = $(this).val();
-              if(value && value != '---') {
-                $('#level-button').removeClass('disabled');
-              } else {
-                $('#level-button').addClass('disabled');
-              }
-            });
+    container.empty();
+    container.append(select);
+    container.append(input);
+    container.append(datalist);
+    container.append(button_del);
+
+    // Add this data to the initial locus list
+    replaceOptions(select, data.values);
+
+    select.change(function() {
+      var val = $(this).val();
+      input.val('');
+      if(!val || val == '---') {
+        input.prop('disabled', true);
+      } else {
+        input.prop('disabled', false);
+        datalist.empty();
+        datalist.data('set', '--- ASK AGAIN ---');
+        input.keyup();
+      }
+    }).change();
+
+    input.select(function() {
+      var value = $(this).val();
+      var mutations = $('#mutation-store').data('value');
+      mutations.push(value);
+      mutations = unique(mutations);
+      $('#mutation-store').data('value', mutations);
+      refresh_function(mutations);
+      $(this).val('');
+      $(this).blur();
+      button_del.show();
+    });
+    input.on('keyup', function(e){
+      var selected = $(this).val();
+      var previous = datalist.data('set');
+      if(previous == '' || selected.indexOf(datalist) > -1) {
+        console.log("Ignoring because: " + previous);
+        return; // No update needed
+      }
+      args.locus = select.val();
+      args.snp = selected;
+      $.getJSON(url, args).done(function(json) {
+        input.tooltip('hide')
+          .attr('data-original-title', json.msg || "Not updated")
+          .tooltip('fixTitle')
+          .tooltip('show');
+
+        console.log(json.msg);
+        if(json.values) {
+          datalist.data('set', selected);
+          replaceOptions(datalist, json.values);
         } else {
-            var select = $('<select></select>');
-            select.data('previous', index - 1);
-            select.data('next', index + 1);
-            select.attr('title', level);
-            select.attr('id', 'level-' + index);
-            select.insertBefore(target);
-            replaceOptions(select, []);
-
-            select.change(function() {
-              var selected = this.selectedOptions;
-              var next_id = $(this).data('next');
-              var next = $('#level-' + next_id);
-              if(!selected || selected[0].label == '---') {
-                next.prop("disabled", true);
-                if(next.is('select')) {
-                  next.val('---');
-                } else {
-                  next.val('');
-                }
-              } else {
-                next.prop("disabled", false);
-                var children = $(selected[0]).data('children');
-                var list = $('#list-' + next_id);
-                if(children) {
-                  if(list.length == 1) {
-                      replaceOptions(list, children);
-                  } else {
-                      replaceOptions(next, children);
-                  }
-                }
-              }
-              next.change();
-              next.select();
-            });
+          datalist.empty();
+          datalist.data('set', undefined);
         }
+        // Trigger workaround to update datalist.
+        input.focus();
+      }).fail(function(jqxhr, textStatus, error) {
+        var err = textStatus + ", " + error;
+        console.log("Request Failed: " + err);
       });
+    });
 
+    button_del.click(function() {
+      $('#mutation-store').data('value', new Array());
+      refresh_function(new Array());
+      button_del.hide();
+    });
 
-      var add_button = $('<a class="btn btn-success btn-sm" id="add-mutation">Add</button>');
-      add_button.insertBefore(target);
-      add_button.click(function() {
-        var value = $('#level-1').val();
-        var mutations = $('#mutation-store').data('value');
-        mutations.push(value);
-        mutations = unique(mutations);
-        $('#mutation-store').data('value', mutations);
-        refreshNow(mutations);
-      });
-      var clear_button = $('<a class="btn btn-danger btn-sm" id="clear-mutation">Clear</button>');
-      clear_button.insertBefore(target);
-      clear_button.click(function() {
-          $('#mutation-store').data('value', new Array());
-          refreshNow(new Array());
-      });
   });
 }
 
 function initialiseMutationChart() {
     var chart = nv.models.multiBarChart()
-      .stacked(true)
+      .stacked(false)
       .reduceXTicks(false);
 
     var width = 1000;
@@ -210,7 +208,7 @@ function initialiseMutationChart() {
 	  '<tr><td class="legend-color-guide">' +
 	    '<div style="background-color:{color:s}"></div></td>' +
 	    '<td><strong>{data.key:s}</strong></td>' +
-	  '<td>{extra.y:s}</td><td>{data.value:d}</td></tr></thead></table>';
+	  '<td>{extra.y:s}</td><td>{data.value:d} of {data.total:d}</td></tr></thead></table>';
         return template.format(data);
     });
 
