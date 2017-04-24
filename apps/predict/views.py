@@ -75,7 +75,6 @@ class UploadView(PredictMixin, CreateView):
     def get_initial(self):
         return {
           'user': self.request.user,
-          'status': self.form_class().my_status,
           'file_type': self.kwargs['type'],
         }
 
