@@ -40,7 +40,7 @@ $(document).ready(function() {
             select.attr('id', "list-"+index);
             select.insertBefore(target);
 
-            input.select(function() {
+            input.on('input', function() {
               var value = $(this).val();
               if(value && value != '---') {
                 $('#level-button').removeClass('disabled');
@@ -82,7 +82,7 @@ $(document).ready(function() {
                 }
               }
               next.change();
-              next.select();
+              next.trigger('input');
             });
         }
       });
@@ -95,7 +95,7 @@ $(document).ready(function() {
         var value = $('#level-2').val();
         if(value && value != '---') {
           $(target).val(value + '\n' + $(target).val());
-          $('#level-2').val('').select();
+          $('#level-2').val('').trigger('input');
         }
       });
       $('#level-0').replaceOptions(data.children);
