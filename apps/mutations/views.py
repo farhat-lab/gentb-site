@@ -48,7 +48,7 @@ class DropDownData(JsonView):
                   'name': str(locus),
                   'children': [],
                 })
-                for mutation in qs:
+                for mutation in qs.filter(gene_locus__name=locus):
                     ret['children'][-1]['children'][-1]['children'].append({
                       'name': str(mutation),
                       'value': mutation.name,
