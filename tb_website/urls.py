@@ -19,7 +19,7 @@ urlpatterns = patterns('',
     url(r'^terms/$', Tv.as_view(template_name='terms.html'), name="terms"),
 
     url(r'^gentb-admin/', include(admin.site.urls)),
-    url(r'^models/', include('django_spaghetti.urls')),
+    url(r'^models/', include('django_spaghetti.urls', namespace='spaghetti')),
     url(r'^user/', include('apps.tb_users.urls', namespace='users')),
     url(r'^auth/', include('apps.tb_users.auth_urls')),
 

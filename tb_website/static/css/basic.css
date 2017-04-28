@@ -42,3 +42,11 @@ th[scope="row"] label {
 .modal-body .modal-footer {
   padding: 15px 0px 0px 0px;
 }
+
+/* stype the modules view */
+
+.vis-network-tooltip ul {
+  list-style: none;
+  margin: 0px;
+  padding: 0px;
+}
