@@ -65,6 +65,11 @@ function getAllTabData(except) {
   return data;
 }
 
+function getTabData(key) {
+  var store = $('#'+key+'-store');
+  return store.data('value');
+}
+
 function setTabData(key, value, text, icon, column) {
   var store = $('#'+key+'-store');
 
@@ -74,14 +79,16 @@ function setTabData(key, value, text, icon, column) {
     store.data('original-text', $('p', store).text());
     store.data('original-icon', $('h2', store).attr('class'));
   }
-  store.addClass('selected');
-  store.data('value', value)
-  store.data('column', column)
-  $('p', store).text(text);
-  $('h2', store).attr('class', 'glyphicon glyphicon-'+icon);
+  if(value != store.data('value')) {
+    store.addClass('selected');
+    store.data('value', value)
+    store.data('column', column)
+    $('p', store).text(text);
+    $('h2', store).attr('class', 'glyphicon glyphicon-'+icon);
 
-  // Clear all existing graph renderings
-  $(all_tabs).not(store).data('done', false);
+    // Clear all existing graph renderings
+    $(all_tabs).not(store).data('done', false);
+  }
 }
 
 function unsetTabData(key) {

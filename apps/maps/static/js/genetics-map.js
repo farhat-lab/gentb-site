@@ -104,6 +104,8 @@ function initialiseStrainMap(map, color) {
 
 var map_layer = null;
 function mapStrainData(map, color, data) {
+  var existing = getTabData('map');
+
   if(map_layer) {
     // Remove previous layer
     map.removeLayer(map_layer);
@@ -120,8 +122,7 @@ function mapStrainData(map, color, data) {
   }
 
   function onEachFeature(feature, layer) {
-    id_cls = 'country-' + feature.properties.value
-    layer.setStyle({className: id_cls});
+    var country_code = feature.properties.value;
 
     ret = $('<div></div>');
     ret.append($('<h4>' + feature.properties.name + '</h4>'));
@@ -138,24 +139,25 @@ function mapStrainData(map, color, data) {
         var previous = $('*[class~="countrySelect"]');
         if(previous.length > 0) { previous.data('deselect')(); }
 
-        var next = $('.country-'+feature.properties.value);
+        var next = $('.country-'+country_code);
         // Set element id just in case it's useful later
-        next[0].id = feature.properties.value;
+        next[0].id = country_code;
 
         // Add the countrySelect class to highlight it
         next.attr('class', next.attr('class') + ' countrySelect');
         next.data('deselect', function() { button2.click(); });
 
         // Set the usable data for other charts
-        setTabData('map', feature.properties.value, feature.properties.name, 'flag');
+        setTabData('map', country_code, feature.properties.name, 'flag');
 
         button1.hide();
         button2.show();
         map.closePopup();
     });
-    var button2 = $("<button class='btn btn-danger btn-xs' style='display: none;'>Deselect</button>").click(function() {
+    button1.attr('id', 'select-'+country_code);
+    var button2 = $("<button class='btn btn-danger btn-xs'>Deselect</button>").click(function() {
         // WARNING: jquery class selectors and addClass/removeClass DO NOT work here
-        var previous = $('.country-'+feature.properties.value);
+        var previous = $('.country-'+country_code);
         previous.attr('class', previous.attr('class').replace(' countrySelect', ''));
         unsetTabData('map');
         button1.show();
@@ -166,6 +168,16 @@ function mapStrainData(map, color, data) {
     ret.append(button1);
     ret.append(button2);
     layer.bindPopup(ret[0]);
+
+    var id_cls = 'country-' + country_code;
+    if(existing == country_code) {
+        id_cls += ' countrySelect';
+        button1.hide();
+    } else {
+        button2.hide();
+    }
+    layer.setStyle({className: id_cls});
+
   }
 
   map_layer = L.geoJson(data, {
