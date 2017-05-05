@@ -41,7 +41,7 @@ class GraphData(defaultdict):
     def __init__(self, qs, x, y, z, trim=False):
         super(GraphData, self).__init__(lambda: defaultdict(int))
         self.keys = defaultdict(OrderedDict)
-        self.trim = trim
+        self.trims = {'x': trim, 'y': trim, 'z': trim}
 
         for dd in qs:
             # Collapse multiple fields into categories
@@ -53,9 +53,30 @@ class GraphData(defaultdict):
                 self.keys['x'][dd[x]] = dd[x]
                 self[dd.get(z, None)][dd[x]] += dd[y]
 
-    def set_keys(self, axis, keys):
-        """Sets the converted keys"""
-	self.keys[axis].update(OrderlyDict(keys))
+    def set_axis(self, axis, keys=None, trim=None):
+        """
+        Very important function for defining how the data is collated.
+
+          axis - The axis we are setting, this can be
+            x: often called name or series
+            y: ofteh the value or magnatude
+            z: usually the category, not always used.
+
+          keys - A list of tuples containing an ordered match between
+                 values found in the database and display values. Extra
+                 keys can be added, even if they don't appear in the db.
+
+          trim - Sets this axis to be trimmed, this is where the value is
+                 empty or none and it is then exluded from output.
+                   x - The name is None or empty string, so ignored, setting
+                       the keys to ('Something', None) will exclude them.
+                   y - The value is zero or None, so ignored.
+                   z - The category contains no rows (maybe because x and y trimming)
+        """
+        if trim is not None:
+            self.trims[axis] = trim
+        if keys is not None:
+            self.keys[axis].update(OrderlyDict(keys))
         return self
 
     def get_z_cats(self):
@@ -82,15 +103,21 @@ class GraphData(defaultdict):
         """Generator returning all values in this category"""
         for col, name in self.get_x_cols(cat).items():
             y, value, total = self.get_y_value(cat, col)
-            if value or not self.trim:
-                yield {"col": col, "x": name, "y": y, "value": value, "total": total}
+            if (value or not self.trims['y']) and (name or not self.trims['x']):
+                yield {
+                    "y": y,
+                    "x": name,
+                    "col": col,
+                    "value": value,
+                    "total": total,
+                }
 
     @to(list)
     def to_graph(self):
         """Make the data structure square and convert from defaultdicts to OrderedDicts"""
         for cat, name in self.get_z_cats().items():
             values = list(self.get_values(cat))
-            if values or not self.trim:
+            if values or not self.trims['z']:
                 yield {"key": name, "values": values}
 
 

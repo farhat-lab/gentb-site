@@ -86,7 +86,7 @@ class Drugs(JsonView, DataSlicerMixin):
           'data': GraphData(
             self.get_data().annotate(count=Count('pk')),
             'drugs__drug__code', 'count', 'drugs__resistance',
-          ).set_keys('z', RESISTANCE).to_graph(),
+          ).set_axis('z', RESISTANCE).to_graph(),
         }
 
 class Lineages(JsonView, DataSlicerMixin):
@@ -106,9 +106,9 @@ class Lineages(JsonView, DataSlicerMixin):
         return {
           'data': GraphData(
             self.get_data().annotate(count=Count('pk')),
-            self.values, 'count', True)
-              .set_keys('z', zip(self.values, LINEAGE_NAMES))
-              .set_keys('x', [(None, "Not Available")])
+            self.values, 'count', None, trim=True)
+              .set_axis('z', zip(self.values, LINEAGE_NAMES))
+              .set_axis('x', [(None, "Not Available")])
               .to_graph()
         }
 
@@ -163,10 +163,10 @@ class MutationView(JsonView, DataSlicerMixin):
         totals = [(row[self.values[1]], row['count']) for row in totals]
         qs = self.get_data().annotate(count=Count('pk'))
         return {
-          'data': GraphData(qs, self.values[0], 'count', self.values[-1], trim=True)
-            .set_keys('z', self.categories)
-            .set_keys('x', mutations)
-            .set_keys('y', totals)
+          'data': GraphData(qs, self.values[0], 'count', self.values[-1])
+            .set_axis('z', self.categories, trim=True)
+            .set_axis('x', mutations)
+            .set_axis('y', totals)
             .to_graph()
         }
 
