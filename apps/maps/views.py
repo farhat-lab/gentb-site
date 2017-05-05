@@ -144,6 +144,7 @@ class MutationView(JsonView, DataSlicerMixin):
     filters = {
         'mutation[]': 'mutations__mutation__name__in',
         'drug': 'drugs__drug__code',
+        'map': 'country__iso2',
     }
     @property
     def values(self):
