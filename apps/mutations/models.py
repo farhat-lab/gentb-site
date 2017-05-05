@@ -83,9 +83,26 @@ class GeneLocus(Model):
     length = IntegerField(blank=True, null=True)
     strand = CharField(max_length=5, choices=STRANDS, blank=True, null=True)
 
-    gene_type   = CharField(max_length=1, choices=GENE_TYPES, blank=True, null=True)
-    gene_symbol = CharField(max_length=32, blank=True, null=True)
-    description = CharField(max_length=255, blank=True, null=True)
+    gene_type   = CharField(max_length=1, choices=GENE_TYPES,
+        blank=True, null=True, help_text="Basic coding type for the locus.")
+    gene_symbol = CharField(max_length=32, blank=True, null=True,
+        help_text="Short identifier used in names")
+    description = CharField(max_length=255, blank=True, null=True,
+        help_text="Basic description about the gene.")
+
+    gene_ontology = CharField(max_length=255, blank=True, null=True,
+        help_text="Gene ontology or GO-Terms are annotations in the GO format"
+        " that describe the gene product in a predictable way.")
+    enzyme_commission = CharField(max_length=255, blank=True, null=True,
+        help_text="The Enzyme Commission numbers for this gene.")
+    pathway_kegg = CharField(max_length=255, blank=True, null=True,
+        help_text="The KEGG based pathways")
+    pathway_cyc = CharField(max_length=255, blank=True, null=True,
+        help_text="The PWY numbers usually linking to MetaCyc")
+    pathway_cog = CharField(max_length=255, blank=True, null=True,
+        help_text="Clusters of Orthologous Groups of protein list")
+    protein_families = CharField(max_length=255, blank=True, null=True,
+        help_text="Protein families from PFAM")
 
     class Meta:
         ordering = ('name',)
