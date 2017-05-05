@@ -22,6 +22,8 @@ from django.contrib.admin import *
 from .models import *
 from .forms import DrugForm
 
+site.register(ImportSource)
+
 class DrugAdmin(ModelAdmin):
     list_display = ('__str__', 'mutation_count')
 
