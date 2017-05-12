@@ -109,6 +109,10 @@ class PredictDataset(TimeStampedModel):
         return any([strain.has_prediction for strain in self.strains.all()])
 
     @property
+    def has_lineages(self):
+        return any([strain.has_lineage for strain in self.strains.all()])
+
+    @property
     def has_output_files(self):
         return any([list(strain.output_files) for strain in self.strains.all()]) 
 
@@ -284,7 +288,7 @@ class PredictStrain(Model):
 
     @property
     def has_prediction(self):
-        """Returns thrue if prediction data is available"""
+        """Returns true if prediction data is available"""
         return bool(self.prediction_file)
 
     @property
@@ -294,6 +298,27 @@ class PredictStrain(Model):
 	    if fn.endswith('matrix.json'):
 		return fn
         return None
+
+    @property
+    def has_lineage(self):
+        """Returns true if lineage data is available"""
+        return bool(self.lineage_file)
+
+    @property
+    def lineage_file(self):
+        """Return a detected lineage file for this strain"""
+        for (url, fn, name) in self.output_files:
+	    if fn.endswith('lineage.txt'):
+		return fn
+        return None
+
+    @property
+    def lineage(self):
+        fn = self.lineage_file
+        if fn:
+            with open(fn, 'r') as fhl:
+                return fhl.read()
+        return 'Not Found'
 
     @property
     def output_files(self):

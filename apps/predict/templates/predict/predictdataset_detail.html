@@ -38,6 +38,9 @@
             <li data-priority="9" {% if not object.has_prediction %}class="disabled"{%endif %}>
               <a href="#prediction-tab" data-toggle="tab">Resistance Prediction</a>
             </li>
+            <li data-priority="0" {% if not object.has_lineages %}class="disabled"{%endif %}>
+              <a href="#lineage-tab" data-toggle="tab">Lineage</a>
+            </li>
             <li class="pull-right">
               <a id="activate-notes"><span class="glyphicon glyphicon-edit"></span></a>
             </li>
@@ -63,6 +66,9 @@
                     </center>
                 </div>
               {% endif %}
+            </div>
+	    <div class="tab-pane fade" id="lineage-tab">
+              {% include "predict/predictdataset_lineages.html" %}
             </div>
           </div>
         </div>

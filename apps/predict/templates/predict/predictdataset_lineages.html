@@ -1,0 +1,7 @@
+    {% for strain in object.strains.all %}
+      <ul class="process">
+        <li class="lineage">
+          <h1>{{ strain }} - {{ strain.lineage|default:"None" }}</h1>
+        </li>
+      </ul>
+    {% endfor %}
