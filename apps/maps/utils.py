@@ -115,10 +115,8 @@ class GraphData(defaultdict):
     def is_trimmed(self, name, value, cat):
         x, y = self.trims['x'], self.trims['y']
         if isinstance(x, (list, tuple)):
-            print("TRIM X is list: %s in %s" % (cat, str(x)))
             x = cat in x
         if isinstance(y, (list, tuple)):
-            print("TRIM Y is list: %s in %s" % (cat, str(y)))
             y = cat in y
         return (value or not y) and (name or not x)
 
