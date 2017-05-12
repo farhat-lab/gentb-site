@@ -317,7 +317,14 @@ class PredictStrain(Model):
         fn = self.lineage_file
         if fn:
             with open(fn, 'r') as fhl:
-                return fhl.read()
+                return dict(zip([
+                  '',
+                  'spoligotype',
+                  'unk',
+                  'unk',
+                  'unk',
+                  'match',
+                ], fhl.read().split('\t')))
         return 'Not Found'
 
     @property

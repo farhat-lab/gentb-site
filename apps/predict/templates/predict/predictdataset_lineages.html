@@ -1,7 +1,18 @@
+<table class="table table-hover">
+  <thead>
+    <tr>
+      <th></th>
+      <th><em>in silico</em> spoligotype</th>
+      <th>Best match family</th>
+    </tr>
+  </thead>
+  <tbody>
     {% for strain in object.strains.all %}
-      <ul class="process">
-        <li class="lineage">
-          <h1>{{ strain }} - {{ strain.lineage|default:"None" }}</h1>
-        </li>
-      </ul>
+      <tr>
+        <td>{{ strain }}</td>
+        <td>{{ strain.lineage.spoligotype }}</td>
+        <td>{{ strain.lineage.match }}</td>
+      </tr>
     {% endfor %}
+  </tbody>
+</table>
