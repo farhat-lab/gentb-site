@@ -13,7 +13,7 @@ class Command(BaseCommand):
     def handle(self, **options):
         for strain in PredictStrain.objects.filter(piperun__isnull=True):
             sys.stderr.write("Strain: %s, " % str(strain))
-            dl = strain.files_status()
+            dl = strain.files_status
             if dl is 0:
                 sys.stderr.write("NOT-READY [SKIP]\n")
             elif dl is 1:
@@ -40,12 +40,12 @@ class Command(BaseCommand):
                 sys.stderr.write("SUBMITTED [ERROR]\n")
             time.sleep(1)
 
-        for piperun in ProgramRun.objects.filter(is_submitted=True, is_complete=False, is_error=False):
-            sys.stderr.write("Run Status: %s " % str(piperun))
-            if piperun.update_status():
+        for progrun in ProgramRun.objects.filter(is_submitted=True, is_complete=False, is_error=False):
+            sys.stderr.write("Run Status: %s " % str(progrun))
+            if progrun.update_status():
                 sys.stderr.write(" [COMPLETE]\n")
-                piperun.predictstrain_set.first().update_status()
-            elif piperun.is_error:
+                progrun.piperun.predictstrain_set.first().update_status()
+            elif progrun.is_error:
                 sys.stderr.write(" [ERROR]\n")
             else:
                 sys.stderr.write(" [WAITING]\n")
