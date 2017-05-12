@@ -2,14 +2,13 @@
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-SPOLIGO="$DIR/spoligotype_info"
-LOOKUP="$DIR/spoligotype_lookup.py"
+SPOLIGO="$DIR/spoligotype/spoligotype_info"
+LOOKUP="$DIR/spoligotype/spoligotype_lookup.py"
 FILENAME="$1"
 SPDB="$2"
 
 if [ ! -f "$SPOLIGO" ]; then
-  echo "Building info Binary"
-  cd $DIR
+  cd "$DIR/spoligotype"
   g++ -std=c++0x spoligotype_info.cpp -o spoligotype_info
 fi
 
