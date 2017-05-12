@@ -167,7 +167,7 @@ class MutationView(JsonView, DataSlicerMixin):
           'data': GraphData(qs, self.values[0], 'count', self.values[-1])
             .set_axis('z', self.categories, trim=True)
             .set_axis('x', mutations)
-            .set_axis('y', totals)
+            .set_axis('y', totals, trim=[None])
             .to_graph()
         }
 

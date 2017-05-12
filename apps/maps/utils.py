@@ -103,7 +103,7 @@ class GraphData(defaultdict):
         """Generator returning all values in this category"""
         for col, name in self.get_x_cols(cat).items():
             y, value, total = self.get_y_value(cat, col)
-            if (value or not self.trims['y']) and (name or not self.trims['x']):
+            if self.is_trimmed(name, value, cat):
                 yield {
                     "y": y,
                     "x": name,
@@ -111,6 +111,16 @@ class GraphData(defaultdict):
                     "value": value,
                     "total": total,
                 }
+
+    def is_trimmed(self, name, value, cat):
+        x, y = self.trims['x'], self.trims['y']
+        if isinstance(x, (list, tuple)):
+            print("TRIM X is list: %s in %s" % (cat, str(x)))
+            x = cat in x
+        if isinstance(y, (list, tuple)):
+            print("TRIM Y is list: %s in %s" % (cat, str(y)))
+            y = cat in y
+        return (value or not y) and (name or not x)
 
     @to(list)
     def to_graph(self):
