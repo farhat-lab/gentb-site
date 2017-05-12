@@ -13,11 +13,14 @@ class Command(BaseCommand):
     def handle(self, **options):
         for strain in PredictStrain.objects.filter(piperun__isnull=True):
             sys.stderr.write("Strain: %s, " % str(strain))
-            dl = strain.check_download()
-            if not dl:
+            dl = strain.files_status()
+            if dl is 0:
                 sys.stderr.write("NOT-READY [SKIP]\n")
-                continue
-            if strain.run():
+            elif dl is 1:
+                sys.stderr.write("DOWNLOADING [SKIP]\n")
+            elif dl is 2:
+                sys.stderr.write("DOWNLOAD ERROR [SKIP]\n")
+            elif strain.run():
                 sys.stderr.write("SUBMITTED [OK]\n")
             else:
                 sys.stderr.write("SUBMITTED [ERROR]\n")
