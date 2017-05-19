@@ -20,6 +20,7 @@ Drug resistance and strain source for gene mutations django app.
 
 import os
 
+from django.conf import settings
 from django.db.models import *
 from django.core.urlresolvers import reverse
 
@@ -118,11 +119,19 @@ class MutationQuerySet(QuerySet):
         mutations = set(mutations)
         headers = ['strain']
         row = [name.replace(',', '-')]
-        for item in self:
-            headers.append(item.name)
-            if item.name in mutations:
+
+        # Disabled while the database and RandomForest are incongruent
+        #names = self.values_list('name', flat=True)
+        # Replaced with static file for now XXX:
+        fn = os.path.join(settings.DATA_ROOT, 'variant_name_list.csv')
+        with open(fn, 'r') as fhl:
+            names = [line.strip() for line in fhl.read().split(',')]
+
+        for name in names:
+            headers.append(name)
+            if name in mutations:
                 row.append('1')
-                mutations.remove(item.name)
+                mutations.remove(name)
             else:
                 row.append('0')
 
