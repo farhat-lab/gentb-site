@@ -160,6 +160,8 @@ class Command(BaseCommand):
         row['resistance_group'] = res.pop('drtype')
         row['targeting'] = targeting
         row['importer'] = self.importer
+        if row['name'] is None:
+            row['name'] = pk
         try:
             (obj, created) = StrainSource.objects.update_or_create(defaults=row, old_id=pk)
         except Exception as err:
