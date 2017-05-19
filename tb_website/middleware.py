@@ -30,6 +30,7 @@ from django.utils.encoding import smart_unicode
 
 from django.db.models import Manager, QuerySet
 from django.views.generic import View
+from django.contrib.contenttypes.models import ContentType
 
 def IterObject(t=list):
     """Create an object from a generator function, default is list"""
@@ -78,7 +79,21 @@ class AutoBreadcrumbMiddleware(object):
             response.context_data[key] = self.get(data, key, then=self)
         if len(response.context_data['breadcrumbs']) == 1:
             del response.context_data['breadcrumbs']
+        response.context_data['admin_link'] = self.get_admin_link(request.user, data)
         return response
+
+    def get_admin_link(self, user, data):
+        """Generates an admin link to edit this object"""
+        obj = data.get('object', None)
+        if obj is not None and user is not None:
+	    ct = ContentType.objects.get_for_model(type(obj))
+	    bits = (ct.app_label, ct.model, 'change')
+	    args = (obj.pk,) if obj else ()
+	    if user.has_perm('%s.%s_%s' % (ct.app_label, 'change', ct.model)):
+		return {
+                    'name': 'Edit "%s"' % unicode(obj),
+                    'url': reverse('admin:%s_%s_%s' % bits, args=args),
+                }
 
     def get_title(self, data):
         """If no title specified in context, use last breadcrumb"""

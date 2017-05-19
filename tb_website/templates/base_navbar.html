@@ -44,6 +44,9 @@
         <li class="dropdown">
           <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><span class="glyphicon glyphicon-cog"></span></a>
           <ul class="dropdown-menu">
+            {% if admin_link %}
+            <li><a href="{{ admin_link.url }}">{{ admin_link.name }}</a></li>
+            {% endif %}
             <li><a href="{% url 'admin:index' %}">Admin Page</a></li>
             <li><a href="{% url 'spaghetti:plate' %}">Models</a></li>
           </ul>
