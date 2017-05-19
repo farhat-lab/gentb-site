@@ -145,7 +145,7 @@ class ManualInputForm(UploadForm):
         name = slugify(self.cleaned_data.get('title'))
         (output, left_over) = Mutation.objects.matrix_csv(name, mutations)
         if left_over:
-            raise ValidationError("Mutations not found in database: %s" % left_over)
+            raise ValidationError("Mutations are not available in prediction: %s" % ", ".join(list(left_over)))
         return output
 
     def save(self, *args, **kw):

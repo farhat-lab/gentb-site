@@ -116,7 +116,6 @@ class GeneLocus(Model):
 class MutationQuerySet(QuerySet):
     def matrix_csv(self, name, mutations):
         """Creates a matrix.csv file for prediction"""
-        mutations = set(mutations)
         headers = ['strain']
         row = [name.replace(',', '-')]
 
@@ -127,9 +126,18 @@ class MutationQuerySet(QuerySet):
         with open(fn, 'r') as fhl:
             names = [line.strip() for line in fhl.read().split(',')]
 
+        # Mutation names could still be wrong though.
+        def normalise(txt):
+            for char in '!@#$%^&*_-+.,=/\\[]{}()<>\'\":;':
+                txt = txt.replace(char, '_')
+            return txt
+
+        #mutations = set(mutations)
+        mutations = set([normalise(m) for m in mutations])
+
         for name in names:
             headers.append(name)
-            if name in mutations:
+            if normalise(name) in mutations:
                 row.append('1')
                 mutations.remove(name)
             else:
