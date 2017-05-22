@@ -43,6 +43,12 @@ th[scope="row"] label {
   padding: 15px 0px 0px 0px;
 }
 
+/* override the checkbox position */
+td.field input[type="checkbox"] {
+  width: 16px;
+  text-align: left;
+}
+
 /* stype the modules view */
 
 .vis-network-tooltip ul {
