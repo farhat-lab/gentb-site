@@ -58,7 +58,7 @@ class UploadView(PredictMixin, CreateView):
     parent = UploadChoices
 
     def get_title(self):
-        return self.form_class.title
+        return self.form_class.doc_title
 
     def get_template_names(self):
         default = super(UploadView, self).get_template_names()

@@ -133,11 +133,15 @@ class UploadForm(ModelForm):
 
 class ManualInputForm(UploadForm):
     my_file_type = PredictDataset.FILE_TYPE_MANUAL
-    title = "Manually Entered Prediction"
-    doc = "Create a prediction though manual selection of 1 or more mutations from a list. This option involves the shortest processing time but does assume that any non-entered mutations have been tested for and are absent."
+    doc_title = "Manually Entered Prediction"
+    doc = """Create a prediction though manual selection of 1 or more mutations from a list. This option involves the shortest processing time but does assume that any non-entered mutations have been tested for and are absent. Minimal genotypic information for accurate resistance predictions are below. Genetic regions are listed in order of decreasing importance. For more detailed list of genetic variants see reference <a href="http://www.ncbi.nlm.nih.gov/pubmed/26910495">Farhat MR, Sultana R et al. Genetic Determinants of Drug Resistance in Mycobacterium tuberculosis and Their Diagnostic Value. AJRCCM 2016</a>"""
     genetic_information = GeneticInputField(reverse_lazy('genes:json'))
     ordered = 20
     btn = 'default'
+
+    def __init__(self, *args, **kw):
+        super(ManualInputForm, self).__init__(*args, **kw)
+        self.fields['delete_sources'].widget = HiddenInput()
 
     def clean_genetic_information(self):
         data = self.cleaned_data.get('genetic_information')
@@ -162,8 +166,8 @@ class ManualInputForm(UploadForm):
 
 class UploadVcfForm(UploadForm):
     my_file_type = PredictDataset.FILE_TYPE_VCF
-    title = "Create VCF Prediction"
-    doc = 'Minimal genotypic information for accurate resistance predictions are below. Genetic regions are listed in order of decreasing importance. For more detailed list of genetic variants see reference <a href="http://www.ncbi.nlm.nih.gov/pubmed/26910495">Farhat MR, Sultana R et al. Genetic Determinants of Drug Resistance in Mycobacterium tuberculosis and Their Diagnostic Value. AJRCCM 2016</a> and get <a href="https://en.wikipedia.org/wiki/Variant_Call_Format">more information</a> about the VCF format.'
+    doc_title = "Create VCF Prediction"
+    doc = """Create a prediction from a variant call file in VCF format. Get more information about the <a href="http://samtools.github.io/hts-specs/VCFv4.2.pdf">VCF format here.</a>"""
     vcf_file = CharField(widget=DropboxChooserWidget(VCF_FILES), required=True,
         label="VCF Files", help_text="Variant Call Formated sequence data file. Multiple files can be selected, one vcf file per stain to compare.")
     ordered = 10
@@ -172,7 +176,7 @@ class UploadVcfForm(UploadForm):
 
 class UploadFastQSingleForm(UploadForm):
     my_file_type = PredictDataset.FILE_TYPE_FASTQ
-    title = "Create FastQ Single-Ended Prediction"
+    doc_title = "Create FastQ Single-Ended Prediction"
     doc = "Create a prediction from a single-ended FastQ genetic sequence file. This option involves a large file and takes more time to process that the VCF or manual options."
     fastq_file = CharField(widget=DropboxChooserWidget(FASTQ_FILES), required=True,
         label="FastQ Files", help_text="FastQ files containing the single sequence read. Multiple files can be selected, one fastq file per strain to compare.")
@@ -181,7 +185,7 @@ class UploadFastQSingleForm(UploadForm):
 
 class UploadFastQPairForm(UploadForm):
     my_file_type = PredictDataset.FILE_TYPE_FASTQ2
-    title = "Create FastQ Pair-Ended Prediction"
+    doc_title = "Create FastQ Pair-Ended Prediction"
     doc = "Create a prediction from a set of pair-ended FastQ genetic sequences. This option involves the largest files and takes more time to process that the VCF or manual options."
     fastq_file = CharField(widget=DropboxChooserWidget(FASTQ_FILES, buckets=[
         ('forward', "_R1.fastq _R1.fastq.gz", "Forward FastQ Files"),

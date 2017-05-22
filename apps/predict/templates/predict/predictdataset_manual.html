@@ -16,6 +16,15 @@
         </div>
       {% endif %}
 
+      <h3>Instructions</b></h3>
+      <p>Select items in the following order:</p>
+      <ul>
+        <li>The drug name</li>
+        <li>Gene locus</li>
+        <li>Gene mutation name</li>
+      </ul>
+      <p>Once selected, press the + button to add. If you do not add the selection, it will not be saved.</p>
+
       <form method="post">
         {% csrf_token %}
         {% for hidden in form.hidden_fields %}
@@ -53,14 +62,65 @@
       </form>
     </div>
     <div class="col-md-6 portfolio-item">
-      <h3>Instructions</b></h3>
-      <p>Select items in the following order:</p>
-      <ul>
-        <li>The drug name</li>
-        <li>Gene locus</li>
-        <li>Gene mutation name</li>
-      </ul>
-      <p>Once selected, press the + button to add. If you do not add the selection, it will not be saved.</p>
+
+      <h3>{{ form.doc_title }}</h3>
+      <p>{{ form.doc|safe }}</p>
+
+      <table class="table">
+        <tr>
+          <th align = "center">Drug</th>
+          <th align = "cetner">Genes</th>
+        </tr>
+        <tr>
+          <td>Isoniazid</td>
+          <td><i>katG</i>, <i>inhA</i> promoter, <i>inhA</i>, <i>embB</i>,
+              <i>iniB</i>, <i>kasA</i>, <i>embAB</i> promoter, and <i>ahpC</i>
+          </td>
+        </tr>
+        <tr>
+          <td>Rifampicin</td>
+          <td><i>rpoB</i></td>
+        </tr>
+        <tr>
+          <td>Pyrazinamide</td>
+          <td><i>pncA</i> and <i>pncA</i> promoter</td>
+        </tr>
+        <tr>
+          <td>Ethambutol</td>
+          <td><i>embB</i>, <i>iniB</i>, <i>embAB</i> promoter, <i>embAB</i>, and <i>embC</i></td>
+        </tr>
+        <tr>
+          <td>Streptomycin</td>
+          <td><i>rpsL</i>, <i>rrs</i>, <i>gid</i>, and <i>rrs-rrl</i> intergenic region</td>
+        </tr>
+        <tr>
+          <td>Ethionamide</td>
+          <td><i>inhA promoter</i>, <i>ethA</i>, and <i>inhA</i></td>
+        </tr>
+        <tr>
+          <td>Kanamycin*</td>
+          <td><i>rrs</i>, <i>tlyA</i>*</td>
+        </tr>
+        <tr>
+          <td>Capreomycin</td>
+          <td><i>rrs</i></td>
+        </tr>
+        <tr>
+          <td>Amikacin</td>
+          <td><i>rrs</i></td>
+        </tr>
+        <tr>
+          <td>Fluoroquinolones</td>
+          <td><i>gyrA</i>, <i>gyrB</i></td>
+        </tr>
+        <tr>
+          <td>Para-aminosalicylic acid</td>
+          <td><i>thyA</i></td>
+        </tr>
+      </table>
+      * Note: Gene <i>eis</i> is a predictor of kanamycin resistance, but data for this gene was not available when the predictive model was built.
+
+
     </div>
   </div>
 {% endblock %}
