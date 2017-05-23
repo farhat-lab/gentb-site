@@ -129,22 +129,22 @@ function heatmap(selector, data, options) {
   data.matrix.merged = merged;
 
   // ==== BEGIN HELPERS =================================
-  
+
   function htmlEscape(str) {
     return (str+"").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
   }
-  
+
   // Given a list of widths/heights and a total width/height, provides
   // easy access to the absolute top/left/width/height of any individual
   // grid cell. Optionally, a single cell can be specified as a "fill"
   // cell, meaning it will take up any remaining width/height.
-  // 
+  //
   // rows and cols are arrays that contain numeric pixel dimensions,
   // and up to one "*" value.
   function GridSizer(widths, heights, /*optional*/ totalWidth, /*optional*/ totalHeight) {
     this.widths = widths;
     this.heights = heights;
-  
+
     var fillColIndex = null;
     var fillRowIndex = null;
     var usedWidth = 0;
@@ -185,11 +185,11 @@ function heatmap(selector, data, options) {
       }
     }
   }
-  
+
   GridSizer.prototype.getCellBounds = function(x, y) {
     if (x < 0 || x >= this.widths.length || y < 0 || y >= this.heights.length)
       throw new Error("Invalid cell bounds");
-  
+
     var left = 0;
     for (var i = 0; i < x; i++) {
       left += this.widths[i];
