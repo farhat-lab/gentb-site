@@ -56,10 +56,10 @@
       </form>
     </div>
     <div class="col-md-6 portfolio-item">
-      <h3>{{ form.doc_title }}</h3>
+      <h3 title="{{ form.my_file_type }}">{{ form.doc_title }}</h3>
       <p>{{ form.doc|safe }}</p>
 
-      {% if form.my_file_type == 'fastq' %}
+      {% if form.my_file_type == 'fastq-pair' %}
       <p>Please label paired end FastQ files as follows:</p>
       <ul>
         <li><i>isolate-name-here</i>_R1.fastq</li>
