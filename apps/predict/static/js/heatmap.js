@@ -48,8 +48,7 @@ function make_heatmap(data, heatmap_id, scatter_id, no_data) {
     //"width": 950, // This isn't dynamic enough XXX
     "no_data": no_data,
     "xaxis_height": 120,
-    // XXX This should dynamically set the width based on the labels.
-    "yaxis_width": 150,
+    "yaxis_width": "*",
     "xaxis_font_size": null,
     "yaxis_font_size": null,
     "brush_color": "#0000FF",
@@ -263,7 +262,14 @@ function heatmap(selector, data, options) {
   var opts = {};
   options = options || {};
   opts.xaxis_height = options.xaxis_height || 80;
-  opts.yaxis_width = options.yaxis_width || 120;
+  opts.yaxis_width = options.yaxis_width || "*";
+
+  if(opts.yaxis_width == "*") {
+      // Calculate the width
+      var label = data.matrix.rows.reduce(function (a, b) { return a.length > b.length ? a : b; });
+      // This is not accurate, it's just a guess
+      opts.yaxis_width = label.length * 12;
+  }
 
   // Make the squares, square
   if(opts.height / num_rows < opts.width / num_cols) {
@@ -274,7 +280,6 @@ function heatmap(selector, data, options) {
     opts.width = width;
   }
   opts.height += opts.xaxis_height;
-  //opts.width += opts.yaxis_width;
 
   opts.xclust_height = options.xclust_height || opts.height * 0.12;
   opts.yclust_width = options.yclust_width || opts.width * 0.12;
