@@ -3,7 +3,7 @@ import logging
 LOGGER = logging.getLogger('apps.dropbox')
 
 from django.core.management.base import BaseCommand, CommandError
-from apps.dropbox.models import DropboxFile
+from apps.uploads.models import DropboxFile
 
 class Command(BaseCommand):
     help = """Regular run of new dropbox links:

@@ -168,7 +168,7 @@ LOCAL_APPS = (
     'apps.tb_users',
     'apps.predict',
     'apps.pipeline',
-    'apps.dropbox',
+    'apps.uploads',
     'apps.mutations',
     'apps.maps',
 

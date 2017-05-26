@@ -30,7 +30,7 @@ from django.utils.timezone import now
 from .utils import Download
 
 
-class DropboxFile(Model):
+class UploadFile(Model):
     name = SlugField(max_length=128)
     filename = CharField(max_length=255, null=True)
     file_directory = CharField(max_length=255)

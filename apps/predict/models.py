@@ -41,7 +41,7 @@ from django.core.urlresolvers import reverse
 from django.utils.timezone import now
 from django.utils.translation import ugettext_lazy as _
 
-from apps.dropbox.models import DropboxFile
+from apps.uploads.models import UploadFile
 from apps.pipeline.models import Pipeline, PipelineRun
 from apps.mutations.models import Drug
 from apps.mutations.utils import unpack_mutation_format
@@ -206,8 +206,8 @@ class PredictStrain(Model):
     piperun = ForeignKey(PipelineRun, null=True, blank=True, on_delete=SET_NULL)
     
     # We need two file slots for pair ended fastq files
-    file_one = ForeignKey(DropboxFile, null=True, blank=True, related_name='link_a', on_delete=SET_NULL)
-    file_two = ForeignKey(DropboxFile, null=True, blank=True, related_name='link_b', on_delete=SET_NULL)
+    file_one = ForeignKey(UploadFile, null=True, blank=True, related_name='link_a', on_delete=SET_NULL)
+    file_two = ForeignKey(UploadFile, null=True, blank=True, related_name='link_b', on_delete=SET_NULL)
     files = property(lambda self: [a for a in (self.file_one, self.file_two) if a])
 
     def run(self):

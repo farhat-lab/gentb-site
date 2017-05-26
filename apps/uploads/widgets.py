@@ -11,7 +11,7 @@ from django.forms import TextInput
 
 import json
 
-class DropboxChooserWidget(TextInput):
+class UploadChooserWidget(TextInput):
     input_type = 'dropbox-chooser'
 
     def __init__(self, extensions=None, attrs=None, buckets=None):
@@ -23,10 +23,10 @@ class DropboxChooserWidget(TextInput):
         }
         self.buckets = buckets or []
         kw.update(attrs or {})
-        super(DropboxChooserWidget, self).__init__(kw)
+        super(UploadChooserWidget, self).__init__(kw)
 
     def render(self, name, value, attrs):
-        render = super(DropboxChooserWidget, self).render
+        render = super(UploadChooserWidget, self).render
         ret = render(name, value, attrs)
         for bucket, match, label in self.buckets:
             kw = attrs.copy()
@@ -44,5 +44,5 @@ class DropboxChooserWidget(TextInput):
         css = {'all': ('css/dropbox/chooser.css?cache=2',)}
 
 
-# XXX DropboxBucket should be it's own hidden widget type.
+# XXX UploadBucket should be it's own hidden widget type.
 

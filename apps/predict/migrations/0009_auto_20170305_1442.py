@@ -15,12 +15,12 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='predictstrain',
             name='file_one',
-            field=models.ForeignKey(related_name='link_a', on_delete=django.db.models.deletion.SET_NULL, blank=True, to='dropbox.DropboxFile', null=True),
+            field=models.ForeignKey(related_name='link_a', on_delete=django.db.models.deletion.SET_NULL, blank=True, to='uploads.UploadFile', null=True),
         ),
         migrations.AlterField(
             model_name='predictstrain',
             name='file_two',
-            field=models.ForeignKey(related_name='link_b', on_delete=django.db.models.deletion.SET_NULL, blank=True, to='dropbox.DropboxFile', null=True),
+            field=models.ForeignKey(related_name='link_b', on_delete=django.db.models.deletion.SET_NULL, blank=True, to='uploads.UploadFile', null=True),
         ),
         migrations.AlterField(
             model_name='predictstrain',

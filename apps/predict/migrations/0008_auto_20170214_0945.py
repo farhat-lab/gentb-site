@@ -7,7 +7,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('dropbox', '0005_auto_20170202_1444'),
+        ('uploads', '0001_initial'),
         ('pipeline', '0001_initial'),
         ('predict', '0007_auto_20170202_1539'),
     ]
@@ -57,12 +57,12 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='predictstrain',
             name='file_one',
-            field=models.ForeignKey(related_name='link_a', blank=True, to='dropbox.DropboxFile', null=True),
+            field=models.ForeignKey(related_name='link_a', blank=True, to='uploads.UploadFile', null=True),
         ),
         migrations.AddField(
             model_name='predictstrain',
             name='file_two',
-            field=models.ForeignKey(related_name='link_b', blank=True, to='dropbox.DropboxFile', null=True),
+            field=models.ForeignKey(related_name='link_b', blank=True, to='uploads.UploadFile', null=True),
         ),
         migrations.AddField(
             model_name='predictstrain',

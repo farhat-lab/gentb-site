@@ -24,8 +24,8 @@ from django.utils.text import slugify
 from django.core.urlresolvers import reverse_lazy
 from django.forms import * 
 
-from apps.dropbox.widgets import DropboxChooserWidget
-from apps.dropbox.models import DropboxFile
+from apps.uploads.widgets import UploadChooserWidget
+from apps.uploads.models import UploadFile
 from apps.mutations.fields import GeneticInputField
 from apps.mutations.models import Mutation
 
@@ -91,7 +91,7 @@ class UploadForm(ModelForm):
         if not dataset.pk:
             return dataset
         for key, field in self.fields.items():
-            if isinstance(field.widget, DropboxChooserWidget):
+            if isinstance(field.widget, UploadChooserWidget):
                 for bucket_id, _, _ in field.widget.buckets:
                     self.save_dropbox(dataset, key + '_' + bucket_id)
                 else:
@@ -120,7 +120,7 @@ class UploadForm(ModelForm):
             }
             (strain, _) = dataset.strains.get_or_create(name=name, defaults=kw)
 
-            setattr(strain, field, DropboxFile.objects.create(
+            setattr(strain, field, UploadFile.objects.create(
               name=key,
               file_directory=dataset.file_directory,
               filename=dropbox_file['name'],
@@ -168,7 +168,7 @@ class UploadVcfForm(UploadForm):
     my_file_type = PredictDataset.FILE_TYPE_VCF
     doc_title = "Create VCF Prediction"
     doc = """Create a prediction from a variant call file in VCF format. Get more information about the <a href="http://samtools.github.io/hts-specs/VCFv4.2.pdf">VCF format here.</a>"""
-    vcf_file = CharField(widget=DropboxChooserWidget(VCF_FILES), required=True,
+    vcf_file = CharField(widget=UploadChooserWidget(VCF_FILES), required=True,
         label="VCF Files", help_text="Variant Call Formated sequence data file. Multiple files can be selected, one vcf file per stain to compare.")
     ordered = 10
     btn = 'primary'
@@ -178,7 +178,7 @@ class UploadFastQSingleForm(UploadForm):
     my_file_type = PredictDataset.FILE_TYPE_FASTQ
     doc_title = "Create FastQ Single-Ended Prediction"
     doc = "Create a prediction from a single-ended FastQ genetic sequence file. This option involves a large file and takes more time to process that the VCF or manual options."
-    fastq_file = CharField(widget=DropboxChooserWidget(FASTQ_FILES), required=True,
+    fastq_file = CharField(widget=UploadChooserWidget(FASTQ_FILES), required=True,
         label="FastQ Files", help_text="FastQ files containing the single sequence read. Multiple files can be selected, one fastq file per strain to compare.")
     ordered = 5
 
@@ -187,7 +187,7 @@ class UploadFastQPairForm(UploadForm):
     my_file_type = PredictDataset.FILE_TYPE_FASTQ2
     doc_title = "Create FastQ Pair-Ended Prediction"
     doc = "Create a prediction from a set of pair-ended FastQ genetic sequences. This option involves the largest files and takes more time to process that the VCF or manual options."
-    fastq_file = CharField(widget=DropboxChooserWidget(FASTQ_FILES, buckets=[
+    fastq_file = CharField(widget=UploadChooserWidget(FASTQ_FILES, buckets=[
         ('forward', "_R1.fastq _R1.fastq.gz", "Forward FastQ Files"),
         ('backward', "_R2.fastq _R2.fastq.gz", "Backward FastQ Files")]),
         required=True, label="FastQ Files",
