@@ -16,7 +16,7 @@
 #
 """
 Provide prediction app using the pipeline for building predictions and the
-dropbox app to download large data files from the users.
+uploads app to download large data files from the users.
 """
 
 import os
