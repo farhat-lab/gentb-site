@@ -24,7 +24,7 @@ from django.utils.text import slugify
 from django.core.urlresolvers import reverse_lazy
 from django.forms import * 
 
-from apps.uploads.widgets import UploadChooserWidget
+from apps.uploads.fields import UploadField
 from apps.uploads.models import UploadFile
 from apps.mutations.fields import GeneticInputField
 from apps.mutations.models import Mutation
@@ -68,6 +68,8 @@ class UploadForm(ModelForm):
                 pl.initial = pl.queryset.filter(is_default=True).get().pk
             except PredictPipeline.DoesNotExist:
                 pass
+        self.uploads = [key for key, field in self.fields.items()
+            if isinstance(field, UploadField)]
 
     @classmethod
     def pipeline_queryset(cls):
@@ -90,45 +92,32 @@ class UploadForm(ModelForm):
         dataset = super(UploadForm, self).save(**kw)
         if not dataset.pk:
             return dataset
-        for key, field in self.fields.items():
-            if isinstance(field.widget, UploadChooserWidget):
-                for bucket_id, _, _ in field.widget.buckets:
-                    self.save_dropbox(dataset, key + '_' + bucket_id)
-                else:
-                    self.save_dropbox(dataset, key)
+        for key in self.uploads:
+            self.save_upload(dataset, self.cleaned_data.get(key, {}))
         return dataset
 
-    def get_strain_name(self, fn):
-        """Gets the default name of the strain from the given filename"""
-        if fn.endswith('.gz'):
-            fn = fn[:-3]
-        return ('file_one', fn.rsplit('.', 1)[0])
+    def clean(self):
+        """Clean the form"""
+        data = super(UploadForm, self).clean()
+        for key in self.uploads:
+            for fl in data.get(key, {}):
+                if fl not in self.fields:
+                    raise ValidationError("Upload '%s' is invalid." % fl)
+        return data
 
-    def save_dropbox(self, dataset, key, files=None):
-        if files is None:
-            data = self.cleaned_data.get(key, self.data.get(key, '[]'))
-            if data is None:
-                return
-            # Decode the data from the dropbox widget as json, this gives us
-            # the file size, icon and filename which is very useful later.
-            files = json.loads(data)
-
-        for dropbox_file in files:
-            (field, name) = self.get_strain_name(dropbox_file['name'])
-            kw = {
-              'pipeline': self.cleaned_data['pipeline'].pipeline,
-            }
-            (strain, _) = dataset.strains.get_or_create(name=name, defaults=kw)
-
-            setattr(strain, field, UploadFile.objects.create(
-              name=key,
-              file_directory=dataset.file_directory,
-              filename=dropbox_file['name'],
-              url=dropbox_file['link'],
-              size=dropbox_file['bytes'],
-              icon=dropbox_file['icon'],
-            ))
-            strain.save()
+    def save_upload(self, dataset, field):
+        for bucket, upload_files in field.items():
+            for upload_file in upload_files:
+                (strain, _) = dataset.strains.get_or_create(
+                    name=upload_file.name,
+                    defaults={
+                      'pipeline': self.cleaned_data['pipeline'].pipeline,
+                    }
+                )
+                setattr(strain, bucket, upload_file)
+                upload_file.file_directory = dataset.file_directory
+                upload_file.save()
+                strain.save()
 
 
 class ManualInputForm(UploadForm):
@@ -153,14 +142,24 @@ class ManualInputForm(UploadForm):
         return output
 
     def save(self, *args, **kw):
+        """
+        Manual save by-passes any upload file in favour of constructing
+        it's own matrix csv file and adding it directly to the strain.
+        """
         dataset = super(UploadForm, self).save(*args, **kw)
         if dataset and dataset.pk:
             data = self.cleaned_data.get('genetic_information')
-            self.save_dropbox(dataset, 'manual', [
-                {'name': 'matrix.csv', 'link': '-', 'bytes': len(data), 'icon': None}
-            ])
-            # We save the matrix file directly.
-            dataset.strains.get().file_one.save_now(data)
+
+            # Create an UploadFile without the Input Field
+            matrix = UploadFile.objects.create(
+                name='matrix',
+                file_directory=dataset.file_directory,
+                filename='matrix.csv',
+                size=len(data))
+
+            # We save the matrix file directly
+            matrix.save_now(data)
+            self.save_upload(dataset, {'file_one': [matrix]})
         return dataset
 
 
@@ -168,7 +167,7 @@ class UploadVcfForm(UploadForm):
     my_file_type = PredictDataset.FILE_TYPE_VCF
     doc_title = "Create VCF Prediction"
     doc = """Create a prediction from a variant call file in VCF format. Get more information about the <a href="http://samtools.github.io/hts-specs/VCFv4.2.pdf">VCF format here.</a>"""
-    vcf_file = CharField(widget=UploadChooserWidget(VCF_FILES), required=True,
+    vcf_file = UploadField(extensions=VCF_FILES, required=True,
         label="VCF Files", help_text="Variant Call Formated sequence data file. Multiple files can be selected, one vcf file per stain to compare.")
     ordered = 10
     btn = 'primary'
@@ -178,7 +177,7 @@ class UploadFastQSingleForm(UploadForm):
     my_file_type = PredictDataset.FILE_TYPE_FASTQ
     doc_title = "Create FastQ Single-Ended Prediction"
     doc = "Create a prediction from a single-ended FastQ genetic sequence file. This option involves a large file and takes more time to process that the VCF or manual options."
-    fastq_file = CharField(widget=UploadChooserWidget(FASTQ_FILES), required=True,
+    fastq_file = UploadField(extensions=FASTQ_FILES, required=True,
         label="FastQ Files", help_text="FastQ files containing the single sequence read. Multiple files can be selected, one fastq file per strain to compare.")
     ordered = 5
 
@@ -187,38 +186,13 @@ class UploadFastQPairForm(UploadForm):
     my_file_type = PredictDataset.FILE_TYPE_FASTQ2
     doc_title = "Create FastQ Pair-Ended Prediction"
     doc = "Create a prediction from a set of pair-ended FastQ genetic sequences. This option involves the largest files and takes more time to process that the VCF or manual options."
-    fastq_file = CharField(widget=UploadChooserWidget(FASTQ_FILES, buckets=[
-        ('forward', "_R1.fastq _R1.fastq.gz", "Forward FastQ Files"),
-        ('backward', "_R2.fastq _R2.fastq.gz", "Backward FastQ Files")]),
+    fastq_file = UploadField(extensions=FASTQ_FILES, buckets=[
+        ('file_one', "^(.+)[\._\- ][Rr]?1\.fastq(?:\.gz)?$", "Forward FastQ Files", 'file_two'),
+        ('file_two', "^(.+)[\._\- ][Rr]?2\.fastq(?:\.gz)?$", "Backward FastQ Files", 'file_one')],
         required=True, label="FastQ Files",
         help_text="FastQ file containing the forward and backward sequence. Multiple strains can be selected for comparison.")
     ordered = 6
 
-    def get_strain_name(self, fn):
-        # We need to save fastq pair ended together, they come in here
-        # in two buckets, so we save them in two fields (for now)
-        name = fn.split('R1')[0].split('R2')[0].strip('_- ')
-        return (['file_one', 'file_two']['R2' in fn], name)
-
-    def clean_fastq_file(self):
-        value = json.loads(self.cleaned_data['fastq_file'])
-        if value:
-            raise ValidationError("Unknown files were included, please select only accepted files.")
-        r1 = set(self.clean_fastq_dir(self.data['fastq_file_forward'], 'R1'))
-        r2 = set(self.clean_fastq_dir(self.data['fastq_file_backward'], 'R2'))
-        extra = r1 ^ r2
-        if extra:
-            raise ValidationError("Unmatched files found: %s" % ", ".join(extra))
-
-    def clean_fastq_dir(self, files, direction='R1'):
-        for fastq_file in json.loads(files):
-            name = fastq_file['name']
-            key = "_%s.fastq" % direction
-            if name.endswith('.gz'):
-                name = name[:-3]
-            if not name.endswith(key):
-                raise ValidationError("Filename '%s' invalid, remember to include R1 or R2 suffix in each filename." % fastq_file['name'])
-            yield name[:0-len(key)]
 
 class NotificationForm(Form):
     success = BooleanField(required=False)

@@ -1,9 +1,23 @@
 #
-# This code original a part of https://github.com/bogdal/django-dropboxchooser-field
-# which is unlicensed. We're assuming Public Domain, MIT or some other permissive
-# license.
+# Copyright (C) 2015 Adam Bogdal
+#               2017 Maha Farhat
 #
-# Heavily modified.
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+# Code from: https://github.com/bogdal/django-dropboxchooser-field by Adam Bogdal.
+# It is unlicensed. We're assuming Public Domain, MIT or some other permissive
+# license.
 #
 
 from django.conf import settings
@@ -12,7 +26,7 @@ from django.forms import TextInput
 import json
 
 class UploadChooserWidget(TextInput):
-    input_type = 'dropbox-chooser'
+    input_type = 'upload-chooser'
 
     def __init__(self, extensions=None, attrs=None, buckets=None):
         extensions = ['.' + x.strip('.') for x in (extensions or [])]
@@ -28,21 +42,21 @@ class UploadChooserWidget(TextInput):
     def render(self, name, value, attrs):
         render = super(UploadChooserWidget, self).render
         ret = render(name, value, attrs)
-        for bucket, match, label in self.buckets:
+        for bucket, match, label, link in self.buckets:
             kw = attrs.copy()
             kw['type'] = 'bucket'
-            kw['data-extensions'] = match
+            kw['data-match'] = match
             kw['data-parent'] = kw['id']
             kw['data-label'] = label
+            kw['data-bucket'] = bucket
+            kw['data-link'] = link
             kw['id'] += '_' + bucket
             ret += render(name + '_' + bucket, '', kw)
         return ret
 
     class Media:
         js = ['https://www.dropbox.com/static/api/2/dropins.js?cache=2',
-              'js/dropbox/chooser.js?cache=2']
-        css = {'all': ('css/dropbox/chooser.css?cache=2',)}
+              'js/uploads/chooser.js']
+        css = {'all': ('css/uploads/chooser.css',)}
 
-
-# XXX UploadBucket should be it's own hidden widget type.
 

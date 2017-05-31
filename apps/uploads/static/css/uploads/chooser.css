@@ -1,5 +1,5 @@
 
-ul.dropbox-files {
+ul.uploads-files {
   display: block;
   font-family: "Lucida Grande", "Segoe UI", "Tahoma", "Helvetica Neue", "Helvetica", sans-serif;
   font-size: 11px;
@@ -16,14 +16,38 @@ ul.dropbox-files {
   margin-top: 3px;
 }
 
-ul.dropbox-files li {
+ul.uploads-files li {
   padding: 2px 15px;
 }
 
-ul.dropbox-files label {
+ul.uploads-files label {
   border: 1px solid rgb(204, 204, 204);
   background: white none repeat scroll 0% 0%;
   padding: 2px 8px;
   margin-left: -5px;
 }
 
+ul.uploads-files > li.unlinked {
+  background-color: #ff9797;
+}
+
+ul.uploads-files > li > span {
+  float: right;
+  right: 2px;
+  top: 20px;
+  cursor: pointer;
+  padding: 5px 5px 4px;
+  border-radius: 5px;
+  border: 1px solid transparent;
+}
+
+ul.uploads-files > li:hover > span {
+  border: 1px solid #d4d4d4;
+  background-color: white;
+}
+
+ul.uploads-files > li > span:hover {
+  border: 1px solid transparent;
+  background-color: red;
+  color: white;
+}

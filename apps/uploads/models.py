@@ -19,6 +19,7 @@ Manage uploads to django via a number of different mechanisms.
 """
 
 import os
+import inspect
 import logging
 logger = logging.getLogger('apps.uploads.models')
 
@@ -47,7 +48,15 @@ class UploadFile(Model):
 
     class Meta:
         ordering = ('-created', 'filename')
-        db_table = 'uploads_uploadedfile'
+
+    @classmethod
+    def build_upload(cls, prefix, datum):
+        return cls(
+	    name=prefix,
+	    filename=datum['name'],
+	    size=datum['bytes'],
+	    icon=datum['icon'],
+        )
 
     def __str__(self):
         return str(self.filename)
@@ -87,6 +96,17 @@ class UploadFile(Model):
         self.size = len(data)
         self.save()
 
+
+class DropboxUploadFile(UploadFile):
+    """File uploaded via Dropbox"""
+    url = URLField()
+
+    @classmethod
+    def build_upload(cls, datum):
+        obj = super(cls, cls).build_upload(datum)
+	obj.url = datum['link']
+        return obj
+
     def download_now(self):
         """
         Download the dropbox link offline.
@@ -114,4 +134,10 @@ class UploadFile(Model):
             self.retrieval_error = str(error)
 
         self.save()
+
+UPLOADERS = dict([
+    (name.replace('UploadFile', '').lower(), cls)
+        for (name, cls) in locals().items()
+            if inspect.isclass(cls) and issubclass(cls, UploadFile)
+    ])
 
