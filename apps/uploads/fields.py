@@ -30,6 +30,7 @@ class UploadField(Field):
 
     def __init__(self, **kw):
         self.directory = kw.pop('dir', None)
+        self.extensions = kw.get('extensions', None)
         if 'widget' not in kw:
 	    kw['widget'] = UploadChooserWidget(
                 extensions=kw.pop('extensions', None),
@@ -46,14 +47,15 @@ class UploadField(Field):
 
         ret = defaultdict(list)
         for datum in raw:
-            prefix = self.get_prefix(datum['name'])
+            prefix = self.get_prefix(datum['id'])
             cls = UPLOADERS[datum.get('source', '')]
-            bucket = str(datum['bucket']) or ''
+            bucket = datum['bucket']
             ret[bucket].append(cls.build_upload(prefix, datum))
         return ret
 
     def get_prefix(self, filename):
-        if filename.endswith('.gz'):
-            filename = filename[:-3]
-        return filename.rsplit('.', 1)[0]
+        for ext in self.extensions or []:
+            if filename.endswith(ext):
+                return filename[:len(filename)-len(ext)]
+        return filename
 

@@ -55,12 +55,16 @@ $(window).load(function() {
       form.data('uploader-active', true);
     }
 
-    add_files = function(files) {
+    add_files = function(files, source) {
+      if(!files) { return; }
       $.each(files, function(index, file) {
           var store = container;
           file.bucket = null;
           file.id = file.name;
-          file.css = 'ok';
+
+          // Protect these from re-loading illness
+          if(!file.css) { file.css = 'ok'; }
+          if(!file.source) { file.source = source; }
 
           bucket_inputs.each(function() {
               var bucket = this;
@@ -127,7 +131,7 @@ $(window).load(function() {
       success: function(files) {
         var event = new CustomEvent('dropboxChooserSuccess', {'files': files});
         field.dispatchEvent(event);
-        add_files(files);
+        add_files(files, 'dropbox');
       },
       cancel: function() {
         field.dispatchEvent(new CustomEvent('dropboxChooserCancel'));
@@ -141,5 +145,9 @@ $(window).load(function() {
 
     var button = Dropbox.createChooseButton(options);
     field.parentNode.insertBefore(button, field);
+
+    // Add any existing files
+    add_files(JSON.parse(field.value));
+
   });
 });

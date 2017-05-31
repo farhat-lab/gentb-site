@@ -102,8 +102,8 @@ class DropboxUploadFile(UploadFile):
     url = URLField()
 
     @classmethod
-    def build_upload(cls, datum):
-        obj = super(cls, cls).build_upload(datum)
+    def build_upload(cls, prefix, datum):
+        obj = super(cls, cls).build_upload(prefix, datum)
 	obj.url = datum['link']
         return obj
 

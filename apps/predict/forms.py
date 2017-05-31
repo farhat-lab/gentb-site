@@ -99,9 +99,10 @@ class UploadForm(ModelForm):
     def clean(self):
         """Clean the form"""
         data = super(UploadForm, self).clean()
+        strain_fields = [f.name for f in PredictStrain._meta.get_fields()]
         for key in self.uploads:
             for fl in data.get(key, {}):
-                if fl not in self.fields:
+                if fl is not None and fl not in strain_fields:
                     raise ValidationError("Upload '%s' is invalid." % fl)
         return data
 
@@ -114,9 +115,10 @@ class UploadForm(ModelForm):
                       'pipeline': self.cleaned_data['pipeline'].pipeline,
                     }
                 )
-                setattr(strain, bucket, upload_file)
                 upload_file.file_directory = dataset.file_directory
                 upload_file.save()
+
+                setattr(strain, (bucket or 'file_one'), upload_file)
                 strain.save()
 
 
