@@ -1,9 +1,13 @@
 
+import uuid
 import logging
 import requests
 
 from os.path import join, getsize
 from django.core.files.storage import FileSystemStorage
+
+def get_uuid():
+    return uuid.uuid4().hex
 
 class Download(object):
     """Wrap the requests module for django's storage backend."""

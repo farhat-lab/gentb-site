@@ -90,10 +90,9 @@ class UploadForm(ModelForm):
 
     def save(self, **kw):
         dataset = super(UploadForm, self).save(**kw)
-        if not dataset.pk:
-            return dataset
-        for key in self.uploads:
-            self.save_upload(dataset, self.cleaned_data.get(key, {}))
+        if dataset.pk:
+            for key in self.uploads:
+                self.save_upload(dataset, self.cleaned_data.get(key, {}))
         return dataset
 
     def clean(self):
@@ -115,9 +114,7 @@ class UploadForm(ModelForm):
                       'pipeline': self.cleaned_data['pipeline'].pipeline,
                     }
                 )
-                upload_file.file_directory = dataset.file_directory
-                upload_file.save()
-
+                upload_file.conclude_upload(dataset.file_directory, dataset.user)
                 setattr(strain, (bucket or 'file_one'), upload_file)
                 strain.save()
 

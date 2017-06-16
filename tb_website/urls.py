@@ -28,6 +28,7 @@ urlpatterns = patterns('',
     url(r'^explore/', include('apps.explore.urls', namespace='explore')),
     url(r'^predict/', include('apps.predict.urls', namespace='predict')),
     url(r'^pipeline/', include('apps.pipeline.urls', namespace='pipeline')),
+    url(r'^uploads/', include('apps.uploads.urls', namespace='uploads')),
     url(r'^genes/', include('apps.mutations.urls', namespace='genes')),
     url(r'^maps/', include('apps.maps.urls', namespace='maps')),
 

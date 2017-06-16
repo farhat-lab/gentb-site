@@ -70,6 +70,9 @@ STATIC_ROOT = normpath(join(DATA_ROOT, 'static'))
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#static-url
 STATIC_URL = '/static/'
 
+# Used by resumable to store upload chunks before reconstruction
+UPLOAD_ROOT = normpath(join(DATA_ROOT, 'uploads'))
+
 # See: https://docs.djangoproject.com/en/dev/ref/contrib/staticfiles/#std:setting-STATICFILES_DIRS
 # Should only contain static files not included in apps
 STATICFILES_DIRS = []
@@ -211,11 +214,15 @@ LOGGING = {
             'backupCount': 5,
             'formatter': 'verbose'
         },
+        'console':{
+            'level':'DEBUG',
+            'class':'logging.StreamHandler',
+        },
     },
     'loggers': {
         'django.request': {
-            'handlers': ['mail_admins'],
-            'level': 'ERROR',
+            'handlers': ['mail_admins', 'console'],
+            'level': (DEBUG and 'DEBUG' or 'ERROR'),
             'propagate': True,
         },
         'django': {
@@ -239,6 +246,8 @@ LOGGING = {
         },
     },
 }
+
+
 ########## END LOGGING CONFIGURATION
 
 SPAGHETTI_SAUCE = {

@@ -20,6 +20,7 @@
 # license.
 #
 
+from django.core.urlresolvers import reverse
 from django.conf import settings
 from django.forms import TextInput
 
@@ -41,6 +42,7 @@ class UploadChooserWidget(TextInput):
 
     def render(self, name, value, attrs):
         render = super(UploadChooserWidget, self).render
+        attrs['data-resumable_url'] = reverse('uploads:resumable')
         ret = render(name, value, attrs)
         for bucket, match, label, link in self.buckets:
             kw = attrs.copy()
@@ -55,8 +57,13 @@ class UploadChooserWidget(TextInput):
         return ret
 
     class Media:
-        js = ['https://www.dropbox.com/static/api/2/dropins.js?cache=2',
-              'js/uploads/chooser.js']
+        js = [
+          # Dropbox javascript support
+          'https://www.dropbox.com/static/api/2/dropins.js?cache=2',
+          # Chunked file uploader support
+          'js/resumable.js',
+          # Generic uploader support (binds together the above)
+          'js/uploads/chooser.js']
         css = {'all': ('css/uploads/chooser.css',)}
 
 

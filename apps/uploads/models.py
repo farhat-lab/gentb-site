@@ -25,11 +25,12 @@ logger = logging.getLogger('apps.uploads.models')
 
 from urlparse import urlparse
 
+from django.conf import settings
 from django.db.models import *
 from django.utils.timezone import now
 
-from .utils import Download
-
+from .utils import Download, get_uuid
+from .files import ResumableFile
 
 class UploadFile(Model):
     name = SlugField(max_length=128)
@@ -57,6 +58,10 @@ class UploadFile(Model):
 	    size=datum['bytes'],
 	    icon=datum['icon'],
         )
+
+    def conclude_upload(self, directory, user=None):
+        self.file_directory = directory
+        return self.save()
 
     def __str__(self):
         return str(self.filename)
@@ -132,8 +137,31 @@ class DropboxUploadFile(UploadFile):
 
         except Exception as error:
             self.retrieval_error = str(error)
-
         self.save()
+
+
+class ResumableUploadFile(UploadFile):
+    upload_id = SlugField(default=get_uuid)
+    user = ForeignKey(settings.AUTH_USER_MODEL)
+
+    def conclude_upload(self, directory, user):
+        """Actually finish off this uploaded file"""
+        self.user = user
+        super(ResumableUploadFile, self).conclude_upload(directory)
+
+        # Collect the resumable pieces and conclude it
+        rfile = ResumableFile(user, {
+            'resumableTotalSize': self.size,
+            'resumableFilename': self.filename,
+        })
+        if rfile.is_complete:
+            self.retrieval_start = rfile.started
+            self.retrieval_end = rfile.ended
+            rfile.save_to(self.file_directory)
+        else:
+            self.retrieval_error = "File didn't completely upload"
+        self.save()
+
 
 UPLOADERS = dict([
     (name.replace('UploadFile', '').lower(), cls)
