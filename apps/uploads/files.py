@@ -51,7 +51,10 @@ class ResumableFile(object):
 
     def chunk_names(self):
         """Iterates over all stored chunks and yields their names."""
-        return sorted(self.storage.listdir('')[1])
+        try:
+            return sorted(self.storage.listdir('')[1])
+        except OSError:
+            return []
 
     def chunks(self):
         """Yield the contents of every chunk, FileSystemStorage.save compatible"""
