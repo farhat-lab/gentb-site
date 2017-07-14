@@ -48,8 +48,27 @@ class ProgramRunInline(admin.TabularInline):
 
 class PipelineRunAdmin(admin.ModelAdmin):
     actions = ['all_stop']
-    list_display = ('name', 'pipeline',)
+    list_display = ('name', 'created', 'pipeline', 'status', 'age')
+    search_fields = ['name', 'pipeline__name']
+    list_filter = ['pipeline']
     inlines = (ProgramRunInline,)
+
+    def status(self, obj):
+        for prog in obj.programs.all():
+            if prog.is_complete:
+                continue
+            if prog.is_error:
+                return 'Error: %s' % str(prog.program)
+            if prog.is_started:
+                return 'Running: %s' % str(prog.program)
+            if prog.is_submitted:
+                return 'Waiting: %s' % str(prog.program)
+        return "Complete"
+
+    def age(self, obj):
+        if obj.modified and obj.created:
+            return obj.modified - obj.created
+        return '-'
 
     def all_stop(modeladmin, request, queryset):
         for run in queryset.all():
