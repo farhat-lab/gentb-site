@@ -56,3 +56,10 @@ td.field input[type="checkbox"] {
   margin: 0px;
   padding: 0px;
 }
+
+.panel-body svg {
+  max-height: 80px;
+  max-width: 80px;
+  padding: 6px;
+  float: left;
+}
