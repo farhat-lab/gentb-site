@@ -67,10 +67,10 @@ class UploadView(PredictMixin, CreateView):
 
     @property
     def form_class(self):
-        for form in UploadForm.all_forms():
-            if form.my_file_type == self.kwargs['type']:
-                return form
-        raise Http404("No input type: %s" % self.kwargs['type'])
+        try:
+            return UploadForm.get_form(self.kwargs['type'])
+        except KeyError:
+            raise Http404("No input type: %s" % self.kwargs['type'])
 
     def get_initial(self):
         return {

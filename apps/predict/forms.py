@@ -88,6 +88,13 @@ class UploadForm(ModelForm):
                     work.append(child)
         return sorted(subclasses, cmp=lambda a,b: cmp(a.ordered, b.ordered))
 
+    @classmethod
+    def get_form(cls, frm_id):
+        for item in cls.all_forms():
+            if item.my_file_type == frm_id:
+                return item
+        raise KeyError("Form not found: %s" % frm_id)
+
     def save(self, **kw):
         dataset = super(UploadForm, self).save(**kw)
         if dataset.pk:
