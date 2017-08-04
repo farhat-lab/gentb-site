@@ -57,7 +57,7 @@ td.field input[type="checkbox"] {
   padding: 0px;
 }
 
-.panel-body svg {
+.cite > svg {
   max-height: 80px;
   max-width: 80px;
   padding: 6px;
