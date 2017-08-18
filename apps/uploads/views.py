@@ -27,11 +27,25 @@ import re
 
 from django.utils.decorators import method_decorator
 from django.contrib.auth.decorators import login_required
-from django.views.generic.detail import View
+from django.views.generic.detail import View, SingleObjectMixin
+from django.views.generic import RedirectView
 from django.http import HttpResponse
 from django.conf import settings
 
 from .files import ResumableFile
+from .models import UploadFile
+
+class RetryUpload(SingleObjectMixin, RedirectView):
+    model = UploadFile
+    permanent = False
+
+    def get_redirect_url(self, **kwargs):
+        upload = self.get_object()
+        upload.retrieval_start = None
+        upload.retrieval_end = None
+        upload.retrieval_error = ''
+        upload.save()
+        return self.request.GET.get('next', '/')
 
 
 class ResumableUploadView(View):

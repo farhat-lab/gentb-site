@@ -17,10 +17,17 @@
 """
 Urls to upload files to the system.
 """
-from django.conf.urls import patterns, url 
-from .views import ResumableUploadView
+from django.conf.urls import patterns, url, include 
+from .views import ResumableUploadView, RetryUpload
+
+def url_tree(regex, *urls):
+    """Quick access to stitching url patterns"""
+    return url(regex, include(patterns('', *urls)))
 
 urlpatterns = patterns('', 
     url(r'^resumable/$', ResumableUploadView.as_view(), name='resumable'),
+    url_tree(r'^(?P<pk>\d+)/',
+      url(r'^retry/$', RetryUpload.as_view(), name='retry'),
+    ),
 )
 

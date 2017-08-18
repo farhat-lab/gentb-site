@@ -10,6 +10,7 @@
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        <a href="{% url "uploads:retry" pk=file.pk %}?next={{ request.path }}" class="btn btn-success">Retry Upload</a>
       </div>
     </div>
   </div>
