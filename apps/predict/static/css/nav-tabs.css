@@ -94,6 +94,10 @@
   background-color: #d9534f;
   animation: flash-bg 0.5s alternate infinite;
 }
+.process a {
+  color: white;
+  text-decoration: none;
+}
 
 /* Notes */
 
