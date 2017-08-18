@@ -98,6 +98,9 @@
   color: white;
   text-decoration: none;
 }
+.process div.modal {
+  color: #444;
+}
 
 /* Notes */
 

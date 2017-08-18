@@ -1,3 +1,4 @@
+
     {% for strain in object.strains.all %}
       <ul class="process">
         <li class="download {% if strain.file_one.retrieval_error or strain.file_two.retrieval_error %}error{% elif strain.file_one.retrieval_end %}completed{% endif %}">
@@ -12,7 +13,12 @@
             <h4 class="short"><span class="glyphicon glyphicon-{% if file.retrieval_error %}remove{% else %}file{% endif %}"></span>
               {{ file.filename }}
             </h4>
-              {% if file.retrieval_start and not file.retrieval_end %}
+              {% if file.retrieval_error %}
+                <div class="modal fade" id="modal-{{ file.pk }}" tabindex="-1" role="dialog" aria-labelledby="Download Errors" aria-hidden="true">
+                  {% include "predict/uploadfile_error.html" %}
+                </div>
+                <h6><a data-toggle="modal" href="#" data-target="#modal-{{ file.pk }}">Error downloading!</a></h6>
+              {% elif file.retrieval_start and not file.retrieval_end %}
                 <div class="progress">
                   <div class="progress-bar progress-bar-primary" role="progressbar" aria-valuenow="{{ file.percent_done }}" aria-valuemin="0" aria-valuemax="100" style="width: {{ file.percent_done }}%">{{ file.percent_done }}%</div>
                 </div>
