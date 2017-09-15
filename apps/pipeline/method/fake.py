@@ -17,8 +17,7 @@
 """
 This allows tests to operate pipelines without doing anything.
 """
-from django.utils.timezone import now
-from .base import ManagerBase
+from .base import ManagerBase, now
 
 COMMAND, IS_SLEEP, IS_STARTED, IS_COMPLETE, RETURN_CODE, ERROR_OUT = range(6)
 

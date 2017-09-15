@@ -21,8 +21,8 @@ Gets the configured pipeline module and initialises it.
 import inspect
 
 from importlib import import_module
-from django.conf import settings
-from .base import ManagerBase
+
+from .base import ManagerBase, settings
 
 DEFAULT = 'apps.pipeline.method.shell'
 

@@ -26,10 +26,8 @@ import logging
 
 from datetime import datetime
 from subprocess import Popen, PIPE
-from django.conf import settings
-from django.utils.timezone import make_aware, get_current_timezone
 
-from .base import ManagerBase
+from .base import ManagerBase, make_aware, settings
 
 
 LSF_ENV = getattr(settings, 'PIPELINE_LSF_SOURCE', None)
@@ -99,7 +97,7 @@ class JobManager(ManagerBase):
                 data[dkey] = None
             else:
                 dt = datetime.strptime(year + data[dkey], '%Y/%m/%d-%H:%M:%S')
-                data[dkey] = make_aware(dt, get_current_timezone())
+                data[dkey] = make_aware(dt)
 
         status = {
             'RUN': 'running',

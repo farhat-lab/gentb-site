@@ -24,7 +24,19 @@ import shutil
 import tempfile
 from datetime import datetime
 
-from django.utils.timezone import make_aware, get_current_timezone
+try:
+    from django.conf import settings
+except ImportError:
+    settings = {}
+
+try:
+    from django.utils.timezone import make_aware
+    from django.utils.timezone import now
+except ImportError:
+    import pytz
+    make_aware = lambda dt: timezone.localize(value, is_dst=None)
+    from datetime import datetime
+    now = datetime.now
 
 
 class ManagerBase(object):
@@ -50,7 +62,7 @@ class ManagerBase(object):
         if os.path.isfile(fn):
             with open(fn, 'r') as fhl:
                 dt = datetime.fromtimestamp(os.path.getmtime(fn))
-                return (make_aware(dt, get_current_timezone()), fhl.read().strip())
+                return (make_aware(dt), fhl.read().strip())
         else:
             return (None, None)
 
