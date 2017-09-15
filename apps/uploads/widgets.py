@@ -62,6 +62,8 @@ class UploadChooserWidget(TextInput):
           'https://www.dropbox.com/static/api/2/dropins.js?cache=2',
           # Chunked file uploader support
           'js/resumable.js',
+          # Bootbox used in URL Uploader
+          'js/bootbox.min.js',
           # Generic uploader support (binds together the above)
           'js/uploads/chooser.js']
         css = {'all': ('css/uploads/chooser.css',)}

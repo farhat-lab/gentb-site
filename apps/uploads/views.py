@@ -82,3 +82,12 @@ class ResumableUploadView(View):
         r.process_chunk(self.request.FILES.get('file'))
         return HttpResponse()
 
+
+class UrlUploadView(View):
+    """
+    This view takes a URL and attempts to access the files that might be inside.
+    """
+    def post(self, *args, **kwargs):
+        """Get the URL and process"""
+        pass
+

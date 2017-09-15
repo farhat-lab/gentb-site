@@ -63,11 +63,13 @@ ul.uploads-files > li.complete  > progress {
   display: none;
 }
 
-label.resumable-chooser {
+label.resumable-chooser,
+label.url-chooser {
   margin: 0px 5px;
   cursor: pointer;
 }
-label.resumable-chooser .glyphicon {
+label.resumable-chooser .glyphicon,
+label.url-chooser .glyphicon {
   display: inline-block;
   width: 15px;
   height: 14px;
@@ -78,7 +80,11 @@ label.resumable-chooser .glyphicon {
   position: relative;
   top: 2px;
 }
-label.resumable-chooser.disabled {
+label.url-chooser .glyphicon {
+  margin: 0 0 0 5px;
+}
+label.resumable-chooser.disabled,
+label.url-chooser.disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
