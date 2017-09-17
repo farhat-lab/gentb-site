@@ -163,6 +163,21 @@ class ResumableUploadFile(UploadFile):
         self.save()
 
 
+class ManualUploadFile(UploadFile):
+    url = URLField()
+
+    @classmethod
+    def build_upload(cls, prefix, datum):
+        obj = super(cls, cls).build_upload(prefix, datum)
+	obj.url = datum['link']
+        return obj
+
+    def download_now(self):
+        """Get the required file using the protocol specified"""
+        if not os.path.exists(self.file_directory):
+            pass
+
+
 UPLOADERS = dict([
     (name.replace('UploadFile', '').lower(), cls)
         for (name, cls) in locals().items()
