@@ -43,6 +43,7 @@ class UploadChooserWidget(TextInput):
     def render(self, name, value, attrs):
         render = super(UploadChooserWidget, self).render
         attrs['data-resumable_url'] = reverse('uploads:resumable')
+        attrs['data-manual_url'] = reverse('uploads:manual')
         ret = render(name, value, attrs)
         for bucket, match, label, link in self.buckets:
             kw = attrs.copy()

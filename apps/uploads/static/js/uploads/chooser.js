@@ -226,7 +226,7 @@ $(window).load(function() {
     var dropbox_button = Dropbox.createChooseButton(options);
     field.parentNode.insertBefore(dropbox_button, field);
 
-    // Add URL Button
+    // Add Manual URL Button
     var url_button = $('<label for="url_upload" class="url-chooser dropbox-dropin-btn"><span class="glyphicon glyphicon-link"></span></label>');
     field.parentNode.insertBefore(url_button[0], field);
 
@@ -235,6 +235,19 @@ $(window).load(function() {
         title: "<span class='glyphicon glyphicon-link'></span> Please enter a URL where your files can be found.<br/><small>This URL can be one of a number of protocols and you should not use it unless you have been instructed to do so.</small>",
         callback: function(result){
           if(result) {
+            $.ajax({
+              type: 'post',
+              url: $(field).data('manual_url'),
+              data: {
+                'url': result,
+                'csrfmiddlewaretoken': $('input[name="csrfmiddlewaretoken"]').val(),
+              },
+              success: function (json) {
+              },
+              error: function (result) {
+                  document.write(result.responseText);
+              },
+            }); 
             console.log(result);
           }
         }
