@@ -24,12 +24,13 @@ Allow uploads to be 'chunked' and saved in descrete chunks.
 
 import os
 import re
+from ftplib import FTP, FTP_TLS
 
 from django.utils.decorators import method_decorator
 from django.contrib.auth.decorators import login_required
 from django.views.generic.detail import View, SingleObjectMixin
 from django.views.generic import RedirectView
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.conf import settings
 
 from .files import ResumableFile
@@ -83,11 +84,93 @@ class ResumableUploadView(View):
         return HttpResponse()
 
 
-class UrlUploadView(View):
+class ManualUploadView(View):
     """
     This view takes a URL and attempts to access the files that might be inside.
     """
     def post(self, *args, **kwargs):
         """Get the URL and process"""
-        pass
+        url = unicode(self.request.POST.get('url', ''))
+
+        # Support local /server/ filenames
+        if url.startswith('/'):
+            url = 'file://' + url
+
+        if '://' in url:
+            try:
+                if not self.request.user.is_authenticated():
+                    raise PermissionError("Not logged in")
+                return JsonResponse({
+                  'files': list(self.get_files(*url.split('://', 1))),
+                })
+            except PermissionError as err:
+                return HttpResponse(str(err), status=403)
+            except AttributeError as err:
+                return HttpResponse(str(err), status=404)
+
+        HttpResponse(status=404)
+
+    def get_files(self, prot, url):
+        """
+        Sort out what protocol we should be using.
+        """
+        # Put some limits on the protocol size
+        prot = prot.replace('_', '')[:5]
+        for fn in getattr(self, '_' + prot)(url):
+            yield fn
+
+    def match_file(self, filename):
+        """
+        Match a filename with any filter instructions
+        return True if it matches the filters.
+        """
+        # XXX Add filters here
+        return True
+
+    def _file(self, path):
+        """
+        Try and load a local directory name, if available.
+        """
+        # We limit users to only those with this permission
+        if not self.request.user.has_perm('uploads.add_manualuploadfile'):
+            raise PermissionError
+
+        if os.path.is_dir(path):
+            for fn in os.listdir(path):
+                full = os.path.join(path, fn)
+                if os.path.is_file(full) and self.match_file(fn):
+                    yield full
+        elif os.path.is_file(path): # Don't filter with match_file
+            yield path
+
+    def _ftp(self, url, method=FTP):
+        """
+        Load an FTP url
+        """
+        kw = {}
+        # XXX We could store the username/password and strip it out
+        # of the returned value to make it easier for us to control
+        # the ftp password (and not store it a lot of times)
+        if '@' in url:
+            (kw['user'], url) = url.split('@', 1)
+            if ':' in kw['user']:
+                (kw['user'], kw['password']) = kw['user'].rsplit(':', 1)
+        ftp = method(server, timeout=1, **kw)
+        ftp.login()
+        for name in ftp.nlst():
+            if self.match_file(name):
+                yield name
+
+    def _http(self, url, tls=True):
+        """
+        Load a HTTP url
+        """
+        raise AttributeError("Protocol not supported Yet")
+
+    def _sftp(self, url):
+        return self._ftp(url, method=FTP_TLS)
+
+    def _https(self, url):
+        return self._http(url, tls=True)
+
 
