@@ -12,12 +12,6 @@ class TBUser(models.Model):
 
     md5 = models.CharField(max_length=40, blank=True, db_index=True, help_text='auto-filled on save')
 
-    class Meta:
-        permissions = ( 
-            ("can_raw_upload", "User can upload by server url."),
-        )
-
-
     def __str__(self):
         if self.user.last_name and self.user.first_name:
             return '%s, %s' % (self.user.last_name, self.user.first_name)
