@@ -23,8 +23,8 @@
         </li>
     {% else %}
       <li class="dropdown">
-        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">{{ request.user }} <span class="caret"></span></a>
-        <ul class="dropdown-menu">
+        <a href="#" class="dropdown-toggle" data-toggle="dropdown">{{ request.user }} <span class="caret"></span></a>
+        <ul class="dropdown-menu" role="menu">
 
             <!-- my datasets page -->
             {% if request.user.datasets.count %}
@@ -42,8 +42,8 @@
       </li>
       {% if request.user.is_staff %}
         <li class="dropdown">
-          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><span class="glyphicon glyphicon-cog"></span></a>
-          <ul class="dropdown-menu">
+          <a href="#" class="dropdown-toggle" data-toggle="dropdown"><span class="glyphicon glyphicon-cog"></span></a>
+          <ul class="dropdown-menu" role="menu">
             {% if admin_link %}
             <li><a href="{{ admin_link.url }}">{{ admin_link.name }}</a></li>
             {% endif %}
@@ -53,3 +53,8 @@
         </li>
       {% endif %}
     {% endif %}
+    <script>
+$(document).ready(function() {
+      $(".dropdown-toggle").dropdown();
+});
+    </script>
