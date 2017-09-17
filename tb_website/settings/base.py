@@ -251,7 +251,7 @@ LOGGING = {
 ########## END LOGGING CONFIGURATION
 
 SPAGHETTI_SAUCE = {
-  'apps': ['mutations', 'maps', 'predict', 'pipeline'],
+  'apps': ['mutations', 'maps', 'predict', 'pipeline', 'uploads'],
   'show_fields': False,
   'exclude': {'auth':['user']}
 }
