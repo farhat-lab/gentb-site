@@ -4,11 +4,11 @@ MANAGER_DB = None
 from .local import *
 import sys
 
-sys.stderr.write("Manager Django Backend!\n")
+#sys.stderr.write("Manager Django Backend!\n")
 
 if MANAGER_DB is not None:
     for db in DATABASES:
         if db in MANAGER_DB:
-            sys.stderr.write("Updating database with MANAGER credentials.\n")
+            #sys.stderr.write("Updating database with MANAGER credentials.\n")
             DATABASES[db].update(MANAGER_DB[db])
 
