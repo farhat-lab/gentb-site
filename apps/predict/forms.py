@@ -122,7 +122,10 @@ class UploadForm(ModelForm):
                     }
                 )
                 upload_file.conclude_upload(dataset.file_directory, dataset.user)
-                setattr(strain, (bucket or 'file_one'), upload_file)
+                attr = bucket or 'file_one'
+                if not hasattr(strain, attr):
+                    raise AttributeError("File Bucket '%s' doesn't exist!" % attr)
+                setattr(strain, attr, upload_file)
                 strain.save()
 
 
