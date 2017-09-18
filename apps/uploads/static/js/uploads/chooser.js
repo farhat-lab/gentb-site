@@ -243,12 +243,17 @@ $(window).load(function() {
                 'csrfmiddlewaretoken': $('input[name="csrfmiddlewaretoken"]').val(),
               },
               success: function (json) {
+                  for(var i = 0; i < json.files.length; i++) {
+                    add_file(json.files[i], 'manual');
+                  }
+                  if(json.files.length == 0) {
+                    bootbox.alert({message: 'No matching files found'});
+                  }
               },
               error: function (result) {
-                  document.write(result.responseText);
+                  bootbox.alert({message: result.responseText});
               },
             }); 
-            console.log(result);
           }
         }
       });
