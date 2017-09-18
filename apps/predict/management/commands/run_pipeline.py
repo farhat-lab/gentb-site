@@ -11,22 +11,24 @@ class Command(BaseCommand):
     help = """Schedule each of the pipeline tasks with the shell or LSF"""
 
     def handle(self, **options):
+        skipped, errors = 0, 0
         for strain in PredictStrain.objects.filter(piperun__isnull=True):
             sys.stderr.write("Strain: %s, " % str(strain))
             dl = strain.files_status
             if dl is 0:
-                sys.stderr.write("NOT-READY [SKIP]\n")
+                skipped += 1
             elif dl is 1:
-                sys.stderr.write("DOWNLOADING [SKIP]\n")
+                skipped += 1
             elif dl is 2:
-                sys.stderr.write("DOWNLOAD ERROR [SKIP]\n")
+                errors += 1
             elif strain.run():
                 sys.stderr.write("SUBMITTED [OK]\n")
             else:
                 sys.stderr.write("SUBMITTED [ERROR]\n")
             time.sleep(1)
 
-        sys.stderr.write("\n")
+        if skipped or errors:
+            sys.stderr.write("DOWNLOADS WARN: %d SKIPPED, %d ERRORS\n" % (skipped, errors))
 
         for strain in PredictStrain.objects.filter(
                 piperun__programs__is_submitted=False,
