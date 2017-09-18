@@ -19,10 +19,12 @@ Manage uploads to django via a number of different mechanisms.
 """
 
 import os
+import json
 import inspect
 import logging
 logger = logging.getLogger('apps.uploads.models')
 
+from md5 import md5
 from urlparse import urlparse
 
 from django.conf import settings
@@ -167,6 +169,22 @@ class ManualUploadFile(UploadFile):
     url = URLField()
 
     @classmethod
+    def url_cache_filename(cls, name):
+        return os.path.join(settings.UPLOAD_CACHE_ROOT, name + '.json')
+
+    @classmethod
+    def cache_url(cls, prot, url):
+        """
+        Saves the url and protocol into a server side cache, so
+        details about a file's location isn't beamed around all the time.
+        """
+        from md5 import md5 
+        url_hash = md5(prot + '://' + url).hexdigest()
+        with open(cls.url_cache_filename(url_hash), 'w') as fhl:
+            fhl.write(json.dumps(dict(protocol=prot, url=url)))
+        return url_hash
+
+    @classmethod
     def build_upload(cls, prefix, datum):
         obj = super(cls, cls).build_upload(prefix, datum)
 	obj.url = datum['link']
@@ -175,7 +193,11 @@ class ManualUploadFile(UploadFile):
     def download_now(self):
         """Get the required file using the protocol specified"""
         if not os.path.exists(self.file_directory):
-            pass
+            os.makedirs(self.file_directory)
+
+        self.retrieval_start = now()
+        self.retrieval_error = ''
+        self.save()
 
 
 UPLOADERS = dict([

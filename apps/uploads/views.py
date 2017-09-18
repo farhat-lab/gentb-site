@@ -25,6 +25,8 @@ Allow uploads to be 'chunked' and saved in descrete chunks.
 import os
 import re
 
+from md5 import md5
+
 from django.core.exceptions import PermissionDenied
 from django.utils.decorators import method_decorator
 from django.contrib.auth.decorators import login_required
@@ -34,7 +36,7 @@ from django.http import HttpResponse, JsonResponse
 from django.conf import settings
 
 from .files import ResumableFile
-from .models import UploadFile
+from .models import UploadFile, ManualUploadFile
 from .utils import ftp
 
 class RetryUpload(SingleObjectMixin, RedirectView):
@@ -117,10 +119,7 @@ class ManualUploadView(View):
         """
         # Put some limits on the protocol size
         prot = prot.replace('_', '')[:5]
-
-        from md5 import md5
-        url_hash = md5(prot + '://' + url).hexdigest()
-        self.cache_url_details(prot, url, url_hash)
+        url_hash = ManualUploadFile.cache_url(prot, url)
 
         for (fn, size) in getattr(self, '_' + prot)(url):
             yield {
@@ -132,19 +131,16 @@ class ManualUploadView(View):
               'icon': 'https://www.dropbox.com/static/images/icons64/page_white_compressed.png',
             }
 
-    def cache_url_details(self, prot, url, key):
-        """
-        Saves the url and protocol into a server side cache, so
-        details about a file's location isn't beamed around all the time.
-        """
-        pass # XXX todo
-
     def match_file(self, filename):
         """
         Match a filename with any filter instructions
         return True if it matches the filters.
         """
-        # XXX Add filters here
+        if 'extensions' in self.request.POST:
+            for ext in self.request.POST['extensions'].split(" "):
+                if filename.endswith(ext):
+                    return True
+            return False
         return True
 
     def _file(self, path):
