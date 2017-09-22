@@ -15,15 +15,23 @@ class Download(object):
     """Wrap the requests module for django's storage backend."""
     def __init__(self, url):
         self.filepath = None
-        self.io = requests.get(url, stream=True)
+        if url.startswith('url://'):
+            # XXX open the hash file here and extract url and protocol
+            pass
+        else:
+            self.io = requests.get(url, stream=True)
 
     def is_ok(self):
         return self.io.status_code == 200
 
     def save(self, path, filename):
         """Perform the download in chunks"""
-        storage = FileSystemStorage(location=path)
-        self.filepath = join(path, storage.save(filename, self))
+        if hasattr(self, 'io'):
+            storage = FileSystemStorage(location=path)
+            self.filepath = join(path, storage.save(filename, self))
+        else:
+            # XXX Do something about the local filenames (links?)
+            pass
 
     @property
     def size(self):

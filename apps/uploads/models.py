@@ -54,12 +54,15 @@ class UploadFile(Model):
 
     @classmethod
     def build_upload(cls, prefix, datum):
-        return cls(
+        obj = cls(
 	    name=prefix,
 	    filename=datum['name'],
 	    size=datum['bytes'],
 	    icon=datum['icon'],
         )
+        if 'link' in datum:
+            obj.url = datum['link']
+        return obj
 
     def conclude_upload(self, directory, user=None):
         self.file_directory = directory
@@ -103,17 +106,6 @@ class UploadFile(Model):
         self.size = len(data)
         self.save()
 
-
-class DropboxUploadFile(UploadFile):
-    """File uploaded via Dropbox"""
-    url = URLField()
-
-    @classmethod
-    def build_upload(cls, prefix, datum):
-        obj = super(cls, cls).build_upload(prefix, datum)
-	obj.url = datum['link']
-        return obj
-
     def download_now(self):
         """
         Download the dropbox link offline.
@@ -140,6 +132,11 @@ class DropboxUploadFile(UploadFile):
         except Exception as error:
             self.retrieval_error = str(error)
         self.save()
+
+
+class DropboxUploadFile(UploadFile):
+    """File uploaded via Dropbox"""
+    url = URLField()
 
 
 class ResumableUploadFile(UploadFile):
@@ -184,20 +181,6 @@ class ManualUploadFile(UploadFile):
             fhl.write(json.dumps(dict(protocol=prot, url=url)))
         return url_hash
 
-    @classmethod
-    def build_upload(cls, prefix, datum):
-        obj = super(cls, cls).build_upload(prefix, datum)
-	obj.url = datum['link']
-        return obj
-
-    def download_now(self):
-        """Get the required file using the protocol specified"""
-        if not os.path.exists(self.file_directory):
-            os.makedirs(self.file_directory)
-
-        self.retrieval_start = now()
-        self.retrieval_error = ''
-        self.save()
 
 
 UPLOADERS = dict([

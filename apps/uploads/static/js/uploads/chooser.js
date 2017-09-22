@@ -235,8 +235,6 @@ $(window).load(function() {
         title: "<span class='glyphicon glyphicon-link'></span> Please enter a URL where your files can be found.<br/><small>This URL can be one of a number of protocols and you should not use it unless you have been instructed to do so.</small>",
         callback: function(result){
           if(result) {
-            console.log('EXT');
-            console.log($(field).data("extensions"));
             $.ajax({
               type: 'post',
               url: $(field).data('manual_url'),
