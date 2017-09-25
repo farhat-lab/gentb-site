@@ -19,8 +19,4 @@ class Migration(migrations.Migration):
             ],
             bases=('uploads.uploadfile',),
         ),
-        migrations.AlterModelTable(
-            name='uploadfile',
-            table=None,
-        ),
     ]
