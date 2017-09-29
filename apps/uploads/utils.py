@@ -1,37 +1,123 @@
 
+import json
 import uuid
-import logging
-import ftplib
-import requests
 import socket
+import ftplib
+import logging
+import requests
+import inspect
 
+from md5 import md5
 from os.path import join, getsize
+from django.conf import settings
 from django.core.files.storage import FileSystemStorage
+
+class CachedUrl(object):
+    """Saves a URL and replaces it with a hash that can be loaded server side"""
+    def __init__(self, url):
+        if url.startswith('url://'):
+            self.name = url.split('://')[-1].split('/')[0]
+        else:
+            self.name = md5(url).hexdigest()
+            (self.protocol, self.url) = url.split('://', 1)
+
+        self.loc = os.path.join(settings.UPLOAD_CACHE_ROOT, self.name + '.json')
+
+        if os.path.isfile(self.loc):
+            (url_hash, _) = self.url.split('://')[-1].split('/', 1)
+            with open(self.url_cache_filename(url_hash)) as fhl:
+                data = json.loads(fhl.read())
+                self.protocol = data['protocol']
+                self.url = data['url']
+
+    def save(self):
+        """
+        Saves the url and protocol into a server side cache, so
+        details about a file's location isn't beamed around all the time.
+        """
+        with open(self.loc, 'w') as fhl:
+            fhl.write(json.dumps(dict(protocol=self.protocol, url=self.url)))
+
+    def url(self, fn):
+        if self.url.endswith(fn):
+            self.url = self.url[:-len(fn)]
+        self.save()
+        return "url://%s" % os.path.join(self.url, fn)
+
+
+class LocalFile(object):
+    """Fake download for a local file already on the server"""
+    protocols = ['file']
+
+    def __init__(self, url):
+        self.url = url
+
+    def __iter__(self):
+        """ 
+        Try and load a local directory name, if available.
+        """
+        # We limit users to only those with this permission
+        if not self.request.user.has_perm('uploads.add_manualuploadfile'):
+            raise PermissionDenied
+
+        path = self.url
+        if os.path.isdir(path):
+            for fn in os.listdir(path):
+                full = os.path.join(path, fn) 
+                if os.path.isfile(full) and self.match_file(fn):
+                    yield (fn, os.path.getsize(full))
+
+        elif os.path.isfile(path): # Don't filter with match_file
+            yield (os.path.basename(path), os.path.getsize(path))
+
+
+class DownloadFtp(object):
+    protocols = ['ftp', 'ftps']
+
+    def __iter__(self):
+        """Load an FTP url"""
+        for (name, size) in ftp(url, tls=tls):
+            yield (name, size)
+
 
 def get_uuid():
     return uuid.uuid4().hex
 
-class Download(object):
+
+class Download(object): 
     """Wrap the requests module for django's storage backend."""
+    protocols = ['http', 'https']
+
     def __init__(self, url):
         self.filepath = None
-        if url.startswith('url://'):
-            # XXX open the hash file here and extract url and protocol
-            pass
-        else:
-            self.io = requests.get(url, stream=True)
+        self.io = requests.get(url, stream=True)
+        #requests.get(..., auth=(username, password))
+
+    def __iter__(self):
+        from bs4 import BeautifulSoup
+        # List all the files in a url request.
+        with requests.get(self.url, stream=True) as io:
+            if io.status_code == 200:
+                if io.headers.get('content-type') == 'text/html':
+                    page = BeautifulSoup(io.text, 'html.parser')
+                    page.prettify()
+                    for anchor in page.find_all('a', href=True):
+                        yield (anchor['href'], -1)
+                else:
+                    yield (self.url, io.headers['Content-length'])
+            else:
+                raise ValueError("Bad http response. ERR:%d" % io.status_code)
 
     def is_ok(self):
         return self.io.status_code == 200
 
+    def get_error(self):
+        return self.io.text
+
     def save(self, path, filename):
         """Perform the download in chunks"""
-        if hasattr(self, 'io'):
-            storage = FileSystemStorage(location=path)
-            self.filepath = join(path, storage.save(filename, self))
-        else:
-            # XXX Do something about the local filenames (links?)
-            pass
+        storage = FileSystemStorage(location=path)
+        self.filepath = join(path, storage.save(filename, self))
 
     @property
     def size(self):
@@ -54,9 +140,6 @@ def ftp(url, tls=True, **kw):
 
     """
     method = [ftplib.FTP, ftplib.FTP_TLS][bool(tls)]
-    # XXX We could store the username/password and strip it out
-    # of the returned value to make it easier for us to control
-    # the ftp password (and not store it a lot of times)
     if '@' in url:
         (kw['user'], url) = url.split('@', 1)
         if ':' in kw['user']:
@@ -85,8 +168,9 @@ def ftp(url, tls=True, **kw):
 
     try:
         ftp.cwd(path)
-    except Exception: # XXX Replace with specifics.
-        pass # Get parent of path and try again.
+    except Exception:
+        ftp.cmd(os.path.dirname(path))
+        filename = os.path.basename(path)
 
     ret = []
     def _parse_LIST(line):
@@ -100,4 +184,9 @@ def ftp(url, tls=True, **kw):
     ftp.retrlines('LIST', callback=_parse_LIST)
     return ret
 
+
+DOWNLOADERS = dict()
+for cls in locals().values():
+    if inspect.isclass(cls) and hasattr(cls, 'protocols'):
+        DOWNLOADERS.update([(prot, cls) for prot in cls.protocols])
 
