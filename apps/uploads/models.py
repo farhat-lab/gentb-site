@@ -94,7 +94,7 @@ class UploadFile(Model):
             os.unlink(self.fullpath)
 
     def save_now(self, data):
-        """Save the data as if this dropbox download was done"""
+        """Save the data as if this external download was done"""
         if not os.path.exists(self.file_directory):
             os.makedirs(self.file_directory)
 
@@ -127,7 +127,7 @@ class UploadFile(Model):
                 self.retrieval_end = now()
                 self.size = download.size
             else:
-                self.retrieval_error = download.io.text
+                self.retrieval_error = download.get_error()
 
         except Exception as error:
             self.retrieval_error = str(error)
@@ -164,22 +164,6 @@ class ResumableUploadFile(UploadFile):
 
 class ManualUploadFile(UploadFile):
     url = URLField()
-
-    @classmethod
-    def url_cache_filename(cls, name):
-        return os.path.join(settings.UPLOAD_CACHE_ROOT, name + '.json')
-
-    @classmethod
-    def cache_url(cls, prot, url):
-        """
-        Saves the url and protocol into a server side cache, so
-        details about a file's location isn't beamed around all the time.
-        """
-        from md5 import md5 
-        url_hash = md5(prot + '://' + url).hexdigest()
-        with open(cls.url_cache_filename(url_hash), 'w') as fhl:
-            fhl.write(json.dumps(dict(protocol=prot, url=url)))
-        return url_hash
 
 
 
