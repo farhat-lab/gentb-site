@@ -1,0 +1,10 @@
+
+New conf file for database details (apache conf)
+Email can use smtp orchestra
+
+Note:
+
+ * ssh into app server from orchestra: rc-app-shared01
+ * Four apache webservers exist and they proxy requests to app on port 9001
+ * Internal connection only for the proxy, so localhost wget is best way to test
+
