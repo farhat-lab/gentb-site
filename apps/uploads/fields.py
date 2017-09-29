@@ -47,10 +47,9 @@ class UploadField(Field):
 
         ret = defaultdict(list)
         for datum in raw:
-            prefix = self.get_prefix(datum['id'])
             cls = UPLOADERS[datum.get('source', '')]
-            bucket = datum['bucket']
-            ret[bucket].append(cls.build_upload(prefix, datum))
+            prefix = self.get_prefix(datum['id'])
+            ret[datum['bucket']].append(cls.build_upload(prefix, datum))
         return ret
 
     def get_prefix(self, filename):
