@@ -27,17 +27,18 @@ import re
 
 from md5 import md5
 
+from django.core.urlresolvers import reverse
 from django.core.exceptions import PermissionDenied
 from django.utils.decorators import method_decorator
 from django.contrib.auth.decorators import login_required
 from django.views.generic.detail import View, SingleObjectMixin
-from django.views.generic import RedirectView
+from django.views.generic import RedirectView, FormView
 from django.http import HttpResponse, JsonResponse
 from django.conf import settings
 
 from .files import ResumableFile
 from .models import UploadFile, ManualUploadFile
-from .utils import ftp
+from .utils import Download 
 
 class RetryUpload(SingleObjectMixin, RedirectView):
     model = UploadFile
@@ -99,6 +100,10 @@ class ManualUploadView(View):
         if url.startswith('/'):
             url = 'file://' + url
 
+        if url.startswith('file://'):
+            if not self.request.user.has_perm('uploads.add_manualuploadfile'):
+                raise PermissionDenied
+
         if '://' in url:
             try:
                 if not self.request.user.is_authenticated():
@@ -117,19 +122,16 @@ class ManualUploadView(View):
         """
         Sort out what protocol we should be using.
         """
-        # Put some limits on the protocol size
-        prot = prot.replace('_', '')[:5]
-        url_hash = ManualUploadFile.cache_url(prot, url)
-
-        for (fn, size) in getattr(self, '_' + prot)(url):
-            yield {
-              'id': md5(fn).hexdigest(),
-              'name': fn,
-              'bytes': size,
-              'link': 'url://%s/%s' % (url_hash, fn),
-              # XXX To replace with better icons
-              'icon': 'https://www.dropbox.com/static/images/icons64/page_white_compressed.png',
-            }
+        for url in Download(url).list():
+            if self.match_file(fn):
+                yield {
+                  'id': md5(str(url)).hexdigest(),
+                  'name': url.name,
+                  'bytes': url.size,
+                  'link': url.public_url(),
+                  # XXX To replace with better icons
+                  'icon': 'https://www.dropbox.com/static/images/icons64/page_white_compressed.png',
+                }
 
     def match_file(self, filename):
         """
@@ -143,37 +145,14 @@ class ManualUploadView(View):
             return False
         return True
 
-    def _file(self, path):
-        """
-        Try and load a local directory name, if available.
-        """
-        # We limit users to only those with this permission
-        if not self.request.user.has_perm('uploads.add_manualuploadfile'):
-            raise PermissionDenied
 
-        if os.path.isdir(path):
-            for fn in os.listdir(path):
-                full = os.path.join(path, fn)
-                if os.path.isfile(full) and self.match_file(fn):
-                    yield (fn, os.path.getsize(full))
 
-        elif os.path.isfile(path): # Don't filter with match_file
-            yield ('.', os.path.getsize(full))
+from .forms import TestUploadForm
+class TestUpload(FormView):
+    form_class = TestUploadForm
+    template_name = 'uploads/test_form.html'
 
-    def _ftp(self, url, tls=False):
-        """Load an FTP url"""
-        for (name, size) in ftp(url, tls=tls):
-            if self.match_file(name):
-                yield (name, size)
-
-    def _http(self, url, tls=True):
-        """Load a HTTP url"""
-        raise AttributeError("Protocol not supported Yet")
-
-    def _sftp(self, url):
-        return self._ftp(url, tls=True)
-
-    def _https(self, url):
-        return self._http(url, tls=True)
-
+    def form_valid(self, form):
+        """Because we are testing, don't redirect"""
+        return self.render_to_response({'form': form})
 
