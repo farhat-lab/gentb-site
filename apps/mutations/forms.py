@@ -65,3 +65,25 @@ class DrugForm(ModelForm):
                 pks.append(mutation.pk)
             self.cleaned_data['mutations'] = Mutation.objects.filter(pk__in=pks)
         return obj
+
+
+from apps.uploads.fields import UploadField
+
+class DataUploaderForm(Form):
+    """
+    When we want to upload new data into the maps system. This form is used.
+    """
+    name = CharField()
+    vcf_files = UploadField(extensions=['.vcf', '.vcf.gz'], required=True,
+        label="VCF Files", help_text="Variant Call Formated sequence data file"
+        ". Multiple files can be selected, one vcf file per strain to import.")
+    data_file = UploadField(extensions=['.csv', '.tsv', '.dat'], required=True,
+        label="Data File", help_text="The strain data formatted in the correct"
+        " way.")
+
+    def save(self):
+        """
+        Save the data into the importer
+        """
+        pass
+

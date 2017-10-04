@@ -20,7 +20,11 @@
 
 {% block content %}
     <div class="container">
-      <h2 class="page-header">Map <small>visualize TB resistance genotype and phenotype globally.</small></h2>
+      <h2 class="page-header">Map <small>visualize TB resistance genotype and phenotype globally.</small>
+        {% if perms.maps.can_upload_strains %}
+          <a href="{% url 'genes:upload' %}" class="btn btn-primary pull-right"><span class="glyphicon glyphicon-upload"></span></a>
+        {% endif %}
+      </h2>
 
       <div class="row">
         <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 vertical-tab-container">

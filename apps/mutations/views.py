@@ -27,6 +27,14 @@ from django.core.urlresolvers import reverse
 from apps.maps.json_view import JsonView
 
 from .models import *
+from .forms import DataUploaderForm
+
+class UploadData(FormView):
+    title = "Upload Data to GenTB Mutations Tracker"
+    parent = ("/maps/", "Maps")
+    template_name = 'mutations/upload_data.html'
+    form_class = DataUploaderForm
+
 
 class DropDownData(JsonView):
     def get_context_data(self, *kw):
