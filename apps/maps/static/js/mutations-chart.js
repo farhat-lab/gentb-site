@@ -109,6 +109,7 @@ function initialiseMutationList(data, url, args, refresh_function) {
     var input = $('<input type="text" list="mutation-list" id="snp" style="width: 300px;" data-container="body" data-toggle="tooltip" title="Select a locus to continue"/>');
     var datalist = $('<datalist id="mutation-list"></datalist>');
     var button_del = $('<a class="btn btn-danger btn-sm pull-right" id="clear-mutation">Clear</button>');
+    $('#mutations').hide();
 
     container.empty();
     container.append(select);
@@ -158,6 +159,8 @@ function initialiseMutationList(data, url, args, refresh_function) {
           .tooltip('fixTitle')
           .tooltip('show');
 
+        $('#mutations').show();
+        $('#mutation_explainer').hide();
         console.log(json.msg);
         if(json.values) {
           datalist.data('set', selected);
