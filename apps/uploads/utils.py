@@ -79,7 +79,7 @@ class ManagedUrl(object):
     def file(self, filename):
         """Gets a managed url for a sub-file portion"""
         path = os.path.join(self.url.path, filename)
-        return ManageUrl(urlunparse(self.url._replace(path=path)))
+        return ManagedUrl(urlunparse(self.url._replace(path=path)))
 
     name = property(lambda self: os.path.basename(self.path))
 
@@ -134,11 +134,11 @@ class Download(object):
         if os.path.isdir(path):
             for fn in os.listdir(path):
                 full = os.path.join(path, fn) 
-                if os.path.isfile(full) and self.match_file(fn):
+                if os.path.isfile(full):
                     ret = self.url.file(fn)
                     ret.size = os.path.getsize(full)
                     yield ret
-        elif os.path.isfile(path): # Don't filter with match_file
+        elif os.path.isfile(path):
             self.url.size = os.path.getsize(path)
             yield self.url
 

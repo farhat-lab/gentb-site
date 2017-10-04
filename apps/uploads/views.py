@@ -122,8 +122,8 @@ class ManualUploadView(View):
         """
         Sort out what protocol we should be using.
         """
-        for url in Download(url).list():
-            if self.match_file(fn):
+        for url in Download(url):
+            if self.match_file(url.name):
                 yield {
                   'id': md5(str(url)).hexdigest(),
                   'name': url.name,
