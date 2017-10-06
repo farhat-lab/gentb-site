@@ -28,6 +28,20 @@ from apps.maps.json_view import JsonView
 
 from .models import *
 from .forms import DataUploaderForm
+from .utils import info_mutation_format
+
+class MutationView(TemplateView):
+    template_name = "mutations/mutation.html"
+
+    def get_context_data(self, **kw):
+        d = super(MutationView, self).get_context_data(**kw)
+        if 'mutation' in self.request.GET:
+            (hl, rs, info) = info_mutation_format(self.request.GET['mutation'])
+            d['highlight'] = hl
+            d['regular_exp'] = rs
+            d['info'] = info
+        return d
+
 
 class UploadData(FormView):
     title = "Upload Data to GenTB Mutations Tracker"

@@ -24,7 +24,7 @@ import json
 import sys
 import time
 
-from collections import defaultdict
+from collections import defaultdict, OrderedDict
 from datetime import date
 
 MONTHS = ['', 'jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec']
@@ -37,10 +37,12 @@ DATE_FORMATS = [
    r'^(?P<dd>\d{2})(?P<mon>[A-Za-z]{3})(?P<year>\d{2,4})$',
 ]
 
-def re_match(re_list, string, index=False):
+def re_match(re_list, string, raw=False):
     """
     Match the first regular expression in a list of regular expressions
-    and return the groupdict of the matching expression. (or index if true)
+    and return the groupdict of the matching expression.
+
+    Will return raw match object and index in list if raw is True.
 
     Will replace your list items with re objects in place! for caching.
     """
@@ -52,7 +54,7 @@ def re_match(re_list, string, index=False):
             re_list[x] = r
         match = r.search(string)
         if match is not None:
-            return x if index else match.groupdict()
+            return x, match if raw else match.groupdict()
     raise ValueError("Couldn't match string: %s" % str(string))
 
 def re_match_dict(re_dict, string):
@@ -109,11 +111,7 @@ def get_date(string):
         day = int(bits['dd'])
     return date(year, month, day)
 
-def match_snp_name(name):
-    """
-    Tries to regex match the snp name and returns a dictionary of information decoded from the SNP name.
-    """
-    return re_match([
+mutation_re = [
       r'^SNP_(?P<syn>[A-Z]{1,2})_(?P<ntpos>\d+)_(?P<coding>[ACTG]\d+[ACTG])_(((?P<amino>[A-Z\*]\d+[A-Z\*])|(?P<noncode>promoter|inter))_(?P<gene>[a-zA-Z\d\-_]+)|(?P<rgene>rr[sl]))\'?$',
       r'^(?P<mode>(INS|DEL))_(?P<syn>[A-Z]{1,2})_(?P<ntpos>\d+)_(i|d|\.|i\.)?(?P<codes>[\d\-]+[ATGC]*)_((?P<noncode>promoter|inter|\d+)_)?(?P<gene>[a-z][a-zA-Z\d\-_]+?)(_(?P<amino>[A-Z\*]\d+[A-Z\*]))?\'?$',
       # These are older SNP names and should probably be converted
@@ -121,17 +119,59 @@ def match_snp_name(name):
       r'SNP_(?P<syn>[A-Z]{1,2})_(?P<ntpos>\d+)_(?P<coding>[ACTG]\d*[ACTG])_PE_(?P<gene>[a-zA-Z\d\-]+)_(?P<amino>[A-Z\*]\d+[A-Z\*])',
       r'SNP_(?P<syn>[A-Z]{1,2})_(?P<ntpos>\d+)_(?P<coding>[ACTG]\d*[ACTG])_(?P<gene>[a-zA-Z\d\-]+)_(?P<amino>[A-Z\*]\d+[A-Z\*])',
       r'SNP_(?P<syn>[A-Z]{1,2})_(?P<ntpos>\d+)_(?P<coding>[ACTG]\d*[ACTG])_(?P<gene>[a-zA-Z\d\-_]+)',
-    ], name)
+]
 
-# I - Integenic
-# P - Promoter
-# C - Coding
-# N - Noncoding
-#  D - Deletion
-#  I - Insertion
-#  F - Frame shift
-#  S - Silent or Synonymous
-#  Z - Stop codon, nonsense mutation
+def match_snp_name(name, **kw):
+    """
+    Tries to regex match the snp name and returns a dictionary of information decoded from the SNP name.
+    """
+    return re_match(mutation_re, name, **kw)
+
+SYN_A = {
+  'I': 'Integenic',
+  'P': 'Promoter',
+  'C': 'Coding',
+  'N': 'Noncoding',
+}
+SYN_B = {
+  'D': 'Deletion',
+  'I': 'Insertion',
+  'F': 'Frame shift',
+  'S': 'Silent or Synonymous',
+  'Z': 'Stop codon, nonsense mutation',
+}
+
+def info_mutation_format(mutation):
+    """
+    Processes a mutation name into a dictionary of parsing statements
+    """
+    # Process the snp name into it's parts
+    index, match = match_snp_name(mutation, raw=True)
+    items = [(name,) + match.span(name) for name in match.groupdict()]
+
+    # Sort by the start of the match
+    items.sort(key=lambda i: i[1])
+
+    # From the end to the start, hilight the text.
+    ret = []
+    snp = OrderedDict()
+    last_end = 0
+    for (name, start, end) in items:
+        if start == end:
+            continue
+        if start > last_end:
+            ret.append(mutation[last_end:start])
+        value = mutation[start:end]
+        snp[name] = value
+        ret.append('<span class="match %s">%s</span>' % (name, value))
+        last_end = end
+
+    # Prepend any remaining to the highlighted version.
+    if last_end != len(mutation) - 1:
+        ret.append(mutation[last_end:])
+
+    return ''.join(ret), mutation_re[index].pattern, snp
+
 
 def unpack_mutation_format(name):
     """
