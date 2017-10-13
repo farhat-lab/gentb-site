@@ -35,6 +35,7 @@ LINEAGE_COLS = ['spoligotype_family', 'rflp_family', 'principle_group', 'wgs_gro
 LINEAGE_NAMES= ['Spoligo', 'RFLP', 'PGG', 'WGS']
 
 class MapPage(TemplateView):
+    title = "Mutations Map"
     template_name = 'maps/map.html'
 
 class Places(JsonView, DataSlicerMixin):
