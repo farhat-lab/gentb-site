@@ -22,8 +22,9 @@ from collections import defaultdict
 
 from django.forms.fields import Field
 
-from .widgets import UploadChooserWidget
+from .widgets import UploadChooserWidget, UploadTableWidget
 from .models import UPLOADERS
+
 
 class UploadField(Field):
     widget = UploadChooserWidget
@@ -32,7 +33,7 @@ class UploadField(Field):
         self.directory = kw.pop('dir', None)
         self.extensions = kw.get('extensions', None)
         if 'widget' not in kw:
-	    kw['widget'] = UploadChooserWidget(
+	    kw['widget'] = self.widget(
                 extensions=kw.pop('extensions', None),
                 attrs=kw.pop('attrs', None),
                 buckets=kw.pop('buckets', None))
@@ -57,4 +58,17 @@ class UploadField(Field):
             if filename.endswith(ext):
                 return filename[:len(filename)-len(ext)]
         return filename
+
+
+class UploadTable(Field):
+    """
+    Select and pre-parse a csv file from the client in javascript
+    before handing it to python as an array of dictionaries (by column)
+    """
+    widget = UploadTableWidget
+
+    def __init__(self, columns, parsers=None, **kw):
+        parsers = parsers or []
+        kw['widget'] = self.widget(columns=columns, parsers=parsers)
+        super(UploadTable, self).__init__(**kw)
 

@@ -22,7 +22,7 @@
 
 from django.core.urlresolvers import reverse
 from django.conf import settings
-from django.forms import TextInput
+from django.forms import TextInput, Textarea
 
 import json
 
@@ -69,4 +69,36 @@ class UploadChooserWidget(TextInput):
           'js/uploads/chooser.js']
         css = {'all': ('css/uploads/chooser.css',)}
 
+
+class UploadTableWidget(Textarea):
+    """
+    Show an importer UI which allows a file to be selected from the user's
+    hard disk and then that file is parsed on the client side to check
+    that it matches the definition or other checks.
+    """
+    def __init__(self, columns, parsers=None):
+        kw = { 
+            'style': 'display: none',
+            'data-columns': ','.join(columns),
+            'type': 'upload-table',
+        }
+
+        # Convert list to dictionary using the columns as a guide.
+        if isinstance(parsers, (list, tuple)):
+            parsers = dict(zip(columns[:len(parsers)], parsers))
+
+        # Add each parser as it's own data attribute on the Text element.
+        for key, parser in (parsers or {}).items():
+            if parser is not None:
+		kw['data-parser_' + key] = unicode(parser)
+
+        super(UploadTableWidget, self).__init__(kw)
+
+
+    class Media:
+        js = [
+            'js/papaparse.min.js',
+            'js/uploads/importer.js',
+        ]
+        css = {'all': ('css/uploads/importer.css',)}
 

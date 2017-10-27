@@ -84,6 +84,11 @@ class UploadFile(Model):
             return os.path.getsize(self.fullpath)
         return 0
 
+    def count(self):
+        """Return a count of the number of lines in the file"""
+        with open(self.fullpath, 'r') as fhl:
+            return len(list(fhl))
+
     def percent_done(self):
         """Returns the percent done of the download"""
         return int(self.size_done() / float(self.size) * 100)
@@ -116,6 +121,9 @@ class UploadFile(Model):
         self.retrieval_start = now()
         self.retrieval_error = ''
         self.save()
+
+        if not hasattr(self, 'url'):
+            raise AttributeError("URL is a required value for downloading.")
 
         if self.filename is None:
             self.filename = self.url.split('/')[-1]
