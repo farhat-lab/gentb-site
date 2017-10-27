@@ -9,7 +9,7 @@
   </div>
 
   <div class = "row">
-    <div class="col-md-6 portfolio-item">
+    <div class="col-md-12 portfolio-item">
 
       {% if form.errors %}
         <div class="alert alert-danger" role="alert">Please check the errors below
@@ -24,7 +24,7 @@
           {{ hidden }}
         {% endfor %}
 
-        <table class="table-condensed content-to-top">
+        <table class="table-condensed content-to-top" style="width: 100%;">
           {% for field in form.visible_fields %}
             <tr>
                 <th class="text-primary" scope="row">
@@ -53,11 +53,6 @@
           </tr>
         </table>
       </form>
-    </div>
-    <div class="col-md-6 portfolio-item">
-      <h3>File Formats</h3>
-      <p>Each strain/source should have a single row in the source data csv file, a single vcf genetics file and multiple optional rows in the resistance file.</p>
-
     </div>
   </div>
 {% endblock %}

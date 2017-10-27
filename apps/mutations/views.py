@@ -49,6 +49,19 @@ class UploadData(FormView):
     template_name = 'mutations/upload_data.html'
     form_class = DataUploaderForm
 
+    def get_success_url(self):
+        return self.object.get_absolute_url()
+
+    def form_valid(self, form):
+        self.object = form.save(self.request.user)
+        return super(UploadData, self).form_valid(form)
+
+
+class UploadView(DetailView):
+    parent = ("/maps/", "Maps")
+    template_name = 'mutations/upload_status.html'
+    model = ImportSource
+
 
 class DropDownData(JsonView):
     def get_context_data(self, *kw):

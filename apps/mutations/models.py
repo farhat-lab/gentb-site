@@ -26,6 +26,7 @@ from django.core.urlresolvers import reverse
 
 from .validators import is_octal
 from apps.maps.models import Country, Place
+from apps.uploads.models import UploadFile
 
 class DrugClass(Model):
     name = CharField(max_length=64, db_index=True, unique=True)
@@ -251,11 +252,34 @@ class ImportSource(Model):
     """Track data by how it was imported."""
     name = CharField(max_length=256)
 
+    uploader = ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True)
+    uploaded = ManyToManyField(UploadFile, blank=True)
+    complete = BooleanField(default=True)
+
     created = DateTimeField(auto_now_add=True)
     updated = DateTimeField(auto_now=True)
 
     def __str__(self):
         return self.name
+
+    def get_absolute_url(self):
+        return reverse("genes:upload.view", kwargs={'pk': self.pk})
+
+    def mutations(self):
+        return StrainMutation.objects.filter(strain__importer=self)
+
+    def resistances(self):
+        if self.complete:
+            return StrainResistance.objects.filter(strain__importer=self)
+        return self.uploaded.get(name='resistances')
+
+    def sources(self):
+        if self.complete:
+            return self.strainsource_set.all()
+        return self.uploaded.get(name='sources')
+
+    def vcf_files(self):
+        return self.uploaded.filter(filename__contains='vcf')
 
 
 # db_table: gtbdr.Strainsourcedata
@@ -328,4 +352,6 @@ class StrainResistance(Model):
 
     def __str__(self):
         return "%s is %s to %s" % (str(self.strain), str(self.get_resistance_display()), str(self.drug))
+
+
 

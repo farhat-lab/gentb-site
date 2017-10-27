@@ -239,12 +239,11 @@ class defaultlist(defaultdict):
 
 
 def json_generator(f):
-    """Decorate a method that processes on row in a json filename list"""
+    """Decorate a method that processes one row in a json filename list"""
     def _inner(*args, **kw):
         args = list(args)
-        index = 0
-        if not isinstance(args[0], str) and len(args) > 1:
-            index = 1
+        # Handle cases of 'self' being the first argument
+        index = int(not isinstance(args[0], str) and len(args) > 1)
         if not os.path.isfile(args[index]):
             raise IOError("Json file '%s' Not Found" % args[index])
         with open(args[index], 'r') as fhl:
