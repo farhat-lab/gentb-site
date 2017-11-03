@@ -1,11 +1,11 @@
 #!/usr/bin/perl
 use strict;
 use warnings;
-#use DBI;
 ### script that takes in .vcf file and produces a .var file. Filters and combines the mutation data in .vcf file with data from 2 genome coordinate files (with headers) #####(one for coding ###regions and one for non coding regions) to add functional data. Also requires h37rv.fasta file (there reference genome sequence file) and ###get_seq_coord.pl script to exist ###in the same folder
 
 ### example command ./flatAnnotatorVAR.pl test.vcf qual{0-255} hetero{0-1} platypusfilter{PASS|ALL} (PASS now includes badReads output will be test.var) 
 use FindBin qw($Bin);
+
 
 $/="\n";
 $,="\t";
@@ -19,7 +19,6 @@ my $Creference = shift @ARGV;
 my $Nreference = shift @ARGV;
 my $snpfile = shift @ARGV;
 #my $refPath= shift @ARGV;
-#my $dofiltering = shift @ARGV;
 my $qualThresh = (shift@ARGV)||0;
 my $heteroThresh = (shift@ARGV)||0;
 my $platypusFilter = (shift@ARGV)||'PASS';
