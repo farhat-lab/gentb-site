@@ -49,6 +49,9 @@ class UploadFile(Model):
     retrieval_end = DateTimeField(null=True, blank=True)
     retrieval_error = TextField(blank=True)
 
+    # Customisable flag for apps that use this uploader
+    flag = CharField(max_length=4, null=True, blank=True)
+
     class Meta:
         ordering = ('-created', 'filename')
 
