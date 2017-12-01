@@ -189,21 +189,20 @@ def unpack_mutation_format(name):
 	    index = int(index)
 	except:
 	    raise ValueError("Optional sort index should be a number.")
-
-    snp = match_snp_name(name)
+    _, snp = match_snp_name(name)
     orig = snp.get('gene', None)
-
     if orig is None:
         orig = snp.get('rgene', None)
-
     if orig is None:
         raise ValueError("Can't find gene name in %s" % name)
-
     # Normalise the inter-gene seperator
     gene = orig.replace('.', '-').replace('_', '-').strip("'").strip("-")
 
     # Put the inter-gene back into the mutation name
     name = name.replace(orig, gene)
+    if index > 1:
+        # These are older formats and should be re-formatted
+        name = generate_mutation_name(**snp)
 
     if snp['syn'] == 'P':
 	if snp.get('noncode', '') != 'promoter':
@@ -215,8 +214,18 @@ def unpack_mutation_format(name):
 	return (index, 'intergenic ' + gene, name)
     elif snp['syn'] in ['CN', 'CD', 'CF', 'CI', 'CS', 'CZ', 'N', 'ND', 'NI', 'NF']:
 	return (index, gene, name)
-
     raise ValueError("Must be promoter, intergenic or CN, CD, CF, CI, CS, CZ or N, ND, NI, NF")
+
+
+def generate_mutation_name(mode='SNP', **snp):
+    snp['mode'] = mode
+    snp['gene'] = snp.get('gene', snp.pop('rgene', None))
+    snp['coding'] = snp.get('coding', snp.pop('codes', None))
+    if 'amino' in snp:
+        if 'noncode' in snp:
+            return '%(mode)s_%(syn)s_%(ntpos)s_%(coding)s_%(noncode)s_%(gene)s_%(amino)s' % snp
+        return '%(mode)s_%(syn)s_%(ntpos)s_%(coding)s_%(amino)s_%(gene)s' % snp
+    return '%(mode)s_%(syn)s_%(ntpos)s_%(coding)s_%(noncode)s_%(gene)s' % snp
 
 
 class defaultlist(defaultdict):
