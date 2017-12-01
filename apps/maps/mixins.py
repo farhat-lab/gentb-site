@@ -98,9 +98,7 @@ class DataSlicerMixin(object):
         qs = self.get_model().objects.all()
         if self.order:
             qs = qs.order_by(*self.order)
-        qs = qs.filter(reduce(and_, self.get_filters(without), Q()))
-        print qs.query
-        return qs
+        return qs.filter(reduce(and_, self.get_filters(without), Q()))
 
     def get_data(self, without=None):
         qs = self.get_queryset(without=without)
