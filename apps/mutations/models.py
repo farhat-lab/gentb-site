@@ -184,7 +184,9 @@ class Mutation(Model):
     syn = CharField(max_length=1, null=True, blank=True)
 
     mrna_ntpos = IntegerField(null=True, blank=True)
-    ecoli_aapos = IntegerField(null=True, blank=True)
+    ecoli_aapos = IntegerField(null=True, blank=True,
+        help_text="E.coli aminoacid position used in lookups when "
+        "mutations are in the genes that are in both bacteria")
 
     predictor = BooleanField(default=False,
         help_text="This mutation is selected to be used in predictions and "
