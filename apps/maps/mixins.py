@@ -18,10 +18,11 @@
 Mixins specially for the maps app
 """
 
+from operator import or_, and_
 from datetime import timedelta
 
 from django.core.serializers.json import DjangoJSONEncoder
-from django.db.models.query import ValuesQuerySet
+from django.db.models.query import Q, ValuesQuerySet
 from django.views.decorators.cache import cache_page
 from django.views.generic import View
 
@@ -75,22 +76,31 @@ class DataSlicerMixin(object):
 
     def get_filters(self, without=None):
         """Gets the filter applied to the queryset for this slice."""
-        for (key, filtr) in self.filters.items():
-            if without and filtr.startswith(without):
-                continue
+        for (key, filtrs) in self.filters.items():
             if key not in self.request.GET and key not in self.required:
                 continue
-            if filtr.endswith('__in'):
-                yield (filtr, self.request.GET.getlist(key, []))
-            else:
-                yield (filtr, self.request.GET.get(key, ''))
+            yield reduce(or_, self.get_filter_or(key, filtrs, without), Q())
+
+    def get_filter_or(self, key, filtrs, without=None):
+        """Allow alternate filters to be used, useful when searching multiples"""
+        for filtr in (as_set(filtrs) ^ (as_set(without) & as_set(filtrs))):
+            yield self.get_filter_value(key, filtr)
+
+    def get_filter_value(self, key, filtr):
+        """Get the specific value, either a list or a single value"""
+        value = self.request.GET.get(key, '')
+        if filtr.endswith('__in'):
+            value = self.request.GET.getlist(key, [])
+        return Q(**{filtr: value})
 
     def get_queryset(self, without=None):
         """Applies any filters from the request query to the given model"""
         qs = self.get_model().objects.all()
         if self.order:
             qs = qs.order_by(*self.order)
-        return qs.filter(**dict(self.get_filters(without)))
+        qs = qs.filter(reduce(and_, self.get_filters(without), Q()))
+        print qs.query
+        return qs
 
     def get_data(self, without=None):
         qs = self.get_queryset(without=without)
@@ -102,4 +112,9 @@ class DataSlicerMixin(object):
     def get_list(self, qs, column):
         """Returns a flat list for this column"""
         return qs.values_list(column, flat=True).distinct().order_by(column)
+
+def as_set(val):
+    if val is None:
+        return set()
+    return set(val) if isinstance(val, (tuple, list)) else set([val])
 
