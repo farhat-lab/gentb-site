@@ -119,12 +119,13 @@ class Mutations(JsonView, DataSlicerMixin):
     values = ['pk']
     filters = {
       'snp': 'name__icontains',
+      'ecoli': 'ecoli_aapos',
       'locus': 'gene_locus__name',
     }
 
     def get_context_data(self, **kw):
         qs = self.get_data()
-        if 'snp' not in self.request.GET:
+        if 'snp' not in self.request.GET and 'ecoli' not in self.request.GET:
             return {
                 'values': self.get_list(qs, 'gene_locus__name'),
             }
@@ -135,8 +136,20 @@ class Mutations(JsonView, DataSlicerMixin):
 
         return {
             'msg': "Found %d mutations" % qs.count(),
-            'values': self.get_list(qs, 'name'),
+            'values': list(self.get_my_list(qs)),
         }
+
+    def get_my_list(self, qs):
+        for (name, aar, eaa, aav) in self.get_list(qs, 'name',
+                'aminoacid_reference', 'ecoli_aapos', 'aminoacid_varient'):
+            if 'ecoli' in self.request.GET:
+                yield {
+                  'name': "%s+%s%s%s (E:%s)" % (name, aar, eaa, aav, eaa),
+                  'value': name,
+                }
+            else:
+                yield name
+
 
 
 class MutationView(JsonView, DataSlicerMixin):

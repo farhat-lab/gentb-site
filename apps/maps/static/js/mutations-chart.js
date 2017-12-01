@@ -106,7 +106,7 @@ function initialiseMutationList(data, url, args, refresh_function) {
     var container = $(this);
 
     var select = $('<select id="locus"></select>');
-    var input = $('<input type="text" list="mutation-list" id="snp" style="width: 300px;" data-container="body" data-toggle="tooltip" title="Select a locus to continue"/>');
+    var input = $('<input type="text" list="mutation-list" id="snp" style="width: 300px;" data-container="body" autocomplete="off" data-toggle="tooltip" title="Select a locus to continue"/>');
     var datalist = $('<datalist id="mutation-list"></datalist>');
     var button_del = $('<a class="btn btn-danger btn-sm pull-right" id="clear-mutation">Clear</button>');
     $('#mutations').hide();
@@ -144,15 +144,22 @@ function initialiseMutationList(data, url, args, refresh_function) {
       $(this).blur();
       button_del.show();
     });
+
     input.on('keyup', function(e){
       var selected = $(this).val();
-      var previous = datalist.data('set');
-      if(previous == '' || selected.indexOf(datalist) > -1) {
-        console.log("Ignoring because: " + previous);
-        return; // No update needed
-      }
+      if($(this).data('previous') == selected) { return; }
+      $(this).data('previous', selected);
       args.locus = select.val();
-      args.snp = selected;
+      delete args.snp;
+      delete args.ecoli;
+      if(selected.toLowerCase().startsWith('e:')) {
+          if(isNaN(selected.substr(2)) || selected.length <= 2) {
+              return;
+          }
+          args.ecoli = selected.substr(2);
+      } else {
+          args.snp = selected;
+      }
       $.getJSON(url, args).done(function(json) {
         input.tooltip('hide')
           .attr('data-original-title', json.msg || "Not updated")
@@ -161,13 +168,10 @@ function initialiseMutationList(data, url, args, refresh_function) {
 
         $('#mutations').show();
         $('#mutation_explainer').hide();
-        console.log(json.msg);
         if(json.values) {
-          datalist.data('set', selected);
           replaceOptions(datalist, json.values);
         } else {
           datalist.empty();
-          datalist.data('set', undefined);
         }
         // Trigger workaround to update datalist.
         input.focus();

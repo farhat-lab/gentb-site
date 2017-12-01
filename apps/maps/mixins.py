@@ -107,9 +107,13 @@ class DataSlicerMixin(object):
             qs = qs.values(*vals)
         return qs
 
-    def get_list(self, qs, column):
+    def get_list(self, qs, column, *cols):
         """Returns a flat list for this column"""
-        return qs.values_list(column, flat=True).distinct().order_by(column)
+        if cols:
+            qs = qs.values_list(column, *cols)
+        else:
+            qs = qs.values_list(column, flat=True)
+        return qs.distinct().order_by(column)
 
 def as_set(val):
     if val is None:
