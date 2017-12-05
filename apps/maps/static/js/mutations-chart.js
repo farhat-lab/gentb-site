@@ -75,9 +75,15 @@ $(document).ready(function() {
     $('#mutation-store').data('json-signal', function(data, url, args) {
       if($('#level-0').length == 0) {
         initialiseMutationList(data, url, args, function(mutations) {
-
         $.getJSON($(svg).data('json-url'), getAllTabData())
           .done(function(json) {
+              if(json.data.length > 0) {
+                $('#mutations').show();
+                $('#mutation_explainer').hide();
+              } else {
+                $('#mutations').hide();
+                $('#mutation_explainer').show();
+              }
               chartData(svg, chart, json.data);
           })
           .fail(function(jqxhr, textStatus, error) {
@@ -166,8 +172,6 @@ function initialiseMutationList(data, url, args, refresh_function) {
           .tooltip('fixTitle')
           .tooltip('show');
 
-        $('#mutations').show();
-        $('#mutation_explainer').hide();
         if(json.values) {
           replaceOptions(datalist, json.values);
         } else {
