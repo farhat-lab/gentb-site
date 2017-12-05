@@ -39,3 +39,6 @@
 .nv-legend-symbol {
   cursor: pointer;
 }
+label {
+  margin: 5px 3px 5px 10px;
+}

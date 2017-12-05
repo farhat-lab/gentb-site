@@ -111,14 +111,18 @@ function initialiseMutationList(data, url, args, refresh_function) {
   $('#mselect').each(function() {
     var container = $(this);
 
+    var label_drop = $('<label for="locus" class="text-primary">Locus:</label>');
     var select = $('<select id="locus"></select>');
-    var input = $('<input type="text" list="mutation-list" id="snp" style="width: 300px;" data-container="body" autocomplete="off" data-toggle="tooltip" title="Select a locus to continue"/>');
+    var label = $('<label for="snp" class="text-primary">Mutation:</label>');
+    var input = $('<input type="text" list="mutation-list" id="snp" style="width: 300px;" data-container="body" autocomplete="off" data-toggle="tooldesc" title="Select a locus to continue"/>');
     var datalist = $('<datalist id="mutation-list"></datalist>');
     var button_del = $('<a class="btn btn-danger btn-sm pull-right" id="clear-mutation">Clear</button>');
     $('#mutations').hide();
 
     container.empty();
+    container.append(label_drop);
     container.append(select);
+    container.append(label);
     container.append(input);
     container.append(datalist);
     container.append(button_del);
@@ -167,8 +171,7 @@ function initialiseMutationList(data, url, args, refresh_function) {
           args.snp = selected;
       }
       $.getJSON(url, args).done(function(json) {
-        input.tooltip('hide')
-          .attr('data-original-title', json.msg || "Not updated")
+        input.attr('data-original-title', json.msg || "Not updated")
           .tooltip('fixTitle')
           .tooltip('show');
 
