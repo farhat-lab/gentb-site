@@ -82,7 +82,7 @@ class DataSlicerMixin(object):
             yield reduce(or_, self.get_filter_or(key, filtrs, without), Q())
 
     def get_filter_or(self, key, filtrs, without=None):
-        """Allow alternate filters to be used, useful when searching multiples"""
+        """Allow alternate filters to be used, useful when multiple"""
         for filtr in (as_set(filtrs) ^ (as_set(without) & as_set(filtrs))):
             yield self.get_filter_value(key, filtr)
 

@@ -29,7 +29,10 @@ from django.db.models import Count
 from .mixins import JsonView, DataSlicerMixin
 from .utils import GraphData
 from .models import Country, Place
-from apps.mutations.models import Drug, StrainSource, GeneLocus, Mutation, RESISTANCE, RESISTANCE_GROUP
+from apps.mutations.models import (
+    Drug, StrainSource, GeneLocus, Mutation,
+    RESISTANCE, RESISTANCE_GROUP,
+)
 
 LINEAGE_COLS = ['spoligotype_family', 'rflp_family', 'principle_group', 'wgs_group']
 LINEAGE_NAMES= ['Spoligo', 'RFLP', 'PGG', 'WGS']
@@ -67,7 +70,11 @@ class Places(JsonView, DataSlicerMixin):
               "popupContent": country.name,
               "type": "Feature",
               "id": country.id,
-              "properties": {"name": country.name, "value": country.iso2, "values": ret[country.iso2]},
+              "properties": {
+                  "name": country.name,
+                  "value": country.iso2,
+                  "values": ret[country.iso2],
+              },
             } for country in Country.objects.filter(iso2__in=list(ret))
            ],
         }
