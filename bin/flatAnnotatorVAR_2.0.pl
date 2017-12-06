@@ -14,14 +14,14 @@ my %tt11;
 &create_translation_table11(\%tt11);
 
 my $reference = "h37rv"; #this may need to be changed in the future
-my $ref_file = shift @ARGV;
-my $Creference = shift @ARGV;
-my $Nreference = shift @ARGV;
-my $snpfile = shift @ARGV;
+my $ref_file = shift @ARGV; # ${h37rv}.fasta
+my $Creference = shift @ARGV; # ${h37rv_coding}.txt
+my $Nreference = shift @ARGV; # ${h37rv_noncoding}.txt
+my $snpfile = shift @ARGV; # ${file}.vcf
 #my $refPath= shift @ARGV;
-my $qualThresh = (shift@ARGV)||0;
-my $heteroThresh = (shift@ARGV)||0;
-my $platypusFilter = (shift@ARGV)||'PASS';
+my $qualThresh = (shift@ARGV)||0; # 15
+my $heteroThresh = (shift@ARGV)||0; # 0.1
+my $platypusFilter = (shift@ARGV)||'PASS'; # PASS
 if ($platypusFilter =~ m/pass/i) {
   $platypusFilter = 'PASS'; #NOTE: can include '|badReads|alleleBias' if using stampy/platypus pipeline as calls are conservative
 } else {
