@@ -3,16 +3,30 @@
   <i class="glyphicon glyphicon-info-sign" data-toggle="tooltip" title="See minimal list of predictive mutations in Farhat et al. AJRCCM 2016"></i>
   <i class="glyphicon glyphicon-question-sign" data-toggle="tooltip" title="DR=Drug Resistance, FN=False Negative, FP=False Positive"></i>
 
-  <div id="heatmap" class="d3heatmap"></div>
-
-  <script>
-    $(document).ready(function() {
-      var data = {"rows": null, "cols": null,
-	"matrix": {{ object.get_heatmap|jsonify }}
-      };
-      make_heatmap(data, '#heatmap', '#scatter', "click on a box on the heamap to show mutations");
-    });
-  </script>
+  <table class="heatmap">
+    {% with heatmap=object.get_heatmap %}
+      <tbody>
+      {% for row in heatmap.rows %}
+        <tr>
+          <th scope="row">{{ row.name }}</th>
+          {% for col in row.cols %}
+            <td title="<table><tr><th>Strain</th><td>{{ row.name }}</td></tr><tr><th>Drug</th><td>{{ col.name }}</td></tr><tr><th>DR Probability</th><td>{{ col.dr_probability }}</td></tr><tr><th>FP Rate</th><td>{{ col.false_positive }}</td></tr><tr><th>FN Rate</th><td>{{ col.false_negative }}</td></tr></table>" data-toggle="tooltip" data-container="body" data-html="true">
+              <div class="cell" data-scatter='{{ col.scatter|jsonify }}' data-row="{{ row.name }}" data-col="{{ col.name }}"><div style="opacity: {{ col.dr_probability }};">&nbsp;</div></div>
+            </td>
+          {% endfor %}
+        </tr>
+      {% endfor %}
+      </tbody>
+      <thead>
+        <tr>
+          <th scope="row">&nbsp;</th>
+          {% for col in heatmap.cols %}
+            <th scope="col">{{ col }}</th>
+          {% endfor %}
+        </tr>
+      </thead>
+    {% endwith %}
+  </table>
 
   <div id="scatter" class="d3graph">
     <h4 id="scatter_title"></h4>

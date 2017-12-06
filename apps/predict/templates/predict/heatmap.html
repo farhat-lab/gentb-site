@@ -10,16 +10,35 @@
   <script src="{% static 'js/jquery.min.js' %}"></script>
   <script src="{% static 'js/d3.js' %}"></script>
   <script src="{% static 'js/d3.tip.js' %}"></script>
-  <script src="{% static 'js/heatmap.js' %}"></script>
 {% endblock %}
 
 {% block content %}
 
 <div id="htmlwidget_container">
-  <div id="heatmap" style="width:960px;height:500px;" class="d3heatmap"></div>
+  <table id="heatmap" style="width: 100%;">
+    {% with heatmap=object.get_heatmap %}
+      <tbody>
+      {% for row in heatmap.rows %}
+        <tr>
+          <th scope="row">{{ row.name }}</th>
+          {% for col in row.cols %}
+            <td>{{ col }}</td>
+          {% endfor %}
+        </tr>
+      {% endfor %}
+      </tbody>
+      <thead>
+        <tr>
+          {% for col in heatmap.cols %}
+            <th scope="col">{{ col }}</th>
+          {% endfor %}
+        </tr>
+      </thead>
+    {% endwith %}
+  </table>
 </div>
 
-<script>
+<!--script>
   $(document).ready(function() {
     var data = {"rows": null, "cols": null,
       "matrix": {{ object.get_heatmap|jsonify }}
@@ -35,7 +54,7 @@
     }
     heatmap('#heatmap', data, options);
   });
-</script>
+</script-->
 
 {% endblock %}
 

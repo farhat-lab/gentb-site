@@ -122,30 +122,28 @@ class PredictDataset(TimeStampedModel):
     def get_heatmap(self):
         """Return data in the heatmap format with embeded graphs"""
         output = {
-          'dim': [self.strains.count(), 0],
           'rows': [],
           'cols': [],
-          'extra': [],
-          'data': [],
-          'scatter': {'data': {}},
         }
         for strain in self.strains.all():
+            row = {'name': strain.name, 'cols': []}
+            output['rows'].append(row)
+
             scatter = {}
-            output['scatter']['data'][strain.name] = scatter
-            output['rows'].append(strain.name)
             for drug, (dr, fp, fn, graph) in strain.get_prediction():
                 if drug not in output['cols']:
                     output['cols'].append(drug)
 
-                # XXX We should be able to match up the drug to it's column
-                # To provide correct display for non-hemoginous results.
-                #i = output['cols'].index(drug)
+                index = output['cols'].index(drug)
+                row['cols'].extend([None] * (index - len(row['cols']) + 1))
+                row['cols'][index] = {
+                  'name': drug,
+                  'scatter': graph,
+                  'false_positive': fp,
+                  'false_negative': fn,
+                  'dr_probability': dr,
+                }
 
-                output['data'].append(dr)
-                output['extra'].append([fp, fn])
-                scatter[str(len(scatter))] = graph
-
-        output['dim'] = (len(output['rows']), len(output['cols']))
         return output
 
     def user_name(self):
