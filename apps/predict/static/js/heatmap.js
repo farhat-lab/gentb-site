@@ -87,7 +87,7 @@ $(document).ready(function() {
   $('table.heatmap td div.cell').click(function() {
       $('table.heatmap .selected').removeClass('selected');
       $(this).addClass('selected');
-      $('#scatter_title').text('Mutation plot for drug='+$(this).data('row')+', strain=' + $(this).data('col'));
+      $('#scatter_title').text('Mutation plot for drug='+$(this).data('col')+', strain=' + $(this).data('row'));
       var data = $(this).data('scatter');
       scatter_plot(data);
   });
