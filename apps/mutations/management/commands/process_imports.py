@@ -1,12 +1,13 @@
 
 import sys
 import json
-from operator import or_
 from collections import defaultdict
 
 from django.core.management.base import BaseCommand, CommandError
 
-from apps.maps.models import Country, City
+from apps.maps.models import Country, Place
+from apps.maps.utils import COUNTRY_MAP, CITY_MAP
+from apps.uploads.models import UploadFile
 from apps.pipeline.models import Pipeline
 from apps.mutations.models import ImportSource
 from apps.mutations.utils import *
@@ -16,6 +17,10 @@ LOGGER = logging.getLogger('apps.mutations')
 EMPTY = {None: None, 'None': None, '': None,}
 
 class Command(BaseCommand):
+    # Caches
+    countries = EMPTY.copy()
+    places = EMPTY.copy()
+
     def handle(self, **kw):
         try:
             self.pipeline = Pipeline.objects.get(name='VCF_TO_VAR')
@@ -23,18 +28,23 @@ class Command(BaseCommand):
             sys.stderr.write("No pipeline 'VCF_TO_VAR' which is required.\n")
             return
 
-        for importer in ImportSource.objects.filter(complete=False):
-            self.import_source(importer)
+        for importer in ImportSource.objects.filter(complete=False, uploader__isnull=False):
+            try:
+                self.import_source(importer)
+            except UploadFile.DoesNotExist:
+                sys.stderr.write(" [!] Missing upload file for importer: %s\n" % str(importer))
+            except (FileNotFound, FieldsNotFound) as err:
+                sys.stderr.write(" [!] %s: %s\n" % (str(err), str(importer)))
 
     def import_source(self, importer):
         count = importer.vcf_files().count()
-        uploads = importer.vcf_files().filter(retrieval_end=True)
+        uploads = importer.vcf_files().filter(retrieval_end__isnull=False)
         notloads = count - uploads.count()
         if notloads:
             return self.importer.set_status("Waiting for %d Uploads", notloads)
 
         # Create a pipeline to process all the uploads
-        for upload in in qs:
+        for upload in uploads:
             if upload.flag != 'VCF':
                 runner = self.pipeline.run(
                     'IMPORTER%d:VCF%d' % (importer.pk, upload.pk),
@@ -48,21 +58,18 @@ class Command(BaseCommand):
         if notready:
             return importer.set_status("Waiting for %d VCF Files", notready)
 
-        for upload
         not_found = set(list(self.load_places(importer.sources().fullpath)))
         if not_found:
             # XXX TODO Check for 50KB of higher for VCF files
-            return importer.set_error(
-                 'Countries or cities missing from mapping or database: %s'\
+            raise KeyError("Countries or cities missing from mapping or database: '%s'"\
               % str(not_found))
 
 
-        self.make_all_drugs()
-
-        name = os.path.basename(path.rstrip('/'))
         self.genome = Genome.objects.get(code='H37Rv')
-        (self.importer, _) = ImportSource.objects.get_or_create(name=name)
-        locuses = dict(self.load_genes(os.path.join(path, 'genes.json'), status='Loading Genes'))
+        self.importer = importer
+
+        for fl in self.importer.vcf_files():
+        locuses = dict(self.load_genes('genes.json', status='Loading Genes'))
 
         tarset = None
         target_file = os.path.join(path, 'targets.json')
@@ -82,7 +89,7 @@ class Command(BaseCommand):
 
         return list(self.load_strains(os.path.join(path, 'sources.json'), strainres, mutations, targeting=tarset, status='Loading Strains'))
 
-    @file_generator
+    @file_generator('country',)
     def load_places(self, row):
         """Loop through all lines and look for cities and counties"""
         try:
@@ -90,11 +97,11 @@ class Command(BaseCommand):
         except Country.DoesNotExist:
             return row['country']
         try:
-            self.long_match(self.places, row['city'], Place, 'name', country=country)
+            city = long_match(CITY_MAP, self.places, row.get('city', None), Place, 'name', country=country)
         except Place.DoesNotExist:
-            return (row['city'], row['country'])
+            return (row.get('city', None), row['country'])
 
-    @file_generator
+    @file_generator()
     def load_strains(self, row, resistances, mutations, targeting=None):
         pk = str(row.pop('id'))
         res = resistances[int(pk)]
@@ -117,8 +124,12 @@ class Command(BaseCommand):
             except ValueError:
                 row['source_lab'] = 'unknown'
 
-        row['country'] = self.long_match(self.countries, row['country'])
-        row['city'] = self.long_match(self.places, row['city'])
+        row['country'] = long_match(COUNTRY_MAP, self.countries, row['country'])
+        row['city'] = long_match(CITY_MAP, self.places, row['city'])
+        if not row['country']:
+            sys.stderr.write("Rejecting row, no country.")
+            return None
+
         row['resistance_group'] = res.pop('drtype')
         row['targeting'] = targeting
         row['importer'] = self.importer
@@ -197,31 +208,5 @@ class Command(BaseCommand):
         locus.save()
         target.pop('h37rv_id')
         return targetting.regions.get_or_create(gene=locus, defaults=target)
-
-
-    def make_all_drugs(selselff):
-        DRUGS = ['rcys', 'rmoxi', 'rpas', 'rinh', 'roflx', 'rstr', 'rkan', 'reth',
-                 'ramoxclav', 'rrif', 'rlevo', 'rclof', 'rgati', 'rcap', 'rtha',
-                 'rcip', 'rclar', 'rpro', 'ramk', 'rrfb', 'remb', 'rpza', 'rlin']
-
-        drug_names = dict(
-            CYS="Cycloserine",
-            RFB="Rifabutin",
-            CLOF="Clofazimine",
-            THA="Thiacetazone",
-            MOXI="Moxifloxacin",
-            AMOXCLAV="Amoxicillin Clavulanate",
-            GATI="Gatifloxaci",
-            CLAR="Clarithromycin",
-            PRO="Prothionamide",
-            LIN="Linezolid",
-        )
-
-        for key in DRUGS:
-            key = key[1:].upper()
-            try:
-                Drug.objects.get_or_create(code=key, defaults={'name': drug_names.get(key, key)})
-            except Drug.DoesNotExist:
-                raise ValueError("Drug '%s' doesn't exist in the database." % key)
 
 
