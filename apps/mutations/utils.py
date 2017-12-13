@@ -20,6 +20,7 @@ Match and extract information from snp names and other encoded information.
 
 import os
 import re
+import csv
 import json
 import sys
 import time
@@ -246,25 +247,51 @@ class defaultlist(defaultdict):
             value = self.pop(key)
             self[value.pop(new_key)].append(value)
 
+def csv_merge(fhl, **kw):
+    """Merge csv header into each row for dictionary output"""
+    it = csv.reader(fhl, **kw)
+    header = next(it)
+    for row in it:
+        yield dict(zip(header, row))
 
-def json_generator(f):
-    """Decorate a method that processes one row in a json filename list"""
+LOADERS = {
+  'json': lambda fhl: json.loads(fhl.read()),
+  'csv': lambda fhl: csv_merge(fhl, delimiter=','),
+  'tsv': lambda fhl: csv_merge(fhl, delimiter='\t'),
+}
+
+def file_generator(f, loader=None):
+    """Decorate a method that uses csv data"""
     def _inner(*args, **kw):
-        args = list(args)
+        #args = list(args)
         # Handle cases of 'self' being the first argument
         index = int(not isinstance(args[0], str) and len(args) > 1)
-        if not os.path.isfile(args[index]):
-            raise IOError("Json file '%s' Not Found" % args[index])
-        with open(args[index], 'r') as fhl:
-            rows = json.loads(fhl.read())
+        filename = args[index]
+
+        # Make sure the file really exists.
+        if not os.path.isfile(filename):
+            raise IOError("File '%s' Not Found" % filename)
+
+        # Get the right content unpacker
+        _loader = loader or LOADERS.get(filename.rsplit('.', 1)[-1], None)
+        if _loader is None:
+            raise ValueError("Can't parse '%s' unknown type." % filename)
+
+        with open(filename, 'r') as fhl:
             if 'status' in kw:
                 rows = StatusBar(kw.pop('status'), len(rows), rows, True)
-            for row in rows:
-                args[index] = row
-                value = f(*args, **kw)
+
+            for row in _loader(fhl):
+                value = f(*(args[:index] + (row,) + args[index+1:]), **kw)
                 if value is not None:
                     yield value
     return _inner
+
+
+def json_generator(f):
+    """Decorate a method that processes one row in a json filename list"""
+    # Backwards compatible
+    return file_generator(f, 'json')
 
 def to(method):
     """Turn generators into objects, method can be a type, object or function"""
