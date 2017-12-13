@@ -26,7 +26,11 @@ import sys
 import time
 
 from collections import defaultdict, OrderedDict
+from operator import or_
 from datetime import date
+
+from django.db.models import Q
+
 
 MONTHS = ['', 'jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec']
 DATE_FORMATS = [
@@ -185,11 +189,11 @@ def unpack_mutation_format(name):
     """
     index = None
     if " " in name:
-	index, name = name.split(" ", 1)
-	try:
-	    index = int(index)
-	except:
-	    raise ValueError("Optional sort index should be a number.")
+        index, name = name.split(" ", 1)
+        try:
+            index = int(index)
+        except:
+            raise ValueError("Optional sort index should be a number.")
     _, snp = match_snp_name(name)
     orig = snp.get('gene', None)
     if orig is None:
@@ -206,15 +210,15 @@ def unpack_mutation_format(name):
         name = generate_mutation_name(**snp)
 
     if snp['syn'] == 'P':
-	if snp.get('noncode', '') != 'promoter':
-	    _ = ValueError("Promoter doesn't specify 'promoter' part in %s" % name)
-	return (index, 'promoter ' + gene, name)
+        if snp.get('noncode', '') != 'promoter':
+            _ = ValueError("Promoter doesn't specify 'promoter' part in %s" % name)
+        return (index, 'promoter ' + gene, name)
     elif snp['syn'] == 'I':
-	if snp.get('noncode', '') != 'inter':
-	    _ = ValueError("Integenic doesn't specify 'inter' part")
-	return (index, 'intergenic ' + gene, name)
+        if snp.get('noncode', '') != 'inter':
+            _ = ValueError("Integenic doesn't specify 'inter' part")
+        return (index, 'intergenic ' + gene, name)
     elif snp['syn'] in ['CN', 'CD', 'CF', 'CI', 'CS', 'CZ', 'N', 'ND', 'NI', 'NF']:
-	return (index, gene, name)
+        return (index, gene, name)
     raise ValueError("Must be promoter, intergenic or CN, CD, CF, CI, CS, CZ or N, ND, NI, NF")
 
 
@@ -233,8 +237,8 @@ class defaultlist(defaultdict):
     """Like a defaultdict, but generates a list of items with the same key"""
     def __init__(self, generator):
         super(defaultlist, self).__init__(list)
-	for key, value in generator:
-	    self[key].append(value)
+        for key, value in generator:
+            self[key].append(value)
 
     def flatten(self, method, **kw):
         """Trun each list value into a single value based on method"""
@@ -247,51 +251,71 @@ class defaultlist(defaultdict):
             value = self.pop(key)
             self[value.pop(new_key)].append(value)
 
+class FileNotFound(IOError):
+    pass
+
+class FieldsNotFound(KeyError):
+    pass
+
 def csv_merge(fhl, **kw):
     """Merge csv header into each row for dictionary output"""
     it = csv.reader(fhl, **kw)
     header = next(it)
+    yield header
     for row in it:
         yield dict(zip(header, row))
 
 LOADERS = {
-  'json': lambda fhl: json.loads(fhl.read()),
-  'csv': lambda fhl: csv_merge(fhl, delimiter=','),
-  'tsv': lambda fhl: csv_merge(fhl, delimiter='\t'),
+  'json': lambda fhl: (json.loads(fhl.read()), False),
+  'csv': lambda fhl: (csv_merge(fhl, delimiter=','), True),
+  'tsv': lambda fhl: (csv_merge(fhl, delimiter='\t'), True),
 }
 
-def file_generator(f, loader=None):
+def file_generator(*required, **kw):
     """Decorate a method that uses csv data"""
-    def _inner(*args, **kw):
-        #args = list(args)
-        # Handle cases of 'self' being the first argument
-        index = int(not isinstance(args[0], str) and len(args) > 1)
-        filename = args[index]
+    required = set(required)
+    def _check(header, filename):
+        missing = (header ^ required) & required
+        if missing:
+            raise FieldsNotFound("Fields '%s' missing from input file %s" % ("', '".join(missing), filename))
 
-        # Make sure the file really exists.
-        if not os.path.isfile(filename):
-            raise IOError("File '%s' Not Found" % filename)
+    def _outer(f):
+        def _inner(*args, **kw):
+            #args = list(args)
+            # Handle cases of 'self' being the first argument
+            index = int(not isinstance(args[0], str) and len(args) > 1)
+            filename = args[index]
 
-        # Get the right content unpacker
-        _loader = loader or LOADERS.get(filename.rsplit('.', 1)[-1], None)
-        if _loader is None:
-            raise ValueError("Can't parse '%s' unknown type." % filename)
+            # Make sure the file really exists.
+            if not os.path.isfile(filename):
+                raise FileNotFound("File '%s' Not Found" % filename)
 
-        with open(filename, 'r') as fhl:
-            if 'status' in kw:
-                rows = StatusBar(kw.pop('status'), len(rows), rows, True)
+            # Get the right content unpacker
+            _loader = LOADERS.get(kw.get('loader', None), None)\
+                   or LOADERS.get(filename.rsplit('.', 1)[-1], None)
+            if _loader is None:
+                raise TypeError("Can't parse '%s' unknown type." % filename)
 
-            for row in _loader(fhl):
-                value = f(*(args[:index] + (row,) + args[index+1:]), **kw)
-                if value is not None:
-                    yield value
-    return _inner
+            with open(filename, 'r') as fhl:
+                if 'status' in kw:
+                    rows = StatusBar(kw.pop('status'), len(rows), rows, True)
+                (rows, header) = _loader(fhl)
+                if header:
+                    _check(set(next(rows)), filename)
 
+                for row in rows:
+                    value = f(*(args[:index] + (row,) + args[index+1:]), **kw)
+                    if not header:
+                        _check(set(row), filename)
+                    if value is not None:
+                        yield value
+        return _inner
+    return _outer
 
 def json_generator(f):
     """Decorate a method that processes one row in a json filename list"""
     # Backwards compatible
-    return file_generator(f, 'json')
+    return file_generator(loader='json')(f)
 
 def to(method):
     """Turn generators into objects, method can be a type, object or function"""
@@ -341,6 +365,14 @@ def tr(data, **kw):
                 dest = dest[0]
             if dest is not None and value not in ['', u'', None, 0]:
                 data[dest] = value
+
+def long_match(MAP, d, value, model=None, *cols, **filter):
+    """Match in a model with case-insensitive multi-column matching."""
+    value = MAP.get(value, value)
+    if value not in d and model and cols:
+        query = reduce(or_, [Q(**{col+'__iexact': value}) for col in cols])
+        d[value] = model.objects.filter(**filter).get(query)
+    return d[value]
 
 
 class StatusBar(object):

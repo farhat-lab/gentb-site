@@ -20,6 +20,44 @@ Data management for maps, basic functions.
 
 from collections import defaultdict, OrderedDict
 
+COUNTRY_MAP = {
+    'unknown': None,
+    'South Afica': 'South Africa',
+    'Ivory Coast': 'CIV',
+    'Netherland': 'Netherlands',
+    'Camerun': 'Cameroon',
+    'Trinidad & Tobago': 'Trinidad and Tobago',
+    'Kazakstan': 'Kazakhstan',
+    'Kazachstan': 'Kazakhstan',
+    'Brasil': 'Brazil',
+    'Azerbaidjan': 'Azerbaijan',
+    'Marocco': 'Morocco',
+    'DR Congo': 'Democratic Republic of the Congo',
+    'RD Congo': 'Democratic Republic of the Congo',
+    'Guinea Eq.': 'Equatorial Guinea',
+    'Myanmar': 'Burma',
+    'Netherlands Antilles': 'Sint Maarten',
+    'Guinea-Conakry': 'Guinea',
+    'China /Tibet': 'Tibet',
+    'Carribean': 'Aruba',
+
+    'Philipines': 'Philippines',
+    'Comoro Islands': 'Comoros',
+    'South Korea N': 'Korea, Republic of',
+    'Korea': 'Korea, Republic of',
+}
+
+CITY_MAP = {
+    'Karakalpakstan': 'Nukus', # Region
+    'New York City': 'New York',
+    'KwaZulu-Natal': 'Durban',
+    'Kwazulu Natal': 'Durban',
+    'South Carolina': 'Columbia',
+
+    'isolated in SF Lineage3A': None,
+    'CDC': None,
+}
+
 def to(method):
     """Turn generators into objects, method can be a type, obj or function"""
     def _outer(f):
