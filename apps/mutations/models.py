@@ -284,6 +284,17 @@ class ImportSource(Model):
         return self.uploaded.filter(filename__contains='vcf')
 
 
+class Paper(Model):
+    name = CharField(max_length=128)
+    doi = CharField(max_length=255, unique=True)
+    url = URLField()
+
+    notes = TextField(null=True, blank=True)
+
+    def __str__(self):
+        return self.name
+
+
 # db_table: gtbdr.Strainsourcedata
 class StrainSource(Model):
     name    = CharField(max_length=128, db_index=True)
@@ -296,6 +307,7 @@ class StrainSource(Model):
 
     importer = ForeignKey(ImportSource, verbose_name='Import Source', null=True, blank=True)
     source_lab = CharField(max_length=100, verbose_name='Laboratory Source', db_index=True, null=True, blank=True)
+    source_paper = ForeignKey(Paper, related_name="strains", null=True, blank=True)
 
     patient_id  = CharField(max_length=16, db_index=True)
     patient_age = PositiveIntegerField(null=True, blank=True)
@@ -310,7 +322,7 @@ class StrainSource(Model):
     rflp_family     = CharField("Restriction fragment length polymorphism family", max_length=10, null=True, blank=True)
     insert_type     = IntegerField("Insertion sequence 6110 type", null=True, blank=True)
 
-    wgs_group = CharField("Whole Gnome Sequence Group", max_length=10, null=True, blank=True)
+    wgs_group = CharField("Whole Genome Sequence Group", max_length=10, null=True, blank=True)
     principle_group = IntegerField("Principle Generic Group", null=True, blank=True)
     resistance_group = CharField(max_length=4, choices=RESISTANCE_GROUP, null=True, blank=True)
     targeting = ForeignKey(TargetSet, null=True, blank=True)
@@ -354,6 +366,5 @@ class StrainResistance(Model):
 
     def __str__(self):
         return "%s is %s to %s" % (str(self.strain), str(self.get_resistance_display()), str(self.drug))
-
 
 
