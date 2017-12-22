@@ -12,3 +12,4 @@ logutils==0.3.3
 requests==2.4.1
 pytz==2015.4
 jsonfield>=1
+GitPython==2.1.7
