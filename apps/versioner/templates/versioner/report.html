@@ -1,0 +1,31 @@
+{% extends "modal.html" %}
+{% load i18n static dateextra %}
+
+{% block "title" %}{% trans "Updates Available for the Website" %}{% endblock %}
+
+{% block "dialog-body" %}
+  <div class="row">
+    <div class="col-md-12">
+      <p>{% trans "These are the updates that are currently available but are not deployed yet." %}</p>
+      {% for name, branch in branches %}
+        <h2>{{ name }}</h2>
+        <table class="table table-striped">
+          {% for commit in branch %}
+            <tr>
+              <td>{{ commit.author.name }}</td>
+              <td>{{ commit.committed_date|epoch }}</td>
+              <td>{{ commit.message }}</td>
+            </tr>
+          {% empty %}
+            <tr><td><h6>Everything up to date</h6></td></tr>
+          {% endfor %}
+        </table>
+      {% endfor %}
+    </div>
+  </div>
+{% endblock %}
+
+{% block "dialog-buttons" %}
+  <a href="mailto:{{ admin_email }}" class="btn btn-primary">Contact Us</a>
+{% endblock %}
+
