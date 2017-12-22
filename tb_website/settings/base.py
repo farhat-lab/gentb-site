@@ -131,6 +131,8 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.security.SecurityMiddleware',
     # App based middleware
     'tb_website.middleware.AutoBreadcrumbMiddleware',
+    # Support Middleware
+    'apps.versioner.middleware.VersionInformation',
 )
 ########## END MIDDLEWARE CONFIGURATION
 
@@ -163,6 +165,7 @@ SUPPORT_APPS = (
     'django_spaghetti',
     'adminsortable2',
     'autotest',
+    'apps.versioner',
 )
 
 # Apps specific for this project go here.
@@ -255,6 +258,10 @@ SPAGHETTI_SAUCE = {
   'show_fields': False,
   'exclude': {'auth':['user']}
 }
+
+VERSION_BRANCHES = [
+    ('Incoming', 'master')
+]
 
 ########## WSGI CONFIGURATION
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#wsgi-application

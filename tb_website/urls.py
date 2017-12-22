@@ -11,6 +11,8 @@ from django.views.generic import TemplateView as Tv
 from django.contrib import admin
 admin.autodiscover()
 
+from apps.versioner.views import Version
+
 urlpatterns = patterns('',
     url(r'^$', Tv.as_view(template_name='home.html'), name="home"),
     url(r'^about/$', Tv.as_view(template_name='about.html'), name="about"),
@@ -32,6 +34,7 @@ urlpatterns = patterns('',
     url(r'^genes/', include('apps.mutations.urls', namespace='genes')),
     url(r'^maps/', include('apps.maps.urls', namespace='maps')),
 
+    url(r'^version/', Version.as_view(), name='version'),
 )
 
 if settings.DEBUG:
