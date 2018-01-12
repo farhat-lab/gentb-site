@@ -366,12 +366,17 @@ def tr(data, **kw):
             if dest is not None and value not in ['', u'', None, 0]:
                 data[dest] = value
 
-def long_match(MAP, d, value, model=None, *cols, **filter):
+def long_match(MAP, d, value, model=None, default='NOP', *cols, **filter):
     """Match in a model with case-insensitive multi-column matching."""
     value = MAP.get(value, value)
     if value not in d and model and cols:
         query = reduce(or_, [Q(**{col+'__iexact': value}) for col in cols])
-        d[value] = model.objects.filter(**filter).get(query)
+        try:
+            d[value] = model.objects.filter(**filter).get(query)
+        except model.DoesNotExist:
+            if default != 'NOP':
+                return default
+            raise
     return d[value]
 
 
