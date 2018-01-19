@@ -19,10 +19,12 @@ Manage uploads to django via a number of different mechanisms.
 """
 
 import os
+import json
 import inspect
 import logging
 logger = logging.getLogger('apps.uploads.models')
 
+from md5 import md5
 from urlparse import urlparse
 
 from django.conf import settings
@@ -47,17 +49,23 @@ class UploadFile(Model):
     retrieval_end = DateTimeField(null=True, blank=True)
     retrieval_error = TextField(blank=True)
 
+    # Customisable flag for apps that use this uploader
+    flag = CharField(max_length=4, null=True, blank=True)
+
     class Meta:
         ordering = ('-created', 'filename')
 
     @classmethod
     def build_upload(cls, prefix, datum):
-        return cls(
+        obj = cls(
 	    name=prefix,
 	    filename=datum['name'],
 	    size=datum['bytes'],
 	    icon=datum['icon'],
         )
+        if 'link' in datum:
+            obj.url = datum['link']
+        return obj
 
     def conclude_upload(self, directory, user=None):
         self.file_directory = directory
@@ -79,6 +87,11 @@ class UploadFile(Model):
             return os.path.getsize(self.fullpath)
         return 0
 
+    def count(self):
+        """Return a count of the number of lines in the file"""
+        with open(self.fullpath, 'r') as fhl:
+            return len(list(fhl))
+
     def percent_done(self):
         """Returns the percent done of the download"""
         return int(self.size_done() / float(self.size) * 100)
@@ -89,7 +102,7 @@ class UploadFile(Model):
             os.unlink(self.fullpath)
 
     def save_now(self, data):
-        """Save the data as if this dropbox download was done"""
+        """Save the data as if this external download was done"""
         if not os.path.exists(self.file_directory):
             os.makedirs(self.file_directory)
 
@@ -100,17 +113,6 @@ class UploadFile(Model):
         self.retrieval_end = now()
         self.size = len(data)
         self.save()
-
-
-class DropboxUploadFile(UploadFile):
-    """File uploaded via Dropbox"""
-    url = URLField()
-
-    @classmethod
-    def build_upload(cls, prefix, datum):
-        obj = super(cls, cls).build_upload(prefix, datum)
-	obj.url = datum['link']
-        return obj
 
     def download_now(self):
         """
@@ -123,6 +125,9 @@ class DropboxUploadFile(UploadFile):
         self.retrieval_error = ''
         self.save()
 
+        if not hasattr(self, 'url'):
+            raise AttributeError("URL is a required value for downloading.")
+
         if self.filename is None:
             self.filename = self.url.split('/')[-1]
 
@@ -133,11 +138,16 @@ class DropboxUploadFile(UploadFile):
                 self.retrieval_end = now()
                 self.size = download.size
             else:
-                self.retrieval_error = download.io.text
+                self.retrieval_error = download.get_error()
 
         except Exception as error:
             self.retrieval_error = str(error)
         self.save()
+
+
+class DropboxUploadFile(UploadFile):
+    """File uploaded via Dropbox"""
+    url = URLField()
 
 
 class ResumableUploadFile(UploadFile):
@@ -166,16 +176,6 @@ class ResumableUploadFile(UploadFile):
 class ManualUploadFile(UploadFile):
     url = URLField()
 
-    @classmethod
-    def build_upload(cls, prefix, datum):
-        obj = super(cls, cls).build_upload(prefix, datum)
-	obj.url = datum['link']
-        return obj
-
-    def download_now(self):
-        """Get the required file using the protocol specified"""
-        if not os.path.exists(self.file_directory):
-            pass
 
 
 UPLOADERS = dict([

@@ -29,12 +29,16 @@ from django.db.models import Count
 from .mixins import JsonView, DataSlicerMixin
 from .utils import GraphData
 from .models import Country, Place
-from apps.mutations.models import Drug, StrainSource, GeneLocus, Mutation, RESISTANCE, RESISTANCE_GROUP
+from apps.mutations.models import (
+    Drug, StrainSource, GeneLocus, Mutation,
+    RESISTANCE, RESISTANCE_GROUP,
+)
 
 LINEAGE_COLS = ['spoligotype_family', 'rflp_family', 'principle_group', 'wgs_group']
 LINEAGE_NAMES= ['Spoligo', 'RFLP', 'PGG', 'WGS']
 
 class MapPage(TemplateView):
+    title = "Mutations Map"
     template_name = 'maps/map.html'
 
 class Places(JsonView, DataSlicerMixin):
@@ -66,7 +70,11 @@ class Places(JsonView, DataSlicerMixin):
               "popupContent": country.name,
               "type": "Feature",
               "id": country.id,
-              "properties": {"name": country.name, "value": country.iso2, "values": ret[country.iso2]},
+              "properties": {
+                  "name": country.name,
+                  "value": country.iso2,
+                  "values": ret[country.iso2],
+              },
             } for country in Country.objects.filter(iso2__in=list(ret))
            ],
         }
@@ -118,12 +126,13 @@ class Mutations(JsonView, DataSlicerMixin):
     values = ['pk']
     filters = {
       'snp': 'name__icontains',
+      'ecoli': 'ecoli_aapos',
       'locus': 'gene_locus__name',
     }
 
     def get_context_data(self, **kw):
         qs = self.get_data()
-        if 'snp' not in self.request.GET:
+        if 'snp' not in self.request.GET and 'ecoli' not in self.request.GET:
             return {
                 'values': self.get_list(qs, 'gene_locus__name'),
             }
@@ -134,8 +143,20 @@ class Mutations(JsonView, DataSlicerMixin):
 
         return {
             'msg': "Found %d mutations" % qs.count(),
-            'values': self.get_list(qs, 'name'),
+            'values': list(self.get_my_list(qs)),
         }
+
+    def get_my_list(self, qs):
+        for (name, aar, eaa, aav) in self.get_list(qs, 'name',
+                'aminoacid_reference', 'ecoli_aapos', 'aminoacid_varient'):
+            if 'ecoli' in self.request.GET:
+                yield {
+                  'name': "%s+%s%s%s (E:%s)" % (name, aar, eaa, aav, eaa),
+                  'value': name,
+                }
+            else:
+                yield name
+
 
 
 class MutationView(JsonView, DataSlicerMixin):

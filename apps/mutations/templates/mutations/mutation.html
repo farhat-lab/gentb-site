@@ -1,0 +1,51 @@
+{% extends "modal.html" %}
+{% load cachebuster %}
+
+{% block extra_css %}{{ block.super }}
+<style>
+ .match > div {
+  font-size: 150%;
+  padding: 3px;
+  margin: 6px;
+ }
+ .match {
+   text-align: left;
+   padding: 4px;
+ }
+ .match li em { padding: 1px 4px 1px 2px; }
+ .mode { background-color: #729fcf }
+ .ntpos { background-color: #8ae234 }
+ .coding { background-color: #fcaf3e }
+ .amino { background-color: #ef2929 }
+ .gene { background-color: #ad7fa8 }
+ .noncode { background-color: #ccc }
+ .syn { background-color: #eee }
+ .codes { background-color: #ef2929 }
+</style>
+{% endblock %}
+
+{% block "title" %}Parse Mutation Name{% endblock %}
+
+{% block "dialog-body" %}
+  <form method="GET">
+    <label for="id_mutation">Mutation Name:</label>
+    <div class="input-group">
+      <input autofocus="autofocus" class="form-control" id="id_mutation" maxlength="128" name="mutation" placeholder="SNP_XXXXXX" type="text" value="{{ request.GET.mutation }}">
+      <span class="input-group-btn">
+        <button class="btn btn-primary" type="submit">Parse</button>
+      </span>
+    </div>
+  </form>
+{% endblock %}
+{% block "dialog-buttons" %}
+  {% if info %}
+    <div class="match">
+      <div title="Matched rexp: '{{ regular_exp }}'">{{ highlight|safe }}</div>
+      <ol>
+        {% for name, value in info.items %}
+          <li><strong>{{ name }}:</strong> <em class="{{ name }}">{{ value }}</em></li>
+        {% endfor %}
+      </ol>
+    </div>
+  {% endif %}
+{% endblock %}

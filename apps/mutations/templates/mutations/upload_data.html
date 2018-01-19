@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% load cachebuster %}
+
+{% block content %}
+  <div class="row">
+    <div class="col-lg-12">
+      <h1 class="page-header">{{ title }}</h1>
+    </div>
+  </div>
+
+  <div class = "row">
+    <div class="col-md-12 portfolio-item">
+
+      {% if form.errors %}
+        <div class="alert alert-danger" role="alert">Please check the errors below
+          {{ form.non_field_errors }}
+        </div>
+      {% endif %}
+
+      <form enctype="multipart/form-data" method="post">
+        {% csrf_token %}
+
+        {% for hidden in form.hidden_fields %}
+          {{ hidden }}
+        {% endfor %}
+
+        <table class="table-condensed content-to-top" style="width: 100%;">
+          {% for field in form.visible_fields %}
+            <tr>
+                <th class="text-primary" scope="row">
+                  {{ field.label_tag }}
+                </th>
+                <td class="field">
+                  {{ field }}
+                    {% if field.help_text %}
+                    <p>{{ field.help_text|safe }}</p>
+                    {% endif %}
+                    {% if field.errors %}
+                    <span class="text-danger">
+                         {% for error in field.errors %}
+                          <br />{{ field.label_tag }} {{ error }}
+                        {% endfor %}
+                    </span>
+                    {% endif %}
+                 </td>
+            </tr>
+          {% endfor %}
+          <tr>
+            <td colspan="2"><hr />
+              <a href="{% url "maps:map" %}" class="btn btn-default">Cancel</a>
+              <button class="btn btn-primary pull-right">Create Importer</button>
+            </td>
+          </tr>
+        </table>
+      </form>
+    </div>
+  </div>
+{% endblock %}

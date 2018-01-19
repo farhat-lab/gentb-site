@@ -18,10 +18,14 @@
 Drop mutation for pasting in mutation information quickly.
 """
 
+import os
+
 from django.forms import *
 from django.contrib.admin.widgets import FilteredSelectMultiple
 
-from .models import Drug, GeneLocus, Mutation
+from apps.uploads.models import UploadFile
+
+from .models import Drug, GeneLocus, Mutation, ImportSource
 from .utils import unpack_mutation_format
 
 class DrugForm(ModelForm):
@@ -65,3 +69,71 @@ class DrugForm(ModelForm):
                 pks.append(mutation.pk)
             self.cleaned_data['mutations'] = Mutation.objects.filter(pk__in=pks)
         return obj
+
+
+from apps.uploads.fields import UploadField, UploadTable
+
+from django.conf import settings
+def get_uploader_dir(pk):
+    return os.path.join(settings.MEDIA_ROOT, 'm_uploads', str(pk).zfill(8))
+
+class DataUploaderForm(Form):
+    """
+    When we want to upload new data into the maps system. This form is used.
+    """
+    name = CharField()
+    sources = UploadTable(required=True,
+        help_text="Each source should contain the country and city fields so"
+              " they can be placed on the map.",
+        columns=['id',
+        "ptage", "city", "otherid", "inttype", "name", "rflpfamily", "sptype",
+        "clustername", "country", "hivstatus", "patientid",
+        "spfamily_parentstrain", "source", "setting", "ptsex", "is6110",
+        "date", "spoligo_octal", "pgg"],
+    )
+    vcf_files = UploadField(extensions=['.vcf', '.vcf.gz'], required=True,
+        label="Source VCF", help_text="Variant Call Formated sequence data"\
+        " file. Each file should be named with the [source_id].vcf or when"\
+        " ordered should match the order in the sources csv file.")
+
+    resistances = UploadTable(required=True,
+        columns=['source_id', 'drug', 'resistant'],
+        parsers=['\d+', '\w+', '[01]'])
+
+    def save(self, user):
+        """
+        Save the data into the importer
+        """
+        source = ImportSource.objects.create(
+                name=self.cleaned_data.get('name'),
+                uploader=user,
+                complete=False,
+            )
+        source.save()
+
+        path = get_uploader_dir(source.pk)
+        if not os.path.isdir(path):
+            os.makedirs(path)
+
+        files = list(self.cleaned_data['vcf_files'].values()[0])
+        for upload_file in files:
+            upload_file.conclude_upload(path, user)
+
+        # Create a file for the tb_source csv and resistances list csv
+        tb_sources = UploadFile.objects.create(
+            name='sources', filename='sources.csv',
+            file_directory=path)
+        tb_sources.save_now(self.cleaned_data['sources'])
+        files.append(tb_sources)
+
+        resistances = UploadFile.objects.create(
+            name='resistances', filename='resistances.csv',
+            file_directory=path)
+        resistances.save_now(self.cleaned_data['resistances'])
+        files.append(resistances)
+
+        source.uploaded = files
+        source.save()
+        return source
+
+

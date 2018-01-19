@@ -1,0 +1,26 @@
+
+table.upload-table {
+  width: 100%;
+}
+
+.upload-table > thead > tr > th {
+  border: 1px solid #ccc;
+  background-color: #eee;
+  padding: 5px;
+  text-align: center;
+}
+
+.upload-table > tbody > tr.click > td {
+  border: 1px solid #ccc;
+  padding: 15px;
+  text-align: center;
+}
+
+.upload-table > tbody > tr.click input {
+  display: none;
+}
+
+.upload-table > tbody > tr > td {
+  padding: 4px;
+  border: 1px solid #eee;
+}

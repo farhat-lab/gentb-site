@@ -72,6 +72,7 @@ STATIC_URL = '/static/'
 
 # Used by resumable to store upload chunks before reconstruction
 UPLOAD_ROOT = normpath(join(DATA_ROOT, 'uploads'))
+UPLOAD_CACHE_ROOT = normpath(join(DATA_ROOT, 'uploads', 'url_caches'))
 
 # See: https://docs.djangoproject.com/en/dev/ref/contrib/staticfiles/#std:setting-STATICFILES_DIRS
 # Should only contain static files not included in apps

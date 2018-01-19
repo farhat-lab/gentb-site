@@ -15,21 +15,15 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 """
-Urls to upload files to the system.
+Any useful django forms. Forn now just the testing form.
 """
-from django.conf.urls import patterns, url, include 
-from .views import ResumableUploadView, RetryUpload, ManualUploadView, TestUpload
 
-def url_tree(regex, *urls):
-    """Quick access to stitching url patterns"""
-    return url(regex, include(patterns('', *urls)))
+from django.forms import Form
 
-urlpatterns = patterns('', 
-    url(r'^test/$', TestUpload.as_view(), name='test'),
-    url(r'^resumable/$', ResumableUploadView.as_view(), name='resumable'),
-    url(r'^manual/$', ManualUploadView.as_view(), name='manual'),
-    url_tree(r'^(?P<pk>\d+)/',
-      url(r'^retry/$', RetryUpload.as_view(), name='retry'),
-    ),
-)
+from .fields import UploadField
+
+class TestUploadForm(Form):
+    test_files = UploadField(
+        extensions=['.vcf'],
+    )   
 

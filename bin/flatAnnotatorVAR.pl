@@ -1,11 +1,11 @@
 #!/usr/bin/perl
 use strict;
 use warnings;
-#use DBI;
 ### script that takes in .vcf file and produces a .var file. Filters and combines the mutation data in .vcf file with data from 2 genome coordinate files (with headers) #####(one for coding ###regions and one for non coding regions) to add functional data. Also requires h37rv.fasta file (there reference genome sequence file) and ###get_seq_coord.pl script to exist ###in the same folder
 
 ### example command ./flatAnnotatorVAR.pl test.vcf qual{0-255} hetero{0-1} platypusfilter{PASS|ALL} (PASS now includes badReads output will be test.var) 
 use FindBin qw($Bin);
+
 
 $/="\n";
 $,="\t";
@@ -15,11 +15,10 @@ my %tt11;
 
 my $reference = "h37rv"; #this may need to be changed in the future
 my $ref_file = shift @ARGV;
-my $Creference = shift @ARGV; #"$Bin/$reference"."_genome_summary.txt";
-my $Nreference = shift @ARGV; #"$Bin/$reference"."_noncoding_summary.txt";
+my $Creference = shift @ARGV;
+my $Nreference = shift @ARGV;
 my $snpfile = shift @ARGV;
 #my $refPath= shift @ARGV;
-#my $dofiltering = shift @ARGV;
 my $qualThresh = (shift@ARGV)||0;
 my $heteroThresh = (shift@ARGV)||0;
 my $platypusFilter = (shift@ARGV)||'PASS';
@@ -72,6 +71,7 @@ while (<REF>) {
  } else {
   $start{$w[$index{"name"}]}=$w[$index{"start"}];
   $end{$w[$index{"name"}]}=$w[$index{"end"}];
+  $w[$index{"symbol"}] =~ s/_/-/g;
   $symbol{$w[$index{"name"}]}=$w[$index{"symbol"}]||'\N';
   $strand{$w[$index{"name"}]}=$w[$index{"strand"}];
   $desc{$w[$index{"name"}]}=$w[$index{"desc"}];
@@ -113,6 +113,7 @@ while (<REF>) {
   $end{$w[$index{"name"}]}=$w[$index{"end"}];
   $type{$w[$index{"name"}]}=$w[$index{"type"}]||"";
   $strand{$w[$index{"name"}]}=$w[$index{"strand"}];
+  $w[$index{"desc"}] =~ s/_/-/g;
   $desc{$w[$index{"name"}]}=$w[$index{"desc"}];
   $geneBefore{$w[$index{"name"}]}=$w[$index{"geneBefore"}]; #print STDERR $w[$index{"geneBefore"}]; 
   $geneAfter{$w[$index{"name"}]}=$w[$index{"geneAfter"}];
@@ -332,11 +333,10 @@ sub check_synonymous{
   $aaref.=$tt11{join('',(@bases)[($codnmbr-1)*3..(($codnmbr-1)*3+2)])};
   $aavar.=$tt11{join('',(@altbases)[($codnmbr-1)*3..(($codnmbr-1)*3+2)])};
  }
- $aasnp = $aaref.$aapos.$aavar; #general variable
  if ($aaref eq $aavar) {
-  return 1; #synonymous
+  return ('S', $aaref, $aavar); #synonymous
  }else{
-  return 0; #non-synonymous
+  return ('N', $aaref, $aavar); #non-synonymous
  }
 }
 
@@ -439,10 +439,8 @@ sub annotcoding{
    $altcodon=&revcomp($altcodon);
   }
   #print STDERR "altcodon is $altcodon , codon is $codon, $codpos, $allele, $checkallele\n";
-  if (&check_synonymous($codon,$aapos,$altcodon)) { ##assigns aasnp variable
-   $sns = 'S'; #synonymous
-  }else{
-   $sns = 'N'; #non-synonymous
+  ($sns, $aaref, $aavar) = &check_synonymous($codon,$aapos,$altcodon);
+  $aasnp = $aaref.$aapos.$aavar; #general variable
    if ($aasnp =~ /\*/) {
 	$sns = 'Z';
    }

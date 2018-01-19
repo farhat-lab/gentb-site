@@ -20,12 +20,17 @@ Match and extract information from snp names and other encoded information.
 
 import os
 import re
+import csv
 import json
 import sys
 import time
 
-from collections import defaultdict
+from collections import defaultdict, OrderedDict
+from operator import or_
 from datetime import date
+
+from django.db.models import Q
+
 
 MONTHS = ['', 'jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec']
 DATE_FORMATS = [
@@ -37,10 +42,12 @@ DATE_FORMATS = [
    r'^(?P<dd>\d{2})(?P<mon>[A-Za-z]{3})(?P<year>\d{2,4})$',
 ]
 
-def re_match(re_list, string, index=False):
+def re_match(re_list, string, raw=False):
     """
     Match the first regular expression in a list of regular expressions
-    and return the groupdict of the matching expression. (or index if true)
+    and return the groupdict of the matching expression.
+
+    Will return raw match object and index in list if raw is True.
 
     Will replace your list items with re objects in place! for caching.
     """
@@ -52,7 +59,7 @@ def re_match(re_list, string, index=False):
             re_list[x] = r
         match = r.search(string)
         if match is not None:
-            return x if index else match.groupdict()
+            return x, match if raw else match.groupdict()
     raise ValueError("Couldn't match string: %s" % str(string))
 
 def re_match_dict(re_dict, string):
@@ -109,11 +116,7 @@ def get_date(string):
         day = int(bits['dd'])
     return date(year, month, day)
 
-def match_snp_name(name):
-    """
-    Tries to regex match the snp name and returns a dictionary of information decoded from the SNP name.
-    """
-    return re_match([
+mutation_re = [
       r'^SNP_(?P<syn>[A-Z]{1,2})_(?P<ntpos>\d+)_(?P<coding>[ACTG]\d+[ACTG])_(((?P<amino>[A-Z\*]\d+[A-Z\*])|(?P<noncode>promoter|inter))_(?P<gene>[a-zA-Z\d\-_]+)|(?P<rgene>rr[sl]))\'?$',
       r'^(?P<mode>(INS|DEL))_(?P<syn>[A-Z]{1,2})_(?P<ntpos>\d+)_(i|d|\.|i\.)?(?P<codes>[\d\-]+[ATGC]*)_((?P<noncode>promoter|inter|\d+)_)?(?P<gene>[a-z][a-zA-Z\d\-_]+?)(_(?P<amino>[A-Z\*]\d+[A-Z\*]))?\'?$',
       # These are older SNP names and should probably be converted
@@ -121,17 +124,59 @@ def match_snp_name(name):
       r'SNP_(?P<syn>[A-Z]{1,2})_(?P<ntpos>\d+)_(?P<coding>[ACTG]\d*[ACTG])_PE_(?P<gene>[a-zA-Z\d\-]+)_(?P<amino>[A-Z\*]\d+[A-Z\*])',
       r'SNP_(?P<syn>[A-Z]{1,2})_(?P<ntpos>\d+)_(?P<coding>[ACTG]\d*[ACTG])_(?P<gene>[a-zA-Z\d\-]+)_(?P<amino>[A-Z\*]\d+[A-Z\*])',
       r'SNP_(?P<syn>[A-Z]{1,2})_(?P<ntpos>\d+)_(?P<coding>[ACTG]\d*[ACTG])_(?P<gene>[a-zA-Z\d\-_]+)',
-    ], name)
+]
 
-# I - Integenic
-# P - Promoter
-# C - Coding
-# N - Noncoding
-#  D - Deletion
-#  I - Insertion
-#  F - Frame shift
-#  S - Silent or Synonymous
-#  Z - Stop codon, nonsense mutation
+def match_snp_name(name, **kw):
+    """
+    Tries to regex match the snp name and returns a dictionary of information decoded from the SNP name.
+    """
+    return re_match(mutation_re, name, **kw)
+
+SYN_A = {
+  'I': 'Integenic',
+  'P': 'Promoter',
+  'C': 'Coding',
+  'N': 'Noncoding',
+}
+SYN_B = {
+  'D': 'Deletion',
+  'I': 'Insertion',
+  'F': 'Frame shift',
+  'S': 'Silent or Synonymous',
+  'Z': 'Stop codon, nonsense mutation',
+}
+
+def info_mutation_format(mutation):
+    """
+    Processes a mutation name into a dictionary of parsing statements
+    """
+    # Process the snp name into it's parts
+    index, match = match_snp_name(mutation, raw=True)
+    items = [(name,) + match.span(name) for name in match.groupdict()]
+
+    # Sort by the start of the match
+    items.sort(key=lambda i: i[1])
+
+    # From the end to the start, hilight the text.
+    ret = []
+    snp = OrderedDict()
+    last_end = 0
+    for (name, start, end) in items:
+        if start == end:
+            continue
+        if start > last_end:
+            ret.append(mutation[last_end:start])
+        value = mutation[start:end]
+        snp[name] = value
+        ret.append('<span class="match %s">%s</span>' % (name, value))
+        last_end = end
+
+    # Prepend any remaining to the highlighted version.
+    if last_end != len(mutation) - 1:
+        ret.append(mutation[last_end:])
+
+    return ''.join(ret), mutation_re[index].pattern, snp
+
 
 def unpack_mutation_format(name):
     """
@@ -144,47 +189,56 @@ def unpack_mutation_format(name):
     """
     index = None
     if " " in name:
-	index, name = name.split(" ", 1)
-	try:
-	    index = int(index)
-	except:
-	    raise ValueError("Optional sort index should be a number.")
-
-    snp = match_snp_name(name)
+        index, name = name.split(" ", 1)
+        try:
+            index = int(index)
+        except:
+            raise ValueError("Optional sort index should be a number.")
+    _, snp = match_snp_name(name)
     orig = snp.get('gene', None)
-
     if orig is None:
         orig = snp.get('rgene', None)
-
     if orig is None:
         raise ValueError("Can't find gene name in %s" % name)
-
     # Normalise the inter-gene seperator
     gene = orig.replace('.', '-').replace('_', '-').strip("'").strip("-")
 
     # Put the inter-gene back into the mutation name
     name = name.replace(orig, gene)
+    if index > 1:
+        # These are older formats and should be re-formatted
+        name = generate_mutation_name(**snp)
 
     if snp['syn'] == 'P':
-	if snp.get('noncode', '') != 'promoter':
-	    _ = ValueError("Promoter doesn't specify 'promoter' part in %s" % name)
-	return (index, 'promoter ' + gene, name)
+        if snp.get('noncode', '') != 'promoter':
+            _ = ValueError("Promoter doesn't specify 'promoter' part in %s" % name)
+        return (index, 'promoter ' + gene, name)
     elif snp['syn'] == 'I':
-	if snp.get('noncode', '') != 'inter':
-	    _ = ValueError("Integenic doesn't specify 'inter' part")
-	return (index, 'intergenic ' + gene, name)
+        if snp.get('noncode', '') != 'inter':
+            _ = ValueError("Integenic doesn't specify 'inter' part")
+        return (index, 'intergenic ' + gene, name)
     elif snp['syn'] in ['CN', 'CD', 'CF', 'CI', 'CS', 'CZ', 'N', 'ND', 'NI', 'NF']:
-	return (index, gene, name)
-
+        return (index, gene, name)
     raise ValueError("Must be promoter, intergenic or CN, CD, CF, CI, CS, CZ or N, ND, NI, NF")
+
+
+def generate_mutation_name(mode='SNP', **snp):
+    snp['mode'] = mode
+    snp['gene'] = snp.get('gene', snp.pop('rgene', None))
+    snp['coding'] = snp.get('coding', snp.pop('codes', None))
+    if 'amino' in snp:
+        if 'noncode' in snp:
+            return '%(mode)s_%(syn)s_%(ntpos)s_%(coding)s_%(noncode)s_%(gene)s_%(amino)s' % snp
+        return '%(mode)s_%(syn)s_%(ntpos)s_%(coding)s_%(amino)s_%(gene)s' % snp
+    return '%(mode)s_%(syn)s_%(ntpos)s_%(coding)s_%(noncode)s_%(gene)s' % snp
 
 
 class defaultlist(defaultdict):
     """Like a defaultdict, but generates a list of items with the same key"""
     def __init__(self, generator):
         super(defaultlist, self).__init__(list)
-	for key, value in generator:
-	    self[key].append(value)
+        for key, value in generator:
+            self[key].append(value)
 
     def flatten(self, method, **kw):
         """Trun each list value into a single value based on method"""
@@ -197,26 +251,71 @@ class defaultlist(defaultdict):
             value = self.pop(key)
             self[value.pop(new_key)].append(value)
 
+class FileNotFound(IOError):
+    pass
+
+class FieldsNotFound(KeyError):
+    pass
+
+def csv_merge(fhl, **kw):
+    """Merge csv header into each row for dictionary output"""
+    it = csv.reader(fhl, **kw)
+    header = next(it)
+    yield header
+    for row in it:
+        yield dict(zip(header, row))
+
+LOADERS = {
+  'json': lambda fhl: (json.loads(fhl.read()), False),
+  'csv': lambda fhl: (csv_merge(fhl, delimiter=','), True),
+  'tsv': lambda fhl: (csv_merge(fhl, delimiter='\t'), True),
+}
+
+def file_generator(*required, **kw):
+    """Decorate a method that uses csv data"""
+    required = set(required)
+    def _check(header, filename):
+        missing = (header ^ required) & required
+        if missing:
+            raise FieldsNotFound("Fields '%s' missing from input file %s" % ("', '".join(missing), filename))
+
+    def _outer(f):
+        def _inner(*args, **kw):
+            #args = list(args)
+            # Handle cases of 'self' being the first argument
+            index = int(not isinstance(args[0], str) and len(args) > 1)
+            filename = args[index]
+
+            # Make sure the file really exists.
+            if not os.path.isfile(filename):
+                raise FileNotFound("File '%s' Not Found" % filename)
+
+            # Get the right content unpacker
+            _loader = LOADERS.get(kw.get('loader', None), None)\
+                   or LOADERS.get(filename.rsplit('.', 1)[-1], None)
+            if _loader is None:
+                raise TypeError("Can't parse '%s' unknown type." % filename)
+
+            with open(filename, 'r') as fhl:
+                if 'status' in kw:
+                    rows = StatusBar(kw.pop('status'), len(rows), rows, True)
+                (rows, header) = _loader(fhl)
+                if header:
+                    _check(set(next(rows)), filename)
+
+                for row in rows:
+                    value = f(*(args[:index] + (row,) + args[index+1:]), **kw)
+                    if not header:
+                        _check(set(row), filename)
+                    if value is not None:
+                        yield value
+        return _inner
+    return _outer
 
 def json_generator(f):
-    """Decorate a method that processes on row in a json filename list"""
-    def _inner(*args, **kw):
-        args = list(args)
-        index = 0
-        if not isinstance(args[0], str) and len(args) > 1:
-            index = 1
-        if not os.path.isfile(args[index]):
-            raise IOError("Json file '%s' Not Found" % args[index])
-        with open(args[index], 'r') as fhl:
-            rows = json.loads(fhl.read())
-            if 'status' in kw:
-                rows = StatusBar(kw.pop('status'), len(rows), rows, True)
-            for row in rows:
-                args[index] = row
-                value = f(*args, **kw)
-                if value is not None:
-                    yield value
-    return _inner
+    """Decorate a method that processes one row in a json filename list"""
+    # Backwards compatible
+    return file_generator(loader='json')(f)
 
 def to(method):
     """Turn generators into objects, method can be a type, object or function"""
@@ -266,6 +365,19 @@ def tr(data, **kw):
                 dest = dest[0]
             if dest is not None and value not in ['', u'', None, 0]:
                 data[dest] = value
+
+def long_match(MAP, d, value, model=None, default='NOP', *cols, **filter):
+    """Match in a model with case-insensitive multi-column matching."""
+    value = MAP.get(value, value)
+    if value not in d and model and cols:
+        query = reduce(or_, [Q(**{col+'__iexact': value}) for col in cols])
+        try:
+            d[value] = model.objects.filter(**filter).get(query)
+        except model.DoesNotExist:
+            if default != 'NOP':
+                return default
+            raise
+    return d[value]
 
 
 class StatusBar(object):

@@ -26,7 +26,6 @@ class Migration(migrations.Migration):
             ],
             options={
                 'ordering': ('-created', 'filename'),
-                'db_table': 'uploads_uploadedfile',
             },
         ),
     ]

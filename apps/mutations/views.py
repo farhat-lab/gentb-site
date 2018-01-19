@@ -27,6 +27,41 @@ from django.core.urlresolvers import reverse
 from apps.maps.json_view import JsonView
 
 from .models import *
+from .forms import DataUploaderForm
+from .utils import info_mutation_format
+
+class MutationView(TemplateView):
+    template_name = "mutations/mutation.html"
+
+    def get_context_data(self, **kw):
+        d = super(MutationView, self).get_context_data(**kw)
+        if 'mutation' in self.request.GET:
+            (hl, rs, info) = info_mutation_format(self.request.GET['mutation'])
+            d['highlight'] = hl
+            d['regular_exp'] = rs
+            d['info'] = info
+        return d
+
+
+class UploadData(FormView):
+    title = "Upload Data to GenTB Mutations Tracker"
+    parent = ("/maps/", "Maps")
+    template_name = 'mutations/upload_data.html'
+    form_class = DataUploaderForm
+
+    def get_success_url(self):
+        return self.object.get_absolute_url()
+
+    def form_valid(self, form):
+        self.object = form.save(self.request.user)
+        return super(UploadData, self).form_valid(form)
+
+
+class UploadView(DetailView):
+    parent = ("/maps/", "Maps")
+    template_name = 'mutations/upload_status.html'
+    model = ImportSource
+
 
 class DropDownData(JsonView):
     def get_context_data(self, *kw):

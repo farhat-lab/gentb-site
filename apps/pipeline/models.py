@@ -86,9 +86,13 @@ class Pipeline(Model):
         Run this pipeline for this named identifier,
         the id should be unique.
         """
-        runner = PipelineRun(name=slugify(name), pipeline=self)
         if commit:
-            runner.save()
+            (runner, created) = self.runs.get_or_create(name=slugify(name))
+            if not created:
+                return runner
+        else:
+            runner = PipelineRun(name=slugify(name), pipeline=self)
+
         if for_test:
             kwargs.update(file_as_inputs(self.test_files))
         runner.run(commit=commit, for_test=for_test, **kwargs)

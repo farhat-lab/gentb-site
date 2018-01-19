@@ -15,12 +15,51 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 """
+Data management for maps, basic functions.
 """
 
 from collections import defaultdict, OrderedDict
 
+COUNTRY_MAP = {
+    'unknown': None,
+    'South Afica': 'South Africa',
+    'Ivory Coast': 'CIV',
+    'Netherland': 'Netherlands',
+    'Camerun': 'Cameroon',
+    'Trinidad & Tobago': 'Trinidad and Tobago',
+    'Kazakstan': 'Kazakhstan',
+    'Kazachstan': 'Kazakhstan',
+    'Brasil': 'Brazil',
+    'Azerbaidjan': 'Azerbaijan',
+    'Marocco': 'Morocco',
+    'DR Congo': 'Democratic Republic of the Congo',
+    'RD Congo': 'Democratic Republic of the Congo',
+    'Guinea Eq.': 'Equatorial Guinea',
+    'Myanmar': 'Burma',
+    'Netherlands Antilles': 'Sint Maarten',
+    'Guinea-Conakry': 'Guinea',
+    'China /Tibet': 'Tibet',
+    'Carribean': 'Aruba',
+
+    'Philipines': 'Philippines',
+    'Comoro Islands': 'Comoros',
+    'South Korea N': 'Korea, Republic of',
+    'Korea': 'Korea, Republic of',
+}
+
+CITY_MAP = {
+    'Karakalpakstan': 'Nukus', # Region
+    'New York City': 'New York',
+    'KwaZulu-Natal': 'Durban',
+    'Kwazulu Natal': 'Durban',
+    'South Carolina': 'Columbia',
+
+    'isolated in SF Lineage3A': None,
+    'CDC': None,
+}
+
 def to(method):
-    """Turn generators into objects, method can be a type, object or function""" 
+    """Turn generators into objects, method can be a type, obj or function"""
     def _outer(f):
         def _inner(*args, **kw):
             return method(f(*args, **kw))
@@ -71,7 +110,8 @@ class GraphData(defaultdict):
                    x - The name is None or empty string, so ignored, setting
                        the keys to ('Something', None) will exclude them.
                    y - The value is zero or None, so ignored.
-                   z - The category contains no rows (maybe because x and y trimming)
+                   z - The category contains no rows
+                       (maybe because x and y trimming)
         """
         if trim is not None:
             self.trims[axis] = trim
@@ -91,7 +131,6 @@ class GraphData(defaultdict):
     def get_y_value(self, cat, col):
         total = self.keys['y'].get(cat)
         value = self[cat][col]
-        #print("For total: %s, value: %s, cat: %s, col: %s\n" % (str(total), str(value), str(cat), str(col)))
         if total is not None:
             if total is 0:
                 return 0, value, total
@@ -122,7 +161,7 @@ class GraphData(defaultdict):
 
     @to(list)
     def to_graph(self):
-        """Make the data structure square and convert from defaultdicts to OrderedDicts"""
+        """Make square structure and convert from defaultdict to OrderedDict"""
         for cat, name in self.get_z_cats().items():
             values = list(self.get_values(cat))
             if values or not self.trims['z']:

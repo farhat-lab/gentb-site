@@ -8,6 +8,15 @@ body > .container {
   cursor: pointer;
 }
 
+div.tooltip .tooltip-inner table th {
+  text-align:right !important;
+}
+div.tooltip .tooltip-inner table td {
+  text-align:left !important;
+  padding-left: 8px;
+}
+
+
 a, a:active, a:hover {
    outline: 0 !important;
 }

@@ -8,7 +8,8 @@ from django.contrib.gis.db.models import *
 from django.utils.encoding import python_2_unicode_compatible
 
 # This is where we are currently looking for data, but it could change.
-url_prefix = 'http://www.naturalearthdata.com/http//www.naturalearthdata.com/download/10m/cultural/'
+url_prefix = 'http://www.naturalearthdata.com/'\
+    'http//www.naturalearthdata.com/download/10m/cultural/'
 
 # UN Regions and sub-regions
 REGIONS = (

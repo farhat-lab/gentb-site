@@ -24,17 +24,21 @@ Allow uploads to be 'chunked' and saved in descrete chunks.
 
 import os
 import re
-from ftplib import FTP, FTP_TLS
 
+from md5 import md5
+
+from django.core.urlresolvers import reverse
+from django.core.exceptions import PermissionDenied
 from django.utils.decorators import method_decorator
 from django.contrib.auth.decorators import login_required
 from django.views.generic.detail import View, SingleObjectMixin
-from django.views.generic import RedirectView
+from django.views.generic import RedirectView, FormView
 from django.http import HttpResponse, JsonResponse
 from django.conf import settings
 
 from .files import ResumableFile
-from .models import UploadFile
+from .models import UploadFile, ManualUploadFile
+from .utils import Download 
 
 class RetryUpload(SingleObjectMixin, RedirectView):
     model = UploadFile
@@ -96,14 +100,18 @@ class ManualUploadView(View):
         if url.startswith('/'):
             url = 'file://' + url
 
+        if url.startswith('file://'):
+            if not self.request.user.has_perm('uploads.add_manualuploadfile'):
+                raise PermissionDenied
+
         if '://' in url:
             try:
                 if not self.request.user.is_authenticated():
-                    raise PermissionError("Not logged in")
+                    raise PermissionDenied("Not logged in")
                 return JsonResponse({
                   'files': list(self.get_files(*url.split('://', 1))),
                 })
-            except PermissionError as err:
+            except PermissionDenied as err:
                 return HttpResponse(str(err), status=403)
             except AttributeError as err:
                 return HttpResponse(str(err), status=404)
@@ -114,63 +122,37 @@ class ManualUploadView(View):
         """
         Sort out what protocol we should be using.
         """
-        # Put some limits on the protocol size
-        prot = prot.replace('_', '')[:5]
-        for fn in getattr(self, '_' + prot)(url):
-            yield fn
+        for url in Download(url):
+            if self.match_file(url.name):
+                yield {
+                  'id': md5(str(url)).hexdigest(),
+                  'name': url.name,
+                  'bytes': url.size,
+                  'link': url.public_url(),
+                  # XXX To replace with better icons
+                  'icon': 'https://www.dropbox.com/static/images/icons64/page_white_compressed.png',
+                }
 
     def match_file(self, filename):
         """
         Match a filename with any filter instructions
         return True if it matches the filters.
         """
-        # XXX Add filters here
+        if 'extensions' in self.request.POST:
+            for ext in self.request.POST['extensions'].split(" "):
+                if filename.endswith(ext):
+                    return True
+            return False
         return True
 
-    def _file(self, path):
-        """
-        Try and load a local directory name, if available.
-        """
-        # We limit users to only those with this permission
-        if not self.request.user.has_perm('uploads.add_manualuploadfile'):
-            raise PermissionError
 
-        if os.path.is_dir(path):
-            for fn in os.listdir(path):
-                full = os.path.join(path, fn)
-                if os.path.is_file(full) and self.match_file(fn):
-                    yield full
-        elif os.path.is_file(path): # Don't filter with match_file
-            yield path
 
-    def _ftp(self, url, method=FTP):
-        """
-        Load an FTP url
-        """
-        kw = {}
-        # XXX We could store the username/password and strip it out
-        # of the returned value to make it easier for us to control
-        # the ftp password (and not store it a lot of times)
-        if '@' in url:
-            (kw['user'], url) = url.split('@', 1)
-            if ':' in kw['user']:
-                (kw['user'], kw['password']) = kw['user'].rsplit(':', 1)
-        ftp = method(server, timeout=1, **kw)
-        ftp.login()
-        for name in ftp.nlst():
-            if self.match_file(name):
-                yield name
+from .forms import TestUploadForm
+class TestUpload(FormView):
+    form_class = TestUploadForm
+    template_name = 'uploads/test_form.html'
 
-    def _http(self, url, tls=True):
-        """
-        Load a HTTP url
-        """
-        raise AttributeError("Protocol not supported Yet")
-
-    def _sftp(self, url):
-        return self._ftp(url, method=FTP_TLS)
-
-    def _https(self, url):
-        return self._http(url, tls=True)
-
+    def form_valid(self, form):
+        """Because we are testing, don't redirect"""
+        return self.render_to_response({'form': form})
 

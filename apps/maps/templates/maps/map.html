@@ -20,7 +20,11 @@
 
 {% block content %}
     <div class="container">
-      <h2 class="page-header">Map <small>visualize TB resistance genotype and phenotype globally.</small></h2>
+      <h2 class="page-header">Map <small>visualize TB resistance genotype and phenotype globally.</small>
+        {% if perms.maps.can_upload_strains %}
+          <a href="{% url 'genes:upload' %}" class="btn btn-primary pull-right"><span class="glyphicon glyphicon-upload"></span></a>
+        {% endif %}
+      </h2>
 
       <div class="row">
         <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 vertical-tab-container">
@@ -73,6 +77,10 @@
                 <div class="vertical-tab-content">
                   <div class="d3graph">
                     <div class="lister" id="mselect"></div>
+                    <div id="mutation_explainer">
+                      <h2>Mutation Name Format</h2>
+                      <img src="{% static "images/mutation_name.svg" %}">
+                    </div>
                     <svg class="mutations" id="mutations" data-json-url="{% url 'maps:map.mutation' %}"></svg>
                   </div>
                 </div>

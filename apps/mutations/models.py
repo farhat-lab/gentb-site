@@ -26,6 +26,7 @@ from django.core.urlresolvers import reverse
 
 from .validators import is_octal
 from apps.maps.models import Country, Place
+from apps.uploads.models import UploadFile
 
 class DrugClass(Model):
     name = CharField(max_length=64, db_index=True, unique=True)
@@ -183,7 +184,9 @@ class Mutation(Model):
     syn = CharField(max_length=1, null=True, blank=True)
 
     mrna_ntpos = IntegerField(null=True, blank=True)
-    ecoli_aapos = IntegerField(null=True, blank=True)
+    ecoli_aapos = IntegerField(null=True, blank=True,
+        help_text="E.coli aminoacid position used in lookups when "
+        "mutations are in the genes that are in both bacteria")
 
     predictor = BooleanField(default=False,
         help_text="This mutation is selected to be used in predictions and "
@@ -251,8 +254,42 @@ class ImportSource(Model):
     """Track data by how it was imported."""
     name = CharField(max_length=256)
 
+    uploader = ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True)
+    uploaded = ManyToManyField(UploadFile, blank=True)
+    complete = BooleanField(default=True)
+
     created = DateTimeField(auto_now_add=True)
     updated = DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.name
+
+    def get_absolute_url(self):
+        return reverse("genes:upload.view", kwargs={'pk': self.pk})
+
+    def mutations(self):
+        return StrainMutation.objects.filter(strain__importer=self)
+
+    def resistances(self):
+        if self.complete:
+            return StrainResistance.objects.filter(strain__importer=self)
+        return self.uploaded.get(name='resistances')
+
+    def sources(self):
+        if self.complete:
+            return self.strainsource_set.all()
+        return self.uploaded.get(name='sources')
+
+    def vcf_files(self):
+        return self.uploaded.filter(filename__contains='vcf')
+
+
+class Paper(Model):
+    name = CharField(max_length=128)
+    doi = CharField(max_length=255, unique=True)
+    url = URLField()
+
+    notes = TextField(null=True, blank=True)
 
     def __str__(self):
         return self.name
@@ -270,6 +307,7 @@ class StrainSource(Model):
 
     importer = ForeignKey(ImportSource, verbose_name='Import Source', null=True, blank=True)
     source_lab = CharField(max_length=100, verbose_name='Laboratory Source', db_index=True, null=True, blank=True)
+    source_paper = ForeignKey(Paper, related_name="strains", null=True, blank=True)
 
     patient_id  = CharField(max_length=16, db_index=True)
     patient_age = PositiveIntegerField(null=True, blank=True)
@@ -284,7 +322,7 @@ class StrainSource(Model):
     rflp_family     = CharField("Restriction fragment length polymorphism family", max_length=10, null=True, blank=True)
     insert_type     = IntegerField("Insertion sequence 6110 type", null=True, blank=True)
 
-    wgs_group = CharField("Whole Gnome Sequence Group", max_length=10, null=True, blank=True)
+    wgs_group = CharField("Whole Genome Sequence Group", max_length=10, null=True, blank=True)
     principle_group = IntegerField("Principle Generic Group", null=True, blank=True)
     resistance_group = CharField(max_length=4, choices=RESISTANCE_GROUP, null=True, blank=True)
     targeting = ForeignKey(TargetSet, null=True, blank=True)
@@ -328,4 +366,5 @@ class StrainResistance(Model):
 
     def __str__(self):
         return "%s is %s to %s" % (str(self.strain), str(self.get_resistance_display()), str(self.drug))
+
 
