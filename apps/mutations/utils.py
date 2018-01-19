@@ -366,6 +366,7 @@ def tr(data, **kw):
             if dest is not None and value not in ['', u'', None, 0]:
                 data[dest] = value
 
+
 def long_match(MAP, d, value, model=None, default='NOP', *cols, **filter):
     """Match in a model with case-insensitive multi-column matching."""
     value = MAP.get(value, value)
