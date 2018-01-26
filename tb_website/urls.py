@@ -1,8 +1,24 @@
+#
+# Copyright (C) 2017 Maha Farhat
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
 """
 Global anchor for the website's urls
 """
 
-from django.conf.urls import patterns, include, url
+from django.conf.urls import include, url
 from django.conf.urls.static import static
 from django.conf import settings
 from django.views.generic import TemplateView as Tv
@@ -13,7 +29,7 @@ admin.autodiscover()
 
 from apps.versioner.views import Version
 
-urlpatterns = patterns('',
+urlpatterns = [
     url(r'^$', Tv.as_view(template_name='home.html'), name="home"),
     url(r'^about/$', Tv.as_view(template_name='about.html'), name="about"),
     url(r'^data/$', Tv.as_view(template_name='data.html'), name="data"),
@@ -35,19 +51,19 @@ urlpatterns = patterns('',
     url(r'^maps/', include('apps.maps.urls', namespace='maps')),
 
     url(r'^version/', Version.as_view(), name='version'),
-)
+]
 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 
     import debug_toolbar
-    urlpatterns += patterns('', url(r'^__debug__/', include(debug_toolbar.urls)))
+    urlpatterns.append(url(r'^__debug__/', include(debug_toolbar.urls)))
 
 
 from .views import Error
 
 for e in ('403','404','500'):
     locals()['handler'+e] = Error.as_error(e)
-    urlpatterns += patterns('', url('^error/%s/$' % e, Error.as_error(e)))
+    urlpatterns.append(url('^error/%s/$' % e, Error.as_error(e)))
 
