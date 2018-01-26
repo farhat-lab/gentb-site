@@ -24,7 +24,7 @@ LOGGER = logging.getLogger(__name__)
 from django.views.generic import *
 from django.core.urlresolvers import reverse
 
-from apps.maps.json_view import JsonView
+from apps.maps.mixins import JsonView
 
 from .models import *
 from .forms import DataUploaderForm
