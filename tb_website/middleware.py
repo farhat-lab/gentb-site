@@ -125,7 +125,7 @@ class AutoBreadcrumbMiddleware(object):
         lst = self.get(data, 'object_list')
         if isinstance(lst, (Manager, QuerySet)):
             if obj is None:
-                obj = lst
+                pass # obj = lst
             elif parent is None:
                 parent = lst
 

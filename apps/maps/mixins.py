@@ -22,7 +22,7 @@ from operator import or_, and_
 from datetime import timedelta
 
 from django.core.serializers.json import DjangoJSONEncoder
-from django.db.models.query import Q, ValuesQuerySet
+from django.db.models.query import Q, QuerySet
 from django.views.decorators.cache import cache_page
 from django.views.generic import View
 
@@ -36,7 +36,7 @@ class DjangoJSONEncoder2(DjangoJSONEncoder):
             ARGS = ('days', 'seconds', 'microseconds')
             return {'__type__': 'datetime.timedelta',
                     'args': [getattr(obj, a) for a in ARGS]}
-        if isinstance(obj, ValuesQuerySet):
+        if isinstance(obj, QuerySet):
             return [item for item in obj]
         return DjangoJSONEncoder.default(self, obj)
 
