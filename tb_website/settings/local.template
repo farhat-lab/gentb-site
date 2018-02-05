@@ -67,7 +67,7 @@ SERVER_EMAIL = EMAIL_HOST_USER
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#databases
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
+        'ENGINE': 'django.contrib.gis.db.backends.spatialite',
         'NAME': normpath(join(DATA_ROOT, 'development.db')),
         'USER': '',
         'PASSWORD': '',
