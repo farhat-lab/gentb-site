@@ -1,10 +1,14 @@
 
-from tb_website.settings.local import *
-
 import os
 import sys
 import json
 import getpass
+
+from tb_website.settings.base import *
+
+SECRET_KEY = 'Nothing'
+
+TB_SHARED_DATAFILE_DIRECTORY = ''
 
 CONF_FILE  = os.path.expanduser(os.path.join('~', '.config', 'gentb-db.conf'))
 
@@ -52,13 +56,21 @@ def _ask(name, slug, default=None, password=False):
     return conf[slug]
 
 
+DB_NAME = ask_for('MySQL DB Name or SQLite Filename', 'dbname')
 DATABASES = {
   'default': {
-     'ENGINE': 'django.db.backends.mysql',
-     'HOST': ask_for('DB Host', 'dbhost', default='localhost'),
-     'NAME': ask_for('DB Name', 'dbname'),
-     'USER': ask_for('DB User', 'dbuser'),
-     'PASSWORD': ask_for('DB Password', 'dbpass', password=True),
+     'ENGINE': 'django.db.backends.sqlite3',
+     'NAME': DB_NAME,
   },
 }
+DB_IS_FILE = True
+
+if '/' not in DB_NAME and not DB_NAME.endswith('.db'):
+    DB_IS_FILE = False
+    DATABASES['default']['ENGINE'] = 'django.db.backends.mysql'
+    DATABASES['default']['HOST'] = ask_for('DB Host', 'dbhost', default='localhost')
+    DATABASES['default']['USER'] = ask_for('DB User', 'dbuser')
+    DATABASES['default']['PASSWORD'] = ask_for('DB Password', 'dbpass', password=True)
+
+INSTALLED_APPS = list(set(INSTALLED_APPS) - set(WEBSITE_APPS))
 

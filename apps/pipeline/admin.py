@@ -17,7 +17,13 @@
 
 from django.contrib import admin
 
-from adminsortable2.admin import SortableAdminMixin, SortableInlineAdminMixin
+try:
+    from adminsortable2.admin import SortableAdminMixin, SortableInlineAdminMixin
+except ImportError:
+    class SortableAdminMixin(object):
+        pass
+    class SortableInlineAdminMixin(object):
+        pass
 
 from .models import *
 

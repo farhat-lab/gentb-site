@@ -159,36 +159,36 @@ DJANGO_APPS = (
     'django.contrib.sites',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'django.contrib.gis',
     'django.contrib.humanize',
     'django.contrib.admin',
 )
 
 # Apps from the internet (see requirements.txt)
-SUPPORT_APPS = (
+WEBSITE_APPS = (
+    'django.contrib.gis',
+    'apps.tb_users',
     'cachebuster',
     'django_spaghetti',
     'adminsortable2',
     'autotest',
     'apps.versioner',
-)
-
-# Apps specific for this project go here.
-LOCAL_APPS = (
-    'tb_website',
-    'apps.tb_users',
-    'apps.predict',
-    'apps.pipeline',
-    'apps.uploads',
-    'apps.mutations',
-    'apps.maps',
 
     # Holds dataverse file ids for Two Ravens
     'apps.explore',
 )
 
+# Apps specific for this project go here.
+LOCAL_APPS = (
+    'tb_website',
+    'apps.predict',
+    'apps.pipeline',
+    'apps.uploads',
+    'apps.mutations',
+    'apps.maps',
+)
+
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
-INSTALLED_APPS = LOCAL_APPS + DJANGO_APPS + SUPPORT_APPS
+INSTALLED_APPS = LOCAL_APPS + DJANGO_APPS + WEBSITE_APPS
 ########## END APP CONFIGURATION
 
 
