@@ -4,7 +4,7 @@ from os.path import abspath, basename, dirname, join, normpath, isdir
 from sys import path
 
 # Provide some data for packaging so database models can be used outside of the website.
-MOD_VERSION = '0.5.1'
+MOD_VERSION = '0.5.2'
 MOD_PACKAGE = 'gentb'
 
 ########## PATH CONFIGURATION
