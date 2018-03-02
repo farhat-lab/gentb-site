@@ -3,6 +3,10 @@
 from os.path import abspath, basename, dirname, join, normpath, isdir
 from sys import path
 
+# Provide some data for packaging so database models can be used outside of the website.
+MOD_VERSION = '0.5.1'
+MOD_PACKAGE = 'gentb'
+
 ########## PATH CONFIGURATION
 # Absolute filesystem path to the Django project directory:
 DJANGO_ROOT = normpath(join(abspath(__file__), '..', '..'))

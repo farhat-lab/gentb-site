@@ -36,7 +36,8 @@ for n, v in globals().items():
         if 'FORMAT' in n:
             continue
         if v and v[0] != '/':
-            raise IOError("Setting %s should be an absolute path." % n)
+            continue
+            raise IOError("Setting {} should be an absolute path: {}".format(n, v))
         if not isdir(v):
             try:
                 sys.stderr.write("INFO: Making directory: %s for %s\n" % (v, n))
