@@ -166,7 +166,6 @@ DJANGO_APPS = (
 # Apps from the internet (see requirements.txt)
 WEBSITE_APPS = (
     'django.contrib.gis',
-    'apps.tb_users',
     'cachebuster',
     'django_spaghetti',
     'adminsortable2',
@@ -180,6 +179,7 @@ WEBSITE_APPS = (
 # Apps specific for this project go here.
 LOCAL_APPS = (
     'tb_website',
+    'apps.tb_users',
     'apps.predict',
     'apps.pipeline',
     'apps.uploads',
