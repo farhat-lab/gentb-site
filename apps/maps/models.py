@@ -6,13 +6,7 @@ import os
 from django.db.models import *
 from django.utils.encoding import python_2_unicode_compatible
 
-try:
-    from django.contrib.gis.db.models import *
-except Exception:
-    def MultiPolygonField(*args, **kw):
-        return TextField()
-    MultiPointField = MultiPolygonField
-    GeoManager = Manager
+from .gis import *
 
 # This is where we are currently looking for data, but it could change.
 url_prefix = 'http://www.naturalearthdata.com/'\

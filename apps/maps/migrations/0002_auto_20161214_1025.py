@@ -2,7 +2,7 @@
 from __future__ import unicode_literals
 
 from django.db import migrations, models
-import django.contrib.gis.db.models.fields
+from ..gis import MultiPolygonField, MultiPointField
 
 
 class Migration(migrations.Migration):
@@ -23,7 +23,7 @@ class Migration(migrations.Migration):
                 ('gdp', models.FloatField(null=True, blank=True)),
                 ('rank', models.FloatField(null=True, blank=True)),
                 ('mapcolor', models.FloatField(null=True, blank=True)),
-                ('geom', django.contrib.gis.db.models.fields.MultiPolygonField(srid=4326)),
+                ('geom', MultiPolygonField(srid=4326)),
             ],
             options={
                 'ordering': ('-pop',),

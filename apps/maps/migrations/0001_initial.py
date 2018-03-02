@@ -2,7 +2,7 @@
 from __future__ import unicode_literals
 
 from django.db import migrations, models
-import django.contrib.gis.db.models.fields
+from ..gis import MultiPolygonField, MultiPointField
 
 
 class Migration(migrations.Migration):
@@ -27,7 +27,7 @@ class Migration(migrations.Migration):
                 ('continent', models.CharField(max_length=23, null=True, blank=True)),
                 ('region', models.CharField(max_length=23, null=True, blank=True)),
                 ('subregion', models.CharField(max_length=25, null=True, blank=True)),
-                ('geom', django.contrib.gis.db.models.fields.MultiPolygonField(srid=4326)),
+                ('geom', MultiPolygonField(srid=4326)),
             ],
         ),
         migrations.CreateModel(
@@ -41,7 +41,7 @@ class Migration(migrations.Migration):
                 ('rank', models.IntegerField()),
                 ('elevation', models.FloatField()),
                 ('timezone', models.CharField(max_length=254)),
-                ('geom', django.contrib.gis.db.models.fields.MultiPointField(srid=4326)),
+                ('geom', MultiPointField(srid=4326)),
                 ('country', models.ForeignKey(to='maps.Country')),
             ],
         ),

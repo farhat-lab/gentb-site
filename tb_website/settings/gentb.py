@@ -72,5 +72,8 @@ if '/' not in DB_NAME and not DB_NAME.endswith('.db'):
     DATABASES['default']['USER'] = ask_for('DB User', 'dbuser')
     DATABASES['default']['PASSWORD'] = ask_for('DB Password', 'dbpass', password=True)
 
+# Remove Website apps from requirements
 INSTALLED_APPS = list(set(INSTALLED_APPS) - set(WEBSITE_APPS))
 
+# Remove Urls from being usable
+ROOT_URLCONF = 'tb_website.urls_nop'
