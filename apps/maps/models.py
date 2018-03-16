@@ -4,8 +4,9 @@ Provide a place for city and country geo data for showing on maps.
 import os
 
 from django.db.models import *
-from django.contrib.gis.db.models import *
 from django.utils.encoding import python_2_unicode_compatible
+
+from .gis import *
 
 # This is where we are currently looking for data, but it could change.
 url_prefix = 'http://www.naturalearthdata.com/'\

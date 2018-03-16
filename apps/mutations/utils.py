@@ -369,9 +369,10 @@ def tr(data, **kw):
 
 def long_match(MAP, d, value, model=None, default='NOP', *cols, **filter):
     """Match in a model with case-insensitive multi-column matching."""
+    match = filter.pop('_match', 'iexact')
     value = MAP.get(value, value)
     if value not in d and model and cols:
-        query = reduce(or_, [Q(**{col+'__iexact': value}) for col in cols])
+        query = reduce(or_, [Q(**{'{}__{}'.format(col, match): value}) for col in cols])
         try:
             d[value] = model.objects.filter(**filter).get(query)
         except model.DoesNotExist:

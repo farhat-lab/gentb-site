@@ -284,6 +284,7 @@ class ImportSource(Model):
         return self.uploaded.filter(filename__contains='vcf')
 
 
+
 class Paper(Model):
     name = CharField(max_length=128)
     doi = CharField(max_length=255, unique=True)
@@ -329,6 +330,24 @@ class StrainSource(Model):
 
     notes = TextField(null=True, blank=True)
 
+    def generate_resistance_group(self):
+        """Generates the correct resistance_group based on drug information"""
+        resistant_to = self.drugs.filter(resistance='r').values_list('drug__code', flat=True)
+        sensitive_to = self.drugs.filter(resistance='s').values_list('drug__code', flat=True)
+        group = None # Unknown
+
+        if 'INH' in resistant_to and 'RIF' in resistant_to:
+            group = 'MDR'
+            if ('MOXI' in resistant_to) or ('GATI' in resistant_to) or ('LEVO' in resistant_to) \
+                    and ('KAN' in resistant_to) or ('AMK' in resistant_to) or ('CAP' in resistant_to) or ('STR' in resistant_to):
+                group = 'XDR'
+        elif 'INH' in sensitive_to or 'RIF' in sensitive_to:
+            group = 's'
+
+        self.resistance_group = group
+        self.save()
+
+        
     def __str__(self):
         return self.name or self.patient_id or ("Unnamed %d" % self.pk)
 

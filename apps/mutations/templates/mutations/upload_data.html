@@ -9,7 +9,7 @@
   </div>
 
   <div class = "row">
-    <div class="col-md-12 portfolio-item">
+    <div class="col-md-6 portfolio-item">
 
       {% if form.errors %}
         <div class="alert alert-danger" role="alert">Please check the errors below
@@ -53,6 +53,19 @@
           </tr>
         </table>
       </form>
+    </div>
+    <div class="col-md-6 portfolio-item">
+      <h3>Enriched VCF Files</h3>
+      <p>It's important that you enrich your VCF files <strong>before</strong> uploading them to the data site. These enriched VCF files contain all the required information about a strains location, patient, resistances and much more besides. This meta data is vital to it being added to the maps and prediction functions of the website.</p>
+
+      <h3>Scripts to Make Them</h3>
+      <p>We have prepared some scripts which can be used to combine non-enriched vcf files with tsv files containing the required meta data, these can be used as is or as a starting point to get your data into shape. If you have any problem please contact us to see if we can help.</p>
+      <p><a href="https://github.com/farhat-lab/importer_vcf">VCF Importing Scripts (GitHub)</a></p>
+
+      <h3>Metadata Format</h2>
+      <p>The format that an enriched file is expected to be in is described in our format document. If you want to write a script to add your information in, please read this document carefully so you can get all the fields int he right places.</p>
+      <p><a href="https://github.com/farhat-lab/gentb-site/wiki/Enriching-Variant-Call-Format-Files-with-Drug-Resistance-Meta-Data">Enriched VCF Format Specification</a></p>
+
     </div>
   </div>
 {% endblock %}

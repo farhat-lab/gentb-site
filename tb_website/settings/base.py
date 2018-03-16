@@ -3,6 +3,10 @@
 from os.path import abspath, basename, dirname, join, normpath, isdir
 from sys import path
 
+# Provide some data for packaging so database models can be used outside of the website.
+MOD_VERSION = '0.5.2'
+MOD_PACKAGE = 'gentb'
+
 ########## PATH CONFIGURATION
 # Absolute filesystem path to the Django project directory:
 DJANGO_ROOT = normpath(join(abspath(__file__), '..', '..'))
@@ -155,18 +159,21 @@ DJANGO_APPS = (
     'django.contrib.sites',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'django.contrib.gis',
     'django.contrib.humanize',
     'django.contrib.admin',
 )
 
 # Apps from the internet (see requirements.txt)
-SUPPORT_APPS = (
+WEBSITE_APPS = (
+    'django.contrib.gis',
     'cachebuster',
     'django_spaghetti',
     'adminsortable2',
     'autotest',
     'apps.versioner',
+
+    # Holds dataverse file ids for Two Ravens
+    'apps.explore',
 )
 
 # Apps specific for this project go here.
@@ -178,13 +185,10 @@ LOCAL_APPS = (
     'apps.uploads',
     'apps.mutations',
     'apps.maps',
-
-    # Holds dataverse file ids for Two Ravens
-    'apps.explore',
 )
 
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
-INSTALLED_APPS = LOCAL_APPS + DJANGO_APPS + SUPPORT_APPS
+INSTALLED_APPS = LOCAL_APPS + DJANGO_APPS + WEBSITE_APPS
 ########## END APP CONFIGURATION
 
 

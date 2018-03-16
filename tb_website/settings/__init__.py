@@ -28,15 +28,14 @@ except ImportError:
     try:
         from .local import *
     except ImportError:
-        logging.error("No settings found and default template failed to load.")
-        exit(3)
+        pass
 
 for n, v in globals().items():
     if n.split('_')[-1] in ('DIR', 'DIRECTORY', 'PATH', 'ROOT'):
         if 'FORMAT' in n:
             continue
         if v and v[0] != '/':
-            raise IOError("Setting %s should be an absolute path." % n)
+            continue
         if not isdir(v):
             try:
                 sys.stderr.write("INFO: Making directory: %s for %s\n" % (v, n))

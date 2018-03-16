@@ -81,7 +81,7 @@ class Pipeline(Model):
     def get_absolute_url(self):
         return reverse('pipeline:detail', kwargs={'pk': self.pk})
 
-    def run(self, name, commit=True, for_test=False, **kwargs):
+    def run(self, name, commit=True, rerun=False, for_test=False, **kwargs):
         """
         Run this pipeline for this named identifier,
         the id should be unique.
@@ -89,6 +89,9 @@ class Pipeline(Model):
         if commit:
             (runner, created) = self.runs.get_or_create(name=slugify(name))
             if not created:
+                if rerun:
+                    runner.programs.filter(is_error=True).update(is_submitted=False)
+                    runner.rerun(**kwargs)
                 return runner
         else:
             runner = PipelineRun(name=slugify(name), pipeline=self)
@@ -388,6 +391,14 @@ class PipelineRun(TimeStampedModel):
                     program.delete_output_files()
             return True
         return False
+
+    def get_errors(self):
+        """Return true if programs in the pipeline have errors"""
+        self.update_all()
+        qs = self.programs.filter(is_error=True)
+        if qs.count() == 0:
+            return None
+        return '\n---\n'.join(qs.values_list('error_text', flat=True))
 
 
 class ProgramRun(TimeStampedModel):
