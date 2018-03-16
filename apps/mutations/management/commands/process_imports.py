@@ -21,10 +21,15 @@ from apps.mutations.utils import *
 LOGGER = logging.getLogger('apps.mutations')
 EMPTY = {None: None, 'None': None, '': None,}
 
+class DataError(ValueError):
+    pass
+
 class Command(BaseCommand):
     # Caches
     countries = EMPTY.copy()
     places = EMPTY.copy()
+    studies = EMPTY.copy()
+    drugs = EMPTY.copy()
 
     def handle(self, **kw):
         try:
@@ -35,52 +40,68 @@ class Command(BaseCommand):
 
         for importer in ImportSource.objects.filter(complete=False, uploader__isnull=False):
             try:
-                self.import_source(importer)
+                if not self.import_source(importer):
+                    # Only break if we returned a 'WAIT' signal
+                    continue
             except UploadFile.DoesNotExist:
-                sys.stderr.write(" [!] Missing upload file for importer: %s\n" % str(importer))
-            except (FileNotFound, FieldsNotFound) as err:
-                sys.stderr.write(" [!] %s: %s\n" % (str(err), str(importer)))
+                sys.stderr.write(" [!] Missing upload file for importer: {}\n".format(str(importer)))
+            except (FileNotFound, FieldsNotFound, DataError) as err:
+                sys.stderr.write(" [!] {}: {}\n".format(str(err), str(importer)))
+
+            importer.complete = True
+            importer.save()
 
     def import_source(self, importer):
         count = importer.vcf_files().count()
         uploads = importer.vcf_files().filter(retrieval_end__isnull=False)
         notloads = count - uploads.count()
         if notloads:
-            return self.importer.set_status("Waiting for %d Uploads", notloads)
+            return sys.stderr.write("Waiting for {} Uploads\n".format(notloads))
+
+        uploads.filter(flag='ERR').update(flag='OK', retrieval_error='')
 
         # Create a pipeline to process all the uploads
         for upload in uploads:
-            if upload.flag not in ['VCF', 'ERROR']:
-                runner = self.pipeline.run(
-                    'IMPORTER%d:VCF%d' % (importer.pk, upload.pk),
-                    file=upload.fullpath)
+            output_dir = os.path.dirname(upload.fullpath)
+            runner = self.pipeline.run(
+                'IMPORTER{:d}:VCF{:d}'.format(importer.pk, upload.pk),
+                rerun=True, file=upload.fullpath, output_dir=output_dir)
+            if upload.flag not in ['VCF', 'ERR']:
                 if runner.update_all():
-                    upload.flag = 'VCF'
+                    if runner.get_errors():
+                        upload.flag = 'ERR'
+                        upload.retrieval_error = "\n\n".join(runner.get_errors())
+                    else:
+                        upload.flag = 'VCF'
                     upload.save()
+
+        err = uploads.filter(flag='ERR')
+        if err.count():
+            raise DataError("Errors in VAR loading caused us to stop.")
 
         ready = uploads.filter(flag='VCF')
         notready = count - ready.count()
-        if notready:
-            return importer.set_status("Waiting for %d VCF Files", notready)
+        if err.count() == 0 and notready:
+            return sys.stderr.write("Waiting for {} VCF Files\n".format(notready))
 
         self.genome = Genome.objects.get(code='H37Rv')
-        self.importer = importer
 
-        for fl in self.importer.vcf_files():
+        for fl in importer.vcf_files():
             vcf = VCFReader(filename=fl.fullpath)
             var = CsvLookup(filename=fl.fullpath[:-4] + '.var', key='varname')
             try:
-                self.import_vcf(vcf, var)
-            except ValueError as err:
+                self.import_vcf(importer, vcf, var)
+            except DataError as err:
                 fl.flag = 'ERR'
-                fl.error = str(err)
+                sys.stderr.write("Error: {}\n".format(err))
+                fl.retrieval_error = 'PROC:'+str(err)
                 fl.save()
             except Country.DoesNotExist:
                 fl.flag = 'NOCO'
                 fl.save()
-            
+        return True
 
-    def import_vcf(self, vcf, var):
+    def import_vcf(self, importer, vcf, var):
         if 'LOCATION' not in vcf.metadata:
             raise ValueError('NO_METADATA')
 
@@ -91,34 +112,62 @@ class Command(BaseCommand):
         city = long_match(CITY_MAP, self.places, loc.get('CITY', None), Place, None, 'name', country=country)
 
         pat = vcf.metadata.get('PATIENT', [{}])[0]
-        strain = StrainSource.objects.get_or_create(name=vcf.metadata['STRAIN_NAME'], defaults=dict(
+        d = dict(
+            importer=importer,
             country=country, city=city,
             patient_id=pat.get('ID', None),
             patient_sex=pat.get('SEX', None),
-            patient_age=pat.get('AGE', None),
+            patient_age=(pat.get('AGE', None) or None),
             patient_hiv=pat.get('HIV', None),
             # TODO: Patient notes are discarded here, maybe keep them.
-        ))
+        )
 
-        study = long_march({}, self.studies, vcf.metadata['STUDY'].get('NAME', None), 'name', 'url', default=None)
+        # BIO SAMPLE first.
+        name = vcf.metadata.get('SAMPLE_ID', (None))[0]
+        name = EMPTY.get(name, name)
 
-        for drug in vcf.metadata.get('DRUG', []):
-            drug = Drug.objects.get(Q(name__icontains=drug['NAME']) | Q(code__icontains=drug['NAME']))
+        other_name = vcf.metadata.get('STRAIN_NAME', (None))[0]
+        other_name = EMPTY.get(name, name)
+
+        if name is None:
+            if other_name is None:
+                raise DataError("No valid STRAIN_NAME or bio SAMPLE_ID")
+            name, other_name = other_name, None
+
+        d['old_id'] = other_name
+        strain, _ = StrainSource.objects.update_or_create(name=name, defaults=d)
+
+        #study = None
+        #if 'STUDY' in vcf.metadata:
+        #    study = long_match({}, self.studies, vcf.metadata['STUDY'].get('NAME', None), Paper, 'name', 'url', 'doi', default=None)
+
+        for _drug in vcf.metadata.get('DRUG', []):
+            try:
+                drug = long_match({
+                    'OFLOXACIN': 'OFLX',
+                  }, self.drugs, _drug['NAME'], Drug, 'NOP', 'name', 'code', _match='icontains')
+            except Drug.DoesNotExist:
+                sys.stderr.write("Can't import drug: {}\n".format(_drug['NAME']))
+                continue
             drug.strains.update_or_create(strain=strain, defaults=dict(
-                resistance=drug['STATUS'],
+                resistance=_drug['STATUS'].lower(),
                 # TODO: More drug testing information here.
             ))
 
-        for snp in var:
+        strain.generate_resistance_group()
+
+        for snp in var.values():
             gene = snp['regionid1']
             try:
                 (_, locus, mutation) = unpack_mutation_format(snp['varname'])
                 # All genes in the gene summary should be already loaded.
-                locus = GeneLocus.objects.get(name=locus, genome=self.genome)
+                #locus = GeneLocus.objects.get(name=locus, genome=self.genome)
+                # Ignore that and ask for a new one
+                locus, _ = GeneLocus.objects.update_or_create(name=locus, genome=self.genome)
             except ValueError as err:
-                raise ValueError("Failed to unpack {varname}".format(**snp))
+                raise DataError("Failed to unpack {varname}".format(**snp))
             except GeneLocus.DoesNotExist:
-                raise ValueError("Failed to get gene {varname}, are all genes loaded from reference?".format(**snp))
+                raise DataError("Failed to get gene {varname}, are all genes loaded from reference?".format(**snp))
 
             if len(mutation) > 150:
                 sys.stderr.write("Mutation name is too large, can not add to database.\n")
@@ -132,7 +181,7 @@ class Command(BaseCommand):
                 aminoacid_reference=None,
                 aminoacid_varient=None,
                 codon_position=snp['codpos'],
-                codon_varient=None,
-                codon_reference=None,
+                codon_varient=snp['altcodon'],
+                codon_reference=snp['codon'],
             ))
 
