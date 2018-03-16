@@ -28,7 +28,7 @@ if settings.DB_IS_FILE and not os.path.isfile(settings.DB_NAME):
     and gentb.loaddata(filename) to load a json file
     the gentb.dumpdata(filename) is also available to output data.
 
-  """)
+  """.format(settings.DB_NAME))
 
 db_conn = connections['default']
 try:
@@ -39,9 +39,10 @@ except OperationalError as err:
 
 def _cmd(*args):
     """Mask the sys.exit command to stop exiting and return value instead"""
-    _exit = sys.exit
     ret = -1
-    sys.exit = lambda code=0: ret=code)
+    def _wrap_exit(code=0):
+       ret = code
+    _exit, sys.exit = sys.exit, _wrap_exit
     execute_from_command_line([''] + list(args))
     sys.exit = _exit
     return ret
@@ -53,6 +54,6 @@ def migrate():
 def loaddata(filename):
     _cmd('loaddata', filename)
 
-def dumpdata(filename)
+def dumpdata(filename):
     _cmd('dumpdata', '--indent=2', '-o', filename)
 
