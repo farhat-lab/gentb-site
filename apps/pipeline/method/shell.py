@@ -127,7 +127,8 @@ class JobManager(ManagerBase):
         if pid is None and ret is None:
             return {}
 
-        status = self.state_and_clear(pid, status)
+        if pid is not None:
+            status = self.state_and_clear(pid, status)
 
         if clean and (finished or err):
             self.job_clean(job_id, 'pid')
