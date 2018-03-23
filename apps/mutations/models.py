@@ -291,7 +291,7 @@ class ImportSource(Model):
         if qs.count() == 0:
             return None
         done = float(qs.filter(completed__isnull=False).count())
-        return "{:d}%".format(done / qs.count() * 100)
+        return "{:.0f}%".format(done / qs.count() * 100)
 
 
 class Paper(Model):
