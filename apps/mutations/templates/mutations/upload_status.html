@@ -24,11 +24,13 @@
         <dt>Mutations</dt>
         <dd>{{ object.mutations.count }}</dd>
       {% endif %}
-      {% if object.uploader %}
+      {% if object.uploader and object.vcf_files.count %}
         <dt>VCF Files</dt>
-        <dd>{{ object.vcf_files.count|default:0 }}</dd>
+        <dd>{{ object.vcf_files.count }}</dd>
       {% endif %}
-      <dt>Resistances</dt>
-      <dd>{{ object.resistances.count }}</dd>
+      {% if object.resistances.count %}
+        <dt>Resistances</dt>
+        <dd>{{ object.resistances.count }}</dd>
+      {% endif %}
     </dl>
 {% endblock %}
