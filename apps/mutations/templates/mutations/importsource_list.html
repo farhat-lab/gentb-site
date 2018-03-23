@@ -15,7 +15,13 @@
       <tr><td><a href="{{ object.get_absolute_url }}">{{ object.name }}</a></td><td>{{ object.created }}</td>
         <td>{{ object.uploaded.count }}</td>
         <td>{{ object.strainsource_set.count }}</td>
-        <td><span class="label label-success">Import Complete</span></td>
+        <td>
+          {% if object.complete %}
+            <span class="label label-success">Import Complete</span>
+          {% else %}
+            <span class="label label-danger">Import Pending</span>
+          {% endif %}
+        </td>
       </tr>
       {% endfor %}
     </tbody>
