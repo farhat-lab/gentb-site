@@ -45,7 +45,7 @@ class MutationView(TemplateView):
 
 class UploadData(FormView):
     title = "Upload Data to GenTB Mutations Tracker"
-    parent = ("/maps/", "Maps")
+    #parent = ("genes:upload.list", "My Imports")
     template_name = 'mutations/upload_data.html'
     form_class = DataUploaderForm
 
@@ -58,9 +58,19 @@ class UploadData(FormView):
 
 
 class UploadView(DetailView):
-    parent = ("/maps/", "Maps")
+    #parent = ("genes:upload.list", "My Imports")
     template_name = 'mutations/upload_status.html'
     model = ImportSource
+
+
+class UploadList(ListView):
+    model = ImportSource
+    title = "My Imports"
+    parent = ("/maps/", "Maps")
+
+    def get_queryset(self):
+        qs = super(UploadList, self).get_queryset()
+        return qs.filter(uploader=self.request.user)
 
 
 class DropDownData(JsonView):

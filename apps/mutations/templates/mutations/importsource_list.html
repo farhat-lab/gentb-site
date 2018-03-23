@@ -1,0 +1,23 @@
+{% extends "modal.html" %}
+{% load static %}
+
+{% block "dialog-title" %}
+  <h4 class="modal-title">{% block "title" %}{{ title }}{% endblock %}</h4>
+{% endblock %}
+
+{% block "dialog-body" %}
+  <table class="table table-striped">
+    <thead>
+      <tr><th>Name</th><th>Added</th><th>Uploaded</th><th>Imported</th><th>Status</th></tr>
+    </thead>
+    <tbody>
+      {% for object in object_list %}
+      <tr><td><a href="{{ object.get_absolute_url }}">{{ object.name }}</a></td><td>{{ object.created }}</td>
+        <td>{{ object.uploaded.count }}</td>
+        <td>{{ object.strainsource_set.count }}</td>
+        <td><span class="label label-success">Import Complete</span></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endblock %}
