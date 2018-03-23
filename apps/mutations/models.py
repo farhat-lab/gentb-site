@@ -290,7 +290,7 @@ class ImportSource(Model):
         qs = ProgramRun.objects.filter(piperun__name__istartswith='IMPORTER{:d}'.format(self.pk))
         if qs.count() == 0:
             return None
-        done = float(qs.filter(completed__isnull=False))
+        done = float(qs.filter(completed__isnull=False).count())
         return "{:d}%".format(done / qs.count() * 100)
 
 
