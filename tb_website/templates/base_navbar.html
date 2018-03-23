@@ -28,9 +28,14 @@
 
             <!-- my datasets page -->
             {% if request.user.datasets.count %}
-            <li{% if view_my_datasets %} class="active"{% endif %}>
+              <li{% if view_my_datasets %} class="active"{% endif %}>
                 <a href="{% url 'predict:view_my_datasets' %}">My Datasets ({{ request.user.datasets.count }})</a>
-            </li>
+              </li>
+            {% endif %}
+            {% if request.user.importsource_set.count %}
+              <li>
+                <a href="{% url 'genes:upload.list' %}">My Imports ({{ request.user.importsource_set.count }})</a>
+              </li>
             {% endif %}
 
           {#<li{% if account_page %} class="active"{% endif %}><a href="#">Account</a></li>#}
