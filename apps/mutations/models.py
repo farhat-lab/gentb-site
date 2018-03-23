@@ -284,6 +284,14 @@ class ImportSource(Model):
     def vcf_files(self):
         return self.uploaded.filter(filename__contains='vcf')
 
+    def processed(self):
+        """Returns a percentage completion of the pipeline process"""
+        from apps.pipeline.models import ProgramRun
+        qs = ProgramRun.objects.filter(piperun__name__istartswith='IMPORTER{:d}'.format(self.pk))
+        if qs.count() == 0:
+            return None
+        done = float(qs.filter(completed__isnull=False))
+        return "{:d}%".format(done / qs.count() * 100)
 
 
 class Paper(Model):

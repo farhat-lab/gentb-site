@@ -9,8 +9,10 @@
     {% else %}
       <span class="label label-default pull-right">Initial Data</span>
     {% endif %}
-  {% else %}
+  {% elif not object.processed %}
     <span class="label label-danger pull-right">Import Pending</span>
+  {% else %}
+    <span class="label label-default pull-right">Import {{ object.processed }}</span>
   {% endif %}{% block "title" %}{{ title }}{% endblock %}</h4>
 {% endblock %}
 
