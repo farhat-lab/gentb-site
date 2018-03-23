@@ -222,6 +222,7 @@ RESISTANCE = (
 RESISTANCE_GROUP = (
    (None, 'Unknown'),
    ('S', 'Sensitive'),
+   ('ODR', 'Other Drug Resistant'),
    ('MDR', 'Multi Drug Resistant'),
    ('XDR', 'Extensively Drug Resistant'),
    #('TDR', 'Total Drug Resistant'),
@@ -339,8 +340,10 @@ class StrainSource(Model):
         if 'INH' in resistant_to and 'RIF' in resistant_to:
             group = 'MDR'
             if ('MOXI' in resistant_to) or ('GATI' in resistant_to) or ('LEVO' in resistant_to) \
-                    and ('KAN' in resistant_to) or ('AMK' in resistant_to) or ('CAP' in resistant_to) or ('STR' in resistant_to):
+                    and ('KAN' in resistant_to) or ('AMK' in resistant_to) or ('CAP' in resistant_to):
                 group = 'XDR'
+        elif resistant_to:
+            group = 'ODR'
         elif 'INH' in sensitive_to or 'RIF' in sensitive_to:
             group = 's'
 
