@@ -9,7 +9,7 @@ cd "$( dirname "$0" )"
 for filename in */bin/activate; do
   if [ -f "$filename" ]; then
     # Doesn't matter if it's pythonenv, venv or something else
-    source */bin/activate
+    source pythonenv/bin/activate
 
     # Set the settings to a special management PY file.
     export DJANGO_SETTINGS_MODULE=tb_website.settings.manage
