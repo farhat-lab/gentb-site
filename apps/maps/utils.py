@@ -22,6 +22,7 @@ from collections import defaultdict, OrderedDict
 
 COUNTRY_MAP = {
     'unknown': None,
+    'UK': 'United Kingdom',
     'South Afica': 'South Africa',
     'Ivory Coast': 'CIV',
     'Netherland': 'Netherlands',
