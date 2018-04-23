@@ -61,7 +61,7 @@ class Command(BaseCommand):
         uploads.filter(flag='ERR').update(flag='OK', retrieval_error='')
 
         # Create a pipeline to process all the uploads
-        for upload in uploads:
+        for upload in uploads.exclude(flag='VCF'):
             output_dir = os.path.dirname(upload.fullpath)
             runner = self.pipeline.run(
                 'IMPORTER{:d}:VCF{:d}'.format(importer.pk, upload.pk),
@@ -79,9 +79,16 @@ class Command(BaseCommand):
         if err.count():
             raise DataError("Errors in VAR loading caused us to stop.")
 
+        for upload in uploads.exclude(flag='VCF'):
+            if os.path.isfile(upload.fullpath[:-4] + '.var'):
+                print("Manual flag {} as DONE".format(upload.fullpath))
+                upload.flag = 'VCF'
+                upload.save()
+            
         ready = uploads.filter(flag='VCF')
         notready = count - ready.count()
         if err.count() == 0 and notready:
+            print(uploads.exclude(flag='VCF'))
             return sys.stderr.write("Waiting for {} VCF Files\n".format(notready))
 
         self.genome = Genome.objects.get(code='H37Rv')
@@ -107,8 +114,12 @@ class Command(BaseCommand):
 
         loc = vcf.metadata['LOCATION'][0]
         country = long_match(COUNTRY_MAP, self.countries, loc.get('COUNTRY', None),
-            Country, 'name', 'detail__name_short', 'detail__name_abbr', 'iso2', 'iso3')
-
+            Country, None, 'name', 'detail__name_short', 'detail__name_abbr', 'iso2', 'iso3')
+        if country is None:
+            with open('/tmp/rejected-countries.txt', 'a') as fhl:
+                fhl.write(loc.get('COUNTRY', 'NotAvailable') + "\n")
+                return
+           
         city = long_match(CITY_MAP, self.places, loc.get('CITY', None), Place, None, 'name', country=country)
 
         pat = vcf.metadata.get('PATIENT', [{}])[0]
@@ -158,6 +169,8 @@ class Command(BaseCommand):
 
         for snp in var.values():
             gene = snp['regionid1']
+            if len(snp['varname']) > 80:
+                continue
             try:
                 (_, locus, mutation) = unpack_mutation_format(snp['varname'])
                 # All genes in the gene summary should be already loaded.
@@ -165,7 +178,9 @@ class Command(BaseCommand):
                 # Ignore that and ask for a new one
                 locus, _ = GeneLocus.objects.update_or_create(name=locus, genome=self.genome)
             except ValueError as err:
-                raise DataError("Failed to unpack {varname}".format(**snp))
+                #raise DataError("Failed to unpack {varname}".format(**snp))
+                sys.stderr.write("Failed to unpack {varname}\n".format(**snp))
+                continue
             except GeneLocus.DoesNotExist:
                 raise DataError("Failed to get gene {varname}, are all genes loaded from reference?".format(**snp))
 
