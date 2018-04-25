@@ -37,7 +37,11 @@ function listSources(data) {
       $('#sources').append(copy);
       copy.attr('id', 'source_' + datum[0]);
       $("h3", copy).text(datum[1]);
-      $("p", copy).text("(by " + datum[2] + ", " + datum[3] + " records)");
+      if(datum[2] && datum[2] != 'None') {
+        $("p", copy).text("(by " + datum[2] + ", " + datum[3] + " records)");
+      } else {
+        $("p", copy).text("(" + datum[3] + " records)");
+      }
       copy.show();
       copy.data('id', datum[0]);
       copy.data('name', datum[1]);
