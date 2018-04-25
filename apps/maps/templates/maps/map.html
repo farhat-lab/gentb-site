@@ -11,6 +11,7 @@
   <script src="{% static "js/d3.js" %}"></script>
   <script src="{% static "js/nv.d3.js" %}"></script>
   <script src="{% static "js/vertical-tabs.js" %}"></script>
+  <script src="{% static "js/sources-list.js" %}"></script>
   <script src="{% static "js/leaflet.js" %}"></script>
   <script src="{% static "js/genetics-map.js" %}"></script>
   <script src="{% static "js/drugs-chart.js" %}"></script>
@@ -30,6 +31,10 @@
         <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 vertical-tab-container">
             <div class="col-lg-1 col-md-3 col-sm-3 col-xs-3 vertical-tab-menu">
               <div class="list-group" id="data-store">
+                <a href="#" class="list-group-item text-center" id="source-store" data-json-url="{% url 'maps:map.sources' %}">
+                  <h2 class="glyphicon glyphicon-list-alt"></h2>
+                  <p>All Data</p>
+                </a>
                 <a href="#" class="list-group-item text-center active" id="map-store" data-json-url="{% url 'maps:map.places' %}">
                   <h2 class="glyphicon glyphicon-globe"></h2>
                   <p>World</p>
@@ -49,6 +54,20 @@
               </div>
             </div>
             <div class="col-lg-11 col-md-9 col-sm-9 col-xs-9 vertical-tab max-width">
+                <div class="vertical-tab-content">
+                  <div class="alert alert-info" style="margin: 0px;" role="alert">
+                    <span class="glyphicon glyphicon-question-sign pull-left" style="font-size:1.2em; padding-right: 8px;"></span>
+                    You may select or deselect a data set by clicking on the <strong>'Name'</strong> from the selection below.
+                  </div>
+                  <div class="sources" id="sources" style="padding: 10px;">
+                    <a href="#" class="btn btn-default" id="source_template" style="margin: 10px;">
+                      <h1 class="glyphicon glyphicon-list"></h1>
+                      <br>
+                      <h3>{name}</h3>
+                      <p><em>{desc}</em></p>
+                    </a>
+                  </div>
+                </div>
                 <div class="vertical-tab-content active">
       <div class="alert alert-info" style="margin: 0px;" role="alert">
         <span class="glyphicon glyphicon-question-sign pull-left" style="font-size:1.2em; padding-right: 8px;"></span>

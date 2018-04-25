@@ -26,4 +26,5 @@ urlpatterns = [
     url(r'data/lineages/$',  Lineages.as_view(), name="map.lineages"),
     url(r'data/mutation/$',  MutationView.as_view(), name="map.mutation"),
     url(r'data/mutations/$', Mutations.as_view(), name="map.mutations"),
+    url(r'data/sources/$',   Sources.as_view(), name="map.sources"),
 ]
