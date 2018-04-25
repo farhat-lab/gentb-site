@@ -3,12 +3,12 @@
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
-# published by the Free Software Foundation, either version 3 of the 
+# published by the Free Software Foundation, either version 3 of the
 # License, or (at your option) any later version.
 #
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the 
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU Affero General Public License for more details.
 #
 # You should have received a copy of the GNU Affero General Public License
@@ -24,11 +24,12 @@ from django.conf import settings
 from django.db.models import *
 from django.core.urlresolvers import reverse
 
-from .validators import is_octal
 from apps.maps.models import Country, Place
 from apps.uploads.models import UploadFile
+from .validators import is_octal
 
 class DrugClass(Model):
+    """The class of drug which acts as a category for drugs"""
     name = CharField(max_length=64, db_index=True, unique=True)
     code = CharField(max_length=12, db_index=True, unique=True)
 
@@ -37,6 +38,7 @@ class DrugClass(Model):
 
 
 class Drug(Model):
+    """Each antibiotic drug which resistance might be known"""
     kind = ForeignKey(DrugClass, verbose_name='Drug Class', null=True, blank=True)
 
     name = CharField(max_length=255, db_index=True, unique=True)
@@ -173,7 +175,7 @@ class Mutation(Model):
     aminoacid_varient = CharField(max_length=41, null=True, blank=True,
             help_text="The variant aminoacid tracks multiple mutations "
             "in the same codon")
-    
+
     # codonpos, varcodon, refcodon
     codon_position = IntegerField(null=True, blank=True)
     codon_varient = CharField(max_length=3, null=True, blank=True)
@@ -202,16 +204,16 @@ class Mutation(Model):
         return self.name
 
 SEXES = (
-  (None, 'Unknown'),
-  ('F', 'Female'),
-  ('M', 'Male'),
-  ('O', 'Other'),
-  ('',  'Left Blank'),
+    (None, 'Unknown'),
+    ('F', 'Female'),
+    ('M', 'Male'),
+    ('O', 'Other'),
+    ('',  'Left Blank'),
 )
 HIVS = (
-  (None, 'Unknown'),
-  ('negative', 'Negative'),
-  ('positive', 'Positive'),
+    (None, 'Unknown'),
+    ('negative', 'Negative'),
+    ('positive', 'Positive'),
 )
 RESISTANCE = (
     (None, 'Unknown'),
@@ -220,18 +222,19 @@ RESISTANCE = (
     ('r', 'Resistant to Drug'),
 )
 RESISTANCE_GROUP = (
-   (None, 'Unknown'),
-   ('S', 'Sensitive'),
-   ('ODR', 'Other Drug Resistant'),
-   ('MDR', 'Multi Drug Resistant'),
-   ('XDR', 'Extensively Drug Resistant'),
-   #('TDR', 'Total Drug Resistant'),
+    (None, 'Unknown'),
+    ('S', 'Sensitive'),
+    ('ODR', 'Other Drug Resistant'),
+    ('MDR', 'Multi Drug Resistant'),
+    ('XDR', 'Extensively Drug Resistant'),
+    #('TDR', 'Total Drug Resistant'),
 )
 
 
 # gtbdr - Targeted sequences, must link to regions table
 # wgsmtb - Full sequences, must specify Null targeting.
 class TargetSet(Model):
+    """For targeted genes (where the whole set of mutations is imported)"""
     genome = ForeignKey(Genome)
     name = CharField(max_length=64)
 
@@ -241,11 +244,11 @@ class TargetSet(Model):
 
 class TargetRegion(Model):
     target_set = ForeignKey(TargetSet, related_name='regions')
-    gene       = ForeignKey(GeneLocus, blank=True, null=True)
+    gene = ForeignKey(GeneLocus, blank=True, null=True)
 
-    start       = IntegerField(blank=True, null=True)
-    stop        = IntegerField(blank=True, null=True)
-    length      = IntegerField(blank=True, null=True)
+    length = IntegerField(blank=True, null=True)
+    start = IntegerField(blank=True, null=True)
+    stop = IntegerField(blank=True, null=True)
 
     def __str__(self):
         return "Target: %s (%d-%d)" % (str(self.gene), self.start, self.stop)
