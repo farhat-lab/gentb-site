@@ -1,22 +1,23 @@
 /*
  * Copyright 2017, Maha Farhat
  *
- * This file is part of the software inkscape-web, consisting of custom 
- * code for the Inkscape project's django-based website.
+ * This file is part of the software gentb, consisting of custom 
+ * code for the GenTB's django-based website.
  *
- * inkscape-web is free software: you can redistribute it and/or modify
+ * gentb is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * inkscape-web is distributed in the hope that it will be useful,
+ * gentb is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Affero General Public License for more details.
  *
  * You should have received a copy of the GNU Affero General Public License
- * along with inkscape-web.  If not, see <http://www.gnu.org/licenses/>.
+ * along with gentb.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 var all_tabs = 'div.vertical-tab-menu > div.list-group > a';
 
 $(document).ready(function() {
@@ -49,6 +50,7 @@ $(document).ready(function() {
   $(all_tabs+'.active').click();
 });
 
+/* Collects all tab values into a dictionary ready for sending to the server */
 function getAllTabData(except) {
   var data = {};
   $(all_tabs).each(function() {
@@ -65,11 +67,21 @@ function getAllTabData(except) {
   return data;
 }
 
+/* Returns data for the given tab key name */
 function getTabData(key) {
   var store = $('#'+key+'-store');
   return store.data('value');
 }
 
+/*
+   key    - This vertical tab that this data is filed under, should match html id.
+   value  - The value that should be sent to the server
+   text   - The new text name for this tab while selected
+   icon   - The new icon for this tab while selected
+   column - When the selection can result in different types of values
+            the tab can optionally set a column name which replaces
+            'key' as the key word argument name sent to the server.
+ */
 function setTabData(key, value, text, icon, column) {
   var store = $('#'+key+'-store');
 
@@ -91,6 +103,8 @@ function setTabData(key, value, text, icon, column) {
   }
 }
 
+/* Deselect tab, removing it's value and putting all values back to what they
+   where when the page loaded */
 function unsetTabData(key) {
   var store = $('#'+key+'-store');
   store.removeClass('selected');
@@ -106,6 +120,7 @@ function unsetTabData(key) {
   }
 }
 
+/* d3 function for adding data to a d3 svg chart */
 function chartData(svg, chart, data) {
   return d3.select(svg)
     .datum(data)
