@@ -22,7 +22,11 @@ from django.contrib.admin import *
 from .models import *
 from .forms import DrugForm
 
-site.register(ImportSource)
+class ImportSourceAdmin(ModelAdmin):
+    list_display = ('name', 'created', 'uploader', 'complete')
+    readonly_fields = ('uploaded',)
+
+site.register(ImportSource, ImportSourceAdmin)
 
 class DrugAdmin(ModelAdmin):
     list_display = ('__str__', 'mutation_count')
