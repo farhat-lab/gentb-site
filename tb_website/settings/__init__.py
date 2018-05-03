@@ -32,7 +32,7 @@ except ImportError:
 
 for n, v in globals().items():
     if n.split('_')[-1] in ('DIR', 'DIRECTORY', 'PATH', 'ROOT'):
-        if 'FORMAT' in n:
+        if 'FORMAT' in n or 'LIBRARY' in n:
             continue
         if v and v[0] != '/':
             continue
