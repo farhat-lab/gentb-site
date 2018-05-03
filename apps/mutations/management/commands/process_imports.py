@@ -134,10 +134,10 @@ class Command(BaseCommand):
         )
 
         # BIO SAMPLE first.
-        name = vcf.metadata.get('SAMPLE_ID', (None))[0]
+        name = vcf.metadata.get('SAMPLE_ID', (None,))[0]
         name = EMPTY.get(name, name)
 
-        other_name = vcf.metadata.get('STRAIN_NAME', (None))[0]
+        other_name = vcf.metadata.get('STRAIN_NAME', (None,))[0]
         other_name = EMPTY.get(name, name)
 
         if name is None:
