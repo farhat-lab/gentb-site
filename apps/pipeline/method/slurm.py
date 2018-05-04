@@ -18,10 +18,6 @@
 This is the slurm based work-schedular plugin.
 """
 
-import os
-import shutil
-import logging
-
 from datetime import datetime
 from subprocess import Popen, PIPE
 
@@ -29,8 +25,9 @@ from .base import ManagerBase, make_aware, settings
 
 
 class JobManager(ManagerBase):
+    """Manage jobs sent to slurm cluster manager"""
     def __init__(self, *args, **kw):
-        self.queue = getattr(settings, 'PIPELINE_SLURM_PARTITION', 'short')
+        self.partition = getattr(settings, 'PIPELINE_SLURM_PARTITION', 'short')
         self.limit = getattr(settings, 'PIPELINE_SLURM_LIMIT', '12:00')
         if isinstance(self.limit, int):
             self.limit = "%s:00" % self.limit
@@ -46,11 +43,12 @@ class JobManager(ManagerBase):
             bcmd += ['--dependency=afterok:{}'.format(depends)]
         if self.limit:
             bcmd += ['-t', self.limit]
-        bcmd += ['--wrap' cmd]
-        p = Popen(bcmd, shell=False, stdout=None, stderr=None, close_fds=True)
-        return p.wait() == 0
+        bcmd += ['--wrap', cmd]
+        proc = Popen(bcmd, shell=False, stdout=None, stderr=None, close_fds=True)
+        return proc.wait() == 0
 
-    def stop(self, job_id):
+    @staticmethod
+    def stop(job_id):
         """Stop the given process using scancel"""
         return Popen(['scancel', job_id]).wait() == 0
 
@@ -58,8 +56,9 @@ class JobManager(ManagerBase):
         """Returns if the job is running, how long it took or is taking and other details."""
         # Get the status for the listed job, how long it took and everything
         # sacct -a -l -p --name=test_id_mo131
-        p = Popen(['sacct', '-a', '-format', 'jobid,jobname,start,end,state,exitcode', '-p', '--jobs', job_id], stdout=PIPE, stderr=None)
-        (out, err) = p.communicate()
+        proc = Popen(['sacct', '-a', '-format', 'jobid,jobname,start,end,state,exitcode',\
+            '-p', '--jobs', job_id], stdout=PIPE, stderr=None)
+        (out, err) = proc.communicate()
 
         # Turn the output into a dictionary useful
         lines = out.split('\n')
@@ -83,6 +82,8 @@ class JobManager(ManagerBase):
         ret = None
         (_, err) = self.job_read(job_id, 'err')
         (ret, sig) = data['exitcode']
+        if clean:
+            pass
 
         return {
             'submitted': data['submit'],
@@ -94,5 +95,3 @@ class JobManager(ManagerBase):
             'error': int(err),
             'signal': int(sig),
         }
-        
-
