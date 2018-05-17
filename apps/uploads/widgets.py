@@ -47,8 +47,9 @@ class UploadChooserWidget(TextInput):
         attrs['data-manual_url'] = reverse('uploads:manual')
         ret = render(name, value, attrs)
         for bucket, match, label, link in self.buckets:
+            # This is evil, but django changed how it works
+            self.input_type = 'bucket'
             kw = attrs.copy()
-            kw['type'] = 'bucket'
             kw['data-match'] = match
             kw['data-parent'] = kw['id']
             kw['data-label'] = label
@@ -56,6 +57,7 @@ class UploadChooserWidget(TextInput):
             kw['data-link'] = link
             kw['id'] += '_' + bucket
             ret += render(name + '_' + bucket, '', kw)
+            self.input_type = 'upload-chooser'
         return ret
 
     class Media:
