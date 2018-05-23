@@ -44,14 +44,16 @@ class Command(BaseCommand):
 
         for progrun in ProgramRun.objects.filter(is_submitted=True, is_complete=False, is_error=False):
             sys.stderr.write("Run Status: %s " % str(progrun))
-            if 'fatal' in str(progrun).lower():
-                progrun.is_error = True
-                progrun.save()
             if progrun.update_status():
                 sys.stderr.write(" [COMPLETE]\n")
                 progrun.piperun.predictstrain_set.first().update_status()
             elif progrun.is_error:
                 sys.stderr.write(" [ERROR]\n")
             else:
-                sys.stderr.write(" [WAITING]\n")
+                if 'fatal' in str(progrun).lower():
+                    sys.stderr.write(" [FAILED]\n")
+                    progrun.is_error = True
+                    progrun.save()
+                else:
+                    sys.stderr.write(" [WAITING]\n")
 
