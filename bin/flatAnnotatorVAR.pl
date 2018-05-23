@@ -444,7 +444,6 @@ sub annotcoding{
    if ($aasnp =~ /\*/) {
 	$sns = 'Z';
    }
-  }
  }
  my $name = "SNP_${cnc}${sns}_$from";
  $name .= "_${ref_allele}${nucpos}${allele}"; # rrs and rrl will have the nucleotide positions between ref and alt alleles
