@@ -33,12 +33,12 @@
         {% if strain.piperun %}
           {% for run in strain.piperun.all_programs %}
             {% if run.is_error %}
-              {% if not run.is_submitted %}
+              {% if not run.is_submitted and run.is_complete %}
                 <li data-toggle="collapse" data-target="#{{ run.job_id }}">
                   <span class="glyphicon glyphicon-refresh" data-container="body" data-toggle="tooltip" title="Scheduled for re-run (after error)."></span>
                   <h4>{{ run.program.name }}</h4>
                 </li>
-              {% elif run.is_started %}
+              {% elif run.is_started or run.error_text %}
                 <li class="error" data-toggle="collapse" data-target="#{{ run.job_id }}">
                   <span class="glyphicon glyphicon-remove" data-container="body" data-toggle="tooltip" title="Error running this program, click for details."></span>
                   <h4>{{ run.program.name }}</h4>
@@ -74,10 +74,17 @@
           {% endfor %}
         {% else %}
           {% for link in strain.pipeline.programs.all %}
-            <li>
-              <span class="glyphicon glyphicon-time" data-container="body" data-toggle="tooltip" title="Entire pipeline has not been submitted yet, please wait."></span>
-              <h4>{{ link.program.name }}</h4>
-            </li>
+            {% if strain.has_timedout %}
+              <li class="error">
+                <span class="glyphicon glyphicon-time" data-container="body" data-toggle="tooltip" title="Entire pipeline has timed out!"></span>
+                <h4>{{ link.program.name }}</h4>
+              </li>
+            {% else %}
+              <li>
+                <span class="glyphicon glyphicon-time" data-container="body" data-toggle="tooltip" title="Entire pipeline has not been submitted yet, please wait."></span>
+                <h4>{{ link.program.name }}</h4>
+              </li>
+            {% endif %}
           {% endfor %}
         {% endif %}
       </ul>

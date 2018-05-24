@@ -254,18 +254,21 @@ class PredictStrain(Model):
         the files_status and run_status, with an extra status if a prediction
         file is detected or if the internal time limit has been reached.
         """
-        timedout = self.dataset.created < get_timeout()
         files_status = self.files_status
         if files_status == STATUS_DONE:
             run_status = self.run_status
             if run_status == STATUS_DONE and self.has_prediction:
                 return STATUS_READY
-            if timedout:
+            if self.has_timedout:
                 return STATUS_TIMEOUT
             return run_status + files_status
-        if timedout:
+        if self.has_timedout:
             return STATUS_TIMEOUT
         return files_status
+
+    def has_timedout(self):
+        """Returns True if this prediction run has timed out"""
+        return self.dataset.created < get_timeout()
 
     def get_status(self):
         """Return a string description of the status for this prediction strain"""
