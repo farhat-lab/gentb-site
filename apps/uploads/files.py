@@ -18,17 +18,21 @@
 # Imported from django-resumable by jean-philippe serafin 0.2.0-dev, (c) 2015
 # MIT License (no file header or project LICENSE file, see setup.py)
 #
+"""
+Control the resumable file API (javascript client side)
+"""
 
 import os
-
 from datetime import datetime
+
+import pytz
 
 from django.core.exceptions import ImproperlyConfigured
 from django.core.files.storage import FileSystemStorage
 from django.conf import settings
 
-
 class ResumableFile(object):
+    """A resumable file controls getting pieces of a file"""
     upload_root = getattr(settings, 'UPLOAD_ROOT', None)
     name_template = "part_%(resumableChunkNumber)04d.tmp"
 
@@ -84,9 +88,10 @@ class ResumableFile(object):
         return os.path.isfile(self.upload_dir) or \
             self.kwargs['resumableTotalSize'] == self.size
 
-    def process_chunk(self, file):
+    def process_chunk(self, _file):
+        """Process the chunks of the given file"""
         if not self.chunk_exists:
-            self.storage.save(self.name_template % self.kwargs, file)
+            self.storage.save(self.name_template % self.kwargs, _file)
 
     def save_to(self, new_dir):
         """When saving all the chunks to a new directory"""
@@ -97,7 +102,7 @@ class ResumableFile(object):
             linkto = os.readlink(self.upload_dir)
             os.symlink(linkto, filename)
             return
-    
+
         # Actually save the file using storage
         storage = FileSystemStorage(location=new_dir)
         storage.save(self.filename, self)
@@ -130,11 +135,14 @@ class ResumableFile(object):
 
     def get_times(self):
         """Return a list of modified datetimes"""
-        d = self.upload_dir
+        upload = self.upload_dir
         files = []
-        if os.path.isdir(d):
-            files = [os.path.join(d, f) for f in os.listdir(d)]
-        elif os.path.exists(d):
-            files = [d]
-        return [datetime.fromtimestamp(os.path.getmtime(f)) for f in files]
+        if os.path.isdir(upload):
+            files = [os.path.join(upload, f) for f in os.listdir(upload)]
+        elif os.path.exists(upload):
+            files = [upload]
+        return [fromtimestamp(os.path.getmtime(f)) for f in files]
 
+def fromtimestamp(dtm):
+    """Format a string timestamp into a non-native UTC timestamp"""
+    return pytz.utc.localize(datetime.fromtimestamp(dtm))
