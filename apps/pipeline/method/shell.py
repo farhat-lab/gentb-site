@@ -19,7 +19,6 @@ This is the most basic way of running jobs, in the local shell.
 """
 
 import os
-import shutil
 import signal
 
 from subprocess import Popen
@@ -38,6 +37,8 @@ class JobManager(ManagerBase):
         """
         Open the command locally using bash shell.
         """
+        self.job_stale(job_id)
+        #print("submit: {} >{} ({})".format(job_id, cmd, depends))
         if depends:
             (_, pid) = self.job_read(depends, 'pid')
             (_, ret) = self.job_read(depends, 'ret')
@@ -50,6 +51,8 @@ class JobManager(ManagerBase):
                     # return by watching for the appearence of the ret file
                     # then checking it's content
                     cmd = (self.DEP % {'fn': self.job_fn(depends, 'ret')}) + cmd
+            else:
+                raise IOError("Couldn't get pid for dependant job.")
 
         # Collect the standard error into an err file
         err = open(self.job_fn(job_id, 'err'), 'w')
@@ -59,6 +62,7 @@ class JobManager(ManagerBase):
         out = open('/dev/null', 'w')
         # Collect the return code into the ret file
         cmd += self.RET % {'fn': self.job_fn(job_id, 'ret')}
+        #print("  -> {}".format(cmd))
 
         # Run the large shell command
         proc = Popen(cmd, shell=True, stdout=out, stderr=err, close_fds=True)
@@ -79,10 +83,10 @@ class JobManager(ManagerBase):
         parents = [os.getpid()]
         while parents:
             for child in pids.get(parents.pop(0), []):
-                if self.state_and_clear(pid, False):
+                if self.state_and_clear(child, False):
                     parents.append(child)
                     yield child
-                    
+
     def clean_up(self):
         """Create a list of all processes and kills them all"""
         pids = list(self.all_children())
@@ -92,10 +96,12 @@ class JobManager(ManagerBase):
                 os.waitpid(int(pid), 0)
             except OSError:
                 pass
+        super(JobManager, self).clean_up()
         return pids
 
     def stop(self, job_id):
         """Send a SIGTERM to the job and clean up"""
+        #print("STOP: {}".format(job_id))
         (_, pid) = self.job_read(job_id, 'pid')
         if pid is None:
             return
@@ -108,13 +114,15 @@ class JobManager(ManagerBase):
             except IOError:
                 pass
 
-    def is_running(self, pid):
+    @staticmethod
+    def is_running(pid):
         """Returns true if the process is still running"""
         return os.path.exists("/proc/%d/status" % int(pid))
 
     def status(self, job_id, clean=False):
         """Returns a dictionary containing status information,
         can only be called once as it will clean up status files!"""
+        #print("STATUS: {} CLEAN:{}".format(job_id, clean))
         (started, pid) = self.job_read(job_id, 'pid')
         (finished, ret) = self.job_read(job_id, 'ret')
         (_, err) = self.job_read(job_id, 'err')
@@ -135,15 +143,18 @@ class JobManager(ManagerBase):
             self.job_clean(job_id, 'ret')
             self.job_clean(job_id, 'err')
 
-        return {
-          'status': status,
-          'started': started,
-          'finished': finished,
-          'return': int(ret) if ret is not None else None,
-          'error': err,
+        ret = {
+            'status': status,
+            'started': started,
+            'finished': finished,
+            'return': int(ret) if ret is not None else None,
+            'error': err,
         }
+        #print("  RET: {status}, {return}, {error}".format(**ret))
+        return ret
 
-    def state_and_clear(self, pid, default=None):
+    @staticmethod
+    def state_and_clear(pid, default=None):
         """Gets the status of the process and waits for zombies to clear"""
         pid_fn = "/proc/%d/status" % int(pid)
         if os.path.exists(pid_fn):
@@ -153,11 +164,10 @@ class JobManager(ManagerBase):
                 os.waitpid(int(pid), 0)
                 return default
             return {
-              'D': 'sleeping', # Machine is too busy
-              'S': 'sleeping', # Busy doing nothing
-              'R': 'running', # Active
-              'T': 'pending', # Stopped because we asked it to be
-              'X': 'finished', # Pining for the fyords
+                'D': 'sleeping', # Machine is too busy
+                'S': 'sleeping', # Busy doing nothing
+                'R': 'running', # Active
+                'T': 'pending', # Stopped because we asked it to be
+                'X': 'finished', # Pining for the fyords
             }[data['State'][0]]
         return default
-

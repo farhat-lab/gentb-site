@@ -19,27 +19,30 @@ The base functions for a pipeline method manager.
 """
 
 import os
+import sys
 import atexit
 import shutil
 import tempfile
 from datetime import datetime
 
 try:
-    from django.conf import settings
+    from django.conf import settings #pylint: disable=unused-import
 except ImportError:
     settings = {}
 
 try:
     from django.utils.timezone import make_aware
-    from django.utils.timezone import now
+    from django.utils.timezone import now #pylint: disable=unused-import
 except ImportError:
-    import pytz
-    make_aware = lambda dt: timezone.localize(value, is_dst=None)
-    from datetime import datetime
+    import timezone
+    make_aware = lambda dt: timezone.localize(dt, is_dst=None)
     now = datetime.now
 
 
 class ManagerBase(object):
+    """Manageany number of pipeline methods such as shell, slurm, lsb, etc"""
+    name = property(lambda self: type(self).__module__.split('.')[-1])
+
     def __init__(self, pipedir=None):
         if pipedir is None:
             self.pipedir = tempfile.mkdtemp(prefix='pipeline-')
@@ -49,6 +52,8 @@ class ManagerBase(object):
 
     def job_fn(self, job_id, ext='pid'):
         """Return the filename of the given job_id and type"""
+        if not os.path.isdir(self.pipedir):
+            os.makedirs(self.pipedir)
         return os.path.join(self.pipedir, job_id + '.' + ext)
 
     def clean_up(self):
@@ -58,28 +63,30 @@ class ManagerBase(object):
 
     def job_read(self, job_id, ext='pid'):
         """Returns the content of the specific job file"""
-        fn = self.job_fn(job_id, ext)
-        if os.path.isfile(fn):
-            with open(fn, 'r') as fhl:
-                dt = datetime.fromtimestamp(os.path.getmtime(fn))
-                return (make_aware(dt), fhl.read().strip())
+        filen = self.job_fn(job_id, ext)
+        if os.path.isfile(filen):
+            with open(filen, 'r') as fhl:
+                dtm = datetime.fromtimestamp(os.path.getmtime(filen))
+                return (make_aware(dtm), fhl.read().strip())
         else:
             return (None, None)
 
     def job_clean(self, job_id, ext):
         """Delete files once finished with them"""
-        fn = self.job_fn(job_id, ext)
-        if os.path.isfile(fn):
-            os.unlink(fn)
+        filen = self.job_fn(job_id, ext)
+        if os.path.isfile(filen):
+            os.unlink(filen)
+            return True
+        return False
 
     def job_write(self, job_id, ext, data):
         """Write the data to the given job_id record"""
-        fn = self.job_fn(job_id, ext)
-        with open(fn, 'w') as fhl:
+        filen = self.job_fn(job_id, ext)
+        with open(filen, 'w') as fhl:
             fhl.write(str(data))
 
-
-    @property
-    def name(self):
-        return type(self).__module__.split('.')[-1]
-
+    def job_stale(self, job_id):
+        """Figure out if a job has stale return files"""
+        if self.job_clean(job_id, 'ret'):
+            sys.stderr.write("Stale job file cleared: {}\n".format(job_id))
+            self.job_clean(job_id, 'pid')

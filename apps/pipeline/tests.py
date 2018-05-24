@@ -14,10 +14,12 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
+"""
+Test core shell functionality for the pipeline
+"""
 
 import os
 import time
-import signal
 import tempfile
 
 from django.test import TestCase, override_settings
@@ -26,21 +28,27 @@ from autotest.base import ExtraTestCase
 from apps.pipeline.models import Program, ProgramFile, Pipeline
 from apps.pipeline.method import get_job_manager
 
+from apps.pipeline.method.watch import LOG as watch_log
 DIR = os.path.dirname(__file__)
 FIX = os.path.join(DIR, 'fixtures')
 
 class JobManagerTest(TestCase):
+    """Test running various shell based jobs"""
     def setUp(self):
         self.manager = get_job_manager('apps.pipeline.method.shell')
-        self.fn = tempfile.mktemp(prefix='test-job-')
+        self.filename = tempfile.mktemp(prefix='test-job-')
 
     def tearDown(self):
-        for x in range(20):
-            fn = "%s.%d" % (self.fn, x)
-            if os.path.isfile(fn):
-                os.unlink(fn)
-        if os.path.isfile(self.fn):
-            os.unlink(self.fn)
+        for count in range(20):
+            filename = "%s.%d" % (self.filename, count)
+            if os.path.isfile(filename):
+                os.unlink(filename)
+        if os.path.isfile(self.filename):
+            os.unlink(self.filename)
+        if os.path.isfile(watch_log):
+            os.unlink(watch_log)
+
+        self.manager.clean_up()
 
     def test_shell_run(self):
         """Test that jobs can be run via the shell"""
@@ -67,11 +75,14 @@ class JobManagerTest(TestCase):
         self.assertEqual(data['error'], '/bin/sh: 1: fidly: not found')
         self.assertEqual(data['return'], 127)
 
-    def assertDependantJobs(self, *cmds, **kw):
-        for x, cmd in enumerate(cmds):
+    def assertDependantJobs(self, *cmds, **kw): # pylint: disable=invalid-name
+        """Check a chain of jobs and make sure they work in line"""
+        expected = kw.pop('expected', None)
+
+        for pos, cmd in enumerate(cmds):
             cmd = 'sleep 0.1 && ' + (cmd % kw)
-            depends = 'a%d' % (x - 1) if x else None
-            self.manager.submit('a%d' % x, cmd, depends=depends)
+            depends = 'a%d' % (pos - 1) if pos else None
+            self.manager.submit('a%d' % pos, cmd, depends=depends)
 
         if 'call' in kw:
             kw['call']()
@@ -89,54 +100,62 @@ class JobManagerTest(TestCase):
             timeout -= 1
             self.assertTrue(timeout > 0, "Timeout waiting for dependant job %s" % cmds[job])
 
-        return ret
+        if expected is not None:
+            try:
+                self.assertEqual(tuple(expected), tuple(ret))
+            except AssertionError:
+                if os.path.isfile(watch_log):
+                    with open(watch_log, 'r') as fhl:
+                        print("WATCH LOG:\n{}\n\n".format(fhl.read()))
+                raise
 
     def test_dependant_jobs(self):
         """When one job needs a first job to complete"""
-        ss = self.assertDependantJobs(
+        self.assertDependantJobs(
             'ls --help > %(fn)s.1',
             'grep OK %(fn)s.1 > %(fn)s.2',
             'wc %(fn)s.2 > %(fn)s.3',
-            fn=self.fn)
+            fn=self.filename,
+            expected=('finished:0',)*3)
 
-        self.assertEqual(tuple(ss), ('finished:0',)*3)
-        with open(self.fn+'.1', 'r') as fhl:
+        with open(self.filename+'.1', 'r') as fhl:
             self.assertTrue('Usage' in fhl.read())
-        with open(self.fn+'.2', 'r') as fhl:
+        with open(self.filename+'.2', 'r') as fhl:
             self.assertEqual(fhl.read(), ' 0  if OK,\n')
-        with open(self.fn+'.3', 'r') as fhl:
-            self.assertEqual(fhl.read(), ' 1  3 11 %s.2\n' % self.fn)
+        with open(self.filename+'.3', 'r') as fhl:
+            self.assertEqual(fhl.read(), ' 1  3 11 %s.2\n' % self.filename)
 
     def test_dependant_error(self):
         """When the first job causes an error"""
-        ss = self.assertDependantJobs(
+        self.assertDependantJobs(
             'ls %(fn)s.0 > %(fn)s.1',
             'ls %(fn)s.1 > %(fn)s.2',
             'ls %(fn)s.2 > %(fn)s.3',
-            fn=self.fn)
-        self.assertEqual(tuple(ss), ('finished:2', 'stopped:1', 'stopped:1'))
+            fn=self.filename,
+            expected=('finished:2', 'stopped:1', 'stopped:1'))
 
     def test_dependant_stopped(self):
         """When the first job is stoppped whole chain is stopped"""
         def stop():
+            """Quit the job after 100ms"""
             time.sleep(0.1)
             self.manager.stop('a0')
-        ss = self.assertDependantJobs('sleep 60', 'sleep 1', 'sleep 1', call=stop)
-        self.assertEqual(tuple(ss), ('stopped:9', 'stopped:1', 'stopped:1'))
+        self.assertDependantJobs('sleep 60', 'sleep 1', 'sleep 1', call=stop,\
+            expected=('stopped:9', 'stopped:1', 'stopped:1'))
 
 
 class ProgramTest(ExtraTestCase):
+    """Test the loading of programs and how they make commands"""
     def setUp(self):
         super(ProgramTest, self).setUp()
-        for name in ('one', 'two'):
-            pf = ProgramFile.objects.create(name='file', store='test_%s.txt' % name)
-            setattr(self, name, pf)
-            setattr(self, name+'_fn', unicode(pf.store.file))
+        self.files = [
+            ProgramFile.objects.create(name='file', store='test_{}.txt'.format(name))\
+                for name in ('one', 'two')]
 
         self.program = Program(name='test', keep=False,
-                command_line='ls -l ${file} > @{file}')
+                               command_line='ls -l ${file} > @{file}')
         self.program.save()
-        self.program.files = [self.one]
+        self.program.files = [self.files[0]]
 
     def test_no_input_error(self):
         """Test input error"""
@@ -146,11 +165,11 @@ class ProgramTest(ExtraTestCase):
 
     def test_no_output_error(self):
         """Test output error"""
-        dict(self.program.prepare_files(file=self.one_fn))
+        dict(self.program.prepare_files(file=unicode(self.files[0].store.file)))
         self.program.command_line = 'ls -l ${file} > @{output}'
 
         with self.assertRaises(ValueError):
-            dict(self.program.prepare_files(file=self.one_fn))
+            dict(self.program.prepare_files(file=unicode(self.files[0].store.file)))
 
     def test_io_output(self):
         """Test the processing of io"""
@@ -166,35 +185,35 @@ class ProgramTest(ExtraTestCase):
         """Test the program"""
         output = '/tmp/test_one.txt'
         files = dict(self.program.prepare_files(output_dir='/tmp'))
-        self.assertEqual(files[('$', 'file', 6, 13)], self.one_fn)
+        self.assertEqual(files[('$', 'file', 6, 13)], unicode(self.files[0].store.file))
         self.assertEqual(files[('@', 'file', 16, 23)], output)
 
         cmd = self.program.prepare_command(files)
-        self.assertEqual(cmd, "ls -l %s > %s" % (self.one_fn, output))
+        self.assertEqual(cmd, "ls -l %s > %s" % (self.files[0].store.file, output))
 
     def test_prefix_suffix(self):
         """Test the use of prefix and suffix in command"""
         output = '/tmp/out_one.ls'
-        self.one.name = 'foo'
-        self.one.save()
+        self.files[0].name = 'foo'
+        self.files[0].save()
         self.program.command_line = 'ls -l $test_{foo}.txt > @out_{foo}.ls'
         files = dict(self.program.prepare_files(output_dir='/tmp'))
         self.assertEqual(files[('@', 'foo', 24, 37)], output)
         cmd = self.program.prepare_command(files)
-        self.assertEqual(cmd, "ls -l %s > %s" % (self.one_fn, output))
+        self.assertEqual(cmd, "ls -l %s > %s" % (self.files[0].store.file, output))
 
     def test_bin_directory(self):
         """Test the use of the custom BIN directory"""
         with self.settings(PIPELINE_BIN=FIX):
             self.program.command_line = 'sh ${bin}test.sh ${file}'
-            for fn in dict(self.program.prepare_files(output_dir='/tmp')).values():
-                self.assertTrue(os.path.isfile(fn), "File doesn't exist: %s" % fn)
+            for filename in dict(self.program.prepare_files(output_dir='/tmp')).values():
+                self.assertTrue(os.path.isfile(filename), "File doesn't exist: %s" % filename)
 
     def test_brand_new_output(self):
         """Test the use of outputs with a new name"""
         self.program.command_line = 'ls > @{foo}.sam'
         files = dict(self.program.prepare_files(output_dir='/tmp', foo='gah.txt'))
-        cmd = self.program.prepare_command(files)
+        self.program.prepare_command(files)
 
     def test_command_combination(self):
         """New lines are considered command combinators"""
@@ -204,45 +223,49 @@ class ProgramTest(ExtraTestCase):
         self.assertEqual(cmd, "ls && wc && ls")
 
     def test_prepare_from_list(self):
-        self.program.files = [self.one, self.two]
+        """Prepare commands from a list"""
+        self.program.files = [self.files[0], self.files[1]]
         self.program.command_line = 'ls ${file}_one.txt ${file}_two.txt '\
                                      + '${file}_one.ps ${file}_two.ps'
-        files = list(self.program.prepare_files(output_dir='/tmp',
-                                file=['/tmp/in_one.ps', '/tmp/in_two.ps']))
+        files = list(self.program.prepare_files(output_dir='/tmp',\
+                        file=['/tmp/in_one.ps', '/tmp/in_two.ps']))
 
         self.assertEqual(files, [
-            (('$', 'file', 3, 18), self.one_fn),
-            (('$', 'file', 19, 34), self.two_fn),
+            (('$', 'file', 3, 18), unicode(self.files[0].store.file)),
+            (('$', 'file', 19, 34), unicode(self.files[1].store.file)),
             (('$', 'file', 35, 49), '/tmp/in_one.ps'),
             (('$', 'file', 50, 64), '/tmp/in_two.ps'),
         ])
 
 
 class PipelineTest(ExtraTestCase):
+    """Test pipeline features"""
     def setUp(self):
         self.pipeline = Pipeline.objects.create(name='TEST')
         self.file = ProgramFile(name='file', store='test_one.txt')
-        self.fn = unicode(self.file.store.file)
-        self.dir = os.path.dirname(self.fn)
+        self.filename = unicode(self.file.store.file)
+        self.dir = os.path.dirname(self.filename)
 
-    def setupPipeline(self, *programs):
+    def setup_pipeline(self, *programs):
         """Setup a list of programs in the pipeline"""
         wait = 'sleep 0.01 && '
-        self.programs = [Program.objects.create(name=a, command_line=wait + b)
-            for a, b in programs]
+        self.programs = [Program.objects.create(name=a, \
+            command_line=wait + b) for a, b in programs]
         for pos, program in enumerate(self.programs):
             self.pipeline.programs.create(order=pos, program=program)
 
-    def assertProgram(self, result, inputs, outputs, data=None):
-        def content(fn):
-            with open(fn, 'r') as fhl:
+    def assertProgram(self, result, inputs, outputs, data=None): # pylint: disable=invalid-name
+        """Assert that creating a program produces the right data"""
+        def content(filename):
+            """Read in the filename and return content"""
+            with open(filename, 'r') as fhl:
                 return fhl.read()
         outputs = outputs if isinstance(outputs, list) else [outputs]
         inputs = inputs if isinstance(inputs, list) else [inputs]
         self.assertEqual(result.input_files, "\n".join(inputs))
         self.assertEqual(result.output_files, "\n".join(outputs))
         if data is not None:
-            ret = '---'.join([content(fn) for fn in outputs])
+            ret = '---'.join([content(filename) for filename in outputs])
             self.assertEqual(ret, data)
 
         self.assertTrue(result.is_submitted)
@@ -257,13 +280,13 @@ class PipelineTest(ExtraTestCase):
     @override_settings(PIPELINE_MODULE='apps.pipeline.method.fake')
     def test_pipeline(self):
         """Test the pipeline generation"""
-        self.setupPipeline(
-          ('A', 'ls -l ${file}.txt > @{file}.ls'),
-          ('B', 'wc ${file}.ls > @{file}.c'),
-          ('C', 'ls -l ${file}.txt ${file}.ls ${file}.c > @{file}.out'),
-          ('D', 'wc ${file}.out > @{file}.out'),
+        self.setup_pipeline(
+            ('A', 'ls -l ${file}.txt > @{file}.ls'),
+            ('B', 'wc ${file}.ls > @{file}.c'),
+            ('C', 'ls -l ${file}.txt ${file}.ls ${file}.c > @{file}.out'),
+            ('D', 'wc ${file}.out > @{file}.out'),
         )
-        result = self.pipeline.run("pipe", output_dir=self.dir, file=self.fn)
+        result = self.pipeline.run("pipe", output_dir=self.dir, file=self.filename)
         limit = 40
         while not result.update_all():
             if limit == 40:
@@ -276,22 +299,21 @@ class PipelineTest(ExtraTestCase):
 
         results = list(result.programs.all())
         self.assertEqual(len(results), 4)
-        fn = self.fn[:-4] + ".%s"
-        self.assertProgram(results[0], self.fn, fn % "ls")
-        self.assertProgram(results[1], fn % "ls", fn % "c")
-        self.assertProgram(results[2], [fn % "ls", self.fn, fn % "c"], fn % "out")
-        self.assertProgram(results[3], fn % "out", fn % "out")
+        filename = self.filename[:-4] + ".%s"
+        self.assertProgram(results[0], self.filename, filename % "ls")
+        self.assertProgram(results[1], filename % "ls", filename % "c")
+        self.assertProgram(results[2], [
+            filename % "ls", self.filename, filename % "c"], filename % "out")
+        self.assertProgram(results[3], filename % "out", filename % "out")
 
     @override_settings(PIPELINE_MODULE='apps.pipeline.method.fake')
     def test_duration(self):
         """Test the duration during a run"""
-        self.setupPipeline(('DUR', 'sleep 5'))
+        self.setup_pipeline(('DUR', 'sleep 5'))
         results = self.pipeline.run("pipe", output_dir=self.dir)
         result = results.programs.get()
         get_job_manager().run_all()
-        for x in range(5):
+        for count in range(5):
             result.update_status()
-            self.assertEqual(int(result.duration), x+1)
+            self.assertEqual(int(result.duration), count + 1)
             time.sleep(1)
-
-
