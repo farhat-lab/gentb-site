@@ -22,7 +22,7 @@ import os
 import time
 import tempfile
 
-from django.test import TestCase, override_settings
+from django.test import override_settings
 from autotest.base import ExtraTestCase
 
 from apps.pipeline.models import Program, ProgramFile, Pipeline
@@ -32,13 +32,16 @@ from apps.pipeline.method.watch import LOG as watch_log
 DIR = os.path.dirname(__file__)
 FIX = os.path.join(DIR, 'fixtures')
 
-class JobManagerTest(TestCase):
+class JobManagerTest(ExtraTestCase):
     """Test running various shell based jobs"""
     def setUp(self):
-        self.manager = get_job_manager('apps.pipeline.method.shell')
+        super(JobManagerTest, self).setUp()
+        self.pipes = os.path.join(self.media_root, 'pipe')
+        self.manager = get_job_manager('apps.pipeline.method.shell', pipe_root=self.pipes)
         self.filename = tempfile.mktemp(prefix='test-job-')
 
     def tearDown(self):
+        super(JobManagerTest, self).tearDown()
         for count in range(20):
             filename = "%s.%d" % (self.filename, count)
             if os.path.isfile(filename):
