@@ -259,10 +259,10 @@ class PredictStrain(Model):
             run_status = self.run_status
             if run_status == STATUS_DONE and self.has_prediction:
                 return STATUS_READY
-            if self.has_timedout:
+            if self.has_timedout():
                 return STATUS_TIMEOUT
             return run_status + files_status
-        if self.has_timedout:
+        if self.has_timedout():
             return STATUS_TIMEOUT
         return files_status
 
