@@ -58,6 +58,10 @@ class Command(BaseCommand):
                     sys.stderr.write(" [FAILED]\n")
                     progrun.is_error = True
                     progrun.save()
+                elif progrun.created < get_timeout():
+                    sys.stderr.write(" [TIMEOUT]\n")
+                    progrun.error_text = str(progrun.error_text) + '[JOB TIMEOUT]'
+                    progrun.is_error = True
+                    progrun.save()
                 else:
                     sys.stderr.write(" [WAITING]\n")
-
