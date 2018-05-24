@@ -1,20 +1,24 @@
-
+"""
+Cron job command for running each of the prediction pipelines as needed.
+"""
 import sys
 import time
 
-from django.core.management.base import BaseCommand, CommandError
+from django.core.management.base import BaseCommand
 
-from apps.predict.models import PredictStrain
+from apps.predict.models import PredictStrain, get_timeout
 from apps.pipeline.models import ProgramRun
 
 class Command(BaseCommand):
     help = """Schedule each of the pipeline tasks with the shell or LSF"""
 
     def handle(self, **options):
+        """Called from the command line"""
         skipped, errors = 0, 0
-        for strain in PredictStrain.objects.filter(piperun__isnull=True):
-            sys.stderr.write("Strain: %s, " % str(strain))
+        for strain in PredictStrain.objects.filter(piperun__isnull=True,\
+                dataset__created__gt=get_timeout()):
             dl = strain.files_status
+            sys.stderr.write("Strain: {}, Files: {}".format(strain, dl))
             if dl is 0:
                 skipped += 1
             elif dl is 1:

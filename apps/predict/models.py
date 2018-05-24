@@ -19,21 +19,21 @@ Provide prediction app using the pipeline for building predictions and the
 uploads app to download large data files from the users.
 """
 
-import os
 import sys
 import json
-
 import logging
-LOGGER = logging.getLogger('apps.predict')
 
 from hashlib import md5
-from os.path import join, isfile, isdir, basename
 
-from collections import defaultdict, OrderedDict
+import os
+from os.path import join, isdir, basename
 
-from django.db.models import *
+from collections import defaultdict
+from datetime import timedelta
+
 from model_utils.models import TimeStampedModel
 
+from django.db.models import *
 from django.conf import settings
 from django.utils.text import slugify
 from django.core import serializers
@@ -46,20 +46,27 @@ from apps.pipeline.models import Pipeline, PipelineRun
 from apps.mutations.models import Drug
 from apps.mutations.utils import unpack_mutation_format
 
+LOGGER = logging.getLogger('apps.predict')
+
 # Basic status matrix, file_status + processing_status
 STATUS_LABELS = [
-  _('Dataset Confirmed'),       # STATUS_WAIT
-  _('File Retrieval Started'),  # STATUS_START
-  _('File Retrieval Failed'),   # STATUS_ERROR
-  _('File Retrieval Success'),  # STATUS_DONE + STATUS_WAIT
-  _('Processing Started'),      # STATUS_DONE + STATUS_START
-  _('Processing Failed'),       # STATUS_DONE + STATUS_ERROR
-  _('Processing Success'),      # STATUS_DONE + STATUS_DONE
-  _('Prediction Ready'),        # STATUS_READY
-  _('No Strains to process'),   # STATUS_NONE
+    _('Dataset Confirmed'),       # STATUS_WAIT
+    _('Processing Timed Out'),    # STATUS_TIMEOUT
+    _('File Retrieval Started'),  # STATUS_START
+    _('File Retrieval Failed'),   # STATUS_ERROR
+    _('File Retrieval Success'),  # STATUS_DONE + STATUS_WAIT
+    _('Processing Started'),      # STATUS_DONE + STATUS_START
+    _('Processing Failed'),       # STATUS_DONE + STATUS_ERROR
+    _('Processing Success'),      # STATUS_DONE + STATUS_DONE
+    _('Prediction Ready'),        # STATUS_READY
+    _('No Strains to process'),   # STATUS_NONE
 ]
-(STATUS_WAIT, STATUS_START, STATUS_ERROR, STATUS_DONE) = range(4)
+(STATUS_WAIT, STATUS_TIMEOUT, STATUS_START, STATUS_ERROR, STATUS_DONE) = range(5)
 (STATUS_READY, STATUS_NONE) = range(len(STATUS_LABELS) - 2, len(STATUS_LABELS))
+
+def get_timeout(timeout=14):
+    """Returns the timedate when the prediction should time out"""
+    return now() - timedelta(days=timeout)
 
 class PredictDataset(TimeStampedModel):
     """An uploaded predict dataset"""
@@ -69,15 +76,15 @@ class PredictDataset(TimeStampedModel):
     FILE_TYPE_FASTQ = 'fastq'
     FILE_TYPE_FASTQ2 = 'fastq-pair'
     FILE_TYPE_MANUAL = 'manual'
-    FILE_TYPES = [ 
-      (FILE_TYPE_VCF, 'Variant Call Format (VCF)'),
-      (FILE_TYPE_FASTQ, 'FastQ Single Ended Nucleotide Sequence'),
-      (FILE_TYPE_FASTQ2, 'FastQ Pair Ended Nucleotide Sequences'),
-      (FILE_TYPE_MANUAL, 'Mutations Manual Entry'),
+    FILE_TYPES = [
+        (FILE_TYPE_VCF, 'Variant Call Format (VCF)'),
+        (FILE_TYPE_FASTQ, 'FastQ Single Ended Nucleotide Sequence'),
+        (FILE_TYPE_FASTQ2, 'FastQ Pair Ended Nucleotide Sequences'),
+        (FILE_TYPE_MANUAL, 'Mutations Manual Entry'),
     ]
 
     user = ForeignKey(settings.AUTH_USER_MODEL, related_name='datasets')
-    md5 = CharField(max_length=40, blank=True, db_index=True,
+    md5 = CharField(max_length=40, blank=True, db_index=True,\
             help_text='auto-filled on save')
     title = CharField('Dataset Title', max_length=255)
     file_type = CharField(choices=FILE_TYPES, max_length=25)
@@ -235,6 +242,8 @@ class PredictStrain(Model):
         the files_status and run_status, with an extra status if a prediction
         file is detected.
         """
+        if self.dataset.created < get_timeout():
+            return STATUS_TIMEOUT
         files_status = self.files_status
         if files_status == STATUS_DONE:
             run_status = self.run_status
