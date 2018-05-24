@@ -40,7 +40,7 @@ except ImportError:
 
 
 class ManagerBase(object):
-    """Manageany number of pipeline methods such as shell, slurm, lsb, etc"""
+    """Manage any number of pipeline methods such as shell, slurm, lsb, etc"""
     name = property(lambda self: type(self).__module__.split('.')[-1])
 
     def __init__(self, pipedir=None):
