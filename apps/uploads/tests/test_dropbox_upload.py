@@ -38,7 +38,7 @@ class TestDropbox(ExtraTestCase):
 
     def assertUpload(self, username, source, **attr):
         get_user_model().objects.create(username='r217')
-        self.login_as(username='r217', password=True)
+        self.client.login(username='r217', password=True)
 
         data = {
           "id":"todo.vcf",
