@@ -51,7 +51,6 @@ LOGGER = logging.getLogger('apps.predict')
 # Basic status matrix, file_status + processing_status
 STATUS_LABELS = [
     _('Dataset Confirmed'),       # STATUS_WAIT
-    _('Processing Timed Out'),    # STATUS_TIMEOUT
     _('File Retrieval Started'),  # STATUS_START
     _('File Retrieval Failed'),   # STATUS_ERROR
     _('File Retrieval Success'),  # STATUS_DONE + STATUS_WAIT
@@ -60,9 +59,14 @@ STATUS_LABELS = [
     _('Processing Success'),      # STATUS_DONE + STATUS_DONE
     _('Prediction Ready'),        # STATUS_READY
     _('No Strains to process'),   # STATUS_NONE
+    _('Processing Timed Out'),    # STATUS_TIMEOUT
+    _('No Files Uploaded'),       # STATUS_NOFILES
 ]
-(STATUS_WAIT, STATUS_TIMEOUT, STATUS_START, STATUS_ERROR, STATUS_DONE) = range(5)
-(STATUS_READY, STATUS_NONE) = range(len(STATUS_LABELS) - 2, len(STATUS_LABELS))
+(STATUS_WAIT, STATUS_START, STATUS_ERROR, STATUS_DONE) = range(4)
+(STATUS_READY, STATUS_NONE) = (7, 8)
+(STATUS_TIMEOUT, STATUS_NOFILES) = (-2, -1)
+STATUS_LEVELS = (['default', 'primary', 'danger'] * 2) + \
+    ['default', 'success', 'danger', 'danger', 'danger']
 
 def get_timeout(timeout=14):
     """Returns the timedate when the prediction should time out"""
@@ -103,8 +107,16 @@ class PredictDataset(TimeStampedModel):
 
     def get_status(self):
         """Returns the status as a string"""
-        status = min([strain.status for strain in self.strains.all()] + [STATUS_NONE])
-        return STATUS_LABELS[status]
+        return STATUS_LABELS[self.status]
+
+    def get_status_level(self):
+        """Returns the btn/bootstrap color level for this status"""
+        return STATUS_LEVELS[self.status]
+
+    @property
+    def status(self):
+        """Returns the numeric level which this status has"""
+        return min([strain.status for strain in self.strains.all()] + [STATUS_NONE])
 
     @property
     def directory_exists(self):
@@ -240,20 +252,28 @@ class PredictStrain(Model):
         """
         Returns the status of this strain prediction run. A combination of
         the files_status and run_status, with an extra status if a prediction
-        file is detected.
+        file is detected or if the internal time limit has been reached.
         """
-        if self.dataset.created < get_timeout():
-            return STATUS_TIMEOUT
+        timedout = self.dataset.created < get_timeout()
         files_status = self.files_status
         if files_status == STATUS_DONE:
             run_status = self.run_status
             if run_status == STATUS_DONE and self.has_prediction:
                 return STATUS_READY
+            if timedout:
+                return STATUS_TIMEOUT
             return run_status + files_status
+        if timedout:
+            return STATUS_TIMEOUT
         return files_status
 
     def get_status(self):
+        """Return a string description of the status for this prediction strain"""
         return STATUS_LABELS[self.status]
+
+    def get_status_level(self):
+        """Return the bootstrap css color level for this status"""
+        return STATUS_LEVELS[self.status]
 
     @property
     def files_status(self):
@@ -264,14 +284,16 @@ class PredictStrain(Model):
           - 2: There was an error downloading the files.
           - 3: The files are ready for this pipeline
         """
-	for input_file in self.files:
+        if not self.files:
+            return STATUS_NOFILES
+        for input_file in self.files:
+            if input_file.retrieval_error:
+                return STATUS_ERROR
             if not input_file.retrieval_start:
                 return STATUS_WAIT
             if not input_file.retrieval_end:
                 return STATUS_START
-            if input_file.retrieval_error:
-                return STATUS_ERROR
-	return STATUS_DONE
+        return STATUS_DONE
 
     @property
     def run_status(self):
@@ -282,16 +304,18 @@ class PredictStrain(Model):
           - 1: Pipeline program is submitted or started
           - 2: Pipeline program is not complete yet
           - 3: The files are ready for this pipeline
-	"""
+        """
         qs = self.piperun.programs.all() if self.piperun else []
+        if not qs:
+            return STATUS_WAIT
         for program in qs:
+            if program.is_error:
+                return STATUS_ERROR
             if not program.is_submitted:
                 return STATUS_WAIT
             if not program.is_complete:
                 return STATUS_START
-            if program.is_error:
-                return STATUS_ERROR
-	return STATUS_DONE
+        return STATUS_DONE
 
     @property
     def has_prediction(self):
@@ -302,8 +326,8 @@ class PredictStrain(Model):
     def prediction_file(self):
         """Return a detected prediction file for this strain"""
         for (url, fn, name) in self.output_files:
-	    if fn.endswith('matrix.json'):
-		return fn
+            if fn.endswith('matrix.json'):
+                return fn
         return None
 
     @property
@@ -314,23 +338,24 @@ class PredictStrain(Model):
     @property
     def lineage_file(self):
         """Return a detected lineage file for this strain"""
-        for (url, fn, name) in self.output_files:
-	    if fn.endswith('lineage.txt'):
-		return fn
+        for (_, filename, _) in self.output_files:
+            if filename.endswith('lineage.txt'):
+                return filename
         return None
 
     @property
     def lineage(self):
-        fn = self.lineage_file
-        if fn:
-            with open(fn, 'r') as fhl:
+        """The name of the lineage if possible"""
+        filename = self.lineage_file
+        if filename and os.path.isfile(filename):
+            with open(filename, 'r') as fhl:
                 return dict(zip([
-                  '',
-                  'spoligotype',
-                  'unk',
-                  'unk',
-                  'unk',
-                  'match',
+                    '',
+                    'spoligotype',
+                    'unk',
+                    'unk',
+                    'unk',
+                    'match',
                 ], fhl.read().split('\t')))
         return 'Not Found'
 

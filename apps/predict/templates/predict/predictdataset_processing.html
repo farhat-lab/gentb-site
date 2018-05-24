@@ -1,7 +1,7 @@
 
     {% for strain in object.strains.all %}
       <ul class="process">
-        <li class="download {% if strain.file_one.retrieval_error or strain.file_two.retrieval_error %}error{% elif strain.file_one.retrieval_end %}completed{% endif %}">
+        <li class="download {% if strain.file_one.retrieval_error or strain.file_two.retrieval_error or not strain.file_one %}error{% elif strain.file_one.retrieval_end %}completed{% endif %}">
           {% for file in strain.files %}
             {% if file.retrieval_end and strain.files|length == 1 %}
               {% if file.is_file %}
@@ -26,6 +26,8 @@
                 <h6>Please wait for download...</h6>
               {% endif %}
             {% endif %}
+          {% empty %}
+          <h6>No files attached!</h6>
           {% endfor %}
         </li>
         {% if strain.piperun %}
