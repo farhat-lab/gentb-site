@@ -31,6 +31,15 @@ from ..forms import TestUploadForm
 from ..models import DropboxUploadFile
 
 class TestDropbox(ExtraTestCase):
+    def setUp(self):
+        super(TestDropbox, self).setUp()
+        self.files = []
+
+    def tearDown(self):
+        super(TestDropbox, self).tearDown()
+        for filename in self.files:
+            if os.path.isfile(filename):
+                os.unlink(filename)
 
     def test_upload(self):
         fn = os.path.join(self.app_dir, 'tests', 'media', 'todo.vcf')
@@ -70,6 +79,7 @@ class TestDropbox(ExtraTestCase):
         self.assertEqual(f.retrieval_error, '')
 
         fn = os.path.join(self.media_root, f.filename)
+        self.files.append(fn)
         self.assertFalse(os.path.isfile(fn))
 
         f.download_now()
