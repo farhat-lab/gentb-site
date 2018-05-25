@@ -19,22 +19,23 @@ Manage uploads to django via a number of different mechanisms.
 """
 
 import os
-import json
 import inspect
 import logging
-logger = logging.getLogger('apps.uploads.models')
-
-from md5 import md5
-from urlparse import urlparse
 
 from django.conf import settings
-from django.db.models import *
+from django.db.models import (
+    Model, SlugField, CharField, PositiveIntegerField, URLField,
+    DateTimeField, TextField, ForeignKey
+)
 from django.utils.timezone import now
 
 from .utils import Download, get_uuid
 from .files import ResumableFile
 
+LOGGER = logging.getLogger('apps.uploads.models')
+
 class UploadFile(Model):
+    """Base upload file, when a user uploads a genetic file."""
     name = SlugField(max_length=128)
     filename = CharField(max_length=255, null=True)
     file_directory = CharField(max_length=255)
@@ -53,36 +54,49 @@ class UploadFile(Model):
     flag = CharField(max_length=4, null=True, blank=True)
 
     class Meta:
+        """Order by created date"""
         ordering = ('-created', 'filename')
 
     @classmethod
     def build_upload(cls, prefix, datum):
+        """Make a new upload based on the datum"""
         obj = cls(
-	    name=prefix,
-	    filename=datum['name'],
-	    size=datum['bytes'],
-	    icon=datum['icon'],
+            name=prefix,
+            filename=datum['name'],
+            size=datum['bytes'],
+            icon=datum['icon'],
         )
         if 'link' in datum:
             obj.url = datum['link']
         return obj
 
-    def conclude_upload(self, directory, user=None):
+    def conclude_upload(self, directory, user=None): # pylint: disable=unused-argument
+        """Finish a basic upload, should be called from child"""
         self.file_directory = directory
         return self.save()
 
+    def get_type(self):
+        """Returns the super type of any upload if possible"""
+        for uname, uploader in UPLOADERS.items():
+            if uname and uploader.objects.filter(pk=self.pk):
+                return uname
+        return 'old'
+
     def __str__(self):
-        return str(self.filename)
+        return "{} ({})".format(self.filename, self.get_type())
 
     @property
     def fullpath(self):
+        """Returns the full path on disk of this file"""
         return os.path.join(self.file_directory, self.filename)
 
     @property
     def is_file(self):
+        """Returns True if this file exists"""
         return os.path.isfile(self.fullpath)
 
     def size_done(self):
+        """Returns the size of the file we have on disk in bytes"""
         if self.is_file:
             return os.path.getsize(self.fullpath)
         return 0
@@ -140,7 +154,7 @@ class UploadFile(Model):
             else:
                 self.retrieval_error = download.get_error()
 
-        except Exception as error:
+        except Exception as error: # pylint: disable=broad-except
             self.retrieval_error = str(error)
         self.save()
 
@@ -151,10 +165,11 @@ class DropboxUploadFile(UploadFile):
 
 
 class ResumableUploadFile(UploadFile):
+    """An upload from a desktop computer"""
     upload_id = SlugField(default=get_uuid)
     user = ForeignKey(settings.AUTH_USER_MODEL)
 
-    def conclude_upload(self, directory, user):
+    def conclude_upload(self, directory, user=None):
         """Actually finish off this uploaded file"""
         self.user = user
         super(ResumableUploadFile, self).conclude_upload(directory)
@@ -174,13 +189,13 @@ class ResumableUploadFile(UploadFile):
 
 
 class ManualUploadFile(UploadFile):
+    """Uploads for sftp, local link or http"""
     url = URLField()
 
 
 
 UPLOADERS = dict([
-    (name.replace('UploadFile', '').lower(), cls)
-        for (name, cls) in locals().items()
-            if inspect.isclass(cls) and issubclass(cls, UploadFile)
-    ])
-
+    (name.replace('UploadFile', '').lower(), val)
+    for (name, val) in locals().items()
+    if inspect.isclass(val) and issubclass(val, UploadFile)
+])
