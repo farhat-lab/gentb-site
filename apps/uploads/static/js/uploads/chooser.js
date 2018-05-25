@@ -215,10 +215,20 @@ $(window).load(function() {
           file.li = li;
       });
       r.on('fileError', function(file, message){
-        // XXX Make UI as error here.
+          // Show error here
+          if(file.li) {
+            file.li.removeClass('uploading');
+            file.li.addClass('uploaderror');
+          }
+          alert(message);
       });
       r.on('complete', function(){
-        form.submit();
+        errors = $('.uploaderror');
+        if(!errors.length) {
+          form.submit();
+        } else {
+          alert("Can't submit. There are upload errors to fix.");
+        }
       });
     }
 

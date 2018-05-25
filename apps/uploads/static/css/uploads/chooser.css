@@ -52,6 +52,11 @@ ul.uploads-files > li > span:hover {
   color: white;
 }
 
+ul.uploads-files > li.uploaderror {
+  background-color: #800;
+  color: white;
+}
+
 ul.uploads-files > li > progress {
   display: block;
   width: 100%;
