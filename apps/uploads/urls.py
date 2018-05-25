@@ -17,13 +17,14 @@
 """
 Urls to upload files to the system.
 """
-from django.conf.urls import url, include 
-from .views import ResumableUploadView, RetryUpload, ManualUploadView, TestUpload
+from django.conf.urls import url
+from .views import ResumableUploadView, RetryResumableUpload, \
+    RetryUpload, ManualUploadView, TestUpload
 
-urlpatterns = [ 
+urlpatterns = [
     url(r'^test/$', TestUpload.as_view(), name='test'),
     url(r'^resumable/$', ResumableUploadView.as_view(), name='resumable'),
+    url(r'^resumable/(?P<pk>\d+)/$', RetryResumableUpload.as_view(), name='resumable'),
     url(r'^manual/$', ManualUploadView.as_view(), name='manual'),
     url(r'^(?P<pk>\d+)/retry/$', RetryUpload.as_view(), name='retry'),
 ]
-

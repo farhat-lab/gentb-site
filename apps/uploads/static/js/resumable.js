@@ -361,7 +361,7 @@
         if(o.fileType.length > 0){
           var fileTypeFound = false;
           for(var index in o.fileType){
-            var extension = '.' + o.fileType[index];
+            var extension = o.fileType[index];
 			if(fileName.toLowerCase().indexOf(extension.toLowerCase(), fileName.length - extension.length) !== -1){
               fileTypeFound = true;
               break;

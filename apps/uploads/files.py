@@ -91,7 +91,10 @@ class ResumableFile(object):
     def process_chunk(self, _file):
         """Process the chunks of the given file"""
         if not self.chunk_exists:
-            self.storage.save(self.name_template % self.kwargs, _file)
+            try:
+                self.storage.save(self.name_template % self.kwargs, _file)
+            except IOError:
+                pass # Existing file in the way
 
     def save_to(self, new_dir):
         """When saving all the chunks to a new directory"""
@@ -99,8 +102,9 @@ class ResumableFile(object):
 
         if os.path.islink(self.upload_dir):
             # This was previously uploaded and we can relink it.
-            linkto = os.readlink(self.upload_dir)
-            os.symlink(linkto, filename)
+            if not os.path.exists(filename):
+                linkto = os.readlink(self.upload_dir)
+                os.symlink(linkto, filename)
             return
 
         # Actually save the file using storage

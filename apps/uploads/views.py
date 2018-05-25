@@ -22,23 +22,18 @@
 Allow uploads to be 'chunked' and saved in descrete chunks.
 """
 
-import os
-import re
-
 from md5 import md5
 
-from django.core.urlresolvers import reverse
 from django.core.exceptions import PermissionDenied
 from django.utils.decorators import method_decorator
 from django.contrib.auth.decorators import login_required
 from django.views.generic.detail import View, SingleObjectMixin
 from django.views.generic import RedirectView, FormView
 from django.http import HttpResponse, JsonResponse
-from django.conf import settings
 
 from .files import ResumableFile
-from .models import UploadFile, ManualUploadFile
-from .utils import Download 
+from .models import UploadFile, ResumableUploadFile
+from .utils import Download
 
 class RetryUpload(SingleObjectMixin, RedirectView):
     model = UploadFile
@@ -73,20 +68,33 @@ class ResumableUploadView(View):
                 yield (name, value)
 
     def get(self, *args, **kwargs):
-        """Checks if chunk has allready been sended."""
-        r = self.get_object()
-        if not (r.chunk_exists or r.is_complete):
+        """Checks if chunk has allready been sent."""
+        resumable = self.get_object()
+        if not (resumable.chunk_exists or resumable.is_complete):
             return HttpResponse('Chunk not found', status=204)
         return HttpResponse('Chunk already exists')
 
     def post(self, *args, **kwargs):
         """Saves chunks then checks if the file is complete."""
-        r = self.get_object()
-        if r.chunk_exists:
+        resumable = self.get_object()
+        if resumable.chunk_exists:
             return HttpResponse('chunk already exists')
-        r.process_chunk(self.request.FILES.get('file'))
+        resumable.process_chunk(self.request.FILES.get('file'))
         return HttpResponse()
 
+class RetryResumableUpload(ResumableUploadView):
+    def get_object(self):
+        if not hasattr(self, 'upload'):
+            self.upload = ResumableUploadFile.objects.get(
+                pk=self.kwargs['pk'], user=self.request.user)
+        return self.upload.resumable_file(**dict(self._get_kwargs()))
+
+    def dispatch(self, request, *args, **kw):
+        """Runs the chunk upload and then checks for completeness"""
+        ret = super(RetryResumableUpload, self).dispatch(request, *args, **kw)
+        if self.get_object().is_complete:
+            self.upload.save_resumable()
+        return ret
 
 class ManualUploadView(View):
     """

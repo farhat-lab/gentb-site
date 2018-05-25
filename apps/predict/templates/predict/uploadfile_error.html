@@ -1,9 +1,67 @@
+{% if file.get_type == 'resumable' %}
+  <div class="modal-dialog" id="file-error-{{ file.pk }}">
+    {% csrf_token %}
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h4 class="modal-title">Upload Failed for {{ file }}</h4>
+
+      </div>
+      <div class="modal-body">
+        <p class="file-error">{{ file.retrieval_error|safe }}</p>
+        <progress value="0" max="1" style="display: none;"></progress>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        <label id="resumable{{ file.pk }}" for="resumable_upload" class="btn btn-primary"><span class="glyphicon glyphicon-upload"></span> Retry upload from your computer</label>
+        <script>
+var progress = $('#file-error-{{ file.pk }} progress');
+var msg = $('#file-error-{{ file.pk }} p.file-error');
+var label = $('#resumable{{ file.pk }}');
+var done = false;
+var resumable = new Resumable({
+    fileType: ['{{ file.filename }}'],
+    maxFiles: 1,
+    target: '{% url "uploads:resumable" file.pk %}',
+    query: {
+        csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val(),
+    },
+    fileTypeErrorCallback: function(file, errorCount) {
+        alert(file.fileName||file.name +' is not the right filename, the file should be called "{{ file.filename }}".');
+    } 
+});
+resumable.assignBrowse(label[0]);
+resumable.on('fileSuccess', function(file){
+    done = true;
+});
+resumable.on('fileProgress', function(file){
+    progress.attr('value', file.progress());
+    console.debug("file upload progress..." + file.progress());
+});
+resumable.on('fileAdded', function(file, event){
+    msg.hide();
+    resumable.upload();
+    progress.show();
+});
+resumable.on('complete', function(){
+    if(done) {
+        location.reload();
+    } else {
+        alert("Could not upload new file.");
+    }
+});
+
+
+        </script>
+      </div>
+    </div>
+  </div>
+{% else %}
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
         <h4 class="modal-title">Upload Error {{ file }}</h4>
-
       </div>
       <div class="modal-body">
         {{ file.retrieval_error|safe }}
@@ -14,3 +72,4 @@
       </div>
     </div>
   </div>
+{% endif %}

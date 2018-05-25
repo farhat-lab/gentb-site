@@ -169,19 +169,27 @@ class ResumableUploadFile(UploadFile):
     upload_id = SlugField(default=get_uuid)
     user = ForeignKey(settings.AUTH_USER_MODEL)
 
+    def resumable_file(self, **kwargs):
+        """Returns the resumable file object for this uf"""
+        kwargs.update({
+            'resumableTotalSize': self.size,
+            'resumableFilename': self.filename,
+        })
+        return ResumableFile(self.user, kwargs)
+
     def conclude_upload(self, directory, user=None):
         """Actually finish off this uploaded file"""
         self.user = user
         super(ResumableUploadFile, self).conclude_upload(directory)
+        self.save_resumable()
 
-        # Collect the resumable pieces and conclude it
-        rfile = ResumableFile(user, {
-            'resumableTotalSize': self.size,
-            'resumableFilename': self.filename,
-        })
+    def save_resumable(self):
+        """Collect the resumable pieces and conclude it"""
+        rfile = self.resumable_file()
         if rfile.is_complete:
             self.retrieval_start = rfile.started
             self.retrieval_end = rfile.ended
+            self.retrieval_error = ''
             rfile.save_to(self.file_directory)
         else:
             self.retrieval_error = "File didn't completely upload"
