@@ -52,7 +52,7 @@ class UploadForm(ModelForm):
         }
 
     icon = classmethod(lambda cls: 'forms/%s.svg' % cls.my_file_type)
-    enabled = classmethod(lambda cls: cls.pipeline_queryset().count() > 0)
+    enabled = classmethod(lambda cls: cls.pipeline_queryset(is_default=True).count() > 0)
 
     def __init__(self, *args, **kw):
         super(UploadForm, self).__init__(*args, **kw)
