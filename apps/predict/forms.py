@@ -72,8 +72,8 @@ class UploadForm(ModelForm):
             if isinstance(field, UploadField)]
 
     @classmethod
-    def pipeline_queryset(cls):
-        return PredictPipeline.objects.filter(file_type=cls.my_file_type)
+    def pipeline_queryset(cls, **kw):
+        return PredictPipeline.objects.filter(file_type=cls.my_file_type, **kw)
 
     @classmethod
     def all_forms(cls):
