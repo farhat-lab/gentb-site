@@ -11,7 +11,7 @@ script.name <- sub(prefix, "", options[grep(prefix, options)])
 script.basename <- dirname(script.name)
 
 # Set the location of the libs to relative to this script's location
-libs <- file.path(script.basename, '../data/Rlib/R.2.15.3.lib')
+libs <- file.path(script.basename, '../data/Rlib')
 
 data_dir <- file.path(script.basename, '../data/predict_rdata')
 #aa <- Sys.time()
