@@ -1,5 +1,9 @@
 test_setup
 pythonenv
+o2env
+maintenance-docroot
+apps/gentbdr
+apps/wgsmtb
 */settings/local.py
 .data
 data
