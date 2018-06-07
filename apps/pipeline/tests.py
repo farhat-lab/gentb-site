@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2017 Maha Farhat
+# Copyright (C) 2017-2018 Maha Farhat
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as published by
@@ -20,132 +20,15 @@ Test core shell functionality for the pipeline
 
 import os
 import time
-import tempfile
 
 from django.test import override_settings
 from autotest.base import ExtraTestCase
 
 from apps.pipeline.models import Program, ProgramFile, Pipeline
-from apps.pipeline.method import get_job_manager
+from chore import get_job_manager
 
-from apps.pipeline.method.watch import LOG as watch_log
 DIR = os.path.dirname(__file__)
 FIX = os.path.join(DIR, 'fixtures')
-
-class JobManagerTest(ExtraTestCase):
-    """Test running various shell based jobs"""
-    def setUp(self):
-        super(JobManagerTest, self).setUp()
-        self.pipes = os.path.join(self.media_root, 'pipe')
-        self.manager = get_job_manager('apps.pipeline.method.shell', pipe_root=self.pipes)
-        self.filename = tempfile.mktemp(prefix='test-job-')
-
-    def tearDown(self):
-        super(JobManagerTest, self).tearDown()
-        for count in range(20):
-            filename = "%s.%d" % (self.filename, count)
-            if os.path.isfile(filename):
-                os.unlink(filename)
-        if os.path.isfile(self.filename):
-            os.unlink(self.filename)
-        if os.path.isfile(watch_log):
-            os.unlink(watch_log)
-
-        self.manager.clean_up()
-
-    def test_shell_run(self):
-        """Test that jobs can be run via the shell"""
-        self.manager.submit('sleep_test_1', 'sleep 60')
-        data = self.manager.status('sleep_test_1')
-        self.assertIn(data['status'], ('sleeping', 'running'))
-        self.manager.stop('sleep_test_1')
-        data = self.manager.status('sleep_test_1')
-        self.assertEqual(data['status'], 'stopped')
-
-    def test_non_existant_id(self):
-        """what happens when the job doesn't exist"""
-        data = self.manager.status('sleep_test_0')
-        self.assertEqual(data, {})
-        self.manager.stop('sleep_test_0')
-
-    def test_error_output(self):
-        """When a command returns a non-zero status"""
-        self.manager.submit('no_cmd', 'fidly dee')
-        data = self.manager.status('no_cmd')
-        while data['status'] == 'running':
-            data = self.manager.status('no_cmd')
-        self.assertEqual(data['status'], 'finished')
-        self.assertEqual(data['error'], '/bin/sh: 1: fidly: not found')
-        self.assertEqual(data['return'], 127)
-
-    def assertDependantJobs(self, *cmds, **kw): # pylint: disable=invalid-name
-        """Check a chain of jobs and make sure they work in line"""
-        expected = kw.pop('expected', None)
-
-        for pos, cmd in enumerate(cmds):
-            cmd = 'sleep 0.1 && ' + (cmd % kw)
-            depends = 'a%d' % (pos - 1) if pos else None
-            self.manager.submit('a%d' % pos, cmd, depends=depends)
-
-        if 'call' in kw:
-            kw['call']()
-
-        ret = []
-        job = 0
-        timeout = len(cmds) * 10
-        while job < len(cmds):
-            data = self.manager.status('a%d' % job)
-            if data.get('status', None) in ('finished', 'stopped', None):
-                ret.append("%s:%s" % (data.get('status', 'No'), str(data.get('return', -1))))
-                job += 1
-                continue
-            time.sleep(0.1)
-            timeout -= 1
-            self.assertTrue(timeout > 0, "Timeout waiting for dependant job %s" % cmds[job])
-
-        if expected is not None:
-            try:
-                self.assertEqual(tuple(expected), tuple(ret))
-            except AssertionError:
-                if os.path.isfile(watch_log):
-                    with open(watch_log, 'r') as fhl:
-                        print("WATCH LOG:\n{}\n\n".format(fhl.read()))
-                raise
-
-    def test_dependant_jobs(self):
-        """When one job needs a first job to complete"""
-        self.assertDependantJobs(
-            'ls --help > %(fn)s.1',
-            'grep OK %(fn)s.1 > %(fn)s.2',
-            'wc %(fn)s.2 > %(fn)s.3',
-            fn=self.filename,
-            expected=('finished:0',)*3)
-
-        with open(self.filename+'.1', 'r') as fhl:
-            self.assertTrue('Usage' in fhl.read())
-        with open(self.filename+'.2', 'r') as fhl:
-            self.assertEqual(fhl.read(), ' 0  if OK,\n')
-        with open(self.filename+'.3', 'r') as fhl:
-            self.assertEqual(fhl.read(), ' 1  3 11 %s.2\n' % self.filename)
-
-    def test_dependant_error(self):
-        """When the first job causes an error"""
-        self.assertDependantJobs(
-            'ls %(fn)s.0 > %(fn)s.1',
-            'ls %(fn)s.1 > %(fn)s.2',
-            'ls %(fn)s.2 > %(fn)s.3',
-            fn=self.filename,
-            expected=('finished:2', 'stopped:1', 'stopped:1'))
-
-    def test_dependant_stopped(self):
-        """When the first job is stoppped whole chain is stopped"""
-        def stop():
-            """Quit the job after 100ms"""
-            time.sleep(0.1)
-            self.manager.stop('a0')
-        self.assertDependantJobs('sleep 60', 'sleep 1', 'sleep 1', call=stop,\
-            expected=('stopped:9', 'stopped:1', 'stopped:1'))
-
 
 class ProgramTest(ExtraTestCase):
     """Test the loading of programs and how they make commands"""
@@ -309,7 +192,7 @@ class PipelineTest(ExtraTestCase):
             filename % "ls", self.filename, filename % "c"], filename % "out")
         self.assertProgram(results[3], filename % "out", filename % "out")
 
-    @override_settings(PIPELINE_MODULE='apps.pipeline.method.fake')
+    @override_settings(PIPELINE_MODULE='chore.fake.FakeJobManager')
     def test_duration(self):
         """Test the duration during a run"""
         self.setup_pipeline(('DUR', 'sleep 5'))

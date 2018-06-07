@@ -46,24 +46,15 @@ from collections import defaultdict
 from django.db.models import *
 from model_utils.models import TimeStampedModel
 
+from chore import get_job_manager, tripplet
+
 from django.core.urlresolvers import reverse
 from django.conf import settings
 from django.utils.timezone import now
 from django.utils.text import slugify
 from django.utils.timezone import now
 
-from apps.pipeline.method import get_job_manager
-
-def file_as_inputs(m2m, save_to=None):
-    """Adds each m2m to the save_to dictionary"""
-    if not save_to:
-        save_to = defaultdict(list)
-    for pf in m2m.all():
-        try:
-            save_to[pf.name].append(unicode(pf.store.file))
-        except IOError:
-            save_to[pf.name].append('XX:%s' % pf.store.name)
-    return save_to
+from .utils import file_as_inputs
 
 class Pipeline(Model):
     """
@@ -320,29 +311,36 @@ class PipelineRun(TimeStampedModel):
         return "Pipeline Run %s" % self.name
 
     def run(self, commit=True, **kwargs):
+        runs = []
         if not commit:
             self.test_programs = []
+
         for pipe in self.pipeline.programs.all():
             run = ProgramRun(piperun=self, **pipe.prepare(self.pk))
             if commit:
                 run.save()
             else:
                 self.test_programs.append(run)
+            runs.append(run)
+
+        for prev, run, follower in tripplet(runs):
+            kwargs['previous'] = prev
+            kwargs['follower'] = follower
             try:
-                for (name, fn) in run.submit(commit=commit, **kwargs):
+                for (name, filename) in run.submit(commit=commit, **kwargs):
                     if name in kwargs:
                         if isinstance(kwargs[name], list):
-                            kwargs[name].append(fn)
+                            kwargs[name].append(filename)
                         else:
-                            kwargs[name] = [kwargs[name], fn]
+                            kwargs[name] = [kwargs[name], filename]
                     else:
-                        kwargs[name] = [fn]
+                        kwargs[name] = [filename]
             except ValueError as err:
                 run.is_error = True
                 run.error_text = str(err)
                 run.kwargs = {}
                 for key in kwargs:
-                    if key is 'output_dir':
+                    if key == 'output_dir':
                         continue
                     if isinstance(kwargs[key], (str, unicode)):
                         run.kwargs[key] = [kwargs[key]]
@@ -351,7 +349,6 @@ class PipelineRun(TimeStampedModel):
                 if commit:
                     run.save()
                 return False
-            kwargs['previous'] = run
         return True
 
     def rerun(self, **kwargs):
@@ -405,8 +402,11 @@ class ProgramRun(TimeStampedModel):
     piperun = ForeignKey(PipelineRun, related_name='programs')
     program = ForeignKey(Program, related_name='runs')
     job_id  = SlugField(max_length=255, help_text="Name or ID of the job in the cloud runner")
-    previous_id = SlugField(max_length=255, help_text="Name or ID of the previous job we depend on")
-    
+    previous_id = SlugField(max_length=255, null=True, blank=True,\
+        help_text="Name or ID of the previous job we depend on")
+    follower_id = SlugField(max_length=255, null=True, blank=True,\
+        help_text="Name or ID of the next job that depends on this")
+
     is_submitted = BooleanField(default=False)
     is_started = BooleanField(default=False)
     is_complete = BooleanField(default=False)
@@ -480,23 +480,26 @@ class ProgramRun(TimeStampedModel):
             return ret
         return True
 
-    def submit(self, commit=True, previous=None, job_manager=None, **kwargs):
+    def submit(self, commit=True, previous=None, follower=None, job_manager=None, **kwargs):
         """Submit this job to the configured Job Manager"""
         files = dict(self.program.prepare_files(**kwargs))
         job_manager = get_job_manager(job_manager)
-        
-        # Save all the input and output files into database
-        fs = files.items()
-        self.input_files = '\n'.join([fn for (k, fn) in fs if k[0] == '$'])
-        self.output_files = '\n'.join([fn for (k, fn) in fs if k[0] == '@'])
 
+        # Save all the input and output files into database
+        fsi = files.items()
+        self.input_files = '\n'.join([fn for (k, fn) in fsi if k[0] == '$'])
+        self.output_files = '\n'.join([fn for (k, fn) in fsi if k[0] == '@'])
+
+        kwargs = {}
         if previous is not None:
-            self.previous_id = previous.job_id
+            kwargs['depends'] = self.previous_id = previous.job_id
+        if follower is not None:
+            kwargs['provides'] = self.follower_id = follower.job_id
 
         cmd = self.program.prepare_command(files)
         self.debug_text = cmd
 
-        if job_manager.submit(self.job_id, cmd, depends=self.previous_id):
+        if job_manager.submit(self.job_id, cmd, **kwargs):
             self.is_submitted = True
             self.submitted = now()
         else:
@@ -506,7 +509,7 @@ class ProgramRun(TimeStampedModel):
             self.save()
         # Return processed files so outputs can be used
         # as inputs to the next command in the pipeline
-        return [(a[1], b) for (a,b) in files.items()]
+        return [(a[1], b) for (a, b) in files.items()]
 
     def update_status(self, commit=True):
         """Take data from the job manager and populate the database"""

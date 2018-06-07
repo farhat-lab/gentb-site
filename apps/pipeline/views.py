@@ -20,17 +20,17 @@ Provides the views for testing and reviewing pipelines.
 
 from django.views.generic import DetailView
 
-from .method.fake import JobManager as FakeManager
+from chore.fake import FakeJobManager
 from .models import Pipeline
 
-class PipelineDetail(DetailView):
+class PipelineDetail(DetailView): # pylint: disable=too-many-ancestors
+    """Test the pipeline in the front end to test the connectivity"""
     model = Pipeline
 
     def get_context_data(self, **kw):
         data = super(PipelineDetail, self).get_context_data(**kw)
-        obj = self.get_object()
-        data['run'] = self.get_object().run('pipeline_run',
-            job_manager=FakeManager(), output_dir='~/',
+        self.get_object()
+        data['run'] = self.get_object().run('pipeline_run',\
+            job_manager=FakeJobManager(), output_dir='~/',\
             for_test=True, commit=False, file='file')
         return data
-
