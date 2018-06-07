@@ -18,11 +18,11 @@
 Provide some basic front end views for pipeline testing and review.
 """
 
-from django.conf.urls import include, url
+from django.conf.urls import url
 
-from .views import PipelineDetail
+from .views import PipelineDetail, JobViewer
 
-urlpatterns = [
-  url(r'^(?P<pk>\d+)/$', PipelineDetail.as_view(), name='detail'),
+urlpatterns = [ # pylint: disable=invalid-name
+    url(r'^(?P<pk>\d+)/$', PipelineDetail.as_view(), name='detail'),
+    url(r'^jobs/$', JobViewer.as_view(), name='jobs'),
 ]
-
