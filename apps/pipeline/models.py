@@ -480,10 +480,10 @@ class ProgramRun(TimeStampedModel):
             return ret
         return True
 
-    def submit(self, commit=True, previous=None, follower=None, job_manager=None, **kwargs):
+    def submit(self, commit=True, previous=None, follower=None, **kwargs):
         """Submit this job to the configured Job Manager"""
         files = dict(self.program.prepare_files(**kwargs))
-        job_manager = get_job_manager(job_manager)
+        job_manager = get_job_manager()
 
         # Save all the input and output files into database
         fsi = files.items()
