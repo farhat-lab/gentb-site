@@ -83,10 +83,6 @@ class BaseLookup(dict):
 
     def append(self, row):
         """Append one row from the summary file."""
-        if self.key not in row:
-            sys.stderr.write("WTF, no key {} in row {}\n".format(self.key, row))
-            return
-
         key = row[self.key]
 
         if key not in self:
