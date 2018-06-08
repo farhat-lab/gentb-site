@@ -46,6 +46,20 @@ class JobViewer(TemplateView):
         kw = {}
         if 'user' in self.request.GET:
             kw['user'] = self.request.GET['user']
-        data['object_list'] = data['pipeline'].jobs_status(**kw)
+        data['object_list'] = [self.get_item(item)\
+            for item in data['pipeline'].jobs_status(**kw)]
         data['pipeline_name'] = type(data['pipeline']).__name__
         return data
+
+    @staticmethod
+    def get_item(item):
+        """Parses the data from item for view"""
+        finished = 'success'
+        if item['error'] and item['error'] != 'None':
+            finished = 'danger'
+        item['context'] = {
+            'finished': finished,
+            'pending': 'default',
+            'running': 'primary',
+        }.get(item['status'].lower(), 'default')
+        return item

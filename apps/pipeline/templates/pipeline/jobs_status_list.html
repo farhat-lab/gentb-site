@@ -26,22 +26,13 @@
             <tr>
               <th scope="row">
                 <span class="glyphicon glyphicon-tasks" aria-hidden="true"></span> {{ job.name }}
-                <span class="label label-primary pull-right">{{ job.status }}</span>
+                <span class="label label-{{ job.context }} pull-right">{{ job.status }}</span>
               </th>
-
-              {% if job.pid %}
               <td><span class="glyphicon glyphicon-paperclip" aria-hidden="true" title="Internal ID"></span> {{ job.pid }}</td>
-              {% endif %}
               <td>{{ job.submitted }}</td>
-              {% if job.started %}
               <td>{{ job.started }}</td>
-              {% endif %}
-              {% if job.finished %}
               <td>{{ job.finished }}</td>
-              {% endif %}
-              {% if job.return or job.return == 0 %}
               <td><span class="glyphicon glyphicon-info-sign" aria-hidden="true" title="Return Code"></span> {{ job.return }}</td>
-              {% endif %}
             </tr>
             {% if job.error and job.error != 'None' %}
               <tr class="danger">
