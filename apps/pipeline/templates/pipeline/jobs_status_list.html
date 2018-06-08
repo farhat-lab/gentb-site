@@ -21,6 +21,9 @@
                <th scope="col">Started</th>
                <th scope="col">Finished</th>
                <th scope="col">Return</th>
+               {% for col in cols %}
+                 <th scope="col">{{ col }}</th>
+               {% endfor %}
             </tr>
         {% for job in object_list %}
             <tr>
@@ -33,6 +36,9 @@
               <td>{{ job.started }}</td>
               <td>{{ job.finished }}</td>
               <td><span class="glyphicon glyphicon-info-sign" aria-hidden="true" title="Return Code"></span> {{ job.return }}</td>
+              {% for val in job.cols %}
+              <td>{{ val }}</td>
+              {% endfor %}
             </tr>
             {% if job.error and job.error != 'None' %}
               <tr class="danger">
