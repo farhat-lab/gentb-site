@@ -13,36 +13,43 @@
       <p>Currently the system is using '{{ pipeline_name }}' as it's pipeline manager.</p>
 
       <div class="col-lg-12 col-sm-12">
+        <table class="table table-striped">
+            <tr>
+               <th scope="col">Name</th>
+               <th scope="col">Internal ID</th>
+               <th scope="col">Submitted</th>
+               <th scope="col">Started</th>
+               <th scope="col">Finished</th>
+               <th scope="col">Return</th>
+            </tr>
         {% for job in object_list %}
-          <div class="panel panel-default">
-            <div class="panel-heading">
-                <h2><span class="glyphicon glyphicon-tasks" aria-hidden="true"></span> {{ job.name }}
-                    <span class="label label-primary pull-right">{{ job.status }}</span>
-                </h2>
-            </div>
+            <tr>
+              <th scope="row">
+                <span class="glyphicon glyphicon-tasks" aria-hidden="true"></span> {{ job.name }}
+                <span class="label label-primary pull-right">{{ job.status }}</span>
+              </th>
 
-            <div class="panel-body alert alert-info">
               {% if job.pid %}
-              <h4><span class="glyphicon glyphicon-paperclip" aria-hidden="true" title="Internal ID"></span> {{ job.pid }}</h4>
+              <td><span class="glyphicon glyphicon-paperclip" aria-hidden="true" title="Internal ID"></span> {{ job.pid }}</td>
               {% endif %}
-              <h4><span class="glyphicon glyphicon-download" aria-hidden="true" title="Submitted"></span> {{ job.submitted }}</h4>
+              <td>{{ job.submitted }}</td>
               {% if job.started %}
-              <h4><span class="glyphicon glyphicon-play" aria-hidden="true" title="Started"></span> {{ job.started }}</h4>
+              <td>{{ job.started }}</td>
               {% endif %}
               {% if job.finished %}
-              <h4><span class="glyphicon glyphicon-stop" aria-hidden="true" title="Finished"></span> {{ job.finished }}</h4>
+              <td>{{ job.finished }}</td>
               {% endif %}
               {% if job.return or job.return == 0 %}
-              <h4><span class="glyphicon glyphicon-info-sign" aria-hidden="true" title="Return Code"></span> {{ job.return }}</h4>
+              <td><span class="glyphicon glyphicon-info-sign" aria-hidden="true" title="Return Code"></span> {{ job.return }}</td>
               {% endif %}
-              {% if job.error %}
-              <h4><span class="glyphicon glyphicon-question-sign" aria-hidden="true" title="Error Message"></span> {{ job.error }}</h4>
-              {% endif %}
-            </div>
-          </div>
+            </tr>
+            {% if job.error %}
+              <tr class="danger">
+                <td colspan="6"><span class="glyphicon glyphicon-question-sign" aria-hidden="true" title="Error Message"></span> {{ job.error }}</td>
+              </tr>
+            {% endif %}
         {% endfor %}
-      </div>
-
+        </table>
     </div>
   </div>
 {% endblock %}

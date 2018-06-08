@@ -43,6 +43,9 @@ class JobViewer(TemplateView):
     def get_context_data(self, **kw):
         data = super(JobViewer, self).get_context_data(**kw)
         data['pipeline'] = get_job_manager()
-        data['object_list'] = data['pipeline'].jobs_status()
+        kw = {}
+        if 'user' in self.request.GET:
+            kw['user'] = self.request.GET['user']
+        data['object_list'] = data['pipeline'].jobs_status(**kw)
         data['pipeline_name'] = type(data['pipeline']).__name__
         return data
