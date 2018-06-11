@@ -46,7 +46,7 @@ class MutationInline(StackedInline):
 
 class GeneLocusAdmin(ModelAdmin):
     inlines = (MutationInline,)
-    list_filter = ('genome',)
+    list_filter = ('genome', 'gene_type', 'gene_symbol')
     list_display = ('name', 'description', 'previous_id', 'mutation_count', 'genome')
 
     def mutation_count(self, obj):
