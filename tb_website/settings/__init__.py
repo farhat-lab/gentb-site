@@ -41,5 +41,6 @@ for n, v in globals().items():
                 sys.stderr.write("INFO: Making directory: %s for %s\n" % (v, n))
                 os.makedirs(v)
             except:
-                raise IOError("Failed to make directory: %s" % v)
+                if not v.startswith('/n/groups'):
+                    raise IOError("Failed to make directory: %s" % v)
 
