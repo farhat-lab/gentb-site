@@ -195,6 +195,7 @@ class PipelineTest(ExtraTestCase):
     @override_settings(PIPELINE_MODULE='chore.fake.FakeJobManager')
     def test_duration(self):
         """Test the duration during a run"""
+        self.assertEqual(type(get_job_manager()).__name__, 'FakeJobManager')
         self.setup_pipeline(('DUR', 'sleep 5'))
         results = self.pipeline.run("pipe", output_dir=self.dir)
         result = results.programs.get()
