@@ -3,19 +3,13 @@ Impor coding and non-coding tab files into the database
 """
 import logging
 
-from django.db import transaction, connection
-from django.db.models import Q
+from django.db import transaction
 from django.core.management.base import BaseCommand
 
 from fav.gene_lookup import GeneLookup
 from apps.mutations.models import Genome, GeneLocus
 
 LOGGER = logging.getLogger('apps.mutations')
-
-#connection.force_debug_cursor = True  # Change to use_debug_cursor in django < 1.8
-#l = logging.getLogger('django.db.backends')
-#l.setLevel(logging.DEBUG)
-#l.addHandler(logging.StreamHandler())
 
 class Command(BaseCommand):
     """Import coding command"""
@@ -85,10 +79,9 @@ class Command(BaseCommand):
             obj.protein_families = item['pfams']
         else:
             obj.length = obj.stop - obj.start
-        
+
         try:
             with transaction.atomic():
                 obj.save()
         except Exception:
             print "Transaction ignored...."
-
