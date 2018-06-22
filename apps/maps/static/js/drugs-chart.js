@@ -28,13 +28,17 @@ $(document).ready(function() {
 });
 
 function initialiseDrugChart(svg) {
+
+    //So we first make the chart
     var chart = nv.models.multiBarChart()
       .stacked(true)
       .reduceXTicks(false);
 
+
     var width = 1000;
     var height = 600;
 
+    //Some properties of the chart
     chart.margin({top: 20, right: 0, bottom: 60, left: 80});
     chart.height(height);
     chart.width(width);
@@ -48,6 +52,7 @@ function initialiseDrugChart(svg) {
 
     chart.showLegend(true);
 
+    //use d3 (a javascript library) to select the svg tag in the html that you made for the chart and then to put in the chart
     var svg = d3.select(svg)
           .attr('perserveAspectRatio', 'xMinYMid')
           .attr('width', width)

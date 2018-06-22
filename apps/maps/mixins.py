@@ -29,17 +29,25 @@ from django.views.generic import View
 from django.http import JsonResponse, HttpResponse
 from django.conf import settings
 
+
+#Inherit from the parent class DjangoJsonEncoder and modify the default method to create our own encoder
+#ParentClass: https://github.com/django/django/blob/master/django/core/serializers/json.py
+
 class DjangoJSONEncoder2(DjangoJSONEncoder):
     """A json encoder to deal with the python objects we may want to encode"""
     def default(self, obj):
+        #Add the ability to deal with timedelta
         if isinstance(obj, timedelta):
             ARGS = ('days', 'seconds', 'microseconds')
+            #So if we get a time-delta object return a dictionary with type and a list of the day, second, microseconds
             return {'__type__': 'datetime.timedelta',
                     'args': [getattr(obj, a) for a in ARGS]}
         if isinstance(obj, QuerySet):
             return [item for item in obj]
         return DjangoJSONEncoder.default(self, obj)
 
+#Inherit from the parent class View and add Caching
+#ParentClass: https://github.com/django/django/blob/master/django/views/generic/base.py
 
 class JsonView(View):
     """Quickly serve a python data structure as json"""
@@ -50,8 +58,12 @@ class JsonView(View):
 
     def dispatch(self, *args, **kwargs):
         def _dispatch(request, *args, **kwargs):
+            #The self.get_context_data is what each view will change in views.py depending on the kind of data/how you want
+            #to visualize this data
             context = self.get_context_data(**kwargs)
             return self.render_to_response(context)
+        #Wrapping cache_page with the call to dispatch (saying the view that dispatch returns should be cached)
+        #The caching is implemented for performance boost
         return cache_page(self.get_cache_timeout())(_dispatch)(*args, **kwargs)
 
     def render_to_response(self, context, **kwargs):
