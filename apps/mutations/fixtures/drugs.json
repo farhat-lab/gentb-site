@@ -1,232 +1,274 @@
 [
 {
+  "model": "mutations.drugclass",
+  "fields": {
+    "name": "Fluoroquinolone",
+    "code": "FLQ"
+  }
+},
+{
+  "model": "mutations.drugclass",
+  "fields": {
+    "name": "Aminoglycoside",
+    "code": "AMG"
+  }
+},
+{
+  "model": "mutations.drugclass",
+  "fields": {
+    "name": "Macrolide",
+    "code": "MAC"
+  }
+},
+{
+  "model": "mutations.drugclass",
+  "fields": {
+    "name": "Oxazolidinones",
+    "code": "OXA"
+  }
+},
+{
   "model": "mutations.drug",
-  "pk": 1,
   "fields": {
     "kind": null,
     "name": "Isoniazid",
     "code": "INH",
-    "abbr": null
+    "abbr": "Hydra",
+    "mutations": []
   }
 },
 {
   "model": "mutations.drug",
-  "pk": 2,
   "fields": {
     "kind": null,
     "name": "Rifampicin",
     "code": "RIF",
-    "abbr": null
+    "abbr": "Rifadin",
+    "mutations": []
   }
 },
 {
   "model": "mutations.drug",
-  "pk": 3,
   "fields": {
     "kind": null,
     "name": "Pyrazinamide",
     "code": "PZA",
-    "abbr": null
+    "abbr": "Rifater",
+    "mutations": []
   }
 },
 {
   "model": "mutations.drug",
-  "pk": 4,
   "fields": {
     "kind": null,
     "name": "Ethambutol",
     "code": "EMB",
-    "abbr": null
+    "abbr": "Etibi",
+    "mutations": []
   }
 },
 {
   "model": "mutations.drug",
-  "pk": 5,
   "fields": {
-    "kind": null,
+    "kind": [
+      "AMG"
+    ],
     "name": "Streptomycin",
     "code": "STR",
-    "abbr": null
+    "abbr": null,
+    "mutations": []
   }
 },
 {
   "model": "mutations.drug",
-  "pk": 6,
   "fields": {
     "kind": null,
     "name": "Ethionamide",
     "code": "ETH",
-    "abbr": null
+    "abbr": "Trecator",
+    "mutations": []
   }
 },
 {
   "model": "mutations.drug",
-  "pk": 7,
   "fields": {
     "kind": null,
-    "name": "Kanamycin",
+    "name": "Kanamycin A",
     "code": "KAN",
-    "abbr": null
+    "abbr": null,
+    "mutations": []
   }
 },
 {
   "model": "mutations.drug",
-  "pk": 8,
   "fields": {
     "kind": null,
     "name": "Capreomycin",
     "code": "CAP",
-    "abbr": null
+    "abbr": "Capastat",
+    "mutations": []
   }
 },
 {
   "model": "mutations.drug",
-  "pk": 9,
   "fields": {
-    "kind": null,
+    "kind": [
+      "AMG"
+    ],
     "name": "Amikacin",
     "code": "AMK",
-    "abbr": null
+    "abbr": null,
+    "mutations": []
   }
 },
 {
   "model": "mutations.drug",
-  "pk": 10,
   "fields": {
-    "kind": null,
+    "kind": [
+      "FLQ"
+    ],
     "name": "Ciprofloxacin",
     "code": "CIP",
-    "abbr": null
+    "abbr": "Cipro",
+    "mutations": []
   }
 },
 {
   "model": "mutations.drug",
-  "pk": 11,
   "fields": {
-    "kind": null,
+    "kind": [
+      "FLQ"
+    ],
     "name": "Levofloxacin",
     "code": "LEVO",
-    "abbr": null
+    "abbr": "Levaquin",
+    "mutations": []
   }
 },
 {
   "model": "mutations.drug",
-  "pk": 12,
   "fields": {
     "kind": null,
     "name": "Ofloxacin",
     "code": "OFLX",
-    "abbr": null
+    "abbr": "Floxin",
+    "mutations": []
   }
 },
 {
   "model": "mutations.drug",
-  "pk": 13,
   "fields": {
     "kind": null,
     "name": "Para-aminosalicylic acid",
     "code": "PAS",
-    "abbr": null
+    "abbr": "Paser",
+    "mutations": []
   }
 },
 {
   "model": "mutations.drug",
-  "pk": 14,
   "fields": {
     "kind": null,
     "name": "Cycloserine",
     "code": "CYS",
-    "abbr": null
+    "abbr": "Seromyci",
+    "mutations": []
   }
 },
 {
   "model": "mutations.drug",
-  "pk": 15,
   "fields": {
-    "kind": null,
+    "kind": [
+      "FLQ"
+    ],
     "name": "Moxifloxacin",
     "code": "MOXI",
-    "abbr": null
+    "abbr": "Avelox",
+    "mutations": []
   }
 },
 {
   "model": "mutations.drug",
-  "pk": 16,
   "fields": {
     "kind": null,
     "name": "Amoxicillin Clavulanate",
     "code": "AMOXCLAV",
-    "abbr": null
+    "abbr": "CoAmoxiC",
+    "mutations": []
   }
 },
 {
   "model": "mutations.drug",
-  "pk": 17,
   "fields": {
     "kind": null,
     "name": "Clofazimine",
     "code": "CLOF",
-    "abbr": null
+    "abbr": "Lamprene",
+    "mutations": []
   }
 },
 {
   "model": "mutations.drug",
-  "pk": 18,
   "fields": {
     "kind": null,
-    "name": "Gatifloxaci",
+    "name": "Gatifloxacin",
     "code": "GATI",
-    "abbr": null
+    "abbr": "Zymar",
+    "mutations": []
   }
 },
 {
   "model": "mutations.drug",
-  "pk": 19,
   "fields": {
     "kind": null,
     "name": "Thiacetazone",
     "code": "THA",
-    "abbr": null
+    "abbr": "USAN",
+    "mutations": []
   }
 },
 {
   "model": "mutations.drug",
-  "pk": 20,
   "fields": {
-    "kind": null,
+    "kind": [
+      "MAC"
+    ],
     "name": "Clarithromycin",
     "code": "CLAR",
-    "abbr": null
+    "abbr": "Biaxin",
+    "mutations": []
   }
 },
 {
   "model": "mutations.drug",
-  "pk": 21,
   "fields": {
     "kind": null,
     "name": "Prothionamide",
     "code": "PRO",
-    "abbr": null
+    "abbr": null,
+    "mutations": []
   }
 },
 {
   "model": "mutations.drug",
-  "pk": 22,
   "fields": {
     "kind": null,
     "name": "Rifabutin",
     "code": "RFB",
-    "abbr": null
+    "abbr": null,
+    "mutations": []
   }
 },
 {
   "model": "mutations.drug",
-  "pk": 23,
   "fields": {
-    "kind": null,
+    "kind": [
+      "OXA"
+    ],
     "name": "Linezolid",
     "code": "LIN",
-    "abbr": null
+    "abbr": "Zyvox",
+    "mutations": []
   }
 }
 ]
