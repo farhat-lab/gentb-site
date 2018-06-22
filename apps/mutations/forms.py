@@ -37,7 +37,7 @@ class DrugForm(ModelForm):
 
     class Meta:
         model = Drug
-        fields = ('name', 'code', 'mutations', 'paste')
+        fields = ('name', 'code', 'kind', 'mutations', 'paste')
 
     def clean_paste(self):
         try:

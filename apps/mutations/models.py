@@ -28,14 +28,27 @@ from apps.maps.models import Country, Place
 from apps.uploads.models import UploadFile
 from .validators import is_octal
 
+class DrugClassManager(Manager):
+    def get_by_natural_key(self, code):
+        return self.get(code=code)
+
 class DrugClass(Model):
     """The class of drug which acts as a category for drugs"""
     name = CharField(max_length=64, db_index=True, unique=True)
     code = CharField(max_length=12, db_index=True, unique=True)
 
+    manager = DrugClassManager()
+
+    def natural_key(self):
+        """Return the code as the lookup key for this table"""
+        return (self.code,)
+
     def __str__(self):
         return self.name
 
+class DrugManager(Manager):
+    def get_by_natural_key(self, name):
+        return self.get(Q(name=name) | Q(code=name) | Q(abbr=name))
 
 class Drug(Model):
     """Each antibiotic drug which resistance might be known"""
@@ -48,34 +61,57 @@ class Drug(Model):
     mutations = ManyToManyField("Mutation", blank=True, related_name='drugs',
         help_text="Implicated gene mutations which cause resistance to this drug")
 
+    manager = DrugManager()
+
     class Meta:
         ordering = ('code',)
+
+    def natural_key(self):
+        """We want the drug code to be the key into this table"""
+        return (self.code,)
 
     def __str__(self):
         return '[%s] - %s' % (self.code, self.name)
 
+class GenomeManager(Manager):
+    def get_by_natural_key(self, name):
+        return self.get(Q(name=name) | Q(code=name))
 
 # H37rv is a reference TBgenome, SNPs and mutations are usually called relative to this reference
 class Genome(Model):
     code = SlugField(max_length=32, unique=True)
     name = CharField(max_length=255)
 
+    manager = GenomeManager()
+
+    def natural_key(self):
+        """The genome'sshort code is a useful key to lookup this table"""
+        return (self.code,)
+
     def __str__(self):
         return "[%s] %s" % (self.code, self.name)
 
 
+class GeneLocusManager(Manager):
+    def get_by_natural_key(self, genome, name):
+        return self.get(genome__code=genome, name=name)
+
 class GeneLocus(Model):
+    """
+    Basically a gene as defined by a standard reference, it's location,
+    length and other details which are optional.
+    """
     STRANDS = (
-      (None, 'Undefined'),
-      ('+', '+'),
-      ('-', '-'),
-      ('.', '.'),
+        (None, 'Undefined'),
+        ('+', '+'),
+        ('-', '-'),
+        ('.', '.'),
     )
     GENE_TYPES = (
-      ('P', 'Promoter'),
-      ('C', 'Coding'),
-      ('I', 'Intergenic'),
-      ('R', 'RNA'),
+        ('P', 'Promoter'),
+        ('C', 'Coding'),
+        ('I', 'Intergenic'),
+        ('R', 'RNA'),
     )
 
     genome = ForeignKey(Genome, related_name='gene_locuses', null=True, blank=True)
@@ -111,6 +147,10 @@ class GeneLocus(Model):
     class Meta:
         ordering = ('name',)
         unique_together = ('genome', 'name')
+
+    def natural_key(self):
+        """The genome'sshort code is a useful key to lookup this table"""
+        return (self.genome.code, self.name)
 
     def __str__(self):
         return self.name

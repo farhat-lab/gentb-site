@@ -29,10 +29,11 @@ class ImportSourceAdmin(ModelAdmin):
 site.register(ImportSource, ImportSourceAdmin)
 
 class DrugAdmin(ModelAdmin):
-    list_display = ('__str__', 'mutation_count')
+    list_display = ('__str__', 'abbr', 'mutation_count', 'kind',)
+    list_filter = ('kind',)
 
-    def get_form(self, *args, **kw):
-        return DrugForm
+#    def get_form(self, *args, **kw):
+#        return DrugForm
 
     def mutation_count(self, obj):
         return obj.mutations.count()
