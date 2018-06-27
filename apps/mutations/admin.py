@@ -31,6 +31,7 @@ site.register(ImportSource, ImportSourceAdmin)
 class DrugAdmin(ModelAdmin):
     list_display = ('__str__', 'abbr', 'mutation_count', 'kind',)
     list_filter = ('kind',)
+    readonly_fields = ('mutations',)
 
 #    def get_form(self, *args, **kw):
 #        return DrugForm
