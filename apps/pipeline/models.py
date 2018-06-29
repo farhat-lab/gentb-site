@@ -499,6 +499,9 @@ class ProgramRun(TimeStampedModel):
         cmd = self.program.prepare_command(files)
         self.debug_text = cmd
 
+        # Replace for bridging XXX
+        cmd = cmd.replace('/tmp/groups/', '/n/groups/')
+
         if job_manager.submit(self.job_id, cmd, **kwargs):
             self.is_submitted = True
             self.submitted = now()

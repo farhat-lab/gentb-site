@@ -133,7 +133,10 @@ class UploadFile(Model):
         Download the dropbox link offline.
         """
         if not os.path.exists(self.file_directory):
-            os.makedirs(self.file_directory)
+            try:
+                os.makedirs(self.file_directory)
+            except (OSError, IOError) as err:
+                raise AttributeError("File directory is  busted: '{}'".format(self.file_directory))
 
         self.retrieval_start = now()
         self.retrieval_error = ''

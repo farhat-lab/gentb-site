@@ -439,8 +439,8 @@ sub annotcoding{
    $altcodon=&revcomp($altcodon);
   }
   #print STDERR "altcodon is $altcodon , codon is $codon, $codpos, $allele, $checkallele\n";
-  ($sns, $aaref, $aavar) = &check_synonymous($codon,$aapos,$altcodon);
-  $aasnp = $aaref.$aapos.$aavar; #general variable
+  my ($sns, $aaref, $aavar) = &check_synonymous($codon,$aapos,$altcodon);
+  my $aasnp = $aaref.$aapos.$aavar; #general variable
    if ($aasnp =~ /\*/) {
 	$sns = 'Z';
    }

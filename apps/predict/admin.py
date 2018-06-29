@@ -22,7 +22,7 @@ class StrainInline(admin.StackedInline):
     extra = 0
 
 class PredictDatasetAdmin(admin.ModelAdmin):
-    inlines = (StrainInline, PredictDatasetNoteInline)
+    #inlines = (StrainInline, PredictDatasetNoteInline)
     save_on_top = True
     search_fields = ('title', 'user__first_name', 'user__last_name',)
     list_display = ('title', 'user', 'get_status', 'has_prediction', 'file_directory', 'created', 'modified')
