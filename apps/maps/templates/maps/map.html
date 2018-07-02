@@ -100,9 +100,17 @@
                 <div class="vertical-tab-content">
                   <div class="d3graph">
                     <div class="lister" id="mselect"></div>
-                    <div id="mutation_explainer">
-                      <h2>Mutation Name Format</h2>
-                      <img src="{% static "images/mutation_name.svg" %}">
+
+                    <div id="gene_map" style="display: none;">
+                      <h2>Select Gene Area</h2>
+                      <div id="gene_map_title">
+                          <span id="gene_start">3432424</span>
+                          <h4 id="gene_label">KatG / Rv23423 (264 mutations)</h4>
+                          <span id="gene_end">3432424</span>
+                      </div>
+                      <div id="mutation_selector">
+                          {% for i in "x"|rjust:"50" %}<span id="ms-{{ forloop.counter }}" class="{% cycle 'odd' 'even' %}"><span>&nbsp;</span></span>{% endfor %}
+                      </div>
                     </div>
                     <svg class="mutations" id="mutations" data-json-url="{% url 'maps:map.mutation' %}"></svg>
                   </div>

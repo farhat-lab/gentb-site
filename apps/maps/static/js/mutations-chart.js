@@ -18,6 +18,12 @@
  * along with gentb.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+set_tooltip = function(elem, title) {
+    return elem.attr('data-original-title', title)
+               .tooltip('fixTitle')
+               .tooltip('show');
+};
+
 function addOption(self, name, value) {
     var opt = $("<option></option>");
     $(self).append(opt);
@@ -112,38 +118,95 @@ function initialiseMutationList(data, url, args, refresh_function) {
     var container = $(this);
 
     var label_drop = $('<label for="locus" class="text-primary">Locus:</label>');
-    var select = $('<select id="locus"></select>');
+    var locus = $('<input type="text" list="locus-list" id="locus" style="width: 300px;" data-container="body" autocomplete="off" title="Type name of gene locus"></input>');
+    var locus_datalist = $('<datalist id="locus-list"></datalist>');
+    var label_s = $('<label for="synon" class="text-primary">S:</label>');
+    var synon = $('<input type="checkbox" name="synon" data-container="body" style="vertical-align: middle;margin: 0px;" title="Include Synonymous Mutations"/>');
     var label = $('<label for="snp" class="text-primary">Mutation:</label>');
-    var input = $('<input type="text" list="mutation-list" id="snp" style="width: 300px;" data-container="body" autocomplete="off" data-toggle="tooldesc" title="Select a locus to continue"/>');
-    var datalist = $('<datalist id="mutation-list"></datalist>');
+    var snp = $('<input type="text" list="mutation-list" id="snp" style="width: 300px;" data-container="body" autocomplete="off" title="Select a locus to continue"/>');
+    var snp_datalist = $('<datalist id="mutation-list"></datalist>');
     var button_del = $('<a class="btn btn-danger btn-sm pull-right" id="clear-mutation">Clear</button>');
     $('#mutations').hide();
 
     container.empty();
     container.append(label_drop);
-    container.append(select);
+    container.append(locus);
+    container.append(locus_datalist);
+    container.append(label_s);
+    container.append(synon);
     container.append(label);
-    container.append(input);
-    container.append(datalist);
+    container.append(snp);
+    container.append(snp_datalist);
     container.append(button_del);
 
-    // Add this data to the initial locus list
-    replaceOptions(select, data.values);
+    locus.tooltip();
+    synon.tooltip();
+    snp.tooltip();
 
-    select.change(function() {
-      var val = $(this).val();
-      input.val('');
-      if(!val || val == '---') {
-        input.prop('disabled', true);
-      } else {
-        input.prop('disabled', false);
-        datalist.empty();
-        datalist.data('set', '--- ASK AGAIN ---');
-        input.keyup();
+    var locus_select = function(val) {
+      snp.val('');
+      if(val && val != '---') {
+        snp_datalist.empty();
+        snp_datalist.data('set', '--- ASK AGAIN ---');
+        snp.keyup();
+        set_tooltip(locus, "Gene " + val + " Selected");
+        // Refresh range
+        reset_args();
+        args.range = 'true';
+        $.getJSON(url, args).done(function(json) {
+          $('gene_map').show();
+          $('#gene_start').text(json['start']);
+          $('#gene_end').text(json['end']);
+          $('#gene_label').text(json['title']);
+          var max = parseFloat(json['max']);
+          for(var i=1;i<=50;i++) {
+              var count = json['values'][i];
+              if(count == undefined) { count = 0; }
+              var height = (parseFloat(count) / max) * 50;
+              $('#ms-'+i).attr('data-original-title', count + " mutations").tooltip();
+              $('#ms-'+i+' span').attr('style', 'line-height:'+height+'px;');
+          }
+        });
       }
-    }).change();
+    }
 
-    input.select(function() {
+    locus.select(function(){locus_select($(this).val())}).select();
+
+    function reset_args() {
+      args.locus = locus.val();
+      args.synonymous = synon.is(':checked');
+      delete args.snp;
+      delete args.ecoli;
+      delete args.range;
+    }
+
+    locus.on('keyup', function(e){
+      var selected = $(this).val();
+      if($(this).data('previous') == selected) { return; }
+      $(this).data('previous', selected);
+      reset_args();
+      $.getJSON(url, args).done(function(json) {
+        set_tooltip(locus, json.msg || "Not updated");
+
+        if(json.values) {
+            replaceOptions(locus_datalist, json.values);
+            if(json.values.length == 1 && json.values[0].toLowerCase() == selected.toLowerCase()) {
+                locus.val(json.values[0]);
+                locus_datalist.empty()
+                locus_select(json.values[0]);
+            }
+        } else {
+          locus_datalist.empty();
+        }
+        // Trigger workaround to update datalist.
+        locus.focus();
+      }).fail(function(jqxhr, textStatus, error) {
+        var err = textStatus + ", " + error;
+        console.log("Request Failed: " + err);
+      });
+    });
+
+    snp.select(function() {
       var value = $(this).val();
       var mutations = $('#mutation-store').data('value');
       mutations.push(value);
@@ -155,13 +218,11 @@ function initialiseMutationList(data, url, args, refresh_function) {
       button_del.show();
     });
 
-    input.on('keyup', function(e){
+    snp.on('keyup', function(e){
       var selected = $(this).val();
-      if($(this).data('previous') == selected) { return; }
+      if($(this).data('previous') == selected || selected == '') { return; }
       $(this).data('previous', selected);
-      args.locus = select.val();
-      delete args.snp;
-      delete args.ecoli;
+      reset_args();
       if(selected.toLowerCase().startsWith('e:')) {
           if(isNaN(selected.substr(2)) || selected.length <= 2) {
               return;
@@ -171,17 +232,17 @@ function initialiseMutationList(data, url, args, refresh_function) {
           args.snp = selected;
       }
       $.getJSON(url, args).done(function(json) {
-        input.attr('data-original-title', json.msg || "Not updated")
+        snp.attr('data-original-title', json.msg || "Not updated")
           .tooltip('fixTitle')
           .tooltip('show');
 
         if(json.values) {
-          replaceOptions(datalist, json.values);
+          replaceOptions(snp_datalist, json.values);
         } else {
-          datalist.empty();
+          snp_datalist.empty();
         }
         // Trigger workaround to update datalist.
-        input.focus();
+        snp.focus();
       }).fail(function(jqxhr, textStatus, error) {
         var err = textStatus + ", " + error;
         console.log("Request Failed: " + err);

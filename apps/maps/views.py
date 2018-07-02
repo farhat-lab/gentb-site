@@ -23,10 +23,11 @@ from __future__ import print_function
 import json
 from collections import defaultdict, OrderedDict
 from django.views.generic import TemplateView
-from django.db.models import Count
+from django.db.models import Count, Q, F, IntegerField
+from django.db.models.functions import Cast
 
 from apps.mutations.models import (
-    ImportSource, StrainSource, Mutation,
+    ImportSource, StrainSource, Mutation, GeneLocus,
     RESISTANCE, RESISTANCE_GROUP,
 )
 
@@ -164,20 +165,60 @@ class Mutations(JsonView, DataSlicerMixin):
 
     def get_context_data(self, **_):
         """Return a dictionary of template variables"""
-        _qs = self.get_data()
         if 'snp' not in self.request.GET and 'ecoli' not in self.request.GET:
-            return {
-                'values': self.get_list(_qs, 'gene_locus__name'),
-            }
-        elif _qs.count() == 0:
+            if 'locus' not in self.request.GET:
+                return {'values': []}
+            if 'range' in self.request.GET:
+                return self.get_gene_range(**self.request.GET)
+            return self.get_genes(**self.request.GET)
+
+        # Otherwise mutation query
+        qset = self.get_data()
+        if qset.count() == 0:
             return {'msg': 'None found'}
-        elif _qs.count() > 200:
-            return {'msg': 'Too many (%d)' % _qs.count()}
+        elif qset.count() > 200:
+            return {'msg': 'Too many (%d)' % qset.count()}
 
         return {
-            'msg': "Found %d mutations" % _qs.count(),
-            'values': list(self.get_my_list(_qs)),
+            'msg': "Found %d mutations" % qset.count(),
+            'values': list(self.get_my_list(qset)),
         }
+
+    def get_gene_range(self, locus, synonymous=False, **_):
+        """Returns a list of segments in a gene"""
+        try:
+            locus = GeneLocus.objects.get(name=locus[0])
+        except GeneLocus.DoesNotExist:
+            return {'title': "No Gene Locus found!"}
+
+        mutations = Mutation.objects.filter(gene_locus=locus, nucleotide_position__isnull=False)
+        if synonymous in (False, 0, 'false'):
+            mutations = mutations.exclude(syn='S')
+        qset = mutations.annotate(block=Cast(F('nucleotide_position')/50, IntegerField()))\
+                        .values('block').annotate(count=Count('block'))
+        offset = int(locus.start / 50.0)
+        values = dict([(a - offset, b) for a, b in self.get_list(qset, 'block', 'count')])
+        return {
+            'start': locus.start,
+            'end': locus.stop,
+            'title': "{0.name} / {0.previous_id} ({1} mutations)".format(locus, mutations.count()),
+            'values': values,
+            'max': max(values.values()),
+        }
+
+    def get_genes(self, locus, **_):
+        """Returns a list of genes"""
+        locus = self.request.GET['locus']
+        qset = GeneLocus.objects.filter(
+            Q(name__istartswith=locus)
+            | Q(previous_id__istartswith=locus)
+            | Q(gene_symbol__istartswith=locus),
+        )
+        return {
+            'msg': "Found %d genes" % qset.count(),
+            'values': self.get_list(qset, 'name')
+        }
+
 
     def get_my_list(self, _qs):
         """The core get list for thsi json data"""
