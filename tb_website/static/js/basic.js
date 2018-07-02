@@ -1,5 +1,5 @@
 
 $(document).ready(function() {
-  $("[data-toggle=tooltip]").tooltip();
-  $("[data-toggle=tooldesc]").tooltip({placement: 'bottom', trigger: 'manual'});
+  $("[data-toggle=tooldesc]").data('container', 'body').tooltip({placement: 'bottom', trigger: 'manual'});
+  $("[data-toggle=tooltip], [data-toggle=tooltips] *").data('container', 'body').tooltip();
 });

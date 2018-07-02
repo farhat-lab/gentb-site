@@ -117,31 +117,11 @@ function initialiseMutationList(data, url, args, refresh_function) {
   $('#mselect').each(function() {
     var container = $(this);
 
-    var label_drop = $('<label for="locus" class="text-primary">Locus:</label>');
-    var locus = $('<input type="text" list="locus-list" id="locus" style="width: 300px;" data-container="body" autocomplete="off" title="Type name of gene locus"></input>');
-    var locus_datalist = $('<datalist id="locus-list"></datalist>');
-    var label_s = $('<label for="synon" class="text-primary">S:</label>');
-    var synon = $('<input type="checkbox" name="synon" data-container="body" style="vertical-align: middle;margin: 0px;" title="Include Synonymous Mutations"/>');
-    var label = $('<label for="snp" class="text-primary">Mutation:</label>');
-    var snp = $('<input type="text" list="mutation-list" id="snp" style="width: 300px;" data-container="body" autocomplete="off" title="Select a locus to continue"/>');
-    var snp_datalist = $('<datalist id="mutation-list"></datalist>');
-    var button_del = $('<a class="btn btn-danger btn-sm pull-right" id="clear-mutation">Clear</button>');
-    $('#mutations').hide();
-
-    container.empty();
-    container.append(label_drop);
-    container.append(locus);
-    container.append(locus_datalist);
-    container.append(label_s);
-    container.append(synon);
-    container.append(label);
-    container.append(snp);
-    container.append(snp_datalist);
-    container.append(button_del);
-
-    locus.tooltip();
-    synon.tooltip();
-    snp.tooltip();
+    var locus = $('#locus');
+    var locus_datalist = $('#locus-list');
+    var snp = $('#snp');
+    var snp_datalist = $('#mutation-list');
+    var button_del = $('#clear-mutation');
 
     var locus_select = function(val) {
       snp.val('');
@@ -154,27 +134,34 @@ function initialiseMutationList(data, url, args, refresh_function) {
         reset_args();
         args.range = 'true';
         $.getJSON(url, args).done(function(json) {
-          $('gene_map').show();
+          $('#gene_map').show();
           $('#gene_start').text(json['start']);
           $('#gene_end').text(json['end']);
           $('#gene_label').text(json['title']);
           var max = parseFloat(json['max']);
           for(var i=1;i<=50;i++) {
-              var count = json['values'][i];
-              if(count == undefined) { count = 0; }
+              var items = json['values'][i];
+              if(items == undefined) { items = []; }
+              var count = items.length;
               var height = (parseFloat(count) / max) * 50;
-              $('#ms-'+i).attr('data-original-title', count + " mutations").tooltip();
+              $('#ms-'+i).data('items', items)
+                  .attr('data-original-title', count + " mutations").tooltip();
               $('#ms-'+i+' span').attr('style', 'line-height:'+height+'px;');
           }
         });
       }
     }
 
+    $('#mutation_selector > span').click(function() {
+        replaceOptions(snp_datalist, $(this).data('items'));
+        snp.focus();
+    });
+
     locus.select(function(){locus_select($(this).val())}).select();
 
     function reset_args() {
       args.locus = locus.val();
-      args.synonymous = synon.is(':checked');
+      args.synonymous = $('input[name="synon"]').is(':checked');
       delete args.snp;
       delete args.ecoli;
       delete args.range;

@@ -99,7 +99,17 @@
                 </div>
                 <div class="vertical-tab-content">
                   <div class="d3graph">
-                    <div class="lister" id="mselect"></div>
+                    <div class="lister" id="mselect" data-toggle="tooltips">
+                      <label for="locus" class="text-primary">Locus:</label>
+                      <input type="text" list="locus-list" id="locus" autocomplete="off" title="Type name of gene locus"></input>
+                      <datalist id="locus-list"></datalist>
+                      <label for="synon" class="text-primary">S:</label>
+                      <input type="checkbox" name="synon" title="Include Synonymous Mutations"/>
+                      <label for="snp" class="text-primary">Mutation:</label>
+                      <input type="text" list="mutation-list" id="snp" autocomplete="off" title="Select a locus to continue"/>
+                      <datalist id="mutation-list"></datalist>
+                      <a class="btn btn-danger btn-sm pull-right" id="clear-mutation">Clear</a>
+                    </div>
 
                     <div id="gene_map" style="display: none;">
                       <h2>Select Gene Area</h2>
@@ -112,7 +122,7 @@
                           {% for i in "x"|rjust:"50" %}<span id="ms-{{ forloop.counter }}" class="{% cycle 'odd' 'even' %}"><span>&nbsp;</span></span>{% endfor %}
                       </div>
                     </div>
-                    <svg class="mutations" id="mutations" data-json-url="{% url 'maps:map.mutation' %}"></svg>
+                    <svg class="mutations" id="mutations" data-json-url="{% url 'maps:map.mutation' %}" style="display: none;"></svg>
                   </div>
                 </div>
             </div>

@@ -42,6 +42,13 @@
 label {
   margin: 5px 3px 5px 10px;
 }
+#mselect input[type="text"] {
+  width: 300px;
+}
+#mselect input[type="checkbox"] {
+  vertical-align: middle;
+  margin: 0px;
+}
 #mutation_selector {
   display: table;
   width: 100%;

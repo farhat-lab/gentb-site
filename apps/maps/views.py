@@ -194,16 +194,18 @@ class Mutations(JsonView, DataSlicerMixin):
         mutations = Mutation.objects.filter(gene_locus=locus, nucleotide_position__isnull=False)
         if synonymous in (False, 0, 'false'):
             mutations = mutations.exclude(syn='S')
-        qset = mutations.annotate(block=Cast(F('nucleotide_position')/50, IntegerField()))\
-                        .values('block').annotate(count=Count('block'))
+
         offset = int(locus.start / 50.0)
-        values = dict([(a - offset, b) for a, b in self.get_list(qset, 'block', 'count')])
+        values = defaultdict(list)
+        for name, pos in self.get_list(mutations, 'name', 'nucleotide_position'):
+            values[int(pos / 50) - offset].append(name)
+
         return {
             'start': locus.start,
             'end': locus.stop,
             'title': "{0.name} / {0.previous_id} ({1} mutations)".format(locus, mutations.count()),
             'values': values,
-            'max': max(values.values()),
+            'max': max([len(i) for i in values.values()]),
         }
 
     def get_genes(self, locus, **_):
