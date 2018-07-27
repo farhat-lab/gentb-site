@@ -98,6 +98,7 @@ $(document).ready(function() {
           });
         });
       }
+      $('#locus').select();
       refreshMutation(svg, chart, data);
     }); 
 });
@@ -132,7 +133,11 @@ function initialiseMutationList(data, url, args, refresh_function) {
         set_tooltip(locus, "Gene " + val + " Selected");
         // Refresh range
         reset_args();
+        $('#mutation_selector').addClass('loading');
+        $('#locus').attr("disabled", "disabled");
         $.getJSON(range_url, args).done(function(json) {
+          $('#mutation_selector').removeClass('loading');
+          $('#locus').removeAttr("disabled");
           $('#gene_map').show();
           $('#gene_start').text(json['start']);
           $('#gene_end').text(json['end']);
@@ -154,7 +159,7 @@ function initialiseMutationList(data, url, args, refresh_function) {
                   .attr('data-container', 'body')
                   .tooltip();
 
-              $('#ms-'+i+' span').attr('style', 'line-height:' + height + 'px;');
+              $('#ms-'+i+' span').css('line-height', height + 'px');
           }
         });
       }
@@ -167,7 +172,8 @@ function initialiseMutationList(data, url, args, refresh_function) {
         snp.focus();
     });
 
-    locus.select(function(){locus_select($(this).val())}).select();
+    locus.select(function(){locus_select($(this).val())});
+    locus.data('previous', locus.val());
 
     function reset_args() {
       args = getAllTabData();

@@ -72,6 +72,7 @@ label {
   width: 100%;
   display: inline-block;
   vertical-align: bottom;
+  animation-play-state: paused;
 }
 #mutation_selector > span:hover {
   background-color: #eee;
@@ -96,6 +97,22 @@ label {
   background-color: #729fcf;
   line-height: 0px;
 }
+#mutation_selector.loading > span.odd > span,
+#mutation_selector.loading > span.even > span
+{
+  animation-play-state: running;
+  animation-iteration-count: infinite;
+  animation-name: loading;
+  animation-duration: 1s;
+  animation-direction: alternate;
+  background-color: #eee;
+  animation-timing-function: linear;
+}
+@keyframes loading {
+    from {line-height: 0px;}
+    to {line-height: 48px;}
+}
+
 #gene_map_title {
   display: table;
   position: relative;
