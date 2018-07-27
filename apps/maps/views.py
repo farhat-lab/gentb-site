@@ -27,7 +27,7 @@ from django.db.models import Count, Q, F, IntegerField
 from django.db.models.functions import Cast
 
 from apps.mutations.models import (
-    ImportSource, StrainSource, Mutation, GeneLocus,
+    ImportSource, StrainSource, Mutation, GeneLocus, Genome,
     RESISTANCE, RESISTANCE_GROUP,
 )
 
@@ -106,7 +106,7 @@ class Places(JsonView, DataSlicerMixin):
         }
 
 
-class Drugs(JsonView, DataSlicerMixin):
+class DrugList(JsonView, DataSlicerMixin):
     """Provide a json data slice into the drug resistance data"""
     model = StrainSource
     order = ['drugs__drug__name', 'drugs__drug__kind']
@@ -126,6 +126,7 @@ class Drugs(JsonView, DataSlicerMixin):
                 'drugs__drug__code', 'count', 'drugs__resistance',
             ).set_axis('z', RESISTANCE).to_graph(),
         }
+
 
 class Lineages(JsonView, DataSlicerMixin):
     """Provide a json data slice into the Lineages data"""
@@ -152,25 +153,85 @@ class Lineages(JsonView, DataSlicerMixin):
                     .to_graph()
         }
 
+
+class LocusRange(JsonView, DataSlicerMixin):
+    """Lookup locuses and return mutations blocked into buckets"""
+    model = Mutation
+    filters = {
+        'drug': 'strain_mutations__strain__drugs__drug__code',
+        'map': 'strain_mutations__strain__country__iso2',
+        'src': 'strain_mutations__strain__importer',
+    }
+    def get_context_data(self, **_):
+        """Returns the list of mutations blocked into ranges for this gene"""
+        return dict(self.get_gene_range(**self.request.GET))
+
+    def get_gene_range(self, locus, synonymous=False, **_):
+        """Returns a list of segments in a gene, as a dict-generator"""
+        genome = Genome.objects.get(code='H37Rv')
+        mutations = self.get_queryset().filter(nucleotide_position__isnull=False)
+        try:
+            locus = GeneLocus.objects.get(name=locus[0])
+            mutations = mutations.filter(gene_locus=locus)
+            start = locus.start
+            end = locus.stop
+            yield 'title', "{0.name} / {0.previous_id} ({1} mutations)"\
+                    .format(locus, mutations.count())
+        except GeneLocus.DoesNotExist:
+            # All mutations in the whole genome
+            start = 0
+            end = genome.length
+            yield 'title', "{0.code} ({1} mutations)".format(genome, mutations.count())
+
+        yield 'start', start
+        yield 'end', end
+        if synonymous in (False, 0, 'false'):
+            mutations = mutations.exclude(syn='S')
+
+        values = defaultdict(list)
+        girth = (end - start) / 50
+        for name, pos in self.get_list(mutations, 'name', 'nucleotide_position'):
+            bucket = int((pos - start) / girth)
+            values[bucket].append(name)
+        yield 'values', values
+        yield 'max', max([len(i) for i in values.values()] + [0])
+
+
+class LocusList(JsonView, DataSlicerMixin):
+    """Get a list of locuses that somewhat match the given locus string"""
+    model = Mutation
+
+    def get_context_data(self, **_):
+        """Return a list of locuses with this name"""
+        locus = self.request.GET['locus']
+        qset = GeneLocus.objects.filter(
+            Q(name__istartswith=locus)
+            | Q(previous_id__istartswith=locus)
+            | Q(gene_symbol__istartswith=locus),
+        )
+        return {
+            'msg': "Found %d genes" % qset.count(),
+            'values': self.get_list(qset, 'name')
+        }
+
+
 class Mutations(JsonView, DataSlicerMixin):
     """Provide a lookup into the mutations database for selecting anavailable mutation"""
     model = Mutation
-    order = None
     values = ['pk']
     filters = {
         'snp': 'name__icontains',
         'ecoli': 'ecoli_aapos',
         'locus': 'gene_locus__name',
+        'drug': 'strain_mutations__strain__drugs__drug__code',
+        'map': 'strain_mutations__strain__country__iso2',
+        'src': 'strain_mutations__strain__importer',
     }
 
     def get_context_data(self, **_):
         """Return a dictionary of template variables"""
         if 'snp' not in self.request.GET and 'ecoli' not in self.request.GET:
-            if 'locus' not in self.request.GET:
-                return {'values': []}
-            if 'range' in self.request.GET:
-                return self.get_gene_range(**self.request.GET)
-            return self.get_genes(**self.request.GET)
+            return {'values': []}
 
         # Otherwise mutation query
         qset = self.get_data()
@@ -183,45 +244,6 @@ class Mutations(JsonView, DataSlicerMixin):
             'msg': "Found %d mutations" % qset.count(),
             'values': list(self.get_my_list(qset)),
         }
-
-    def get_gene_range(self, locus, synonymous=False, **_):
-        """Returns a list of segments in a gene"""
-        try:
-            locus = GeneLocus.objects.get(name=locus[0])
-        except GeneLocus.DoesNotExist:
-            return {'title': "No Gene Locus found!"}
-
-        mutations = Mutation.objects.filter(gene_locus=locus, nucleotide_position__isnull=False)
-        if synonymous in (False, 0, 'false'):
-            mutations = mutations.exclude(syn='S')
-
-        values = defaultdict(list)
-        girth = (locus.stop - locus.start) / 50
-        for name, pos in self.get_list(mutations, 'name', 'nucleotide_position'):
-            bucket = int((pos - locus.start) / girth)
-            values[bucket].append(name)
-
-        return {
-            'start': locus.start,
-            'end': locus.stop,
-            'title': "{0.name} / {0.previous_id} ({1} mutations)".format(locus, mutations.count()),
-            'values': values,
-            'max': max([len(i) for i in values.values()]),
-        }
-
-    def get_genes(self, locus, **_):
-        """Returns a list of genes"""
-        locus = self.request.GET['locus']
-        qset = GeneLocus.objects.filter(
-            Q(name__istartswith=locus)
-            | Q(previous_id__istartswith=locus)
-            | Q(gene_symbol__istartswith=locus),
-        )
-        return {
-            'msg': "Found %d genes" % qset.count(),
-            'values': self.get_list(qset, 'name')
-        }
-
 
     def get_my_list(self, _qs):
         """The core get list for thsi json data"""

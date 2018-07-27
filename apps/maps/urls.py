@@ -17,14 +17,17 @@
 
 from django.conf.urls import include, url
 
-from .views import *
+from .views import MapPage, Places, DrugList, Lineages, \
+    MutationView, LocusRange, LocusList, Mutations, Sources
 
 urlpatterns = [
     url(r'^$', MapPage.as_view(), name="map"),
-    url(r'data/places/$',    Places.as_view(), name="map.places"),
-    url(r'data/drugs/$',     Drugs.as_view(), name="map.drugs"),
-    url(r'data/lineages/$',  Lineages.as_view(), name="map.lineages"),
-    url(r'data/mutation/$',  MutationView.as_view(), name="map.mutation"),
+    url(r'data/places/$', Places.as_view(), name="map.places"),
+    url(r'data/drugs/$', DrugList.as_view(), name="map.drugs"),
+    url(r'data/lineages/$', Lineages.as_view(), name="map.lineages"),
+    url(r'data/locrange/$', LocusRange.as_view(), name="map.locus.range"),
+    url(r'data/locuses/$', LocusList.as_view(), name="map.locuses"),
+    url(r'data/mutation/$', MutationView.as_view(), name="map.mutation"),
     url(r'data/mutations/$', Mutations.as_view(), name="map.mutations"),
-    url(r'data/sources/$',   Sources.as_view(), name="map.sources"),
+    url(r'data/sources/$', Sources.as_view(), name="map.sources"),
 ]

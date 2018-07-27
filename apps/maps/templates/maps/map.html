@@ -98,29 +98,27 @@
                   </div>
                 </div>
                 <div class="vertical-tab-content">
-                  <div class="d3graph">
-                    <div class="lister" id="mselect" data-toggle="tooltips">
-                      <label for="locus" class="text-primary">Locus:</label>
-                      <input type="text" list="locus-list" id="locus" autocomplete="off" title="Type name of gene locus"></input>
-                      <datalist id="locus-list"></datalist>
-                      <label for="synon" class="text-primary">S:</label>
-                      <input type="checkbox" name="synon" title="Include Synonymous Mutations"/>
-                      <label for="snp" class="text-primary">Mutation:</label>
-                      <input type="text" list="mutation-list" id="snp" autocomplete="off" title="Select a locus to continue"/>
-                      <datalist id="mutation-list"></datalist>
-                      <a class="btn btn-danger btn-sm pull-right" id="clear-mutation">Clear</a>
-                    </div>
-
-                    <div id="gene_map" style="display: none;">
-                      <h2>Select Gene Area</h2>
+                  <div class="mutation_graph">
+                      <div id="gene_map" data-locus-lookup="{% url 'maps:map.locuses' %}" data-locus-range="{% url 'maps:map.locus.range' %}">
                       <div id="gene_map_title">
                           <span id="gene_start">3432424</span>
-                          <h4 id="gene_label">KatG / Rv23423 (264 mutations)</h4>
+                          <h4>
+                            <input type="text" list="locus-list" id="locus" autocomplete="off" title="Type name of gene locus" value="All"></input>
+                            <datalist id="locus-list"></datalist>
+                          </h4>
                           <span id="gene_end">3432424</span>
                       </div>
                       <div id="mutation_selector">
                           {% for i in "x"|rjust:"50" %}<span id="ms-{{ forloop.counter }}" class="{% cycle 'odd' 'even' %}"><span>&nbsp;</span></span>{% endfor %}
                       </div>
+                    </div>
+                    <div class="lister" data-toggle="tooltips">
+                      <label for="synon" class="text-primary">Synonymous:</label>
+                      <input type="checkbox" name="synon" title="Include Synonymous Mutations"/>
+                      <label for="snp" class="text-primary">Mutation:</label>
+                      <input type="text" list="mutation-list" id="snp" autocomplete="off" title="Select a locus to continue"/>
+                      <datalist id="mutation-list"></datalist>
+                      <a class="btn btn-danger btn-sm pull-right" id="clear-mutation">Clear</a>
                     </div>
                     <svg class="mutations" id="mutations" data-json-url="{% url 'maps:map.mutation' %}" style="display: none;"></svg>
                   </div>
