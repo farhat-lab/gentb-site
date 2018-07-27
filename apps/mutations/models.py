@@ -21,7 +21,9 @@ Drug resistance and strain source for gene mutations django app.
 import os
 
 from django.conf import settings
-from django.db.models import *
+from django.db.models import Model, Manager, Q, QuerySet, \
+    CharField, PositiveIntegerField, ForeignKey, ManyToManyField, URLField, \
+    SlugField, IntegerField, BooleanField, DateField, DateTimeField, TextField
 from django.core.urlresolvers import reverse
 
 from apps.maps.models import Country, Place
@@ -82,6 +84,7 @@ class Genome(Model):
     code = SlugField(max_length=32, unique=True)
     name = CharField(max_length=255)
 
+    length = PositiveIntegerField(default=0)
     manager = GenomeManager()
 
     def natural_key(self):
@@ -441,5 +444,3 @@ class StrainResistance(Model):
 
     def __str__(self):
         return "%s is %s to %s" % (str(self.strain), str(self.get_resistance_display()), str(self.drug))
-
-
