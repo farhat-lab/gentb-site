@@ -23,7 +23,8 @@ import os
 from django.conf import settings
 from django.db.models import Model, Manager, Q, QuerySet, \
     CharField, PositiveIntegerField, ForeignKey, ManyToManyField, URLField, \
-    SlugField, IntegerField, BooleanField, DateField, DateTimeField, TextField
+    SlugField, IntegerField, BooleanField, DateField, DateTimeField, \
+    TextField, DecimalField
 from django.core.urlresolvers import reverse
 
 from apps.maps.models import Country, Place
@@ -84,8 +85,8 @@ class Genome(Model):
     code = SlugField(max_length=32, unique=True)
     name = CharField(max_length=255)
 
-    length = PositiveIntegerField(default=0)
-    manager = GenomeManager()
+    length = DecimalField(default=0, max_digits=20, decimal_places=0)
+    objects = GenomeManager()
 
     def natural_key(self):
         """The genome'sshort code is a useful key to lookup this table"""
