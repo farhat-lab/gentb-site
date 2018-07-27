@@ -195,10 +195,11 @@ class Mutations(JsonView, DataSlicerMixin):
         if synonymous in (False, 0, 'false'):
             mutations = mutations.exclude(syn='S')
 
-        offset = int(locus.start / 50.0)
         values = defaultdict(list)
+        girth = (locus.stop - locus.start) / 50
         for name, pos in self.get_list(mutations, 'name', 'nucleotide_position'):
-            values[int(pos / 50) - offset].append(name)
+            bucket = int((pos - locus.start) / girth)
+            values[bucket].append(name)
 
         return {
             'start': locus.start,

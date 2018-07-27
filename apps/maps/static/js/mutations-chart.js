@@ -140,12 +140,18 @@ function initialiseMutationList(data, url, args, refresh_function) {
           $('#gene_label').text(json['title']);
           var max = parseFloat(json['max']);
           for(var i=1;i<=50;i++) {
-              var items = json['values'][i];
+              var items = json['values'][i - 1];
               if(items == undefined) { items = []; }
               var count = items.length;
               var height = (parseFloat(count) / max) * 50;
+
+              // Back-calc the start of this range (for confirmation)
+              var girth = (json['end'] - json['start']) / 50;
+              var start = parseInt(((i - 1) * girth) + json['start']);
+              var end = parseInt((i * girth) + json['start']);
+
               $('#ms-'+i).data('items', items)
-                  .attr('data-original-title', count + " mutations").tooltip();
+                  .attr('data-original-title', count + " mutations, " + start + "-" + end).tooltip();
               $('#ms-'+i+' span').attr('style', 'line-height:'+height+'px;');
           }
         });
