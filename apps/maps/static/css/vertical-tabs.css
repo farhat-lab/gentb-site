@@ -92,4 +92,6 @@ div.vertical-tab-container div.max-width
 div.d3graph {
   padding: 20px 10px 30px 20px;
 }
-
+div.mutation_graph {
+  padding: 0px 10px 30px 20px;
+}

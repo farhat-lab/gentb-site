@@ -114,14 +114,14 @@ function refreshMutation(svg, chart, data) {
 }
 
 function initialiseMutationList(data, url, args, refresh_function) {
-  $('#mselect').each(function() {
-    var container = $(this);
-
     var locus = $('#locus');
     var locus_datalist = $('#locus-list');
     var snp = $('#snp');
     var snp_datalist = $('#mutation-list');
     var button_del = $('#clear-mutation');
+
+    var lookup_url = $('#gene_map').data('locus-lookup');
+    var range_url = $('#gene_map').data('locus-range');
 
     var locus_select = function(val) {
       snp.val('');
@@ -132,12 +132,11 @@ function initialiseMutationList(data, url, args, refresh_function) {
         set_tooltip(locus, "Gene " + val + " Selected");
         // Refresh range
         reset_args();
-        args.range = 'true';
-        $.getJSON(url, args).done(function(json) {
+        $.getJSON(range_url, args).done(function(json) {
           $('#gene_map').show();
           $('#gene_start').text(json['start']);
           $('#gene_end').text(json['end']);
-          $('#gene_label').text(json['title']);
+          // XXX $('#gene_label').text(json['title']);
           var max = parseFloat(json['max']);
           for(var i=1;i<=50;i++) {
               var items = json['values'][i - 1];
@@ -154,13 +153,16 @@ function initialiseMutationList(data, url, args, refresh_function) {
                   .attr('data-original-title', count + " mutations, " + start + "-" + end)
                   .attr('data-container', 'body')
                   .tooltip();
-              $('#ms-'+i+' span').attr('style', 'line-height:'+height+'px;');
+
+              $('#ms-'+i+' span').attr('style', 'line-height:' + height + 'px;');
           }
         });
       }
     }
 
     $('#mutation_selector > span').click(function() {
+        $('#mutation_selector > span.selected').removeClass('selected');
+        $(this).addClass('selected');
         replaceOptions(snp_datalist, $(this).data('items'));
         snp.focus();
     });
@@ -168,6 +170,7 @@ function initialiseMutationList(data, url, args, refresh_function) {
     locus.select(function(){locus_select($(this).val())}).select();
 
     function reset_args() {
+      args = getAllTabData();
       args.locus = locus.val();
       args.synonymous = $('input[name="synon"]').is(':checked');
       delete args.snp;
@@ -180,7 +183,8 @@ function initialiseMutationList(data, url, args, refresh_function) {
       if($(this).data('previous') == selected) { return; }
       $(this).data('previous', selected);
       reset_args();
-      $.getJSON(url, args).done(function(json) {
+      
+      $.getJSON(lookup_url, args).done(function(json) {
         set_tooltip(locus, json.msg || "Not updated");
 
         if(json.values) {
@@ -189,6 +193,10 @@ function initialiseMutationList(data, url, args, refresh_function) {
                 locus.val(json.values[0]);
                 locus_datalist.empty()
                 locus_select(json.values[0]);
+            } else if(selected.toLowerCase() == 'all') {
+                locus.val('All');
+                locus_datalist.empty()
+                locus_select('All');
             }
         } else {
           locus_datalist.empty();
@@ -249,8 +257,6 @@ function initialiseMutationList(data, url, args, refresh_function) {
       refresh_function(new Array());
       button_del.hide();
     });
-
-  });
 }
 
 function initialiseMutationChart() {
