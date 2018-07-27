@@ -151,7 +151,9 @@ function initialiseMutationList(data, url, args, refresh_function) {
               var end = parseInt((i * girth) + json['start']);
 
               $('#ms-'+i).data('items', items)
-                  .attr('data-original-title', count + " mutations, " + start + "-" + end).tooltip();
+                  .attr('data-original-title', count + " mutations, " + start + "-" + end)
+                  .attr('data-container', 'body')
+                  .tooltip();
               $('#ms-'+i+' span').attr('style', 'line-height:'+height+'px;');
           }
         });
