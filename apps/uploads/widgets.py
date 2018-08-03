@@ -30,7 +30,7 @@ class UploadChooserWidget(TextInput):
     input_type = 'upload-chooser'
 
     def __init__(self, extensions=None, attrs=None, buckets=None):
-        extensions = ['.' + x.strip('.') for x in (extensions or [])]
+        extensions = ['.' + x.strip().strip('.') for x in (extensions or [])]
         kw = {
             'style': 'display: none',
             'data-app-key': getattr(settings, 'DROPBOX_APP_KEY', None),
