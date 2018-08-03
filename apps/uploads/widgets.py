@@ -19,26 +19,30 @@
 # It is unlicensed. We're assuming Public Domain, MIT or some other permissive
 # license.
 #
+"""
+Provide widgets for uploading files to the server.
+"""
 
 from django.core.urlresolvers import reverse
 from django.conf import settings
 from django.forms import TextInput, Textarea
 
-import json
-
 class UploadChooserWidget(TextInput):
+    """
+    The widget box that allows a user to point at many types of files from many sources.
+    """
     input_type = 'upload-chooser'
 
     def __init__(self, extensions=None, attrs=None, buckets=None):
-        extensions = ['.' + x.strip().strip('.') for x in (extensions or [])]
-        kw = {
+        extensions = [x.strip().strip('.') for x in (extensions or [])]
+        kwargs = {
             'style': 'display: none',
             'data-app-key': getattr(settings, 'DROPBOX_APP_KEY', None),
             'data-extensions': " ".join(extensions),
         }
         self.buckets = buckets or []
-        kw.update(attrs or {})
-        super(UploadChooserWidget, self).__init__(kw)
+        kwargs.update(attrs or {})
+        super(UploadChooserWidget, self).__init__(kwargs)
 
     def render(self, name, value, attrs):
         render = super(UploadChooserWidget, self).render
@@ -49,27 +53,27 @@ class UploadChooserWidget(TextInput):
         for bucket, match, label, link in self.buckets:
             # This is evil, but django changed how it works
             self.input_type = 'bucket'
-            kw = attrs.copy()
-            kw['data-match'] = match
-            kw['data-parent'] = kw['id']
-            kw['data-label'] = label
-            kw['data-bucket'] = bucket
-            kw['data-link'] = link
-            kw['id'] += '_' + bucket
-            ret += render(name + '_' + bucket, '', kw)
+            kwa = attrs.copy()
+            kwa['data-match'] = match
+            kwa['data-parent'] = kwa['id']
+            kwa['data-label'] = label
+            kwa['data-bucket'] = bucket
+            kwa['data-link'] = link
+            kwa['id'] += '_' + bucket
+            ret += render(name + '_' + bucket, '', kwa)
             self.input_type = 'upload-chooser'
         return ret
 
     class Media:
         js = [
-          # Dropbox javascript support
-          'https://www.dropbox.com/static/api/2/dropins.js?cache=2',
-          # Chunked file uploader support
-          'js/resumable.js',
-          # Bootbox used in URL Uploader
-          'js/bootbox.min.js',
-          # Generic uploader support (binds together the above)
-          'js/uploads/chooser.js']
+            # Dropbox javascript support
+            'https://www.dropbox.com/static/api/2/dropins.js?cache=2',
+            # Chunked file uploader support
+            'js/resumable.js',
+            # Bootbox used in URL Uploader
+            'js/bootbox.min.js',
+            # Generic uploader support (binds together the above)
+            'js/uploads/chooser.js']
         css = {'all': ('css/uploads/chooser.css',)}
 
 
@@ -80,7 +84,7 @@ class UploadTableWidget(Textarea):
     that it matches the definition or other checks.
     """
     def __init__(self, columns, parsers=None):
-        kw = { 
+        kwargs = {
             'style': 'display: none',
             'data-columns': ','.join(columns),
             'type': 'upload-table',
@@ -93,9 +97,9 @@ class UploadTableWidget(Textarea):
         # Add each parser as it's own data attribute on the Text element.
         for key, parser in (parsers or {}).items():
             if parser is not None:
-		kw['data-parser_' + key] = unicode(parser)
+                kwargs['data-parser_' + key] = unicode(parser)
 
-        super(UploadTableWidget, self).__init__(kw)
+        super(UploadTableWidget, self).__init__(kwargs)
 
 
     class Media:
@@ -104,4 +108,3 @@ class UploadTableWidget(Textarea):
             'js/uploads/importer.js',
         ]
         css = {'all': ('css/uploads/importer.css',)}
-
