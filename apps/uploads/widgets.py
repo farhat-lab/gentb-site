@@ -34,15 +34,24 @@ class UploadChooserWidget(TextInput):
     input_type = 'upload-chooser'
 
     def __init__(self, extensions=None, attrs=None, buckets=None):
-        extensions = [x.strip().strip('.') for x in (extensions or [])]
         kwargs = {
             'style': 'display: none',
             'data-app-key': getattr(settings, 'DROPBOX_APP_KEY', None),
-            'data-extensions': " ".join(extensions),
+            'data-extensions': " ".join(self.get_extensions(extensions or [])),
         }
         self.buckets = buckets or []
         kwargs.update(attrs or {})
         super(UploadChooserWidget, self).__init__(kwargs)
+
+    @staticmethod
+    def get_extensions(exts):
+        """Get a list of extensions that will work with dropbox"""
+        for ext in exts:
+            ext = ext.strip().strip('.').lower()
+            if '.' in ext:
+                yield '.' + ext.split('.')[-1]
+            else:
+                yield '.' + ext
 
     def render(self, name, value, attrs):
         render = super(UploadChooserWidget, self).render
