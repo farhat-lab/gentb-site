@@ -63,7 +63,10 @@ class ResumableFile(object):
     def chunks(self):
         """Yield the contents of every chunk, FileSystemStorage.save compatible"""
         for name in self.chunk_names():
-            yield self.storage.open(name).read()
+            try:
+                yield self.storage.open(name).read()
+            except AttributeError:
+                raise IOError("Couldn't read {}".format(name))
 
     def delete_chunks(self):
         """Remove every chunk (once complete)"""
@@ -93,6 +96,8 @@ class ResumableFile(object):
         if not self.chunk_exists:
             try:
                 self.storage.save(self.name_template % self.kwargs, _file)
+            except AttributeError:
+                pass # Error saving file
             except IOError:
                 pass # Existing file in the way
 
