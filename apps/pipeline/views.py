@@ -18,11 +18,11 @@
 Provides the views for testing and reviewing pipelines.
 """
 
-from django.views.generic import DetailView, TemplateView
+from django.views.generic import ListView, DetailView, TemplateView
 
 from chore.fake import FakeJobManager
 from chore import get_job_manager
-from .models import Pipeline
+from .models import Pipeline, PipelineRun
 
 class PipelineDetail(DetailView): # pylint: disable=too-many-ancestors
     """Test the pipeline in the front end to test the connectivity"""
@@ -35,6 +35,12 @@ class PipelineDetail(DetailView): # pylint: disable=too-many-ancestors
             job_manager=FakeJobManager(), output_dir='~/',\
             for_test=True, commit=False, file='file')
         return data
+
+class PipelineList(ListView): # pylint: disable=too-many-ancestors
+    """Create a list of run pipelines and their results"""
+    model = PipelineRun
+    paginate_by = 30
+    ordering = ['-pk']
 
 class JobViewer(TemplateView):
     """Lets users view a list of jobs and how they are running"""

@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% load cachebuster %}
+
+{% block extra_css %}
+  <!--link href="{% static 'css/pipeline.css' %}" rel="stylesheet"-->
+{% endblock %}
+
+{% block content %}
+  <div class="row">
+    <div class="col-lg-12">
+      <h1 class="page-header">All Pipelines</h1>
+
+      <div class="col-lg-12 col-sm-12">
+        <table class="table table-striped">
+            <tr>
+               <th scope="col">Name</th>
+               <th scope="col">Jobs</th>
+               <th scope="col">Submitted</th>
+               <th scope="col">Started</th>
+               <th scope="col">Finished</th>
+               <th scope="col">Return</th>
+            </tr>
+        {% for job in object_list %}
+            <tr>
+              <th scope="row">
+                <span class="glyphicon glyphicon-tasks" aria-hidden="true"></span> {{ job.name }}
+                <span class="label label-{{ job.context }} pull-right">{{ job.status }}</span>
+              </th>
+              <td><span class="glyphicon glyphicon-paperclip" aria-hidden="true" title="Internal ID"></span> {{ job.pid }}</td>
+              <td>{{ job.submitted }}</td>
+              <td>{{ job.started }}</td>
+              <td>{{ job.finished }}</td>
+              <td><span class="glyphicon glyphicon-info-sign" aria-hidden="true" title="Return Code"></span> {{ job.return }}</td>
+            </tr>
+        {% endfor %}
+        </table>
+    </div>
+  </div>
+{% endblock %}
+
