@@ -1,3 +1,8 @@
+rc-systemd
+prod
+prodenv
+to_delete
+script_prod
 test_setup
 pythonenv
 o2env
