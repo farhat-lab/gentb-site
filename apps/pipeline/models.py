@@ -516,9 +516,9 @@ class ProgramRun(TimeStampedModel):
 
     def update_status(self, commit=True):
         """Take data from the job manager and populate the database"""
+        job_manager = get_job_manager()
         if self.is_submitted and not self.is_complete:
             dur = None
-            job_manager = get_job_manager()
             data = job_manager.status(self.job_id, clean=True)
 
             if data.get('return', None) is not None:
@@ -550,7 +550,7 @@ class ProgramRun(TimeStampedModel):
             if commit:
                 self.save()
 
-        # We're going to force an error out of hiding.
+        # We're going to force an error out of hidding.
         if self.error_text == 'None':
             (_, error) = job_manager.job_read(self.job_id, 'err')
             self.error_text = "HIDDEN ERROR: " + error
