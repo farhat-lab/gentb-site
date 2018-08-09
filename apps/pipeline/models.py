@@ -549,6 +549,14 @@ class ProgramRun(TimeStampedModel):
                     self.is_error = True
             if commit:
                 self.save()
+
+        # We're going to force an error out of hiding.
+        if self.error_text == 'None':
+            (_, error) = job_manager.job_read(self.job_id, 'err')
+            self.error_text = "HIDDEN ERROR: " + error
+            self.is_error = True
+            self.save()
+
         return self.is_complete
 
     @property
