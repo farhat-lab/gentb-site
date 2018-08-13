@@ -238,7 +238,7 @@ class PredictStrain(Model):
             options['file'] = self.name
             options['file_two'] = self.file_two.fullpath
 
-        name = "p%s" % self.pk
+        name = slugify("{}.{}".format(self.dataset.name, self.name))
         self.piperun = self.pipeline.run(name, **options)
         self.save()
         return self.piperun.programs.filter(is_error=True).count() == 0

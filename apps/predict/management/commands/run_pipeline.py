@@ -18,7 +18,7 @@ class Command(BaseCommand):
         for strain in PredictStrain.objects.filter(piperun__isnull=True,\
                 dataset__created__gt=get_timeout()):
             dl = strain.files_status
-            sys.stderr.write("Strain: {}, Files: {}".format(strain, dl))
+            sys.stderr.write("Strain: {}, Files: {}\n".format(strain, dl))
             if dl is 0:
                 skipped += 1
             elif dl is 1:
