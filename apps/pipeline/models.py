@@ -286,7 +286,7 @@ class PipelineProgram(Model):
             pk = 0
         return {
             'program': self.program,
-            'job_id': "r{}".format(self.pk),
+            'job_id': "r{}".format(pk),
         }
 
 
