@@ -553,9 +553,12 @@ class ProgramRun(TimeStampedModel):
         # We're going to force an error out of hidding.
         if self.error_text == 'None':
             (_, error) = job_manager.job_read(self.job_id, 'err')
-            self.error_text = "HIDDEN ERROR: " + error
-            self.is_error = True
-            self.save()
+            if error is not None:
+                self.error_text = "HIDDEN ERROR: " + error
+                self.is_error = True
+                self.save()
+            else:
+                logging.error("Lost error for {}".format(self.job_id))
 
         return self.is_complete
 
