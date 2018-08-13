@@ -554,11 +554,11 @@ class ProgramRun(TimeStampedModel):
         if self.error_text == 'None':
             (_, error) = job_manager.job_read(self.job_id, 'err')
             if error is not None:
-                self.error_text = "HIDDEN ERROR: " + error
-                self.is_error = True
-                self.save()
+                self.error_text = "Broken JobID error: " + error
             else:
-                logging.error("Lost error for {}".format(self.job_id))
+                self.error_text = "Lost error for {}".format(self.job_id)
+            self.is_error = True
+            self.save()
 
         return self.is_complete
 
