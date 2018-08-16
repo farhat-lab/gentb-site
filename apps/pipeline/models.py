@@ -551,7 +551,7 @@ class ProgramRun(TimeStampedModel):
                 self.save()
 
         # We're going to force an error out of hidding.
-        if self.error_text == 'None':
+        if self.is_complete and self.error_text == 'None':
             (_, error) = job_manager.job_read(self.job_id, 'err')
             if error is not None:
                 self.error_text = "Broken JobID error: " + error
