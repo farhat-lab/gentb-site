@@ -462,7 +462,7 @@ class ProgramRun(TimeStampedModel):
         # Delete all old output files
         self.delete_output_files()
 
-        if get_job_manager().submit(self.job_id, self.debug_text, depends=previous):
+        if get_job_manager().submit(self.job_id, self.debug_text, depend=previous):
             self.is_submitted = True
             self.submitted = now()
         else:
@@ -492,9 +492,9 @@ class ProgramRun(TimeStampedModel):
 
         kwargs = {}
         if previous is not None:
-            kwargs['depends'] = self.previous_id = previous.job_id
+            kwargs['depend'] = self.previous_id = previous.job_id
         if follower is not None:
-            kwargs['provides'] = self.follower_id = follower.job_id
+            kwargs['provide'] = self.follower_id = follower.job_id
 
         cmd = self.program.prepare_command(files)
         self.debug_text = cmd
