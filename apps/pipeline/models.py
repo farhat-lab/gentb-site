@@ -46,7 +46,7 @@ from collections import defaultdict
 from django.db.models import *
 from model_utils.models import TimeStampedModel
 
-from chore import get_job_manager, tripplet
+from chore import get_job_manager, tripplet, JobSubmissionError
 
 from django.core.urlresolvers import reverse
 from django.conf import settings
@@ -502,11 +502,12 @@ class ProgramRun(TimeStampedModel):
         # Replace for bridging XXX
         cmd = cmd.replace('/tmp/groups/', '/n/groups/')
 
-        if job_manager.submit(self.job_id, cmd, **kwargs):
+        try:
+            job_manager.submit(self.job_id, cmd, **kwargs)
             self.is_submitted = True
             self.submitted = now()
-        else:
-            raise ValueError("Job could not be submitted to Job Manager.")
+        except JobSubmissionError as err:
+            raise ValueError(str(err))
 
         if commit:
             self.save()
