@@ -508,10 +508,11 @@ class ProgramRun(TimeStampedModel):
                 self.duration = dur.total_seconds() + int(dur.microseconds > 0)
 
             if data and self.previous_id:
-                prev = ProgramRun.objects.get(job_id=self.previous_id)
-                if prev.is_error:
-                    job_manager.stop(self.job_id)
-                    self.is_error = True
+                for prev in ProgramRun.objects.filter(job_id=self.previous_id):
+                    if prev.is_error:
+                        job_manager.stop(self.job_id)
+                        self.is_error = True
+
             if commit:
                 self.save()
 
