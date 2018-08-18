@@ -4,6 +4,7 @@ Cron job command for running each of the prediction pipelines as needed.
 import sys
 import time
 
+from datetime import datetime
 from django.core.management.base import BaseCommand
 
 from apps.predict.models import (
@@ -16,6 +17,8 @@ def bitset(*args):
 
 def log(msg, *args, **kwargs):
     """Write consistantly to output"""
+    kwargs['dt'] = datetime.now().isoformat()
+    msg = "{dt}: " + msg
     sys.stderr.write(msg.format(*args, **kwargs) + "\n")
 
 class Command(BaseCommand):
