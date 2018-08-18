@@ -313,7 +313,7 @@ class PipelineRun(TimeStampedModel):
             self.test_programs = []
 
         for pipe in self.pipeline.programs.all():
-            run = ProgramRun(piperun=self, **pipe.prepare(self.pk))
+            run, _ = ProgramRun.objects.get_or_create(piperun=self, **pipe.prepare(self.pk))
             if commit:
                 run.save()
             else:
@@ -321,6 +321,8 @@ class PipelineRun(TimeStampedModel):
             runs.append(run)
 
         for prev, run, follower in tripplet(runs):
+            if run.is_submitted:
+                continue
             kwargs['previous'] = prev
             kwargs['follower'] = follower
             try:
