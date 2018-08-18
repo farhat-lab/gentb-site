@@ -313,10 +313,10 @@ class PipelineRun(TimeStampedModel):
             self.test_programs = []
 
         for pipe in self.pipeline.programs.all():
-            run, _ = ProgramRun.objects.get_or_create(piperun=self, **pipe.prepare(self.pk))
             if commit:
-                run.save()
+                run, _ = ProgramRun.objects.get_or_create(piperun=self, **pipe.prepare(self.pk))
             else:
+                run = ProgramRun(piperun=self, **pipe.prepare(self.pk))
                 self.test_programs.append(run)
             runs.append(run)
 
@@ -469,7 +469,8 @@ class ProgramRun(TimeStampedModel):
         cmd = cmd.replace('/tmp/groups/', '/n/groups/')
 
         try:
-            job_manager.submit(self.job_id, cmd, **kwargs)
+            if commit:
+                job_manager.submit(self.job_id, cmd, **kwargs)
             self.is_submitted = True
             self.submitted = now()
         except JobSubmissionError as err:
