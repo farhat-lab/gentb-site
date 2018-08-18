@@ -555,8 +555,3 @@ class ProgramRun(TimeStampedModel):
         """Deletes any of the output files"""
         for fn in self.output_fn:
             os.unlink(fn)
-
-
-        # Delete all old output files
-        self.delete_output_files()
-

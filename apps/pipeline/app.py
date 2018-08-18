@@ -25,13 +25,15 @@ from django.db.models import signals
 from django.apps import AppConfig
 
 class PipelineApp(AppConfig):
+    """Pipeline Application with signals"""
     name = 'apps.pipeline'
 
     @staticmethod
-    def clean_run(instance, **kw):
+    def clean_run(instance, **_):
         """Remove any files in an program run instance when deleting"""
         instance.delete_output_files()
 
     def ready(self):
-        from .models import PipelineRun
-        signals.pre_delete.connect(self.clean_run, sender=PipelineRun)
+        """Called when the app is ready"""
+        from .models import ProgramRun
+        signals.pre_delete.connect(self.clean_run, sender=ProgramRun)
