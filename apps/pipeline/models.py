@@ -79,11 +79,8 @@ class Pipeline(Model):
         """
         if commit:
             (runner, created) = self.runs.get_or_create(name=slugify(name))
-            if not created:
-                if rerun:
-                    runner.programs.filter(is_error=True).update(is_submitted=False)
-                    runner.rerun(**kwargs)
-                return runner
+            if not created and rerun:
+                runner.programs.filter(is_error=True).update(is_submitted=False)
         else:
             runner = PipelineRun(name=slugify(name), pipeline=self)
 
@@ -351,18 +348,6 @@ class PipelineRun(TimeStampedModel):
                 return False
         return True
 
-    def rerun(self, **kwargs):
-        for run in self.programs.filter(is_submitted=False, is_error=True):
-            try:
-                run.resubmit(**kwargs)
-            except Exception as err:
-                run.is_error = True
-                run.error_text = str(err)
-                run.save()
-                return False
-            kwargs['previous'] = run
-        return True
-
     def all_programs(self):
         """Returns all the program runs with unrun pipelines appended"""
         ret = []
@@ -447,27 +432,6 @@ class ProgramRun(TimeStampedModel):
         if self.submitted:
             return now() - self.submitted
         return "-"
-
-    def resubmit(self, previous=None):
-        """Resubmit the same command as before"""
-        self.is_error = False
-        self.is_started = False
-        self.is_complete = False
-        self.error_text = ''
-        self.submitted = None
-        self.started = None
-        self.completed = None
-        self.save()
-
-        # Delete all old output files
-        self.delete_output_files()
-
-        if get_job_manager().submit(self.job_id, self.debug_text, depend=previous):
-            self.is_submitted = True
-            self.submitted = now()
-        else:
-            raise ValueError("Job could not be re-submitted to Job Manager")
-        self.save()
 
     def stop(self, msg='Stopped'):
         """Stop this program from running"""
@@ -591,4 +555,8 @@ class ProgramRun(TimeStampedModel):
         """Deletes any of the output files"""
         for fn in self.output_fn:
             os.unlink(fn)
+
+
+        # Delete all old output files
+        self.delete_output_files()
 

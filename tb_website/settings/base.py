@@ -181,7 +181,7 @@ LOCAL_APPS = (
     'tb_website',
     'apps.tb_users',
     'apps.predict',
-    'apps.pipeline',
+    'apps.pipeline.app.PipelineApp',
     'apps.uploads',
     'apps.mutations',
     'apps.maps',
