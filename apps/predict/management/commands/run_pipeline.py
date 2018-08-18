@@ -39,16 +39,6 @@ class Command(BaseCommand):
         # Limit all interactions to a timeout (usually a few weeks)
         qset = PredictStrain.objects.filter(dataset__created__gt=get_timeout())
 
-        for strain in qset.filter(piperun__isnull=True):
-            try:
-                self.submit_strain_pipeline(strain)
-                log("RUN: {} ({})", strain, strain.pipeline)
-                time.sleep(0.25)
-            except IOError:
-                log("ERR: {} (Bad Download)", strain)
-            except Exception as err:
-                log("ERR: {} ({})", strain, strain.pipeline)
-
         for strain in qset.filter(
                 piperun__programs__is_submitted=True,
                 piperun__programs__is_complete=False,
@@ -63,3 +53,13 @@ class Command(BaseCommand):
                 run.is_error)] for run in strain.piperun.programs.all()])
 
             log("STAT: {} |{}|".format(strain, stat))
+
+        for strain in qset.filter(piperun__isnull=True):
+            try:
+                self.submit_strain_pipeline(strain)
+                log("RUN: {} ({})", strain, strain.pipeline)
+                time.sleep(0.25)
+            except IOError:
+                log("ERR: {} (Bad Download)", strain)
+            except Exception as err:
+                log("ERR: {} ({})", strain, strain.pipeline)
