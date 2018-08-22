@@ -56,6 +56,9 @@ from django.utils.timezone import now
 
 from .utils import file_as_inputs
 
+class PrepareError(ValueError):
+    """Error when preparing a command fails"""
+
 class Pipeline(Model):
     """
     Keeps a list of programs to run and what they do.
@@ -204,7 +207,7 @@ class Program(Model):
                 errors.append(str(err))
 
         if errors:
-            raise ValueError("Error preparing command: \n * " + \
+            raise PrepareError("Error preparing command: \n * " + \
                     "\n * ".join(errors))
 
     def prepare_file(self, files_in, files_out, io, prefix, name, suffix):
@@ -251,7 +254,7 @@ class Program(Model):
             data = match.groupdict()
             key = (data['io'], data['name']) + match.span()
             if key not in files:
-                raise ValueError("Can't find file %s in %s" % (str(key), str(files)))
+                raise PrepareError("Can't find file %s in %s" % (str(key), str(files)))
             filename = files[key]
             if ' ' in filename:
                 filename = '"%s"' % filename
@@ -320,23 +323,9 @@ class PipelineRun(TimeStampedModel):
                 self.test_programs.append(run)
             runs.append(run)
 
-        for prev, run, follower in tripplet(runs):
+        for prev, run, foll in tripplet(runs):
             if not run.is_submitted:
-                try:
-                    run.submit(commit=commit, previous=prev, follower=follower, **kwargs)
-                except JobSubmissionError as err:
-                    run.is_error = True
-                    run.error_text = str(err)
-                    run.kwargs = {}
-                    for key in kwargs:
-                        if key == 'output_dir':
-                            continue
-                        if isinstance(kwargs[key], (str, unicode)):
-                            run.kwargs[key] = [kwargs[key]]
-                        elif isinstance(kwargs[key], (list, tuple)):
-                            run.kwargs[key] = kwargs[key]
-                    if commit:
-                        run.save()
+                if not run.submit(commit=commit, previous=prev, follower=foll, **kwargs):
                     return False
 
             # Sort out the filenames for the next call in the chain
@@ -385,6 +374,7 @@ class PipelineRun(TimeStampedModel):
             return None
         return '\n---\n'.join(qs.values_list('error_text', flat=True))
 
+P_LOG = None
 
 class ProgramRun(TimeStampedModel):
     piperun = ForeignKey(PipelineRun, related_name='programs')
@@ -447,14 +437,35 @@ class ProgramRun(TimeStampedModel):
             return ret
         return True
 
-    def submit(self, commit=True, previous=None, follower=None, **kwargs):
+    def submit(self, commit=True, **kwargs):
+        """Submit the job and capture any errors"""
+        try:
+            self._submit(commit=commit, **kwargs)
+        except (JobSubmissionError, PrepareError) as err:
+            self.is_error = True
+            self.error_text = str(err)
+            self.kwargs = {}
+            for key in kwargs:
+                if key in ('output_dir', 'previous', 'follower'):
+                    continue
+                if isinstance(kwargs[key], (str, unicode)):
+                    self.kwargs[key] = [kwargs[key]]
+                elif isinstance(kwargs[key], (list, tuple)):
+                    self.kwargs[key] = kwargs[key]
+            if commit:
+                self.save()
+            return False
+        return True
+
+
+    def _submit(self, commit=True, previous=None, follower=None, **kwargs):
         """Submit this job to the configured Job Manager"""
         job_manager = get_job_manager()
 
         # Save all the input and output files into database
-        fsi = self.program.prepare_files(**kwargs)
-        self.input_files = '\n'.join([fn for (k, fn) in fsi if k[0] == '$'])
-        self.output_files = '\n'.join([fn for (k, fn) in fsi if k[0] == '@'])
+        fsi = dict(self.program.prepare_files(**kwargs))
+        self.input_files = '\n'.join([fsi[k] for k in fsi if k[0] == '$'])
+        self.output_files = '\n'.join([fsi[k] for k in fsi if k[0] == '@'])
 
         kwargs = {}
         if previous is not None:
@@ -467,6 +478,7 @@ class ProgramRun(TimeStampedModel):
 
         if commit:
             job_manager.submit(self.job_id, cmd, **kwargs)
+
         self.is_submitted = True
         self.submitted = now()
 

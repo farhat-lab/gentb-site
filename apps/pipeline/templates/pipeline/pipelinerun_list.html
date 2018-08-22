@@ -22,8 +22,8 @@
           {% for run in piperun.all_programs %}
             {% if run.is_error %}
               {% if run.has_output %}
-                <li class="success" data-toggle="collapse" data-target="#{{ run.job_id }}">
-                  <span class="glyphicon glyphicon-refresh" data-container="body" data-toggle="tooltip" title="Has errors, but still produced output files."></span>
+                <li class="completed" data-toggle="collapse" data-target="#{{ run.job_id }}">
+                  <span class="glyphicon glyphicon-ok" data-container="body" data-toggle="tooltip" title="Has errors, but still produced output files."></span>
                   <h4>{{ run.program.name }}</h4>
                 </li>
               {% elif not run.is_submitted and run.is_complete %}
