@@ -42,5 +42,5 @@ class PipelineApp(AppConfig):
     def ready(self):
         """Called when the app is ready"""
         from .models import ProgramRun, PipelineRun
-        signals.pre_delete.connect(self.clean_run, sender=PipelineRun)
+        signals.pre_delete.connect(self.clean_pipe, sender=PipelineRun)
         signals.pre_delete.connect(self.clean_run, sender=ProgramRun)
