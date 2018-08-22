@@ -523,6 +523,11 @@ class ProgramRun(TimeStampedModel):
         return self.is_complete
 
     @property
+    def has_output(self):
+        """Returns true if all the expected output files exist"""
+        return len(self.output_fn) == len(self.output_filenames())
+
+    @property
     def output_fn(self):
         """Returns a list of output filenames"""
         if self.output_files is not None:

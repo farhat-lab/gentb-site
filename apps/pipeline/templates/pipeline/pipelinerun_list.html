@@ -2,7 +2,7 @@
 {% load cachebuster %}
 
 {% block extra_css %}
-  <!--link href="{% static 'css/pipeline.css' %}" rel="stylesheet"-->
+  <link href="{% static 'css/nav-tabs.css' %}" rel="stylesheet">
 {% endblock %}
 
 {% block content %}
@@ -11,30 +11,78 @@
       <h1 class="page-header">All Pipelines</h1>
 
       <div class="col-lg-12 col-sm-12">
-        <table class="table table-striped">
-            <tr>
-               <th scope="col">Name</th>
-               <th scope="col">Jobs</th>
-               <th scope="col">Submitted</th>
-               <th scope="col">Started</th>
-               <th scope="col">Finished</th>
-               <th scope="col">Return</th>
-            </tr>
-        {% for job in object_list %}
-            <tr>
-              <th scope="row">
-                <span class="glyphicon glyphicon-tasks" aria-hidden="true"></span> {{ job.name }}
-                <span class="label label-{{ job.context }} pull-right">{{ job.status }}</span>
-              </th>
-              <td><span class="glyphicon glyphicon-paperclip" aria-hidden="true" title="Internal ID"></span> {{ job.pid }}</td>
-              <td>{{ job.submitted }}</td>
-              <td>{{ job.started }}</td>
-              <td>{{ job.finished }}</td>
-              <td><span class="glyphicon glyphicon-info-sign" aria-hidden="true" title="Return Code"></span> {{ job.return }}</td>
-            </tr>
-        {% endfor %}
-        </table>
-    </div>
+
+    {% for piperun in object_list %}
+      <ul class="process">
+	  <li class="download" data-container="body" data-toggle="tooltip" title="{{ piperun.name }}">
+	    <span class="glyphicon glyphicon-check"></span>
+	    <h4>{{ piperun.pipeline }}</h4>
+	    <h4>{{ piperun.pk }}</h4>
+          </li>
+          {% for run in piperun.all_programs %}
+            {% if run.is_error %}
+              {% if run.has_output %}
+                <li class="success" data-toggle="collapse" data-target="#{{ run.job_id }}">
+                  <span class="glyphicon glyphicon-refresh" data-container="body" data-toggle="tooltip" title="Has errors, but still produced output files."></span>
+                  <h4>{{ run.program.name }}</h4>
+                </li>
+              {% elif not run.is_submitted and run.is_complete %}
+                <li data-toggle="collapse" data-target="#{{ run.job_id }}">
+                  <span class="glyphicon glyphicon-refresh" data-container="body" data-toggle="tooltip" title="Scheduled for re-run (after error)."></span>
+                  <h4>{{ run.program.name }}</h4>
+                </li>
+              {% elif run.is_started or run.error_text %}
+                <li class="error" data-toggle="collapse" data-target="#{{ run.job_id }}">
+                  <span class="glyphicon glyphicon-remove" data-container="body" data-toggle="tooltip" title="Error running this program, click for details."></span>
+                  <h4>{{ run.program.name }}</h4>
+                </li>
+              {% else %}
+              <li data-toggle="collapse" data-target="#{{ run.job_id }}">
+                  <span class="glyphicon glyphicon-remove" data-container="body" data-toggle="tooltip" title="Stopped due to previous pipeline program error."></span>
+                  <h4>{{ run.program.name }}</h4>
+                </li>
+              {% endif %}
+            {% elif run.is_complete and not run.has_output %}
+              <li class="error">
+                  <span class="glyphicon glyphicon-trash" data-container="body" data-toggle="tooltip" title="Program run complete. <br><strong>Wait Time:</strong> {{ run.wait_time }}s<br><strong>Run Time:</strong> {{ run.run_time }}s<br>But no output files!" data-html="true"></span>
+                <h4 data-container="body" data-toggle="tooltip" title="{{ run.program.description }}">{{ run.program.name }}</h4>
+              </li>
+            {% elif run.is_complete %}
+              <li class="completed">
+                <span class="glyphicon glyphicon-ok" data-container="body" data-toggle="tooltip" title="Program run complete. <br><strong>Wait Time:</strong> {{ run.wait_time }}s<br><strong>Run Time:</strong> {{ run.run_time }}s" data-html="true"></span>
+                <h4 data-container="body" data-toggle="tooltip" title="{{ run.program.description }}">{{ run.program.name }}</h4>
+              </li>
+            {% elif run.is_started %}
+              <li class="active">
+                <span class="glyphicon glyphicon-cog" data-container="body" data-toggle="tooltip" title="Program is running right now. <br><strong>Run Time:</strong> {{ run.run_time }}s" data-html="true"></span>
+                <h4>{{ run.program.name }}</h4>
+              </li>
+            {% elif run.is_submitted %}
+              <li class="submitted">
+                  <span class="glyphicon glyphicon-pause" data-container="body" data-toggle="tooltip" title="Program is held in a queue or waiting for a previous job to finish.<br><strong>Wait Time:</strong> {{ run.wait_time }}s" data-html="true"></span>
+                  <h4>{{ run.program.name }}</h4>
+                </a>
+              </li>
+            {% else %}
+              <li>
+                <span class="glyphicon glyphicon-cog" data-container="body" data-toggle="tooltip" title="Program has not been submitted yet, please wait."></span>
+                <h4>{{ run.program.name }}</h4>
+              </li>
+            {% endif %}
+          {% endfor %}
+      </ul>
+      {% for run in piperun.all_programs %}
+        {% if run.error_text %}
+
+        <div class="alert {% if run.is_error %}alert-danger{% else %}alert-info{% endif %} collapse" id="{{ run.job_id }}">
+          <span class="glyphicon glyphicon glyphicon-list-alt" style="margin-right: 12px;"></span>
+           <samp>
+            {{ run.error_text }}
+           </samp>
+         </div>
+        {% endif %}
+      {% endfor %}
+    {% endfor %}
   </div>
 {% endblock %}
 

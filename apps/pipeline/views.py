@@ -39,8 +39,8 @@ class PipelineDetail(DetailView): # pylint: disable=too-many-ancestors
 class PipelineList(ListView): # pylint: disable=too-many-ancestors
     """Create a list of run pipelines and their results"""
     model = PipelineRun
-    paginate_by = 30
-    ordering = ['-pk']
+    paginate_by = 10
+    ordering = ['-created']
 
 class JobViewer(TemplateView):
     """Lets users view a list of jobs and how they are running"""
