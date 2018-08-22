@@ -33,7 +33,14 @@ class PipelineApp(AppConfig):
         """Remove any files in an program run instance when deleting"""
         instance.delete_output_files()
 
+    @staticmethod
+    def clean_pipe(instance, **_):
+        """Remove any files in an program run instance when deleting (make sure!)"""
+        for run in instance.programs.all():
+            run.delete_output_files()
+
     def ready(self):
         """Called when the app is ready"""
-        from .models import ProgramRun
+        from .models import ProgramRun, PipelineRun
+        signals.pre_delete.connect(self.clean_run, sender=PipelineRun)
         signals.pre_delete.connect(self.clean_run, sender=ProgramRun)
