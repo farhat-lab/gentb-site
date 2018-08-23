@@ -169,9 +169,9 @@ while (<IN>) {
       }
      }
      if ($genename =~ /^Rv/i) { #coding
-      #print STDERR "march is $march before";
+      #print STDERR "march is $march before, $genename, $ref_allele, $allele, $from";
       ($name, $codon, $altcodon, $codpos, $march)=&assign_allele($genename, $ref_allele, $allele, $march, $from);
-      #print STDERR "march is $march after";
+      #print STDERR "$ name, $codon, $altcodon, $codpos, march is $march after";
      } else { ## 1 noncoding variant
       my $ref_base=substr($ref_allele,$march-$from,1);
       my $base=substr($allele,$march-$from,1);
@@ -372,6 +372,7 @@ sub annotcoding{
  my $allele = shift @_;
  my $cnc = 'C';
  my $sns;
+ my $aasnp;
  my $aapos;
  my $checkallele;
  my $nucpos;
@@ -439,8 +440,9 @@ sub annotcoding{
    $altcodon=&revcomp($altcodon);
   }
   #print STDERR "altcodon is $altcodon , codon is $codon, $codpos, $allele, $checkallele\n";
-  my ($sns, $aaref, $aavar) = &check_synonymous($codon,$aapos,$altcodon);
-  my $aasnp = $aaref.$aapos.$aavar; #general variable
+  ($sns, my $aaref, my $aavar) = &check_synonymous($codon,$aapos,$altcodon);
+  #print STDERR "$sns, $aaref, $aavar\n";
+  $aasnp = $aaref.$aapos.$aavar; #general variable
    if ($aasnp =~ /\*/) {
 	$sns = 'Z';
    }
