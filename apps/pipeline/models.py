@@ -467,6 +467,9 @@ class ProgramRun(TimeStampedModel):
         self.input_files = '\n'.join([fsi[k] for k in fsi if k[0] == '$'])
         self.output_files = '\n'.join([fsi[k] for k in fsi if k[0] == '@'])
 
+        # Remove any output files previously used.
+        self.delete_output_files()
+
         kwargs = {}
         if previous is not None:
             kwargs['depend'] = self.previous_id = previous.job_id
