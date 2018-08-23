@@ -493,7 +493,7 @@ class ProgramRun(TimeStampedModel):
         job_manager = get_job_manager()
         if self.is_submitted and not self.is_complete:
             dur = None
-            data = job_manager.status(self.job_id, clean=True)
+            data = job_manager.status(self.job_id, clean=False)
 
             if data.get('return', None) is not None:
                 if data['finished'] and data['started']:
