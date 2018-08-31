@@ -22,11 +22,15 @@ from django.views.generic import ListView, DetailView, TemplateView
 
 from chore.fake import FakeJobManager
 from chore import get_job_manager
+
+from apps.tb_users.mixins import ProtectedMixin
+
 from .models import Pipeline, PipelineRun, ProgramRun
 
-class PipelineDetail(DetailView): # pylint: disable=too-many-ancestors
+class PipelineDetail(ProtectedMixin, DetailView): # pylint: disable=too-many-ancestors
     """Test the pipeline in the front end to test the connectivity"""
     model = Pipeline
+    staff_only = True
 
     def get_context_data(self, **kw):
         data = super(PipelineDetail, self).get_context_data(**kw)
@@ -36,23 +40,27 @@ class PipelineDetail(DetailView): # pylint: disable=too-many-ancestors
             for_test=True, commit=False, file='file')
         return data
 
-class PipelineRunList(ListView): # pylint: disable=too-many-ancestors
+class PipelineRunList(ProtectedMixin, ListView): # pylint: disable=too-many-ancestors
     """Create a list of run pipelines and their results"""
     model = PipelineRun
     paginate_by = 10
     ordering = ['-created']
+    staff_only = True
 
-class PipelineRunDetail(DetailView): # pylint: disable=too-many-ancestors
+class PipelineRunDetail(ProtectedMixin, DetailView): # pylint: disable=too-many-ancestors
     """Show a single pipeline run and it's component runs"""
     model = PipelineRun
+    staff_only = True
 
-class ProgramRunDetail(DetailView): # pylint: disable=too-many-ancestors
+class ProgramRunDetail(ProtectedMixin, DetailView): # pylint: disable=too-many-ancestors
     """Show a single program run"""
     model = ProgramRun
+    staff_only = True
 
-class JobViewer(TemplateView):
+class JobViewer(ProtectedMixin, TemplateView):
     """Lets users view a list of jobs and how they are running"""
     template_name = 'pipeline/jobs_status_list.html'
+    staff_only = True
 
     def get_context_data(self, **kw):
         data = super(JobViewer, self).get_context_data(**kw)
