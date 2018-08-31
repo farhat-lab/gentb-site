@@ -40,7 +40,7 @@ class DrugClass(Model):
     name = CharField(max_length=64, db_index=True, unique=True)
     code = CharField(max_length=12, db_index=True, unique=True)
 
-    manager = DrugClassManager()
+    objects = DrugClassManager()
 
     def natural_key(self):
         """Return the code as the lookup key for this table"""
@@ -64,7 +64,7 @@ class Drug(Model):
     mutations = ManyToManyField("Mutation", blank=True, related_name='drugs',
         help_text="Implicated gene mutations which cause resistance to this drug")
 
-    manager = DrugManager()
+    objects = DrugManager()
 
     class Meta:
         ordering = ('code',)
