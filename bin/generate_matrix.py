@@ -62,7 +62,8 @@ if filename.endswith(".var"):
             elif len(it)==1:
                 d[it[0].group()]="1"
 #	        sys.stderr.write('match2'+"\n")
-        elif parts[1] == 'P' and 0: #promoter (to maintain compatibility with old naming used in randomforest built from MIP data
+        elif parts[1] == 'P' and False: #promoter (to maintain compatibility with old naming used in randomforest built from MIP data
+	   # sys.stderr.write(parts[2] + "\n")
             operon=parts[5].split('-')
             pattern=parts[3]+'_'+parts[4]+'_'+operon[0]
             it = tuple(re.finditer(r"\s?([\w\.]+%s[\w\.]*)\s?"%pattern, "\t".join(variants), re.IGNORECASE))

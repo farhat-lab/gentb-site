@@ -2,7 +2,7 @@ function scatter_plot(data) {
   /*  
    * The idea here is to update an existing plot with new data.
    */
-  var svg = d3.select('#scatter svg');
+  var svg = d3.select('svg#scatter_plot');
 
   svg[0][0].__data__ = data;
   var nvChart = svg[0][0].__chart__;
