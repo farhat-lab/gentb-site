@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% load cachebuster %}
+
+{% block extra_css %}
+  <!--link href="{% static 'css/pipeline.css' %}" rel="stylesheet"-->
+{% endblock %}
+
+{% block content %}
+  <div class="row">
+    <div class="col-lg-12">
+      <h1 class="page-header">{{ title }} <small>Pipeline Run</small></h1>
+
+      <div class="col-lg-12 col-sm-12">
+        {% for job in object.all_programs %}
+          <div class="panel panel-default">
+            <div class="panel-heading">
+              <h2><span class="glyphicon glyphicon-tasks" aria-hidden="true"></span> {{ job.program.name }}</h2>
+            </div>
+
+            <div class="panel-body">
+              {% if job.error_text %}
+              <div class="alert alert-{% if job.is_error %}danger{% else %}warning{% endif %}">
+                  {% if job.is_error %}
+                    <h4><span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span> Errors</h4>
+                  {% else %}
+                    <h4><span class="glyphicon glyphicon-asterisk" aria-hidden="true"></span> Warnings</h4>
+                  {% endif %}
+                  {{ job.error_text|linebreaks }}
+                  {% if job.kwargs %}
+                    <hr/>
+                    <h4><span class="glyphicon glyphicon-file" aria-hidden="true"></span> File Arguments</h4>
+                    <ul class="list-group">
+                      {% for name, value in job.kwargs.items %}
+                        {% for in_val in value %}
+                          <li class="list-group-item">{{ name }}: {{ in_val }}</li>
+                        {% endfor %}
+                      {% endfor %}
+                    </ul>
+                  {% endif %}
+                </div>
+              {% endif %}
+
+              {% if job.is_submitted %}
+                <div class="alert alert-info">
+                  <h4><span class="glyphicon glyphicon-paperclip" aria-hidden="true"></span> Command Template</h4>
+                  <p>{{ job.program.command_line }}</p>
+                  {% if job.debug_text %}
+                    <hr/>
+                    <h4><span class="glyphicon glyphicon-cog" aria-hidden="true"></span> Generated Command</h4>
+                    <p>{{ job.debug_text }}</p>
+                  {% endif %}
+                </div>
+              {% endif %}
+
+              {% if job.output_files %}
+                {% with output_fn=job.output_fn %}
+                  <h4>Output Files</h4>
+                  <ul class="list-group">
+                    {% for fn in job.output_filenames %}
+                      {% if fn in output_fn %}
+                        <li class="list-group-item list-group-item-success"><span class="glyphicon glyphicon-ok" aria-hidden="true"> {{ fn }}</li>
+                      {% else %}
+                        <li class="list-group-item list-group-item-danger"><span class="glyphicon glyphicon-remove" aria-hidden="true"> {{ fn }}</li>
+                      {% endif %}
+                    {% endfor %}
+                  </ul>
+                {% endwith %}
+              {% endif %}
+
+              {% if job.input_files %}
+                {% with input_fn=job.input_fn %}
+                  <h4>Input Files</h4>
+                  <ul class="list-group">
+                    {% for fn in job.input_filenames %}
+                      {% if fn in input_fn %}
+                        <li class="list-group-item list-group-item-success"><span class="glyphicon glyphicon-ok" aria-hidden="true"> {{ fn }}</li>
+                      {% else %}
+                        <li class="list-group-item list-group-item-danger"><span class="glyphicon glyphicon-remove" aria-hidden="true"> {{ fn }}</li>
+                      {% endif %}
+                    {% endfor %}
+                  </ul>
+                {% endwith %}
+              {% endif %}
+            </div>
+
+          </div>
+        {% endfor %}
+      </div>
+
+    </div>
+  </div>
+{% endblock %}
+

@@ -310,6 +310,9 @@ class PipelineRun(TimeStampedModel):
     def __str__(self):
         return "Pipeline Run %s" % self.name
 
+    def get_absolute_url(self):
+        return reverse('pipeline:run', kwargs={'pk': self.pk})
+
     def run(self, commit=True, **kwargs):
         runs = []
         if not commit:
@@ -411,6 +414,9 @@ class ProgramRun(TimeStampedModel):
 
     def __str__(self):
         return self.job_id
+
+    def get_absolute_url(self):
+        return reverse('pipeline:job', kwargs={'pk': self.pk})
 
     def run_time(self):
         if self.duration:
@@ -548,6 +554,11 @@ class ProgramRun(TimeStampedModel):
         if self.output_files is not None:
             return [fn for fn in self.output_filenames() if isfile(fn)]
         return []
+
+    @property
+    def has_input(self):
+        """Returns true if all the expected input files exist"""
+        return len(self.input_fn) == len(self.input_filenames())
 
     @property
     def input_fn(self):

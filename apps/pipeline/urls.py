@@ -20,10 +20,15 @@ Provide some basic front end views for pipeline testing and review.
 
 from django.conf.urls import url
 
-from .views import PipelineDetail, JobViewer, PipelineList
+from .views import (
+    PipelineDetail, PipelineRunList, PipelineRunDetail,
+    JobViewer, ProgramRunDetail,
+)
 
 urlpatterns = [ # pylint: disable=invalid-name
     url(r'^(?P<pk>\d+)/$', PipelineDetail.as_view(), name='detail'),
-    url(r'^list/$', PipelineList.as_view(), name='list'),
+    url(r'^run/$', PipelineRunList.as_view(), name='runs'),
+    url(r'^run/(?P<pk>\d+)/$', PipelineRunDetail.as_view(), name='run'),
     url(r'^jobs/$', JobViewer.as_view(), name='jobs'),
+    url(r'^jobs/(?P<pk>\d+)/$', ProgramRunDetail.as_view(), name='job'),
 ]

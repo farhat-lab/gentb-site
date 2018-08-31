@@ -17,7 +17,7 @@
 	  <li class="download" data-container="body" data-toggle="tooltip" title="{{ piperun.name }}">
 	    <span class="glyphicon glyphicon-check"></span>
 	    <h4>{{ piperun.pipeline }}</h4>
-	    <h4>{{ piperun.pk }}</h4>
+            <h4><a href="{{ piperun.get_absolute_url }}">{{ piperun.pk }}</a></h4>
           </li>
           {% for run in piperun.all_programs %}
             {% if run.is_error %}
