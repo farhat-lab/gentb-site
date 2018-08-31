@@ -582,4 +582,7 @@ class ProgramRun(TimeStampedModel):
     def delete_output_files(self):
         """Deletes any of the output files"""
         for fn in self.output_fn:
-            os.unlink(fn)
+            try:
+                os.unlink(fn)
+            except (OSError, IOError):
+                pass
