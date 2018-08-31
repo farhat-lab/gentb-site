@@ -43,7 +43,7 @@ from django.utils.translation import ugettext_lazy as _
 
 from apps.uploads.models import UploadFile
 from apps.pipeline.models import Pipeline, PipelineRun
-from apps.mutations.models import Drug
+from apps.mutations.models import Drug, Mutation
 from apps.mutations.utils import unpack_mutation_format
 
 LOGGER = logging.getLogger('apps.predict')
@@ -408,7 +408,7 @@ class PredictStrain(Model):
                 yield (drug_code, (dr, fp, fn, self.get_graph(drug, A, B)))
 
     def get_graph(self, drug, A, B):
-        all_names = drug.mutations.values_list('gene_locus__name', flat=True)
+        all_names = Mutation.objects.filter(predictor=True).values_list('gene_locus__name', flat=True)
         locusts = list(all_names.distinct())
         return [{
             "yAxis": "1",
