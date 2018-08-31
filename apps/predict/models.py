@@ -403,13 +403,12 @@ class PredictStrain(Model):
                 try:
                     drug = Drug.objects.get(code__iexact=drug_code)
                 except Drug.DoesNotExist:
-                    sys.stderr.write("Can't find drug %s\n" % row[1])
+                    sys.stderr.write("Can't find drug %s\n" % drug_code)
                     continue
                 yield (drug_code, (dr, fp, fn, self.get_graph(drug, A, B)))
 
     def get_graph(self, drug, A, B):
-        all_names = Mutation.objects.filter(predictor=True).values_list('gene_locus__name', flat=True)
-        locusts = list(all_names.distinct())
+        locusts = [] # Mutable variable populated by make_scatter!
         return [{
             "yAxis": "1",
             "cols": locusts,
@@ -418,15 +417,18 @@ class PredictStrain(Model):
             "values": list(self.make_scatter(locusts, datum)),
         } for key, color, datum in (
             ("Important", "255, 0, 0, 0.8", A),
-            ("Other", "0, 0, 255, 0.17", B))
-        ]
+            ("Other", "0, 0, 255, 0.17", B),
+        )]
 
     def make_scatter(self, locusts, data):
+        """Turn a mutations data in a by-gene plot"""
         regions = defaultdict(list)
         for gene in data:
             if gene:
-                (index, region, mutation) = unpack_mutation_format(gene)
+                (_, region, _) = unpack_mutation_format(gene)
                 regions[region].append(gene)
+                if gene not in locusts:
+                    locusts.append(gene)
 
         for x, locust in enumerate(locusts):
             ret = {"x": x, "y": 0, "size": 5, "tip": ["No mutations"]}
