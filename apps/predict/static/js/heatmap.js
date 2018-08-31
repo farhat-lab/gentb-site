@@ -7,6 +7,7 @@ function scatter_plot(data) {
   svg[0][0].__data__ = data;
   var nvChart = svg[0][0].__chart__;
 
+  nvChart.noData("No mutations involved in drug resistance implicated.");
   nvChart.xAxis
       .axisLabel('Genetic Region')
       .tickFormat(function(d) {

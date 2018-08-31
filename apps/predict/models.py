@@ -144,12 +144,17 @@ class PredictDataset(TimeStampedModel):
           'rows': [],
           'cols': [],
         }
+        locusts = [] # Track all locusts for all strains, Mutable variable populated by make_scatter!
+        for strain in self.strains.all():
+            for drug, (dr, fp, fn, graph) in strain.get_prediction(locusts):
+                pass # Populates locusts for square plots
+
         for strain in self.strains.all():
             row = {'name': strain.name, 'cols': []}
             output['rows'].append(row)
 
             scatter = {}
-            for drug, (dr, fp, fn, graph) in strain.get_prediction():
+            for drug, (dr, fp, fn, graph) in strain.get_prediction(locusts):
                 if drug not in output['cols']:
                     output['cols'].append(drug)
 
@@ -396,7 +401,7 @@ class PredictStrain(Model):
                       zip(*m_B[name]),
                     ))
 
-    def get_prediction(self):
+    def get_prediction(self, locusts=None):
         """Get the prediction data formatted for heatmap and scatter plots"""
         for name, dat in self.get_raw_prediction():
             for (drug_code, dr, fp, fn), A, B in dat:
@@ -405,10 +410,10 @@ class PredictStrain(Model):
                 except Drug.DoesNotExist:
                     sys.stderr.write("Can't find drug %s\n" % drug_code)
                     continue
-                yield (drug_code, (dr, fp, fn, self.get_graph(drug, A, B)))
+                yield (drug_code, (dr, fp, fn, self.get_graph(drug, A, B, locusts)))
 
-    def get_graph(self, drug, A, B):
-        locusts = [] # Mutable variable populated by make_scatter!
+    def get_graph(self, drug, A, B, locusts=None):
+        locusts = [] if locusts is None else locusts
         return [{
             "yAxis": "1",
             "cols": locusts,
