@@ -9,7 +9,7 @@ register = template.Library()
 
 @register.filter
 def jsonify(obj):
+    """Turn object into a json instance"""
     if isinstance(obj, types.GeneratorType):
         obj = list(obj)
-    return mark_safe(json.dumps(obj))
-
+    return mark_safe(json.dumps(obj).replace("'", "\\'"))
