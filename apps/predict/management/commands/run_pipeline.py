@@ -10,8 +10,10 @@ from django.core.management.base import BaseCommand
 from chore import JobSubmissionError
 
 from apps.predict.models import (
-    PredictStrain, ProgramRun, get_timeout, STATUS_WAIT, STATUS_START, STATUS_ERROR
+    PredictStrain, get_timeout, STATUS_WAIT, STATUS_START, STATUS_ERROR
 )
+
+from apps.pipeline.models import ProgramRun
 
 def bitset(*args):
     """Turn a set of booleans into a bit array and then into an integer"""
@@ -60,7 +62,12 @@ class Command(BaseCommand):
             log("STAT: {} |{}|".format(strain, stat))
 
         for run in ProgramRun.objects.filter(is_submitted=False, is_error=True):
+            if not run.has_input:
+                continue
             log("RERUN: {}", run)
+            run.is_error = False
+            run.is_started = False
+            run.is_finished = False
             run.is_submitted = True
             try:
                 run.job_submit(run.debug_text)
