@@ -18,7 +18,9 @@
 Provides the views for testing and reviewing pipelines.
 """
 
-from django.views.generic import ListView, DetailView, TemplateView
+from django.views.generic import ListView, DetailView, TemplateView, RedirectView
+from django.views.generic.detail import SingleObjectMixin
+from django.contrib import messages
 
 from chore.fake import FakeJobManager
 from chore import get_job_manager
@@ -56,6 +58,22 @@ class ProgramRunDetail(ProtectedMixin, DetailView): # pylint: disable=too-many-a
     """Show a single program run"""
     model = ProgramRun
     staff_only = True
+
+class ProgramRunReTry(ProtectedMixin, SingleObjectMixin, RedirectView):
+    model = ProgramRun
+    staff_only = True
+
+    def get_redirect_url(self, **kwargs):
+        run = self.get_object()
+        if run.has_input:
+            run.is_submitted = False
+            run.error_text = ''
+            run.save()
+            messages.success(self.request, "Program job resubmitted.")
+        else:
+            messages.error(self.request, \
+                "Program job doesn't have all the required input files for resubmittion.")
+        return run.piperun.get_absolute_url()
 
 class JobViewer(ProtectedMixin, TemplateView):
     """Lets users view a list of jobs and how they are running"""

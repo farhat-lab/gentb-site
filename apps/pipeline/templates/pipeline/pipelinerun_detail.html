@@ -14,6 +14,15 @@
         {% for job in object.all_programs %}
           <div class="panel panel-default">
             <div class="panel-heading">
+              {% if not job.is_submitted %}
+                <a class="btn btn-default pull-right disabled" title="Re-submitted"><span class="glyphicon glyphicon-cog" style="animation: spin 4s linear infinite;"></span></a>
+              {% elif job.is_error %}
+                {% if job.has_input %}
+                  <a href="{% url "pipeline:job.retry" job.pk %}" class="btn btn-danger pull-right" title="Re-try job"><span class="glyphicon glyphicon-repeat"></span></a>
+                {% else %}
+                  <a href="" class="btn btn-default pull-right disabled" title="Input files missing for re-try"><span class="glyphicon glyphicon-repeat"></span></a>
+                {% endif %}
+              {% endif %}
               <h2><span class="glyphicon glyphicon-tasks" aria-hidden="true"></span> {{ job.program.name }}</h2>
             </div>
 

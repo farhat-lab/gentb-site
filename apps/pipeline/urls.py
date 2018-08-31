@@ -22,7 +22,7 @@ from django.conf.urls import url
 
 from .views import (
     PipelineDetail, PipelineRunList, PipelineRunDetail,
-    JobViewer, ProgramRunDetail,
+    JobViewer, ProgramRunDetail, ProgramRunReTry,
 )
 
 urlpatterns = [ # pylint: disable=invalid-name
@@ -31,4 +31,5 @@ urlpatterns = [ # pylint: disable=invalid-name
     url(r'^run/(?P<pk>\d+)/$', PipelineRunDetail.as_view(), name='run'),
     url(r'^jobs/$', JobViewer.as_view(), name='jobs'),
     url(r'^jobs/(?P<pk>\d+)/$', ProgramRunDetail.as_view(), name='job'),
+    url(r'^jobs/(?P<pk>\d+)/retry/$', ProgramRunReTry.as_view(), name='job.retry'),
 ]
