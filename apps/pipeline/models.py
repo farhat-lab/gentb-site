@@ -443,10 +443,24 @@ class ProgramRun(TimeStampedModel):
             return ret
         return True
 
-    def submit(self, commit=True, **kwargs):
+    def submit(self, commit=True, previous=None, follower=None, **kwargs):
         """Submit the job and capture any errors"""
         try:
-            self._submit(commit=commit, **kwargs)
+            cmd = self.prepare_command(commit=commit, **kwargs)
+
+            job_kwargs = {}
+            if previous is not None:
+                job_kwargs['depend'] = self.previous_id = previous.job_id
+            if follower is not None:
+                job_kwargs['provide'] = self.follower_id = follower.job_id
+
+            self.is_submitted = True
+            self.submitted = now()
+
+            if commit:
+                self.job_submit(cmd, **job_kwargs)
+                self.save()
+
         except (JobSubmissionError, PrepareError) as err:
             self.is_error = True
             self.error_text = str(err)
@@ -463,11 +477,8 @@ class ProgramRun(TimeStampedModel):
             return False
         return True
 
-
-    def _submit(self, commit=True, previous=None, follower=None, **kwargs):
+    def prepare_command(self, **kwargs):
         """Submit this job to the configured Job Manager"""
-        job_manager = get_job_manager()
-
         # Save all the input and output files into database
         fsi = dict(self.program.prepare_files(**kwargs))
         self.input_files = '\n'.join([fsi[k] for k in fsi if k[0] == '$'])
@@ -476,23 +487,14 @@ class ProgramRun(TimeStampedModel):
         # Remove any output files previously used.
         self.delete_output_files()
 
-        kwargs = {}
-        if previous is not None:
-            kwargs['depend'] = self.previous_id = previous.job_id
-        if follower is not None:
-            kwargs['provide'] = self.follower_id = follower.job_id
-
         cmd = self.program.prepare_command(dict(fsi))
         self.debug_text = cmd
+        return cmd
 
-        if commit:
-            job_manager.submit(self.job_id, cmd, **kwargs)
-
-        self.is_submitted = True
-        self.submitted = now()
-
-        if commit:
-            self.save()
+    def job_submit(self, cmd, **kwargs):
+        """Actually submit job to job_manager"""
+        job_manager = get_job_manager()
+        job_manager.submit(self.job_id, cmd, **kwargs)
 
     def update_status(self, commit=True):
         """Take data from the job manager and populate the database"""

@@ -7,8 +7,10 @@ import time
 from datetime import datetime
 from django.core.management.base import BaseCommand
 
+from chore import JobSubmissionError
+
 from apps.predict.models import (
-    PredictStrain, get_timeout, STATUS_WAIT, STATUS_START, STATUS_ERROR
+    PredictStrain, ProgramRun, get_timeout, STATUS_WAIT, STATUS_START, STATUS_ERROR
 )
 
 def bitset(*args):
@@ -56,6 +58,19 @@ class Command(BaseCommand):
                 run.is_error)] for run in strain.piperun.programs.all()])
 
             log("STAT: {} |{}|".format(strain, stat))
+
+        for run in ProgramRun.objects.filter(is_submitted=False, is_error=True):
+            log("RERUN: {}", run)
+            run.is_submitted = True
+            try:
+                run.job_submit(run.debug_text)
+            except JobSubmissionError as err:
+                run.is_error = True
+                run.error_text = "Error while RE-SUBMITTING the job: " + str(err)
+            except Exception as err:
+                run.is_error = True
+                run.error_text = "Owch Error: " + str(err)
+            run.save()
 
         for strain in qset.filter(piperun__isnull=True):
             try:
