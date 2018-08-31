@@ -427,8 +427,8 @@ class PredictStrain(Model):
             if gene:
                 (_, region, _) = unpack_mutation_format(gene)
                 regions[region].append(gene)
-                if gene not in locusts:
-                    locusts.append(gene)
+                if region not in locusts:
+                    locusts.append(region)
 
         for x, locust in enumerate(locusts):
             ret = {"x": x, "y": 0, "size": 5, "tip": ["No mutations"]}
