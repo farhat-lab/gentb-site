@@ -48,34 +48,30 @@ if filename.endswith(".var"):
 	    if len(it) >1 :
 		d[it[0].group()]="1"
 		#plan to add more matching to the right mutation here in a future version
-#		sys.stderr.write("match1+\n")
 	    elif len(it)==1:     	
                 d[it[0].group()]="1"
-#		sys.stderr.write("match1\n")
         elif parts[1] in ['CF']: #coding frameshifts pool all that occur at the same nucleotide start
             pattern=parts[1] + '_' + parts[2] + '_[^\s\,]+_' + parts[5]
 	    it = tuple(re.finditer(r"\s?([\w\.]+%s[\w\.]*)\s?"%pattern, "\t".join(variants), re.IGNORECASE))
             if len(it) >1 :
                 d[it[0].group()]="1"
                 #plan to add more matching to the right mutation here in a future version
-#		sys.stderr.write("match2+\n")
             elif len(it)==1:
                 d[it[0].group()]="1"
-#	        sys.stderr.write('match2'+"\n")
-        elif parts[1] == 'P' and False: #promoter (to maintain compatibility with old naming used in randomforest built from MIP data
-	   # sys.stderr.write(parts[2] + "\n")
-            operon=parts[5].split('-')
-            pattern=parts[3]+'_'+parts[4]+'_'+operon[0]
+        elif parts[1] == 'P': # promoter (to maintain compatibility with old naming used in randomforest built from MIP data
+	    #output2.write(parts[1] + "\n")
+            operon=parts[len(parts)-1].split('-')
+	    if operon[0]=="promoter":
+		pattern=parts[3]+'_'+operon[0]+'_'+operon[1]
+	    else:
+	        pattern=parts[3]+'_'+parts[4]+'_'+operon[0]
             it = tuple(re.finditer(r"\s?([\w\.]+%s[\w\.]*)\s?"%pattern, "\t".join(variants), re.IGNORECASE))
             if len(it) >1 :
                 d[it[0].group()]="1"
                 #plan to add more matching to the right mutation here in a future version
-#		sys.stderr.write("match3+\n")
             elif len(it)==1:
                 d[it[0].group()]="1"
-#	        sys.stderr.write("match3\n")
         
-#sys.stderr.write("\t".join(d.keys()))
 
 for v in variants:
     if v in d.keys():
