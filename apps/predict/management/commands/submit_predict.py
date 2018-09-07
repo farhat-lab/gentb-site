@@ -61,24 +61,6 @@ class Command(BaseCommand):
 
             log("STAT: {} |{}|".format(strain, stat))
 
-        for run in ProgramRun.objects.filter(is_submitted=False, is_error=True):
-            if not run.has_input:
-                continue
-            log("RERUN: {}", run)
-            run.is_error = False
-            run.is_started = False
-            run.is_finished = False
-            run.is_submitted = True
-            try:
-                run.job_submit(run.debug_text)
-            except JobSubmissionError as err:
-                run.is_error = True
-                run.error_text = "Error while RE-SUBMITTING the job: " + str(err)
-            except Exception as err:
-                run.is_error = True
-                run.error_text = "Owch Error: " + str(err)
-            run.save()
-
         for strain in qset.filter(piperun__isnull=True):
             try:
                 self.submit_strain_pipeline(strain)
