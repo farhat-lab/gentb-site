@@ -33,15 +33,8 @@ class PipelineProgramInline(SortableInlineAdminMixin, admin.TabularInline):
 
 class PipelineAdmin(admin.ModelAdmin):
     filter_horizontal = ('test_files',)
-    list_display = ('name', 'description')
+    list_display = ('name', 'description', 'errors')
     inlines = (PipelineProgramInline,)
-
-
-admin.site.register(Pipeline, PipelineAdmin)
-
-class ProgramAdmin(admin.ModelAdmin):
-    list_display = ('name', 'description', 'keep', 'errors')
-    filter_horizontal = ('files', 'test_files')
 
     @staticmethod
     def errors(obj):
@@ -54,6 +47,13 @@ class ProgramAdmin(admin.ModelAdmin):
         if count == 0:
             return 'No Tests!'
         return ''
+
+
+admin.site.register(Pipeline, PipelineAdmin)
+
+class ProgramAdmin(admin.ModelAdmin):
+    list_display = ('name', 'description', 'keep',)
+    filter_horizontal = ('files', 'test_files')
 
 admin.site.register(Program, ProgramAdmin)
 
