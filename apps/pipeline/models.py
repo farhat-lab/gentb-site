@@ -306,6 +306,8 @@ class ProgramFile(Model):
 class PipelineRun(TimeStampedModel):
     name = SlugField(max_length=128, db_index=True)
     pipeline = ForeignKey(Pipeline, related_name='runs')
+    run_as_test = PositiveIntegerField(null=True, blank=True,\
+        help_text="Every (x) days, run this pipeline-run as a test.")
 
     def __str__(self):
         return "Pipeline Run %s" % self.name

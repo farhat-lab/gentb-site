@@ -40,8 +40,20 @@ class PipelineAdmin(admin.ModelAdmin):
 admin.site.register(Pipeline, PipelineAdmin)
 
 class ProgramAdmin(admin.ModelAdmin):
-    list_display = ('name', 'description', 'keep')
+    list_display = ('name', 'description', 'keep', 'errors')
     filter_horizontal = ('files', 'test_files')
+
+    @staticmethod
+    def errors(obj):
+        """Return true if the pipeline has errors (based on tests)"""
+        count = 0
+        for count, test in enumerate(obj.runs.filter(run_as_test__isnull=False)):
+            err = test.get_errors()
+            if err:
+                return err
+        if count == 0:
+            return 'No Tests!'
+        return ''
 
 admin.site.register(Program, ProgramAdmin)
 
