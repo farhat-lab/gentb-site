@@ -572,10 +572,14 @@ class ProgramRun(TimeStampedModel):
         return []
 
     def input_filenames(self):
-        return self.input_files.split("\n")
+        if self.input_files.strip():
+            return self.input_files.split("\n")
+        return []
 
     def output_filenames(self):
-        return self.output_files.split("\n")
+        if self.output_files.strip():
+            return self.output_files.split("\n")
+        return []
 
     def update_size(self, *files):
         """Takes a list of files as a string and returns the size in Kb"""
