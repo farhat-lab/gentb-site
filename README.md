@@ -18,9 +18,9 @@ Next you must create a database if you are using postgresql or mysql, (if you ar
 
 Change settings relating to the database location, username and password.
 
-Finally you must make sure GIS libraries are installed (some are only required for sqlite and mysql)
+Finally you must make sure GIS libraries are installed (some are only required for sqlite and mysql), version of libgeos may differ depending on Ubuntu version.
 
-    sudo apt install binutils libproj-dev gdal-bin libgeos-3.6.2
+    sudo apt install binutils libproj-dev gdal-bin libgeos-3.6.2 libsqlite3-mod-spatialite
 
 Next you should be able to run the migration:
 
