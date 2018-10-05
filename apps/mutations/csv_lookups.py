@@ -60,7 +60,10 @@ class BaseLookup(dict):
         with open(filename, 'r') as fhl:
             # Open the TSV file and get the header as the first row.
             rows = list(CsvReader(fhl, delimiter=self.delimiter))
+            if not rows:
+                return
             header = rows.pop(0)
+
 
             # Rename the header to more useful names
             for a, b in syn.items():
