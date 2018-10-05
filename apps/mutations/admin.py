@@ -24,7 +24,7 @@ from .forms import DrugForm
 
 class ImportSourceAdmin(ModelAdmin):
     list_display = ('name', 'created', 'uploader', 'complete')
-    readonly_fields = ('uploaded',)
+    exclude = ('uploaded',)
 
 site.register(ImportSource, ImportSourceAdmin)
 
