@@ -353,6 +353,11 @@ class Paper(Model):
     def __str__(self):
         return self.name
 
+class BioProject(Model):
+    name = CharField(max_length=128, unique=True)
+
+    def __str__(self):
+        return self.name
 
 # db_table: gtbdr.Strainsourcedata
 class StrainSource(Model):
@@ -367,6 +372,7 @@ class StrainSource(Model):
     importer = ForeignKey(ImportSource, verbose_name='Import Source', null=True, blank=True)
     source_lab = CharField(max_length=100, verbose_name='Laboratory Source', db_index=True, null=True, blank=True)
     source_paper = ForeignKey(Paper, related_name="strains", null=True, blank=True)
+    bioproject = ForeignKey(BioProject, related_name="strains", null=True, blank=True)
 
     patient_id  = CharField(max_length=16, db_index=True)
     patient_age = PositiveIntegerField(null=True, blank=True)

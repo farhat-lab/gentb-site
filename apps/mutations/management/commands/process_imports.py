@@ -169,12 +169,24 @@ class Command(BaseCommand):
             name, other_name = other_name, None
 
         datum['old_id'] = other_name
-        strain, _ = StrainSource.objects.update_or_create(name=name, defaults=datum)
 
-        #study = None
-        #if 'STUDY' in vcf.metadata:
-        #    study = long_match({}, self.studies, vcf.metadata['STUDY']\
-        #        .get('NAME', None), Paper, 'name', 'url', 'doi', default=None)
+        study = None
+        if 'STUDY' in vcf.metadata:
+            name = vcf.metadata['STUDY'][0].get('NAME', None)
+            url = vcf.metadata['STUDY'][0].get('URL', None)
+            doi = vcf.metadata['STUDY'][0].get('DOI', None)
+            if doi:
+                study = Paper.objects.get_or_create(doi=doi, defaults={'name': name, 'url': url})[0]
+            elif name:
+                study = Paper.objects.get_or_create(name=name, defaults={'url': url})[0]
+            if study is not None:
+                datum['source_paper'] = study
+
+        if 'PROJECT_ID'in vcf.metadata:
+            datum['bioproject'] = BioProject.objects.get_or_create(
+                name=vcf.metadata['PROJECT_ID'][0])
+
+        strain, _ = StrainSource.objects.update_or_create(name=name, defaults=datum)
 
         for _drug in vcf.metadata.get('DRUG', []):
             try:
