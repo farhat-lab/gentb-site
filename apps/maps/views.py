@@ -29,6 +29,7 @@ from django.db.models.functions import Cast
 from apps.mutations.models import (
     ImportSource, StrainSource, Mutation, GeneLocus, Genome,
     RESISTANCE, RESISTANCE_GROUP,
+    Paper, BioProject,
 )
 
 from .mixins import JsonView, DataSlicerMixin
@@ -53,13 +54,20 @@ class Sources(JsonView, DataSlicerMixin):
 
     def get_context_data(self, **_):
         """Return a dictionary of template variables"""
-        _qs = self.get_data()
-        return {
-            'values': [
-                [source.pk, source.name, str(source.uploader), source.strainsource_set.count()]
-                for source in _qs
-            ],
-        }
+        return {'values': list(self.get_sources())}
+
+    def get_sources(self):
+        """Return a list of data sources"""
+        for source in self.get_data():
+            yield dict(kind='source', pk=source.pk, name=source.name,
+                       uploader=str(source.uploader), count=source.strainsource_set.count())
+        for paper in Paper.objects.filter(strains__isnull=False):
+            yield dict(kind='source_paper', pk=paper.pk, name=paper.name,
+                       url=paper.url, count=paper.strains.count())
+        #for bioproject in BioProject.objects.filter(strains__isnull=False):
+            #yield dict(kind='bioproject', pk=bioproject.pk, name=bioproject.name,
+            #           count=bioproject.strains.count())
+
 
 class Places(JsonView, DataSlicerMixin):
     """

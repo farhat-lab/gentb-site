@@ -27,36 +27,49 @@ $(document).ready(function() {
 
 function listSources(data) {
   var existing = getTabData("map");
-  var template = $('#source_template');
-  template.hide();
-  $("a", "#sources").not(template).remove();
+  var templates = {
+      'source': $('#source_template'),
+      'source_paper': $('#paper_template'),
+      'bioproject': $('#bioproject_template'),
+  }
+  templates.source.hide();
+  templates.source_paper.hide();
+  templates.bioproject.hide();
+  $("a", "#sources")
+        .not(templates.source)
+        .not(templates.source_paper)
+        .not(templates.bioproject).remove();
 
   for(var i in data) {
       var datum = data[i];
+      var template = templates[datum.kind];
       var copy = template.clone(true, true);
       $('#sources').append(copy);
-      copy.attr('id', 'source_' + datum[0]);
-      $("h3", copy).text(datum[1]);
-      if(datum[2] && datum[2] != 'None') {
-        $("p", copy).text("(by " + datum[2] + ", " + datum[3] + " records)");
+      var sel_id = datum.kind + '_' + datum.pk;
+      copy.attr('id', sel_id);
+      $("h3", copy).text(datum.name);
+      if(datum.uploader && datum.uploader != 'None') {
+        $("p", copy).text("(by " + datum.uploader + ", " + datum.count + " records)");
       } else {
-        $("p", copy).text("(" + datum[3] + " records)");
+        $("p", copy).text("(" + datum.count + " records)");
       }
       copy.show();
-      copy.data('id', datum[0]);
-      copy.data('name', datum[1]);
+      copy.data('id', datum.pk);
+      copy.data('kind', datum.kind);
+      copy.data('name', datum.name);
       copy.click(function() {
           // Select or deselect this source.
+          var sel_id = $(this).data('kind') + '_' + $(this).data('id');
           var selected = getTabData('source');
-          var selected_element = $('#source_' + selected);
+          var selected_element = $('#' + selected);
           selected_element.removeClass('btn-primary');
           selected_element.addClass('btn-default');
-          if(selected == $(this).data('id')) {
+          if(selected == sel_id) {
               unsetTabData('source');
           } else {
               $(this).addClass('btn-primary');
               $(this).removeClass('btn-default');
-              setTabData('source', $(this).data('id'), $(this).data('name'), 'list')
+              setTabData('source', sel_id, $(this).data('name'), 'list')
           }
       });
   }
