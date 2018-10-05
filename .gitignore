@@ -13,6 +13,7 @@ apps/wgsmtb
 .data
 data
 *.swp
+.mypy_cache
 
 # Extra for now
 docroot
