@@ -184,7 +184,7 @@ class Command(BaseCommand):
 
         if 'PROJECT_ID'in vcf.metadata:
             datum['bioproject'] = BioProject.objects.get_or_create(
-                name=vcf.metadata['PROJECT_ID'][0])
+                name=vcf.metadata['PROJECT_ID'][0])[0]
 
         strain, _ = StrainSource.objects.update_or_create(name=name, defaults=datum)
 

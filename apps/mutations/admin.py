@@ -82,3 +82,5 @@ class StrainResistanceAdmin(ModelAdmin):
 
 site.register(StrainResistance, StrainResistanceAdmin)
 
+site.register(BioProject)
+site.register(Paper)
