@@ -26,15 +26,19 @@ class Command(BaseCommand):
 
     def handle(self, **options):
         """Called from the command line"""
-
         # Rerun process
+        for program in ProgramRun.objects.filter(is_submitted=True, is_complete=False, is_error=False):
+            log("Checking status of program: {}", program)
+            # These items were submitted but not complete yet, check status.
+            program.update_status()
+
         for run in ProgramRun.objects.filter(is_submitted=False, is_error=True):
             if not run.has_input:
                 continue
             log("RERUN: {}", run)
             run.is_error = False
             run.is_started = False
-            run.is_finished = False
+            run.is_complete = False
             run.is_submitted = True
             try:
                 run.job_submit(run.debug_text)
