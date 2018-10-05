@@ -1,0 +1,386 @@
+[
+{
+  "model": "pipeline.program",
+  "pk": 2,
+  "fields": {
+    "name": "Annotation",
+    "description": "Takes in a .vcf file and produces a .snp file.\r\n\r\nFilters and combines the mutation data in .vcf file with data from 2 genome coordinate files (with headers) (one for coding regions and one for non coding regions) to add functional data.",
+    "command_line": "perl ${bin}flatAnnotatorVAR.pl ${h37rv}.fasta ${h37rv_coding}.txt ${h37rv_noncoding}.txt ${file}.vcf 15 0.1 PASS > @{file}.var",
+    "keep": true,
+    "files": [
+      1,
+      8,
+      9
+    ],
+    "test_files": []
+  }
+},
+{
+  "model": "pipeline.program",
+  "pk": 3,
+  "fields": {
+    "name": "Generate Matrix",
+    "description": "Takes in annotated var files and creates a matrix file from them used in predictions.",
+    "command_line": "module load gcc/6.2.0\r\nmodule load python/2.7.12\r\npython ${bin}generate_matrix.py ${varient-names}.csv ${file}.var > @{file}.matrix.csv",
+    "keep": true,
+    "files": [
+      2
+    ],
+    "test_files": []
+  }
+},
+{
+  "model": "pipeline.program",
+  "pk": 4,
+  "fields": {
+    "name": "TB Predict (R1.2)",
+    "description": "A Random Forests predictor based on the matrix file.",
+    "command_line": "module load gcc/6.2.0\r\nmodule load R\r\nRscript ${bin}TBpredict.R ${file}matrix.csv\r\nls @{file}matrix.json",
+    "keep": true,
+    "files": [
+      3
+    ],
+    "test_files": []
+  }
+},
+{
+  "model": "pipeline.program",
+  "pk": 5,
+  "fields": {
+    "name": "Pair-Ended SAM Maker",
+    "description": "Use Stampy to turn two fastq files into a single sam file.",
+    "command_line": "module load gcc/6.2.0\r\nmodule load python/2.7.12-ucs4\r\n/www/gentb.hms.harvard.edu/data/bin/stampy-1.0.28/stampy.py -g ${h37rv} -h ${h37rv} -o @{file}.sam -f sam -M ${file_one}.fast[aq] ${file_two}.fast[aq]",
+    "keep": true,
+    "files": [
+      1
+    ],
+    "test_files": []
+  }
+},
+{
+  "model": "pipeline.program",
+  "pk": 6,
+  "fields": {
+    "name": "BAM",
+    "description": "Turn a SAM file into a Binary BAM file.",
+    "command_line": "module load gcc/6.2.0\r\nmodule load samtools/1.3.1\r\nsamtools view -bS ${file}.sam > @{file}.bam\r\nsamtools sort @{file}.bam > @{file}.sorted.bam\r\nsamtools index @{file}.sorted.bam",
+    "keep": true,
+    "files": [],
+    "test_files": []
+  }
+},
+{
+  "model": "pipeline.program",
+  "pk": 9,
+  "fields": {
+    "name": "Quality Control",
+    "description": "Adds Quality data to a BAM file",
+    "command_line": "module load gcc/6.2.0\r\nmodule load samtools/1.3.1\r\nsamtools depth -b ${dr-regions}.BED -d 50 -Q 29 ${file}.sorted.bam | ${bin}qc_report.py > @{file}.qc",
+    "keep": true,
+    "files": [
+      4
+    ],
+    "test_files": []
+  }
+},
+{
+  "model": "pipeline.program",
+  "pk": 10,
+  "fields": {
+    "name": "VCF",
+    "description": "Use Platypus to create a Call Variant file from the indexed BAM file.",
+    "command_line": "/www/gentb.hms.harvard.edu/data/bin/Platypus_0.8.1/platypus callVariants --bamFiles=${file}.sorted.bam --refFile=${h37rv}.fasta --output=@{file}.vcf",
+    "keep": true,
+    "files": [
+      1
+    ],
+    "test_files": []
+  }
+},
+{
+  "model": "pipeline.program",
+  "pk": 11,
+  "fields": {
+    "name": "Single-Ended SAM Maker",
+    "description": "Use Stampy to turn a fastq file into a sam file.",
+    "command_line": "module load gcc/6.2.0\r\nmodule load python/2.7.12-ucs4\r\n/www/gentb.hms.harvard.edu/data/bin/stampy-1.0.28/stampy.py -g ${h37rv} -h ${h37rv} -o @{file}.sam -f sam -M ${file}.fastq",
+    "keep": true,
+    "files": [
+      1
+    ],
+    "test_files": []
+  }
+},
+{
+  "model": "pipeline.program",
+  "pk": 12,
+  "fields": {
+    "name": "Spoligotype Lineage",
+    "description": "Gets the details for the spoligotype lineage and saves to a file.",
+    "command_line": "${bin}spoligotype_wrapper.sh ${file}.fastq ${spoldb} > @{file}.lineage.txt",
+    "keep": true,
+    "files": [
+      15
+    ],
+    "test_files": []
+  }
+},
+{
+  "model": "pipeline.program",
+  "pk": 13,
+  "fields": {
+    "name": "Spoligotype Lineage for Pair Ended",
+    "description": "Same as previous spoligotype Lineage script but for pair ended pipelines.",
+    "command_line": "${bin}spoligotype_wrapper.sh ${file_one}.fastq ${spoldb} > @{file_one}.lineage.txt",
+    "keep": true,
+    "files": [
+      15
+    ],
+    "test_files": []
+  }
+},
+{
+  "model": "pipeline.program",
+  "pk": 14,
+  "fields": {
+    "name": "Annotation 2.0",
+    "description": "Takes in a .vcf file and produces a .snp file.\r\n\r\nFilters and combines the mutation data in .vcf file with data from 2 genome coordinate files (with headers) (one for coding regions and one for non coding regions) to add functional data.",
+    "command_line": "perl ${bin}flatAnnotatorVAR_2.0.pl ${h37rv}.fasta ${h37rv_coding}.txt ${h37rv_noncoding}.txt ${file}.vcf 15 0.1 PASS > @{file}.var",
+    "keep": true,
+    "files": [
+      1,
+      8,
+      9
+    ],
+    "test_files": [
+      10
+    ]
+  }
+},
+{
+  "model": "pipeline.program",
+  "pk": 15,
+  "fields": {
+    "name": "Tail Test",
+    "description": "Tail",
+    "command_line": "tail ${file}.csv > @{file}.tail",
+    "keep": true,
+    "files": [
+      11
+    ],
+    "test_files": []
+  }
+},
+{
+  "model": "pipeline.pipeline",
+  "pk": 1,
+  "fields": {
+    "name": "VCF Pipeline",
+    "description": "Process VCF Files in the rudest possible way imaginable.",
+    "test_files": [
+      10
+    ]
+  }
+},
+{
+  "model": "pipeline.pipeline",
+  "pk": 2,
+  "fields": {
+    "name": "Manual Pipeline",
+    "description": "Creates Prediction from manually created Matrix",
+    "test_files": [
+      11
+    ]
+  }
+},
+{
+  "model": "pipeline.pipeline",
+  "pk": 3,
+  "fields": {
+    "name": "FastQ Single-Ended WGS Pipeline",
+    "description": "Process a single FastQ file into a prediction",
+    "test_files": [
+      12
+    ]
+  }
+},
+{
+  "model": "pipeline.pipeline",
+  "pk": 4,
+  "fields": {
+    "name": "FastQ Pair-Ended WGS Pipeline",
+    "description": "Turn two fastq files into a prediction.",
+    "test_files": [
+      13,
+      14
+    ]
+  }
+},
+{
+  "model": "pipeline.pipeline",
+  "pk": 5,
+  "fields": {
+    "name": "FastQ Pair-Ended Targeted Pipeline",
+    "description": "Similar to WGS PE pipeline but omits QC step",
+    "test_files": [
+      13,
+      14
+    ]
+  }
+},
+{
+  "model": "pipeline.pipeline",
+  "pk": 6,
+  "fields": {
+    "name": "VCF_TO_VAR",
+    "description": "Convert a vcf file to a var file",
+    "test_files": [
+      10
+    ]
+  }
+},
+{
+  "model": "pipeline.pipeline",
+  "pk": 7,
+  "fields": {
+    "name": "Test Cluster is Working",
+    "description": "When we want to make sure the cluster and software is working on live, we can use this pipeline.",
+    "test_files": []
+  }
+},
+{
+  "model": "pipeline.programfile",
+  "pk": 1,
+  "fields": {
+    "name": "h37rv",
+    "store": "pipeline/files/h37rv.fasta",
+    "description": "Reference genome for TB, this is the transformed version using the bioperl command."
+  }
+},
+{
+  "model": "pipeline.programfile",
+  "pk": 2,
+  "fields": {
+    "name": "varient-names",
+    "store": "pipeline/files/variant_name_list.csv",
+    "description": "List of all known mutation varients"
+  }
+},
+{
+  "model": "pipeline.programfile",
+  "pk": 3,
+  "fields": {
+    "name": "predictor",
+    "store": "pipeline/files/pza_finalpredict.RData",
+    "description": "PZA Prediction data."
+  }
+},
+{
+  "model": "pipeline.programfile",
+  "pk": 4,
+  "fields": {
+    "name": "dr-regions",
+    "store": "pipeline/files/DR_regions.BED",
+    "description": "Unknown File"
+  }
+},
+{
+  "model": "pipeline.programfile",
+  "pk": 5,
+  "fields": {
+    "name": "h37rv_fai",
+    "store": "pipeline/files/h37rv.fasta.fai",
+    "description": "Reference genome for TB Fast Index file (fai)"
+  }
+},
+{
+  "model": "pipeline.programfile",
+  "pk": 6,
+  "fields": {
+    "name": "h37rv_stidx",
+    "store": "pipeline/files/h37rv.stidx",
+    "description": "Reference genome for TB Stampy Index (stidx)"
+  }
+},
+{
+  "model": "pipeline.programfile",
+  "pk": 7,
+  "fields": {
+    "name": "h37rv_sthash",
+    "store": "pipeline/files/h37rv.sthash",
+    "description": "Reference genome for TB Stampy Hash (sthash)"
+  }
+},
+{
+  "model": "pipeline.programfile",
+  "pk": 8,
+  "fields": {
+    "name": "h37rv_noncoding",
+    "store": "pipeline/files/h37rv_noncoding_summary.txt",
+    "description": ""
+  }
+},
+{
+  "model": "pipeline.programfile",
+  "pk": 9,
+  "fields": {
+    "name": "h37rv_coding",
+    "store": "pipeline/files/h37rv_genome_summary.txt",
+    "description": ""
+  }
+},
+{
+  "model": "pipeline.programfile",
+  "pk": 10,
+  "fields": {
+    "name": "file",
+    "store": "pipeline/files/varient_call_test.vcf",
+    "description": "Test for the varient call *.vcf file."
+  }
+},
+{
+  "model": "pipeline.programfile",
+  "pk": 11,
+  "fields": {
+    "name": "file",
+    "store": "pipeline/files/matrix.csv",
+    "description": "Test matrix input file as a manual input would have."
+  }
+},
+{
+  "model": "pipeline.programfile",
+  "pk": 12,
+  "fields": {
+    "name": "file",
+    "store": "pipeline/files/fastq_single_test.fastq",
+    "description": "Example test file for single fastq processing."
+  }
+},
+{
+  "model": "pipeline.programfile",
+  "pk": 13,
+  "fields": {
+    "name": "file_one",
+    "store": "pipeline/files/fastq_pair_test_R1.fastq",
+    "description": "Example file one."
+  }
+},
+{
+  "model": "pipeline.programfile",
+  "pk": 14,
+  "fields": {
+    "name": "file_two",
+    "store": "pipeline/files/fastq_pair_test_R2.fastq",
+    "description": "Example file two."
+  }
+},
+{
+  "model": "pipeline.programfile",
+  "pk": 15,
+  "fields": {
+    "name": "spoldb",
+    "store": "pipeline/files/spoldb4_simple.txt",
+    "description": "Simple Spoligotype DB4"
+  }
+}
+]
