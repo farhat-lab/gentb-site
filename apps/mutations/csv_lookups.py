@@ -72,6 +72,9 @@ class BaseLookup(dict):
 
             # Add each of the rows to the internal lookups
             for line, row in enumerate(rows):
+                if not line:
+                    # Ignore empty rows
+                    continue
                 try:
                     self.append(dict(zip(header, row)))
                 except ValueError as err:
@@ -83,7 +86,9 @@ class BaseLookup(dict):
 
     def append(self, row):
         """Append one row from the summary file."""
-        key = row[self.key]
+        key = row.get(self.key, None)
+        if key is None:
+            logging.warning("Ignoring row with no key {}".format(self.key))
 
         if key not in self:
             self[key] = row
