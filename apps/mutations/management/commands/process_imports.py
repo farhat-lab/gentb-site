@@ -70,7 +70,7 @@ class Command(BaseCommand):
                 if runner.update_all():
                     if runner.get_errors():
                         upload.flag = 'ERR'
-                        upload.retrieval_error = "\n\n".join(runner.get_errors())
+                        upload.retrieval_error = runner.get_errors()
                     else:
                         upload.flag = 'VCF'
                     upload.save()
@@ -95,6 +95,10 @@ class Command(BaseCommand):
 
         for fl in importer.vcf_files():
             vcf = VCFReader(filename=fl.fullpath)
+            var_file = fl.fullpath[:-4] + '.var'
+            if not os.path.isfile(var_file):
+                print("Failed to find var file: {}".format(var_file))
+                continue
             var = CsvLookup(filename=fl.fullpath[:-4] + '.var', key='varname')
             try:
                 self.import_vcf(importer, vcf, var)
@@ -118,8 +122,8 @@ class Command(BaseCommand):
         if country is None:
             with open('/tmp/rejected-countries.txt', 'a') as fhl:
                 fhl.write(loc.get('COUNTRY', 'NotAvailable') + "\n")
-                return
-           
+                raise Country.DoesNotExist()
+
         city = long_match(CITY_MAP, self.places, loc.get('CITY', None), Place, None, 'name', country=country)
 
         pat = vcf.metadata.get('PATIENT', [{}])[0]
