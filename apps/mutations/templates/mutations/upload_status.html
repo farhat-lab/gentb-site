@@ -4,7 +4,9 @@
 {% block "dialog-title" %}
   <h4 class="modal-title">
   {% if object.complete %}
-    {% if object.uploader %}
+    {% if not object.processed %}
+      <span class="label label-danger pull-right">Import Error</span>
+    {% elif object.uploader %}
       <span class="label label-success pull-right">Import Complete</span>
     {% else %}
       <span class="label label-default pull-right">Initial Data</span>
@@ -33,4 +35,38 @@
         <dd>{{ object.resistances.count }}</dd>
       {% endif %}
     </dl>
+    <table class="table table-striped">
+        <thead>
+          <tr>
+              <th scope="col">Name</th>
+              <th scope="col">File</th>
+              <th scope="col">Uploaded</th>
+              <th scope="col">Import</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in object.vcf_files %}
+            <tr>
+              <td>{{ item.name }}</td>
+              <td>{{ item.filename }}</td>
+              <td>{% if item.retrieval_end %}<span class="label label-success">OK</span>{% endif %}</td>
+              <td>
+                {% if item.flag == "DONE" %}
+                  <span class="label label-success">Done</span>
+                {% elif item.flag == "VCF" %}
+                  <span class="label label-default">Pending</span>
+                {% elif item.flag == "ERR" %}
+                  <span class="label label-danger" title="{{ item.retrieval_error }}">Processing Error</span>
+                {% elif item.flag == "POOR" %}
+                  <span class="label label-danger" title="{{ item.retrieval_error }}">Not Enriched VCF</span>
+                {% elif item.flag == "NOCO" %}
+                  <span class="label label-danger" title="{{ item.retrieval_error }}">No Country</span>
+                {% elif item.flag == "DATA" %}
+                  <span class="label label-danger" title="{{ item.retrieval_error }}">Data Error</span>
+                {% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+    </table>
 {% endblock %}

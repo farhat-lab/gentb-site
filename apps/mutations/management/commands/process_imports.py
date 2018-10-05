@@ -24,6 +24,10 @@ EMPTY = {None: None, 'None': None, '': None,}
 class DataError(ValueError):
     pass
 
+class NotEnrichedError(ValueError):
+    pass
+
+
 class Command(BaseCommand):
     # Caches
     countries = EMPTY.copy()
@@ -94,6 +98,7 @@ class Command(BaseCommand):
         self.genome = Genome.objects.get(code='H37Rv')
 
         for fl in importer.vcf_files():
+            fl.retrieval_error = ""
             vcf = VCFReader(filename=fl.fullpath)
             var_file = fl.fullpath[:-4] + '.var'
             if not os.path.isfile(var_file):
@@ -101,33 +106,42 @@ class Command(BaseCommand):
                 continue
             var = CsvLookup(filename=fl.fullpath[:-4] + '.var', key='varname')
             try:
-                self.import_vcf(importer, vcf, var)
+                fl.name = self.import_vcf(importer, vcf, var)
+                fl.flag = 'DONE'
             except DataError as err:
-                fl.flag = 'ERR'
+                fl.flag = 'DATA'
                 sys.stderr.write("Error: {}\n".format(err))
-                fl.retrieval_error = 'PROC:'+str(err)
-                fl.save()
-            except Country.DoesNotExist:
+                fl.retrieval_error = str(err)
+            except NotEnrichedError:
+                fl.flag = 'POOR'
+            except Country.DoesNotExist as err:
                 fl.flag = 'NOCO'
-                fl.save()
+                fl.retrieval_error = str(err)
+
+            fl.save()
         return True
 
     def import_vcf(self, importer, vcf, var):
+        """Import the VCF file and list of mutations into database"""
+        if 'ENRICHED' not in vcf.metadata:
+            raise NotEnrichedError()
+
         if 'LOCATION' not in vcf.metadata:
-            raise ValueError('NO_METADATA')
+            raise DataError('Location is missing from metadata')
 
         loc = vcf.metadata['LOCATION'][0]
-        country = long_match(COUNTRY_MAP, self.countries, loc.get('COUNTRY', None),
-            Country, None, 'name', 'detail__name_short', 'detail__name_abbr', 'iso2', 'iso3')
-        if country is None:
-            with open('/tmp/rejected-countries.txt', 'a') as fhl:
-                fhl.write(loc.get('COUNTRY', 'NotAvailable') + "\n")
-                raise Country.DoesNotExist()
+        con = loc.get('COUNTRY', None)
+        country = long_match(COUNTRY_MAP, self.countries, con, Country, None,\
+            'name', 'detail__name_short', 'detail__name_abbr', 'iso2', 'iso3')
 
-        city = long_match(CITY_MAP, self.places, loc.get('CITY', None), Place, None, 'name', country=country)
+        if country is None:
+            raise DataError("Country not found: {}".format(con))
+
+        city = long_match(CITY_MAP, self.places, loc.get('CITY', None),\
+            Place, None, 'name', country=country)
 
         pat = vcf.metadata.get('PATIENT', [{}])[0]
-        d = dict(
+        datum = dict(
             importer=importer,
             country=country, city=city,
             patient_id=pat.get('ID', None),
@@ -137,33 +151,38 @@ class Command(BaseCommand):
             # TODO: Patient notes are discarded here, maybe keep them.
         )
 
+        # Drug data must exist!
+        drugs = vcf.metadata.get('DRUG', [])
+        if not drugs:
+            raise DataError("No phenotype drug resistance data.")
+
         # BIO SAMPLE first.
         name = vcf.metadata.get('SAMPLE_ID', (None,))[0]
         name = EMPTY.get(name, name)
 
         other_name = vcf.metadata.get('STRAIN_NAME', (None,))[0]
-        other_name = EMPTY.get(name, name)
+        other_name = EMPTY.get(other_name, other_name)
 
         if name is None:
             if other_name is None:
                 raise DataError("No valid STRAIN_NAME or bio SAMPLE_ID")
             name, other_name = other_name, None
 
-        d['old_id'] = other_name
-        strain, _ = StrainSource.objects.update_or_create(name=name, defaults=d)
+        datum['old_id'] = other_name
+        strain, _ = StrainSource.objects.update_or_create(name=name, defaults=datum)
 
         #study = None
         #if 'STUDY' in vcf.metadata:
-        #    study = long_match({}, self.studies, vcf.metadata['STUDY'].get('NAME', None), Paper, 'name', 'url', 'doi', default=None)
+        #    study = long_match({}, self.studies, vcf.metadata['STUDY']\
+        #        .get('NAME', None), Paper, 'name', 'url', 'doi', default=None)
 
         for _drug in vcf.metadata.get('DRUG', []):
             try:
                 drug = long_match({
                     'OFLOXACIN': 'OFLX',
-                  }, self.drugs, _drug['NAME'], Drug, 'NOP', 'name', 'code', _match='icontains')
+                }, self.drugs, _drug['NAME'], Drug, 'NOP', 'name', 'code', _match='icontains')
             except Drug.DoesNotExist:
-                sys.stderr.write("Can't import drug: {}\n".format(_drug['NAME']))
-                continue
+                raise DataError("Can't import drug: {}".format(_drug['NAME']))
             drug.strains.update_or_create(strain=strain, defaults=dict(
                 resistance=_drug['STATUS'].lower(),
                 # TODO: More drug testing information here.
@@ -172,7 +191,7 @@ class Command(BaseCommand):
         strain.generate_resistance_group()
 
         for snp in var.values():
-            gene = snp['regionid1']
+            #gene = snp['regionid1']
             if len(snp['varname']) > 80:
                 continue
             try:
@@ -181,12 +200,13 @@ class Command(BaseCommand):
                 #locus = GeneLocus.objects.get(name=locus, genome=self.genome)
                 # Ignore that and ask for a new one
                 locus, _ = GeneLocus.objects.update_or_create(name=locus, genome=self.genome)
-            except ValueError as err:
+            except ValueError:
                 #raise DataError("Failed to unpack {varname}".format(**snp))
                 sys.stderr.write("Failed to unpack {varname}\n".format(**snp))
                 continue
             except GeneLocus.DoesNotExist:
-                raise DataError("Failed to get gene {varname}, are all genes loaded from reference?".format(**snp))
+                raise DataError("Failed to get gene {varname}, "\
+                    "are all genes loaded from reference?".format(**snp))
 
             if len(mutation) > 150:
                 sys.stderr.write("Mutation name is too large, can not add to database.\n")
@@ -204,3 +224,4 @@ class Command(BaseCommand):
                 codon_reference=snp['codon'],
             ))
 
+        return name
