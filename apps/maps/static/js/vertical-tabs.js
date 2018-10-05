@@ -111,6 +111,11 @@ function getTabData(key) {
   var store = $('#'+key+'-store');
   return store.data('value');
 }
+/* Returns data for the given tab key name */
+function getTabColumn(key) {
+  var store = $('#'+key+'-store');
+  return store.data('column');
+}
 
 /*
    key    - This vertical tab that this data is filed under, should match html id.

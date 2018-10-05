@@ -62,7 +62,7 @@ class Sources(JsonView, DataSlicerMixin):
             yield dict(kind='source', pk=source.pk, name=source.name,
                        uploader=str(source.uploader), count=source.strainsource_set.count())
         for paper in Paper.objects.filter(strains__isnull=False):
-            yield dict(kind='source_paper', pk=paper.pk, name=paper.name,
+            yield dict(kind='paper', pk=paper.pk, name=paper.name,
                        url=paper.url, count=paper.strains.count())
         #for bioproject in BioProject.objects.filter(strains__isnull=False):
             #yield dict(kind='bioproject', pk=bioproject.pk, name=bioproject.name,
@@ -80,6 +80,7 @@ class Places(JsonView, DataSlicerMixin):
         [
             ('drug', 'drugs__drug__code'),
             ('source', 'importer'),
+            ('paper', 'source_paper'),
         ] + zip(LINEAGE_NAMES, LINEAGE_COLS)
     )
 
@@ -123,6 +124,7 @@ class DrugList(JsonView, DataSlicerMixin):
         [
             ('map', 'country__iso2'),
             ('source', 'importer'),
+            ('paper', 'source_paper'),
         ] + zip(LINEAGE_NAMES, LINEAGE_COLS)
     )
 

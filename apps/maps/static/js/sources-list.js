@@ -29,15 +29,15 @@ function listSources(data) {
   var existing = getTabData("map");
   var templates = {
       'source': $('#source_template'),
-      'source_paper': $('#paper_template'),
+      'paper': $('#paper_template'),
       'bioproject': $('#bioproject_template'),
   }
   templates.source.hide();
-  templates.source_paper.hide();
+  templates.paper.hide();
   templates.bioproject.hide();
   $("a", "#sources")
         .not(templates.source)
-        .not(templates.source_paper)
+        .not(templates.paper)
         .not(templates.bioproject).remove();
 
   for(var i in data) {
@@ -59,17 +59,17 @@ function listSources(data) {
       copy.data('name', datum.name);
       copy.click(function() {
           // Select or deselect this source.
-          var sel_id = $(this).data('kind') + '_' + $(this).data('id');
-          var selected = getTabData('source');
-          var selected_element = $('#' + selected);
-          selected_element.removeClass('btn-primary');
-          selected_element.addClass('btn-default');
-          if(selected == sel_id) {
+          var this_id = $(this).data('kind') + '_' + $(this).data('id');
+          var that_id = getTabColumn('source') + '_' + getTabData('source');
+          var that = $('#' + that_id);
+          that.removeClass('btn-primary');
+          that.addClass('btn-default');
+          if(this_id == that_id) {
               unsetTabData('source');
           } else {
               $(this).addClass('btn-primary');
               $(this).removeClass('btn-default');
-              setTabData('source', sel_id, $(this).data('name'), 'list')
+              setTabData('source', $(this).data('id'), $(this).data('name'), 'list', $(this).data('kind'))
           }
       });
   }
