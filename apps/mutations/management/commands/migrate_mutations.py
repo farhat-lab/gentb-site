@@ -56,26 +56,26 @@ class Command(BaseCommand):
     }
     # Maps ids/names to Labs for the source field.
     LAB_MAP = {
-	r'CDC-\d+': 'CDC',
+        r'CDC-\d+': 'CDC',
         r'\d\d-R\d+': 'MSLI',
-	r'K\d{2}\d?': 'RIVM',
-	r'MT00\d\d': 'BCCDC',
-	r'K-\d':         'FZB',
-	r'\d{4,5}\d{2}': 'FZB',
-	r'X122':        'Stellenbosch',
-	r'R1207':       'Stellenbosch',
-	r'[MR]\d{1,3}(Hi|L)Q': 'Stellenbosch',
-	r'w-148':   'PHRI/NCBI',
+        r'K\d{2}\d?': 'RIVM',
+        r'MT00\d\d': 'BCCDC',
+        r'K-\d':         'FZB',
+        r'\d{4,5}\d{2}': 'FZB',
+        r'X122':        'Stellenbosch',
+        r'R1207':       'Stellenbosch',
+        r'[MR]\d{1,3}(Hi|L)Q': 'Stellenbosch',
+        r'w-148':   'PHRI/NCBI',
         r'c':       'PHRI/NCBI',
-	r'haarlem': 'PHRI/NCBI',
-	r'HN878':  'NCBI',
-	r'H37Ra':  'NCBI',
-	r'MTB210': 'NCBI',
-	r'borowski\d': 'UCSF',
-	r'T\d{2}':     'UCSF',
-	r'GM_0981':    'UCSF',
-	r'\d{2}\d{4}': 'UCSF',
-	r'M4100':      'UCSF',
+        r'haarlem': 'PHRI/NCBI',
+        r'HN878':  'NCBI',
+        r'H37Ra':  'NCBI',
+        r'MTB210': 'NCBI',
+        r'borowski\d': 'UCSF',
+        r'T\d{2}':     'UCSF',
+        r'GM_0981':    'UCSF',
+        r'\d{2}\d{4}': 'UCSF',
+        r'M4100':      'UCSF',
     }
 
     def handle(self, path, **options):
@@ -150,8 +150,8 @@ class Command(BaseCommand):
             row['source_lab'] = None
 
         if not row['source_lab']:
-	    try:
-		row['source_lab'] = re_match_dict(self.LAB_MAP, row['name'])
+            try:
+                row['source_lab'] = re_match_dict(self.LAB_MAP, row['name'])
             except ValueError:
                 row['source_lab'] = 'unknown'
 

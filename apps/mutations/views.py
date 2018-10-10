@@ -50,9 +50,11 @@ class UploadData(FormView):
     form_class = DataUploaderForm
 
     def get_success_url(self):
+        """Return the Status page for the uploaded data"""
         return self.object.get_absolute_url()
 
     def form_valid(self, form):
+        """The form isvalid so we'll save our form"""
         self.object = form.save(self.request.user)
         return super(UploadData, self).form_valid(form)
 

@@ -24,7 +24,7 @@ from django.conf import settings
 from django.db.models import Model, Manager, Q, QuerySet, \
     CharField, PositiveIntegerField, ForeignKey, ManyToManyField, URLField, \
     SlugField, IntegerField, BooleanField, DateField, DateTimeField, \
-    TextField, DecimalField
+    TextField, DecimalField, CASCADE
 from django.core.urlresolvers import reverse
 
 from apps.maps.models import Country, Place
@@ -305,7 +305,7 @@ class ImportSource(Model):
     name = CharField(max_length=256)
 
     uploader = ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True)
-    uploaded = ManyToManyField(UploadFile, blank=True)
+    uploaded = ManyToManyField(UploadFile, blank=True, through='ImportStrain')
     complete = BooleanField(default=True)
 
     created = DateTimeField(auto_now_add=True)
@@ -331,16 +331,38 @@ class ImportSource(Model):
         return self.uploaded.get(name='sources')
 
     def vcf_files(self):
+        """Returns a list of uploaded vcf files"""
         return self.uploaded.filter(filename__contains='vcf')
 
     def processed(self):
         """Returns a percentage completion of the pipeline process"""
         from apps.pipeline.models import ProgramRun
-        qs = ProgramRun.objects.filter(piperun__name__istartswith='IMPORTER{:d}'.format(self.pk))
-        if qs.count() == 0:
+        qset = ProgramRun.objects.filter(piperun__name__istartswith='IMPORTER{:d}'.format(self.pk))
+        if qset.count() == 0:
             return None
-        done = float(qs.filter(completed__isnull=False).count())
-        return "{:.0f}%".format(done / qs.count() * 100)
+        done = float(qset.filter(completed__isnull=False).count())
+        return "{:.0f}%".format(done / qset.count() * 100)
+
+
+TEST_CHOICES = (
+    ('', 'Not tested'),
+    ('NUL', 'Value does not exist but is not required'),
+    ('REQ', 'Value does not exist and is required'),
+    ('NEG', 'Value is not valid'),
+    ('OK', 'Value is valid'),
+)
+
+class ImportStrain(Model):
+    """A link to an uploaded vcf file which we will or will have imported"""
+    upload_file = ForeignKey(UploadFile, on_delete=CASCADE)
+    import_source = ForeignKey(ImportSource, on_delete=CASCADE)
+
+    is_enriched = CharField(max_length=3, choices=TEST_CHOICES, blank=True, default='')
+    has_name = CharField(max_length=3, choices=TEST_CHOICES, blank=True, default='')
+    has_location = CharField(max_length=3, choices=TEST_CHOICES, blank=True, default='')
+    has_study = CharField(max_length=3, choices=TEST_CHOICES, blank=True, default='')
+    has_patient = CharField(max_length=3, choices=TEST_CHOICES, blank=True, default='')
+    has_phenotype = CharField(max_length=3, choices=TEST_CHOICES, blank=True, default='')
 
 
 class Paper(Model):

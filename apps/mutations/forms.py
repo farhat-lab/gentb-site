@@ -3,12 +3,12 @@
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
-# published by the Free Software Foundation, either version 3 of the 
+# published by the Free Software Foundation, either version 3 of the
 # License, or (at your option) any later version.
 #
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the 
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU Affero General Public License for more details.
 #
 # You should have received a copy of the GNU Affero General Public License
@@ -20,16 +20,20 @@ Drop mutation for pasting in mutation information quickly.
 
 import os
 
-from django.forms import *
+from django.conf import settings
 from django.contrib.admin.widgets import FilteredSelectMultiple
+from django.forms import (
+    Form, ModelForm, CharField, Textarea, ModelMultipleChoiceField, ValidationError
+)
 
-from apps.uploads.models import UploadFile
+from apps.uploads.fields import UploadField
 
-from .models import Drug, GeneLocus, Mutation, ImportSource
+from .models import Drug, GeneLocus, Mutation, ImportSource, ImportStrain
 from .utils import unpack_mutation_format
 
 class DrugForm(ModelForm):
-    paste = CharField(label="Create Mutations", widget=Textarea, required=False,
+    """Select drugs and mutations from a drop down"""
+    paste = CharField(label="Create Mutations", widget=Textarea, required=False,\
         help_text="Put a list of mutations here for automatic processing.")
     mutations = ModelMultipleChoiceField(
         queryset=Mutation.objects.all(), label="Existing Mutations",
@@ -40,6 +44,7 @@ class DrugForm(ModelForm):
         fields = ('name', 'code', 'kind', 'mutations', 'paste')
 
     def clean_paste(self):
+        """Clean the pasted data for processing"""
         try:
             return list(self._process_data())
         except Exception as err:
@@ -47,66 +52,63 @@ class DrugForm(ModelForm):
 
     def _process_data(self):
         data = self.cleaned_data.get('paste')
-        for no, line in enumerate(data.strip().split("\n")):
+        for num, line in enumerate(data.strip().split("\n")):
             line = line.strip()
             if not line:
                 continue
             try:
                 yield unpack_mutation_format(line)
             except ValueError as err:
-                raise ValueError("Line '%d:%s' can not be read: %s" % (no, line, str(err)))
+                raise ValueError("Line '%d:%s' can not be read: %s" % (num, line, str(err)))
 
     def save(self, *args, **kw):
+        """Save the drug form data generating genesand mutations"""
         obj = super(DrugForm, self).save(*args, **kw)
         if obj and obj.pk:
             muts = self.cleaned_data.get('mutations')
             pks = list(muts.values_list('pk', flat=True))
             for (index, locus_name, mutation) in self.cleaned_data.get('paste'):
                 (locus, _) = GeneLocus.objects.get_or_create(name=locus_name)
-                (mutation, _) = Mutation.objects.get_or_create(name=mutation,
-                    defaults={'gene_locus': locus, 'order': index or -1})
+                (mutation, _) = Mutation.objects.get_or_create(
+                    name=mutation, defaults={'gene_locus': locus, 'order': index or -1})
                 obj.mutations.add(mutation)
                 pks.append(mutation.pk)
             self.cleaned_data['mutations'] = Mutation.objects.filter(pk__in=pks)
         return obj
 
 
-from apps.uploads.fields import UploadField, UploadTable
-
-from django.conf import settings
-def get_uploader_dir(pk):
-    return os.path.join(settings.MEDIA_ROOT, 'm_uploads', str(pk).zfill(8))
-
 class DataUploaderForm(Form):
     """
     When we want to upload new data into the maps system. This form is used.
     """
     name = CharField()
-    vcf_files = UploadField(extensions=['.vcf', '.vcf.gz'], required=True,
-        label="Enriched VCF", help_text="Variant Call Formated sequence data"\
-        " file enriched with resistance and location meta data.")
+    vcf_files = UploadField(extensions=['.vcf', '.vcf.gz'], required=True, label="Enriched VCF",\
+        help_text="Variant Call Formated sequence file enriched with resistance and location data.")
+
+    @staticmethod
+    def get_uploader_dir(pkey):
+        """Returns the directory used to save uploaded data"""
+        return os.path.join(settings.MEDIA_ROOT, 'm_uploads', str(pkey).zfill(8))
 
     def save(self, user):
         """
         Save the data into the importer
         """
         source = ImportSource.objects.create(
-                name=self.cleaned_data.get('name'),
-                uploader=user,
-                complete=False,
-            )
+            name=self.cleaned_data.get('name'),
+            uploader=user,
+            complete=False,
+        )
         source.save()
 
-        path = get_uploader_dir(source.pk)
+        path = self.get_uploader_dir(source.pk)
         if not os.path.isdir(path):
             os.makedirs(path)
 
         files = list(self.cleaned_data['vcf_files'].values()[0])
         for upload_file in files:
             upload_file.conclude_upload(path, user)
+            ImportStrain.objects.create(import_source=source, upload_file=upload_file)
 
-        source.uploaded = files
         source.save()
         return source
-
-
