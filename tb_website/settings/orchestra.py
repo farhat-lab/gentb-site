@@ -66,6 +66,10 @@ def get_database_config(filename, site=None, gis=False):
 
     engine, db = engines[0]
 
+    options = {}
+    if 'mysql' in engine.lower():
+        options['init_command'] = "SET sql_mode='STRICT_TRANS_TABLES';"
+
     return {
         'ENGINE': engine,
         'NAME': db.get('DB', db.get('FILENAME', '')),
@@ -73,6 +77,7 @@ def get_database_config(filename, site=None, gis=False):
         'PASSWORD': db.get('PASSWORD', ''),
         'HOST': db.get('SERVER', ''),
         'PORT': db.get('PORT', ''),
+        'OPTIONS' : options,
     }
 
 
