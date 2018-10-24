@@ -5,7 +5,7 @@
   "fields": {
     "name": "Annotation",
     "description": "Takes in a .vcf file and produces a .snp file.\r\n\r\nFilters and combines the mutation data in .vcf file with data from 2 genome coordinate files (with headers) (one for coding regions and one for non coding regions) to add functional data.",
-    "command_line": "perl ${bin}flatAnnotatorVAR.pl ${h37rv}.fasta ${h37rv_coding}.txt ${h37rv_noncoding}.txt ${file}.vcf 15 0.1 PASS > @{file}.var",
+    "command_line": "module load gcc/6.2.0\r\nmodule load perl/5.24.0\r\nperl ${bin}flatAnnotatorVAR.pl ${h37rv}.fasta ${h37rv_coding}.txt ${h37rv_noncoding}.txt ${file}.vcf 15 0.1 PASS > @{file}.var",
     "keep": true,
     "files": [
       1,
@@ -145,7 +145,7 @@
   "fields": {
     "name": "Annotation 2.0",
     "description": "Takes in a .vcf file and produces a .snp file.\r\n\r\nFilters and combines the mutation data in .vcf file with data from 2 genome coordinate files (with headers) (one for coding regions and one for non coding regions) to add functional data.",
-    "command_line": "perl ${bin}flatAnnotatorVAR_2.0.pl ${h37rv}.fasta ${h37rv_coding}.txt ${h37rv_noncoding}.txt ${file}.vcf 15 0.1 PASS > @{file}.var",
+    "command_line": "module load perl\r\nperl ${bin}flatAnnotatorVAR_2.0.pl ${h37rv}.fasta ${h37rv_coding}.txt ${h37rv_noncoding}.txt ${file}.vcf 15 0.1 PASS > @{file}.var",
     "keep": true,
     "files": [
       1,
@@ -381,6 +381,294 @@
     "name": "spoldb",
     "store": "pipeline/files/spoldb4_simple.txt",
     "description": "Simple Spoligotype DB4"
+  }
+},
+{
+  "model": "pipeline.pipelineprogram",
+  "pk": 1,
+  "fields": {
+    "pipeline": 1,
+    "program": 2,
+    "order": 1
+  }
+},
+{
+  "model": "pipeline.pipelineprogram",
+  "pk": 2,
+  "fields": {
+    "pipeline": 1,
+    "program": 3,
+    "order": 2
+  }
+},
+{
+  "model": "pipeline.pipelineprogram",
+  "pk": 3,
+  "fields": {
+    "pipeline": 1,
+    "program": 4,
+    "order": 3
+  }
+},
+{
+  "model": "pipeline.pipelineprogram",
+  "pk": 4,
+  "fields": {
+    "pipeline": 2,
+    "program": 4,
+    "order": 1
+  }
+},
+{
+  "model": "pipeline.pipelineprogram",
+  "pk": 5,
+  "fields": {
+    "pipeline": 3,
+    "program": 11,
+    "order": 1
+  }
+},
+{
+  "model": "pipeline.pipelineprogram",
+  "pk": 6,
+  "fields": {
+    "pipeline": 3,
+    "program": 6,
+    "order": 2
+  }
+},
+{
+  "model": "pipeline.pipelineprogram",
+  "pk": 10,
+  "fields": {
+    "pipeline": 3,
+    "program": 10,
+    "order": 6
+  }
+},
+{
+  "model": "pipeline.pipelineprogram",
+  "pk": 11,
+  "fields": {
+    "pipeline": 3,
+    "program": 2,
+    "order": 7
+  }
+},
+{
+  "model": "pipeline.pipelineprogram",
+  "pk": 12,
+  "fields": {
+    "pipeline": 3,
+    "program": 3,
+    "order": 8
+  }
+},
+{
+  "model": "pipeline.pipelineprogram",
+  "pk": 13,
+  "fields": {
+    "pipeline": 3,
+    "program": 4,
+    "order": 9
+  }
+},
+{
+  "model": "pipeline.pipelineprogram",
+  "pk": 14,
+  "fields": {
+    "pipeline": 4,
+    "program": 5,
+    "order": 1
+  }
+},
+{
+  "model": "pipeline.pipelineprogram",
+  "pk": 15,
+  "fields": {
+    "pipeline": 4,
+    "program": 6,
+    "order": 2
+  }
+},
+{
+  "model": "pipeline.pipelineprogram",
+  "pk": 19,
+  "fields": {
+    "pipeline": 4,
+    "program": 10,
+    "order": 4
+  }
+},
+{
+  "model": "pipeline.pipelineprogram",
+  "pk": 20,
+  "fields": {
+    "pipeline": 4,
+    "program": 2,
+    "order": 5
+  }
+},
+{
+  "model": "pipeline.pipelineprogram",
+  "pk": 21,
+  "fields": {
+    "pipeline": 4,
+    "program": 3,
+    "order": 6
+  }
+},
+{
+  "model": "pipeline.pipelineprogram",
+  "pk": 22,
+  "fields": {
+    "pipeline": 4,
+    "program": 4,
+    "order": 7
+  }
+},
+{
+  "model": "pipeline.pipelineprogram",
+  "pk": 23,
+  "fields": {
+    "pipeline": 4,
+    "program": 9,
+    "order": 3
+  }
+},
+{
+  "model": "pipeline.pipelineprogram",
+  "pk": 24,
+  "fields": {
+    "pipeline": 5,
+    "program": 5,
+    "order": 1
+  }
+},
+{
+  "model": "pipeline.pipelineprogram",
+  "pk": 25,
+  "fields": {
+    "pipeline": 5,
+    "program": 6,
+    "order": 2
+  }
+},
+{
+  "model": "pipeline.pipelineprogram",
+  "pk": 26,
+  "fields": {
+    "pipeline": 5,
+    "program": 10,
+    "order": 3
+  }
+},
+{
+  "model": "pipeline.pipelineprogram",
+  "pk": 27,
+  "fields": {
+    "pipeline": 5,
+    "program": 2,
+    "order": 4
+  }
+},
+{
+  "model": "pipeline.pipelineprogram",
+  "pk": 28,
+  "fields": {
+    "pipeline": 5,
+    "program": 3,
+    "order": 5
+  }
+},
+{
+  "model": "pipeline.pipelineprogram",
+  "pk": 29,
+  "fields": {
+    "pipeline": 5,
+    "program": 4,
+    "order": 6
+  }
+},
+{
+  "model": "pipeline.pipelineprogram",
+  "pk": 30,
+  "fields": {
+    "pipeline": 3,
+    "program": 12,
+    "order": 10
+  }
+},
+{
+  "model": "pipeline.pipelineprogram",
+  "pk": 31,
+  "fields": {
+    "pipeline": 4,
+    "program": 13,
+    "order": 8
+  }
+},
+{
+  "model": "pipeline.pipelineprogram",
+  "pk": 32,
+  "fields": {
+    "pipeline": 6,
+    "program": 14,
+    "order": 1
+  }
+},
+{
+  "model": "pipeline.pipelineprogram",
+  "pk": 33,
+  "fields": {
+    "pipeline": 7,
+    "program": 15,
+    "order": 1
+  }
+},
+{
+  "model": "predict.predictpipeline",
+  "pk": 1,
+  "fields": {
+    "pipeline": 1,
+    "file_type": "vcf",
+    "is_default": true
+  }
+},
+{
+  "model": "predict.predictpipeline",
+  "pk": 2,
+  "fields": {
+    "pipeline": 2,
+    "file_type": "manual",
+    "is_default": true
+  }
+},
+{
+  "model": "predict.predictpipeline",
+  "pk": 3,
+  "fields": {
+    "pipeline": 3,
+    "file_type": "fastq",
+    "is_default": true
+  }
+},
+{
+  "model": "predict.predictpipeline",
+  "pk": 4,
+  "fields": {
+    "pipeline": 4,
+    "file_type": "fastq-pair",
+    "is_default": true
+  }
+},
+{
+  "model": "predict.predictpipeline",
+  "pk": 6,
+  "fields": {
+    "pipeline": 5,
+    "file_type": "fastq-pair",
+    "is_default": false
   }
 }
 ]
