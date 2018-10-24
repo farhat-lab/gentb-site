@@ -1,5 +1,5 @@
 """
-Cron job command for running each of the prediction pipelines as needed.
+Submit the pipeline job as soon as the file download is complete.
 """
 import sys
 import time
@@ -12,8 +12,6 @@ from chore import JobSubmissionError
 from apps.predict.models import (
     PredictStrain, get_timeout, STATUS_WAIT, STATUS_START, STATUS_ERROR
 )
-
-from apps.pipeline.models import ProgramRun
 
 def bitset(*args):
     """Turn a set of booleans into a bit array and then into an integer"""
@@ -41,32 +39,18 @@ class Command(BaseCommand):
 
         return strain.run()
 
-    def handle(self, **options):
+    def handle(self, **_):
         """Called from the command line"""
         # Limit all interactions to a timeout (usually a few weeks)
         qset = PredictStrain.objects.filter(dataset__created__gt=get_timeout())
-
-        for strain in qset.filter(
-                piperun__programs__is_submitted=True,
-                piperun__programs__is_complete=False,
-                piperun__programs__is_error=False).distinct():
-            # These items were submitted but not complete yet, check status.
-
-            strain.update_status()
-
-            stat = ''.join(['_> =!!?!'[bitset(
-                run.is_submitted,
-                run.is_complete,
-                run.is_error)] for run in strain.piperun.programs.all()])
-
-            log("STAT: {} |{}|".format(strain, stat))
 
         for strain in qset.filter(piperun__isnull=True):
             try:
                 self.submit_strain_pipeline(strain)
                 log("RUN: {} ({})", strain, strain.pipeline)
                 time.sleep(0.25)
-            except IOError:
-                log("ERR: {} (Bad Download)", strain)
-            except Exception as err:
-                log("ERR: {} ({})", strain, strain.pipeline)
+            except IOError as err:
+                raise
+                log("ERR: {} (Bad Download) {}", strain, err)
+            except Exception as err: # pylint: disable=broad-except
+                log("ERR: {} ({}): {}", strain, strain.pipeline, err)

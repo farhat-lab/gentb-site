@@ -33,7 +33,10 @@ from datetime import timedelta
 
 from model_utils.models import TimeStampedModel
 
-from django.db.models import *
+from django.db.models import (
+    Model, SET_NULL,
+    ForeignKey, CharField, SlugField, TextField, BooleanField,
+)
 from django.conf import settings
 from django.utils.text import slugify
 from django.core import serializers
@@ -43,7 +46,7 @@ from django.utils.translation import ugettext_lazy as _
 
 from apps.uploads.models import UploadFile
 from apps.pipeline.models import Pipeline, PipelineRun
-from apps.mutations.models import Drug, Mutation
+from apps.mutations.models import Drug
 from apps.mutations.utils import unpack_mutation_format
 
 LOGGER = logging.getLogger('apps.predict')
@@ -92,17 +95,21 @@ class PredictDataset(TimeStampedModel):
             help_text='auto-filled on save')
     title = CharField('Dataset Title', max_length=255)
     file_type = CharField(choices=FILE_TYPES, max_length=25)
-    delete_sources = BooleanField(default=False,
-            help_text="If this is checked, we will delete all your input files"
+    delete_sources = BooleanField(default=False,\
+        help_text="If this is checked, we will delete all your input files"\
             " downloaded from dropbox after running the predict.")
 
     description = TextField('Dataset description')
     file_directory = CharField(max_length=255, blank=True)
 
+    class Meta:
+        ordering = ('-created', 'title')
+
     def __str__(self):
         return str(self.title)
 
     def get_absolute_url(self):
+        """Return a link to thedataset view"""
         return reverse('predict:view_single_dataset', kwargs=dict(slug=self.md5))
 
     def get_status(self):
@@ -125,67 +132,75 @@ class PredictDataset(TimeStampedModel):
 
     @property
     def has_prediction(self):
+        """Returns true if any strain has a predict file"""
         return any([strain.has_prediction for strain in self.strains.all()])
 
     @property
     def has_lineages(self):
+        """Return true if any strain has a lineage file"""
         return any([strain.has_lineage for strain in self.strains.all()])
 
     @property
     def has_output_files(self):
-        return any([list(strain.output_files) for strain in self.strains.all()]) 
+        """Return true if any strain has output files"""
+        return any([list(strain.output_files) for strain in self.strains.all()])
 
     def is_manual(self):
+        """Return true if this dataset is a manual input (rather than a file based input)"""
         return self.file_type == 'manual'
 
     def get_heatmap(self):
         """Return data in the heatmap format with embeded graphs"""
         output = {
-          'rows': [],
-          'cols': [],
+            'rows': [],
+            'cols': [],
         }
-        locusts = [] # Track all locusts for all strains, Mutable variable populated by make_scatter!
+        # Track all locusts for all strains, Mutable variable populated by make_scatter!
+        locusts = []
         for strain in self.strains.all():
-            for drug, (dr, fp, fn, graph) in strain.get_prediction(locusts):
+            for _ in strain.get_prediction(locusts):
                 pass # Populates locusts for square plots
 
         for strain in self.strains.all():
             row = {'name': strain.name, 'cols': []}
             output['rows'].append(row)
 
-            scatter = {}
-            for drug, (dr, fp, fn, graph) in strain.get_prediction(locusts):
+            for drug, (drug, fpos, fneg, graph) in strain.get_prediction(locusts):
                 if drug not in output['cols']:
                     output['cols'].append(drug)
 
                 index = output['cols'].index(drug)
                 row['cols'].extend([None] * (index - len(row['cols']) + 1))
                 row['cols'][index] = {
-                  'name': drug,
-                  'scatter': graph,
-                  'false_positive': fp,
-                  'false_negative': fn,
-                  'dr_probability': dr,
+                    'name': drug,
+                    'scatter': graph,
+                    'false_positive': fpos,
+                    'false_negative': fneg,
+                    'dr_probability': drug,
                 }
 
         return output
 
     def user_name(self):
+        """Return the uploader's username"""
         if self.user:
             return self.user.username
         return 'n/a'
 
     def user_affiliation(self):
+        """Return the uploader's addiliation"""
         if self.user:
             return self.user.affiliation
         return 'n/a'
 
     def user_email(self):
+        """Return the uploader's email address"""
         if self.user:
             return self.user.email
         return 'n/a'
 
     def save(self, *args, **kwargs):
+        """Override the save function to populate some fields"""
         if not self.id:
             super(PredictDataset, self).save(*args, **kwargs)
 
@@ -203,10 +218,8 @@ class PredictDataset(TimeStampedModel):
         return super(PredictDataset, self).save(*args, **kwargs)
 
     def get_full_json(self):
+        """Returns the dataset as a serialised json"""
         return serializers.serialize('json', PredictDataset.objects.filter(id=self.id))
-
-    class Meta:
-        ordering = ('-created', 'title')
 
 
 class PredictPipeline(Model):
@@ -226,22 +239,29 @@ class PredictStrain(Model):
     dataset = ForeignKey(PredictDataset, related_name='strains')
     pipeline = ForeignKey(Pipeline)
     piperun = ForeignKey(PipelineRun, null=True, blank=True, on_delete=SET_NULL)
-    
+
     # We need two file slots for pair ended fastq files
-    file_one = ForeignKey(UploadFile, null=True, blank=True, related_name='link_a', on_delete=SET_NULL)
-    file_two = ForeignKey(UploadFile, null=True, blank=True, related_name='link_b', on_delete=SET_NULL)
+    file_one = ForeignKey(UploadFile, null=True, blank=True,
+                          related_name='link_a', on_delete=SET_NULL)
+    file_two = ForeignKey(UploadFile, null=True, blank=True,
+                          related_name='link_b', on_delete=SET_NULL)
     files = property(lambda self: [a for a in (self.file_one, self.file_two) if a])
 
     def run(self):
         """Runs this pipeline as set (even if run before)"""
         options = {'output_dir': self.dataset.file_directory}
 
+        options['clean_files'] = []
         if self.file_one:
             options['file'] = self.file_one.fullpath
             options['file_one'] = self.file_one.fullpath
+            if self.dataset.delete_sources:
+                options['clean_files'].append(options['file_one'])
         if self.file_two:
             options['file'] = self.name
             options['file_two'] = self.file_two.fullpath
+            if self.dataset.delete_sources:
+                options['clean_files'].append(options['file_two'])
 
         name = slugify("{}.{}".format(self.dataset.title, self.name))
         self.piperun = self.pipeline.run(name, **options)
@@ -442,15 +462,6 @@ class PredictStrain(Model):
                 ret["size"] = 9
                 ret["tip"] = regions[locust]
             yield ret
-
-    def update_status(self):
-        """Update the statuses for each of the piperun programs"""
-        if self.piperun:
-            # Update all program runs in the piperun
-            if self.piperun.update_all():
-                if self.dataset.delete_sources:
-                    for source in self.files:
-                        source.delete_now()
 
     def __str__(self):
         return str(self.name)

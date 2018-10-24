@@ -31,12 +31,6 @@ class Datasets(PredictMixin, ListView):
 class DatasetView(PredictMixin, DetailView):
     parent = Datasets
 
-    def get_object(self):
-        obj = super(DatasetView, self).get_object()
-        for strain in obj.strains.all():
-            strain.update_status()
-        return obj
-
 class Heatmap(PredictMixin, DetailView):
     queryset = PredictDataset.objects.all()
     template_name = 'predict/heatmap.html'

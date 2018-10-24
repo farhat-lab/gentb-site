@@ -8,7 +8,7 @@ from django.core.management.base import BaseCommand
 
 from chore import JobSubmissionError
 
-from apps.pipeline.models import ProgramRun
+from apps.pipeline.models import PipelineRun, ProgramRun
 
 def bitset(*args):
     """Turn a set of booleans into a bit array and then into an integer"""
@@ -26,12 +26,23 @@ class Command(BaseCommand):
 
     def handle(self, **options):
         """Called from the command line"""
-        # Rerun process
-        for program in ProgramRun.objects.filter(is_submitted=True, is_complete=False, is_error=False):
-            log("Checking status of program: {}", program)
-            # These items were submitted but not complete yet, check status.
-            program.update_status()
 
+        # These items were submitted but not complete yet, check status.
+        for piperun in PipelineRun.objects.filter(
+                programs__is_submitted=True,
+                programs__is_complete=False,
+                programs__is_error=False):
+
+            piperun.update_all()
+
+            stat = ''.join(['_> =!!?!'[bitset(
+                progrun.is_submitted,
+                progrun.is_complete,
+                progrun.is_error)] for progrun in piperun.programs.all()])
+
+            log("STAT: {} |{}|".format(piperun, stat))
+
+        # Rerun process
         for run in ProgramRun.objects.filter(is_submitted=False, is_error=True):
             if not run.has_input:
                 continue
@@ -45,7 +56,7 @@ class Command(BaseCommand):
             except JobSubmissionError as err:
                 run.is_error = True
                 run.error_text = "Error while RE-SUBMITTING the job: " + str(err)
-            except Exception as err:
+            except Exception as err: # pylint: disable=broad-except
                 run.is_error = True
                 run.error_text = "Owch Error: " + str(err)
             run.save()
