@@ -35,15 +35,15 @@ Testing is done by including PipelineFiles as testing files.
 
 import re
 import os
+from datetime import timedelta
 
 import logging
 LOGGER = logging.getLogger('apps.pipeline')
 
-from os.path import getsize, isfile, basename, join
-from datetime import datetime, timedelta
-from collections import defaultdict
-
-from django.db.models import *
+from django.db.models import (
+    Model, Q, PositiveIntegerField, FileField, SlugField, DateTimeField,
+    BooleanField, CharField, ForeignKey, TextField, ManyToManyField,
+)
 from model_utils.models import TimeStampedModel
 
 from chore import get_job_manager, tripplet, JobSubmissionError
@@ -201,7 +201,7 @@ class Program(Model):
                 args = (_io, prefix, name, suffix)
                 fname = self.prepare_file(files_in, files_out, *args)
                 if '/' not in fname:
-                    fname = join(output_dir, fname)
+                    fname = os.path.join(output_dir, fname)
                 yield ((_io, name, start, end), fname)
             except ValueError as err:
                 errors.append(str(err))
@@ -215,21 +215,21 @@ class Program(Model):
         pattern = "%s(?P<name>[^/]*)%s" % (prefix, suffix)
         # Get the file input from a list of available files.
         # It's reversed so the last added file is first.
-        fns = list(reversed(files_in[name]))
-        for fn in fns:
-            ret = re.match(pattern, basename(fn))
+        filenames = list(reversed(files_in[name]))
+        for fname in filenames:
+            ret = re.match(pattern, os.path.basename(fname))
             if ret:
                 files_out[name] = ret.groupdict()['name']
                 if io == '$':
-                    return fn
+                    return fname
 
             # For the pair-ended files, the file input is actually not a real
             # file input, but it needs to be made available to the output
             elif io == '@' and name not in files_out:
-                files_out[name] = fn
+                files_out[name] = fname
 
         if io != '@':
-            if not fns:
+            if not filenames:
                 raise ValueError(self.ER3 % name)
             raise ValueError(self.ER1 % (name, pattern))
 
@@ -304,21 +304,51 @@ class ProgramFile(Model):
 
 
 class PipelineRun(TimeStampedModel):
+    """
+    A pipeline run is a representation of a single time when a given
+    pipeline was submitted to the cluster. Each program attached to
+    the pipeline creates a ProgramRun object attached to this PipelineRun
+    each ProgramRun is a program submitted to the cluster with any returned
+    values or printed strings attached.
+    """
     name = SlugField(max_length=128, db_index=True)
     pipeline = ForeignKey(Pipeline, related_name='runs')
     run_as_test = PositiveIntegerField(null=True, blank=True,\
         help_text="Every (x) days, run this pipeline-run as a test.")
+    clean_files = TextField(null=True, blank=True,
+        help_text="List of extra files to remove when job is finished")
 
     def __str__(self):
         return "Pipeline Run %s" % self.name
 
     def get_absolute_url(self):
+        """Return a link to this pipeline run for review"""
         return reverse('pipeline:run', kwargs={'pk': self.pk})
 
+    def clean_filenames(self):
+        """Return a list of fully qualified cleanable filenames"""
+        if (self.clean_files or "").strip():
+            return self.clean_files.split("\n")
+        return []
+
+    def clean_the_files(self):
+        """Deletes any of the files marked for cleaning"""
+        for fname in self.clean_filenames():
+            try:
+                os.unlink(fname)
+            except (OSError, IOError):
+                pass
+
     def run(self, commit=True, **kwargs):
+        """Run this pipeline run (creates ProgramRun objects)"""
         runs = []
         if not commit:
             self.test_programs = []
+
+        if 'clean_files' in kwargs:
+            self.clean_files = '\n'.join(kwargs['clean_files'])
+            if commit:
+                self.save()
 
         for pipe in self.pipeline.programs.all():
             if commit:
@@ -332,6 +362,10 @@ class PipelineRun(TimeStampedModel):
             if not run.is_submitted:
                 if not run.submit(commit=commit, previous=prev, follower=foll, **kwargs):
                     return False
+            else:
+                data = get_job_manager().status(run.job_id, clean=False)
+                if data.get('finished', None) and data.get('return', 1) != 1:
+                    raise JobSubmissionError("Existing job already failed.")
 
             # Sort out the filenames for the next call in the chain
             for package, filename in run.program.prepare_files(**kwargs):
@@ -362,29 +396,31 @@ class PipelineRun(TimeStampedModel):
         Update all pipeline project runs with their running status returns
         True if all programs are complete. False if any are still running.
         """
-        qs = self.programs.filter(Q(is_submitted=False) | Q(is_complete=False))
-        if all([program.update_status() for program in qs]):
-            if qs.count():
+        qset = self.programs.filter(Q(is_submitted=False) | Q(is_complete=False))
+        if all([program.update_status() for program in qset]):
+            if qset.count():
                 # Clean up step for all programs
                 for program in self.programs.filter(program__keep=False):
                     program.delete_output_files()
+                self.clean_the_files()
             return True
         return False
 
     def get_errors(self):
         """Return true if programs in the pipeline have errors"""
         self.update_all()
-        qs = self.programs.filter(is_error=True)
-        if qs.count() == 0:
+        qset = self.programs.filter(is_error=True)
+        if qset.count() == 0:
             return None
-        return '\n---\n'.join(qs.values_list('error_text', flat=True))
+        return '\n---\n'.join(qset.values_list('error_text', flat=True))
 
 P_LOG = None
 
 class ProgramRun(TimeStampedModel):
     piperun = ForeignKey(PipelineRun, related_name='programs')
     program = ForeignKey(Program, related_name='runs')
-    job_id  = SlugField(max_length=255, help_text="Name or ID of the job in the cloud runner")
+    job_id = SlugField(max_length=255, help_text="Name or ID of the job in the cloud runner")
+
     previous_id = SlugField(max_length=255, null=True, blank=True,\
         help_text="Name or ID of the previous job we depend on")
     follower_id = SlugField(max_length=255, null=True, blank=True,\
@@ -395,12 +431,12 @@ class ProgramRun(TimeStampedModel):
     is_complete = BooleanField(default=False)
     is_error = BooleanField(default=False)
 
-    input_size = PositiveIntegerField(null=True, blank=True,
-            help_text='Size in kilobytes of all input files.')
-    output_size = PositiveIntegerField(null=True, blank=True,
-            help_text='Size in kilobytes of all output files.')
-    duration = PositiveIntegerField(null=True, blank=True,
-            help_text='Number of seconds to run.')
+    input_size = PositiveIntegerField(null=True, blank=True,\
+        help_text='Size in kilobytes of all input files.')
+    output_size = PositiveIntegerField(null=True, blank=True,\
+        help_text='Size in kilobytes of all output files.')
+    duration = PositiveIntegerField(null=True, blank=True,\
+        help_text='Number of seconds to run.')
 
     submitted = DateTimeField(null=True, blank=True)
     started = DateTimeField(null=True, blank=True)
@@ -556,7 +592,7 @@ class ProgramRun(TimeStampedModel):
     def output_fn(self):
         """Returns a list of output filenames"""
         if self.output_files is not None:
-            return [fn for fn in self.output_filenames() if isfile(fn)]
+            return [fn for fn in self.output_filenames() if os.path.isfile(fn)]
         return []
 
     @property
@@ -568,27 +604,29 @@ class ProgramRun(TimeStampedModel):
     def input_fn(self):
         """Returns a list of output filenames"""
         if self.input_files is not None:
-            return [fn for fn in self.input_filenames() if isfile(fn)]
+            return [fn for fn in self.input_filenames() if os.path.isfile(fn)]
         return []
 
     def input_filenames(self):
+        """Return a list of fully qualified input filenames"""
         if self.input_files.strip():
             return self.input_files.split("\n")
         return []
 
     def output_filenames(self):
+        """Return a list of fully qualified output filenames"""
         if self.output_files.strip():
             return self.output_files.split("\n")
         return []
 
     def update_size(self, *files):
         """Takes a list of files as a string and returns the size in Kb"""
-        return 1024 + sum([getsize(fn) for fn in files])
+        return 1024 + sum([os.path.getsize(fn) for fn in files])
 
     def delete_output_files(self):
         """Deletes any of the output files"""
-        for fn in self.output_fn:
+        for fname in self.output_fn:
             try:
-                os.unlink(fn)
+                os.unlink(fname)
             except (OSError, IOError):
                 pass
