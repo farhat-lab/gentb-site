@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load cachebuster %}
+{% load cachebuster plumber %}
 
 {% block extra_css %}
   <!--link href="{% static 'css/pipeline.css' %}" rel="stylesheet"-->
@@ -52,11 +52,11 @@
               {% if job.is_submitted %}
                 <div class="alert alert-info">
                   <h4><span class="glyphicon glyphicon-paperclip" aria-hidden="true"></span> Command Template</h4>
-                  <p>{{ job.program.command_line }}</p>
+                  <p class="program">{{ job.program|process_template }}</p>
                   {% if job.debug_text %}
                     <hr/>
                     <h4><span class="glyphicon glyphicon-cog" aria-hidden="true"></span> Generated Command</h4>
-                    <p>{{ job.debug_text }}</p>
+                    <p class="program">{{ job|process_command }}</p>
                   {% endif %}
                 </div>
               {% endif %}

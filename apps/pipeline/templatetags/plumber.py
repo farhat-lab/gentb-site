@@ -8,18 +8,22 @@ from django.template import Library
 
 register = Library() # pylint: disable=invalid-name
 
-INMIA = '<span class="input-missing" title="Missing file: {}" data-toggle="tooltip" data-placement="bottom">{}</span>'
+INMIA = '<span class="input-missing" title="Missing input: {}" data-toggle="tooltip" data-placement="bottom">{}</span>'
 INOK = '<span class="input" title="{}" data-toggle="tooltip" data-placement="bottom">{}</span>'
 INBIN = '<span class="bin" title="{}" data-toggle="tooltip" data-placement="bottom">{}</span>'
 OUT = '<span class="output" data-toggle="tooltip" data-placement="bottom" title="{}">{}</span>'
+OUTMIA = '<span class="input-missing" data-toggle="tooltip" data-placement="bottom" title="Missing output: {}">{}</span>'
 
 @register.filter("process_command")
-def command(run):
+def command(job):
     """processes the command by highlighting the input and output files"""
-    text = run.debug_text
-    for ifn in set(run.input_filenames()):
+    text = job.debug_text
+    input_fn = job.input_fn
+    output_fn = job.output_fn
+
+    for ifn in set(job.input_filenames()):
         name = ifn.split('/files/')[-1].replace('XX:', '')
-        if ifn.startswith('XX:'):
+        if ifn.startswith('XX:') or (job.pk and ifn not in input_fn):
             text = text.replace(ifn, INMIA.format(ifn, name))
         elif '/bin/' in ifn:
             name = name.split('/bin/')[-1]
@@ -27,9 +31,12 @@ def command(run):
         else:
             text = text.replace(ifn, INOK.format(ifn, name))
 
-    for ofn in set(run.output_filenames()):
+    for ofn in set(job.output_filenames()):
         name = ofn.split('/')[-1]
-        text = text.replace(ofn, OUT.format(ofn, name))
+        if ofn not in output_fn and job.pk:
+            text = text.replace(ofn, OUTMIA.format(ofn, name))
+        else:
+            text = text.replace(ofn, OUT.format(ofn, name))
 
     return mark_safe(text)
 

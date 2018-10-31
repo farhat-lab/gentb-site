@@ -1,39 +1,6 @@
 {% extends "base.html" %}
 {% load cachebuster plumber %}
 
-{% block extra_css %}
-  <style>
-.program {
-  line-height: 200%;
-}
-.program span {
-  background-color: black;
-  color: white;
-  padding: 4px;
-  border: 1px solid white;
-  border-radius: 4px;
-  font-weight: bold;
-  white-space: nowrap;
-}
-.program .input {
-  background-color: #5ac034;
-  border-color: green;
-}
-.program .output {
-  background-color: #6a6acf;
-  border-color: blue;
-}
-.program .input-missing {
-  background-color: #d83737;
-  border-color: #8a1414;
-}
-.program .bin {
-  background-color: #bbb;
-  border-color: #555;
-}
-  </style>
-{% endblock %}
-
 {% block content %}
   <div class="row">
     <div class="col-lg-12">
