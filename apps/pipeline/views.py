@@ -64,8 +64,8 @@ class PipelineRunList(ProtectedMixin, ListView): # pylint: disable=too-many-ance
     def get_queryset(self):
         """Limit query by pipeline type if needed"""
         qset = super(PipelineRunList, self).get_queryset()
-        if 'pipeline' in self.kwargs:
-            qset = qset.filter(pipeline_id=self.kwargs['kwargs'])
+        if 'pk' in self.kwargs:
+            qset = qset.filter(pipeline_id=self.kwargs['pk'])
         return qset
 
 class PipelineRunDetail(ProtectedMixin, DetailView): # pylint: disable=too-many-ancestors
