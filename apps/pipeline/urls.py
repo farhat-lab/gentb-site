@@ -22,11 +22,13 @@ from django.conf.urls import url
 
 from .views import (
     PipelineDetail, PipelineRunList, PipelineRunDetail,
-    JobViewer, ProgramRunDetail, ProgramRunReTry,
+    JobViewer, ProgramRunDetail, ProgramRunReTry, PipelineList,
 )
 
 urlpatterns = [ # pylint: disable=invalid-name
+    url(r'^$', PipelineList.as_view(), name='pipelines'),
     url(r'^(?P<pk>\d+)/$', PipelineDetail.as_view(), name='detail'),
+    url(r'^(?P<pk>\d+)/run/$', PipelineRunList.as_view(), name='runs'),
     url(r'^run/$', PipelineRunList.as_view(), name='runs'),
     url(r'^run/(?P<pk>\d+)/$', PipelineRunDetail.as_view(), name='run'),
     url(r'^jobs/$', JobViewer.as_view(), name='jobs'),

@@ -21,6 +21,7 @@ Provides the views for testing and reviewing pipelines.
 from django.views.generic import ListView, DetailView, TemplateView, RedirectView
 from django.views.generic.detail import SingleObjectMixin
 from django.contrib import messages
+from django.core.urlresolvers import reverse
 
 from chore.fake import FakeJobManager
 from chore import get_job_manager
@@ -42,12 +43,30 @@ class PipelineDetail(ProtectedMixin, DetailView): # pylint: disable=too-many-anc
             for_test=True, commit=False, file='file')
         return data
 
+    def get_parent(self):
+        return (reverse('pipeline:pipelines'), "Pipelines")
+
+
+class PipelineList(ProtectedMixin, ListView): # pylint: disable=too-many-ancestors
+    """Create a list of pipeline types"""
+    model = Pipeline
+    paginate_by = 30
+    ordering = ['name']
+    staff_only = True
+
 class PipelineRunList(ProtectedMixin, ListView): # pylint: disable=too-many-ancestors
     """Create a list of run pipelines and their results"""
     model = PipelineRun
     paginate_by = 10
     ordering = ['-created']
     staff_only = True
+
+    def get_queryset(self):
+        """Limit query by pipeline type if needed"""
+        qset = super(PipelineRunList, self).get_queryset()
+        if 'pipeline' in self.kwargs:
+            qset = qset.filter(pipeline_id=self.kwargs['kwargs'])
+        return qset
 
 class PipelineRunDetail(ProtectedMixin, DetailView): # pylint: disable=too-many-ancestors
     """Show a single pipeline run and it's component runs"""

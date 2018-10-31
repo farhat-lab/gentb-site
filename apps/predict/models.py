@@ -224,7 +224,7 @@ class PredictDataset(TimeStampedModel):
 
 class PredictPipeline(Model):
     """Each file type can have possible pipelines, this provides a selection"""
-    pipeline = ForeignKey(Pipeline)
+    pipeline = ForeignKey(Pipeline, related_name='predicts')
     file_type = CharField(choices=PredictDataset.FILE_TYPES, max_length=25)
     is_default = BooleanField(default=False)
 
