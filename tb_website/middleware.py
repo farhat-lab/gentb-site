@@ -86,11 +86,11 @@ class AutoBreadcrumbMiddleware(object):
         """Generates an admin link to edit this object"""
         obj = data.get('object', None)
         if obj is not None and user is not None:
-	    ct = ContentType.objects.get_for_model(type(obj))
-	    bits = (ct.app_label, ct.model, 'change')
-	    args = (obj.pk,) if obj else ()
-	    if user.has_perm('%s.%s_%s' % (ct.app_label, 'change', ct.model)):
-		return {
+            ct = ContentType.objects.get_for_model(type(obj))
+            bits = (ct.app_label, ct.model, 'change')
+            args = (obj.pk,) if obj else ()
+            if user.has_perm('%s.%s_%s' % (ct.app_label, 'change', ct.model)):
+                return {
                     'name': 'Edit "%s"' % unicode(obj),
                     'url': reverse('admin:%s_%s_%s' % bits, args=args),
                 }
