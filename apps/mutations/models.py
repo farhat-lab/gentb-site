@@ -489,8 +489,8 @@ class StrainMutationManager(Manager):
     def get_by_natural_key(self, strain, genome, locus, mutation):
         """Get any mutation by natural key"""
         return self.get(strain__name=strain,
-                        mutation__locus_name__genome__code=genome,
-                        mutation__locus_name__name=locus,
+                        mutation__gene_locus__genome__code=genome,
+                        mutation__gene_locus__name=locus,
                         mutation__name=mutation)
 
 class StrainMutation(Model):
