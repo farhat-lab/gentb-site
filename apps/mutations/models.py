@@ -155,7 +155,7 @@ class GeneLocus(Model):
         unique_together = ('genome', 'name')
 
     def natural_key(self):
-        """The genome'sshort code is a useful key to lookup this table"""
+        """The genome's short code is a useful key to lookup this table"""
         return (self.genome.code, self.name)
 
     def __str__(self):
@@ -197,7 +197,8 @@ class MutationQuerySet(QuerySet):
 
 
 class MutationManager(Manager.from_queryset(MutationQuerySet)):
-    pass
+    def get_by_natural_key(self, genome, locus, name):
+        return self.get(gene_locus__genome__code=genome, gene_locus__name=locus, name=name)
 
 
 # db_table: gtbdr.var_h37rv
@@ -242,6 +243,10 @@ class Mutation(Model):
 
     objects = MutationManager()
 
+    def natural_key(self):
+        """The genome's short code is a useful key to lookup this table"""
+        return self.gene_locus.natural_key() + (self.name,)
+
     class Meta:
         ordering = ('order',)
         unique_together = ('gene_locus', 'name')
@@ -254,7 +259,7 @@ SEXES = (
     ('F', 'Female'),
     ('M', 'Male'),
     ('O', 'Other'),
-    ('',  'Left Blank'),
+    ('', 'Left Blank'),
 )
 HIVS = (
     (None, 'Unknown'),
@@ -300,6 +305,12 @@ class TargetRegion(Model):
         return "Target: %s (%d-%d)" % (str(self.gene), self.start, self.stop)
 
 
+class ImportSourceManager(Manager):
+    """Manage collections of import sources"""
+    def get_by_natural_key(self, name):
+        """Get any import source by its natural key"""
+        return self.get(name=name)
+
 class ImportSource(Model):
     """Track data by how it was imported."""
     name = CharField(max_length=256)
@@ -311,8 +322,14 @@ class ImportSource(Model):
     created = DateTimeField(auto_now_add=True)
     updated = DateTimeField(auto_now=True)
 
+    objects = ImportSourceManager()
+
     def __str__(self):
         return self.name
+
+    def natural_key(self):
+        """The genome's short code is a useful key to lookup this table"""
+        return (self.name,)
 
     def get_absolute_url(self):
         return reverse("genes:upload.view", kwargs={'pk': self.pk})
@@ -364,6 +381,8 @@ class ImportStrain(Model):
     has_patient = CharField(max_length=3, choices=TEST_CHOICES, blank=True, default='')
     has_phenotype = CharField(max_length=3, choices=TEST_CHOICES, blank=True, default='')
 
+    def __str__(self):
+        return str(self.upload_file)
 
 class Paper(Model):
     name = CharField(max_length=128)
@@ -392,22 +411,31 @@ class Lineage(Model):
     def __str__(self):
         return self.name or self.slug
 
-# db_table: gtbdr.Strainsourcedata
+class StrainSourceManager(Manager):
+    """Manage collections of strain sources"""
+    def get_by_natural_key(self, name):
+        """Get any strain source by its natural key"""
+        return self.get(name=name)
+
 class StrainSource(Model):
-    name    = CharField(max_length=128, db_index=True)
-    old_id  = CharField(max_length=50, db_index=True, null=True, blank=True)
+    """
+    A strain source contains all the meta-data relating to where a strain was collected
+    from whom, by whom, and what ever else we can say about the strain.
+    """
+    name = CharField(max_length=128, db_index=True, unique=True)
+    old_id = CharField(max_length=50, db_index=True, null=True, blank=True)
     cluster = CharField(max_length=15, null=True, blank=True)
-    date    = DateField(null=True, blank=True)
+    date = DateField(null=True, blank=True)
 
     country = ForeignKey(Country, null=True, blank=True, related_name='sources')
-    city    = ForeignKey(Place, null=True, blank=True, related_name='sources')
+    city = ForeignKey(Place, null=True, blank=True, related_name='sources')
 
     importer = ForeignKey(ImportSource, verbose_name='Import Source', null=True, blank=True)
     source_lab = CharField(max_length=100, verbose_name='Laboratory Source', db_index=True, null=True, blank=True)
     source_paper = ForeignKey(Paper, related_name="strains", null=True, blank=True)
     bioproject = ForeignKey(BioProject, related_name="strains", null=True, blank=True)
 
-    patient_id  = CharField(max_length=16, db_index=True)
+    patient_id = CharField(max_length=16, db_index=True)
     patient_age = PositiveIntegerField(null=True, blank=True)
     patient_sex = CharField(max_length=3, choices=SEXES, null=True, blank=True)
     patient_hiv = CharField(max_length=10, choices=HIVS, null=True, blank=True)
@@ -428,6 +456,12 @@ class StrainSource(Model):
 
     notes = TextField(null=True, blank=True)
 
+    objects = StrainSourceManager()
+
+    def natural_key(self):
+        """Natural key for strains based just on their name"""
+        return (self.name,)
+
     def generate_resistance_group(self):
         """Generates the correct resistance_group based on drug information"""
         resistant_to = self.drugs.filter(resistance='r').values_list('drug__code', flat=True)
@@ -436,9 +470,9 @@ class StrainSource(Model):
 
         if 'INH' in resistant_to and 'RIF' in resistant_to:
             group = 'MDR'
-            if ('MOXI' in resistant_to) or ('GATI' in resistant_to) or ('LEVO' in resistant_to) \
-                    and ('KAN' in resistant_to) or ('AMK' in resistant_to) or ('CAP' in resistant_to):
-                group = 'XDR'
+            if ('MOXI' in resistant_to) or ('GATI' in resistant_to) or ('LEVO' in resistant_to):
+                if ('KAN' in resistant_to) or ('AMK' in resistant_to) or ('CAP' in resistant_to):
+                    group = 'XDR'
         elif resistant_to:
             group = 'ODR'
         elif 'INH' in sensitive_to or 'RIF' in sensitive_to:
@@ -447,10 +481,17 @@ class StrainSource(Model):
         self.resistance_group = group
         self.save()
 
-        
     def __str__(self):
         return self.name or self.patient_id or ("Unnamed %d" % self.pk)
 
+class StrainMutationManager(Manager):
+    """Manage collections of mutation-strain relationships"""
+    def get_by_natural_key(self, strain, genome, locus, mutation):
+        """Get any mutation by natural key"""
+        return self.get(strain__name=strain,
+                        mutation__locus_name__genome__code=genome,
+                        mutation__locus_name__name=locus,
+                        mutation__name=mutation)
 
 class StrainMutation(Model):
     # id (link to StrainSource imported data)
@@ -468,6 +509,15 @@ class StrainMutation(Model):
     mapping_quality   = IntegerField(null=True, blank=True, help_text="Mapping quality as the root mean square of mapping qualities")
     animoacid_varient = CharField(max_length=41, null=True, blank=True, help_text="Takes into account the effect of multiple mutations in the same codon")
 
+    objects = StrainMutationManager()
+
+    class Meta:
+        unique_together = ('strain', 'mutation')
+
+    def natural_key(self):
+        """Natural key for strains based just on their name"""
+        return self.strain.natural_key() + self.mutation.natural_key()
+
     def __str__(self):
         return "Mutation %s for strain %s" % (str(self.mutation), str(self.strain))
 
@@ -477,11 +527,21 @@ class StrainMutation(Model):
         if self.mutation_reads is not None and self.reference_reads is not None:
             return self.mutation_reads + self.reference_reads
 
+class StrainResistanceManager(Manager):
+    def get_by_natural_key(self, strain, drug):
+        """Get any strain resistance relationship by natural key"""
+        return self.get(strain__name=strain, drug__code=drug)
 
 class StrainResistance(Model):
     strain     = ForeignKey(StrainSource, related_name='drugs')
     drug       = ForeignKey(Drug, related_name='strains')
     resistance = CharField(max_length=1, choices=RESISTANCE, null=True, blank=True)
+
+    objects = StrainResistanceManager()
+
+    def natural_key(self):
+        """Natural key for strains based just on their name"""
+        return self.strain.natural_key() + self.drug.natural_key()
 
     def __str__(self):
         return "%s is %s to %s" % (str(self.strain), str(self.get_resistance_display()), str(self.drug))
