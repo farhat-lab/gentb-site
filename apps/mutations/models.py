@@ -84,8 +84,8 @@ class GenomeManager(Manager):
 class Genome(Model):
     code = SlugField(max_length=32, unique=True)
     name = CharField(max_length=255)
-
     length = DecimalField(default=0, max_digits=20, decimal_places=0)
+
     objects = GenomeManager()
 
     def natural_key(self):

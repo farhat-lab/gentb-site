@@ -190,7 +190,7 @@ class LocusRange(JsonView, DataSlicerMixin):
         except GeneLocus.DoesNotExist:
             # All mutations in the whole genome
             start = 0
-            end = genome.length
+            end = int(genome.length)
             yield 'title', "{0.code} ({1} mutations)".format(genome, mutations.count())
 
         yield 'start', start
@@ -198,10 +198,11 @@ class LocusRange(JsonView, DataSlicerMixin):
         if synonymous in (False, 0, 'false'):
             mutations = mutations.exclude(syn='S')
 
+        yield 'count', mutations.count()
         values = defaultdict(list)
         girth = (end - start) / 50
         for name, pos in self.get_list(mutations, 'name', 'nucleotide_position'):
-            bucket = int((pos - start) / girth)
+            bucket = int((pos - start) / (girth or 1))
             values[bucket].append(name)
         yield 'values', values
         yield 'max', max([len(i) for i in values.values()] + [0])
