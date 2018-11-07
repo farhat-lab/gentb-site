@@ -381,6 +381,17 @@ class BioProject(Model):
     def __str__(self):
         return self.name
 
+class Lineage(Model):
+    """
+    The Coll et. al. Lineage call tree structure
+    """
+    slug = SlugField('Lineage ID', primary_key=True)
+    name = CharField('Lineage Name', max_length=128, null=True, blank=True)
+    parent = ForeignKey('self', null=True, blank=True)
+
+    def __str__(self):
+        return self.name or self.slug
+
 # db_table: gtbdr.Strainsourcedata
 class StrainSource(Model):
     name    = CharField(max_length=128, db_index=True)
@@ -405,9 +416,10 @@ class StrainSource(Model):
     spoligotype_family = CharField("Spoligotype Family Parent Strain", max_length=255, null=True, blank=True)
     spoligotype_octal  = CharField(validators=[is_octal], max_length=15, null=True, blank=True)
 
-    rflp_type       = CharField("Restriction fragment length polymorphism type", max_length=10, null=True, blank=True)
-    rflp_family     = CharField("Restriction fragment length polymorphism family", max_length=10, null=True, blank=True)
-    insert_type     = IntegerField("Insertion sequence 6110 type", null=True, blank=True)
+    lineage = ForeignKey(Lineage, null=True, blank=True)
+    rflp_type = CharField("Restriction fragment length polymorphism type", max_length=10, null=True, blank=True)
+    rflp_family = CharField("Restriction fragment length polymorphism family", max_length=10, null=True, blank=True)
+    insert_type = IntegerField("Insertion sequence 6110 type", null=True, blank=True)
 
     wgs_group = CharField("Whole Genome Sequence Group", max_length=10, null=True, blank=True)
     principle_group = IntegerField("Principle Generic Group", null=True, blank=True)
