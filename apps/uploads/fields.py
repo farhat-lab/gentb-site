@@ -33,7 +33,7 @@ class UploadField(Field):
         self.directory = kw.pop('dir', None)
         self.extensions = kw.get('extensions', None)
         if 'widget' not in kw:
-	    kw['widget'] = self.widget(
+            kw['widget'] = self.widget(
                 extensions=kw.pop('extensions', None),
                 attrs=kw.pop('attrs', None),
                 buckets=kw.pop('buckets', None))
@@ -71,4 +71,3 @@ class UploadTable(Field):
         parsers = parsers or []
         kw['widget'] = self.widget(columns=columns, parsers=parsers)
         super(UploadTable, self).__init__(**kw)
-
