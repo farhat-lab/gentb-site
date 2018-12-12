@@ -78,20 +78,20 @@ class OrderlyDict(OrderedDict):
 
 class GraphData(defaultdict):
     """Format three columns into a format suitable for d3 graphs"""
-    def __init__(self, qs, x, y, z, trim=False):
+    def __init__(self, qset, x_axis, y_axis, z_axis, trim=False):
         super(GraphData, self).__init__(lambda: defaultdict(int))
         self.keys = defaultdict(OrderedDict)
         self.trims = {'x': trim, 'y': trim, 'z': trim}
 
-        for dd in qs:
+        for row in qset:
             # Collapse multiple fields into categories
-            if isinstance(x, list):
-                for tx in x:
-                    self[tx][dd[tx]] += dd[y]
+            if isinstance(x_axis, list):
+                for col_name in x_axis:
+                    self[col_name][row[col_name]] += row[y_axis]
             # Or take categories from one field
-            elif dd[y] > 0:
-                self.keys['x'][dd[x]] = dd[x]
-                self[dd.get(z, None)][dd[x]] += dd[y]
+            elif row[y_axis] > 0:
+                self.keys['x'][row[x_axis]] = row[x_axis]
+                self[row.get(z_axis, None)][row[x_axis]] += row[y_axis]
 
     def set_axis(self, axis, keys=None, trim=None):
         """
@@ -99,7 +99,7 @@ class GraphData(defaultdict):
 
           axis - The axis we are setting, this can be
             x: often called name or series
-            y: ofteh the value or magnatude
+            y: often the value or magnatude
             z: usually the category, not always used.
 
           keys - A list of tuples containing an ordered match between
