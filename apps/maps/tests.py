@@ -14,24 +14,33 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
+"""
+Test for maps
+"""
 
-import os
-import time
-import signal
-import tempfile
-
-from django.test import TestCase, override_settings
+from django.test import TestCase
 from autotest.base import ExtraTestCase
 
 from .utils import OrderlyDict, OrderedDict, GraphData
 
 class UtilsTest(TestCase):
+    """Test map utility functions"""
     def test_orderly(self):
-        a = OrderlyDict(OrderedDict([('a', 'a'), ('b', 'b'), ('c', 'c')]))
-        self.assertEqual(a, OrderlyDict(['a', 'b','c']))
+        """Test OrderlyDict function"""
+        item_a = OrderlyDict(OrderedDict([('a', 'a'), ('b', 'b'), ('c', 'c')]))
+        self.assertEqual(item_a, OrderlyDict(['a', 'b', 'c']))
 
-        b = OrderedDict([('a', 1), ('b', 2), ('c', 3)])
-        self.assertEqual(b, OrderlyDict([('a', 1), ('b', 2), ('c', 3)]))
+        item_b = OrderedDict([('a', 1), ('b', 2), ('c', 3)])
+        self.assertEqual(item_b, OrderlyDict([('a', 1), ('b', 2), ('c', 3)]))
 
     def test_graph(self):
-        pass
+        """Test GraphData function"""
+        graph = GraphData([
+            {'x': 'a', 'y': 2},
+            {'x': 'a', 'y': 4},
+            {'x': 'b', 'y': 10},
+        ], 'x', 'y', None).to_graph()
+        values = graph[0]['values']
+        self.assertEqual(len(values), 2)
+        self.assertEqual(values[0], {'y': 6, 'x': 'a', 'total': -1, 'col': 'a', 'value': 6})
+        self.assertEqual(values[1], {'y': 10, 'x': 'b', 'total': -1, 'col': 'b', 'value': 10})
