@@ -124,10 +124,11 @@ class GraphData(defaultdict):
         return self.keys.get('z', OrderlyDict(list(self)))
 
     def get_x_cols(self, cat):
+        # I believe the best output is to use the names from keys
+        # and the orders from cols. But the is a trade-off
         cols = OrderlyDict(list(self[cat]))
-        ret = self.keys.get('x', cols).copy()
-        ret.update(cols)
-        return ret
+        cols.update(self.keys.get('x', cols))
+        return cols
 
     def get_y_value(self, cat, col):
         total = self.keys['y'].get(cat)
@@ -135,8 +136,7 @@ class GraphData(defaultdict):
         if total is not None:
             if total is 0:
                 return 0, value, total
-            else:
-                return value / float(total), value, total
+            return value / float(total), value, total
         return value, value, -1
 
     def get_values(self, cat):
