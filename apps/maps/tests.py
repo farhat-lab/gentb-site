@@ -84,3 +84,117 @@ class UtilsTest(TestCase):
         self.assertEqual(values[2], {'y': 0, 'x': 'Carrot', 'total': -1, 'col': 'c', 'value': 0})
         self.assertEqual(values[0], {'y': 4, 'x': 'Apple', 'total': -1, 'col': 'a', 'value': 4})
         self.assertEqual(values[1], {'y': 20, 'x': 'b-berry', 'total': -1, 'col': 'b', 'value': 20})
+
+
+
+class SourcesData(TestCase):
+    """
+    Test sources data output.
+
+     * No specific slicing, full list only.
+
+    """
+    def test_general_output(self):
+        """
+        Test output contains sources and papers only.
+        """
+        pass
+
+    def test_bioproject_output(self):
+        """
+        Test listing BioProject sources
+        """
+        pass
+
+class PlacesData(TestCase):
+    """
+    Test places data output.
+
+     * Slice by source
+     * Slice by paper
+     * Slice by drugs
+
+    """
+    def test_all_output(self):
+        """
+        Test entire map output.
+        """
+        pass
+
+    def test_source_output(self):
+        """
+        Test source sliced map output.
+        """
+        pass
+
+    def test_paper_output(self):
+        """
+        Test paper sliced map output.
+        """
+        pass
+
+class DrugListData(TestCase):
+    """
+    Test drug data output.
+
+     * Slice by source
+     * Slice by paper
+     * Slice by map country
+
+    """
+    pass
+
+class LineageData(TestCase):
+    """
+    Test lineage data output.
+
+     * Slice by source
+     * Slice by paper
+     * Slice by map country
+     * Slice by drug
+    """
+    pass
+
+class LocusRangeData(TestCase):
+    """
+    Test locus range data output, should only show gene locuses with resistance data.
+
+     * Slice by source
+     * Slice by paper
+     * Slice by map country
+     * Slice by drug
+    """
+    pass
+
+class LocusListData(TestCase):
+    """
+    Test list of locus names.
+
+     * Slice by Gene Type (Intergenic, Promoter, etc)
+    """
+    pass
+
+class MutationsData(TestCase):
+    """
+    Test mutations output, should only show mutations with resistances.
+
+     * Slice by source
+     * Slice by paper
+     * Slice by map country
+     * Slice by drug
+     * Slice by gene locus
+     * Slice by nucleotide position (range)
+    """
+    pass
+
+class MutationResistanceData(TestCase):
+    """
+    Test mutation resistance data.
+
+     * Slice by source
+     * Slice by paper
+     * Slice by map country
+     * Slice by drug
+     * Slice by nucleotide position (range)
+    """
+    pass
