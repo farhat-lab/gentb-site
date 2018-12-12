@@ -23,6 +23,7 @@ from datetime import timedelta
 
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db.models.query import Q, QuerySet
+from django.template.response import SimpleTemplateResponse
 from django.views.decorators.cache import cache_page
 from django.views.generic import View
 
@@ -54,19 +55,27 @@ class JsonView(View):
     cache_timeout = 5 * 60 * 60 * 24
 
     def get_cache_timeout(self):
+        """Return the amount of time this data should be cached for"""
         return self.cache_timeout
 
     def dispatch(self, *args, **kwargs):
-        def _dispatch(request, *args, **kwargs):
-            #The self.get_context_data is what each view will change in views.py depending on the kind of data/how you want
-            #to visualize this data
+        """When Get or Post is called, convert data into json"""
+        def _dispatch(request, *args, **kwargs): # pylint: disable=unused-argument
+            # The self.get_context_data is what each view will change
+            # in views.py depending on the kind of data/how you want
+            # to visualize this data
             context = self.get_context_data(**kwargs)
             return self.render_to_response(context)
-        #Wrapping cache_page with the call to dispatch (saying the view that dispatch returns should be cached)
-        #The caching is implemented for performance boost
+
+        # Wrapping cache_page with the call to dispatch
+        # (saying the view that dispatch returns should be cached)
+        # The caching is implemented for performance boost
         return cache_page(self.get_cache_timeout())(_dispatch)(*args, **kwargs)
 
-    def render_to_response(self, context, **kwargs):
+    def render_to_response(self, context):
+        """Return an actual json response, except where 'html' is set to 1"""
+        if self.request.GET.get('html', False):
+            return SimpleTemplateResponse('maps/json-debug.html', context)
         return JsonResponse(context, encoder=DjangoJSONEncoder2)
 
 
