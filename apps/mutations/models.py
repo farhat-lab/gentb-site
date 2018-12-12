@@ -122,8 +122,8 @@ class GeneLocus(Model):
     name = CharField(max_length=255, db_index=True)
     previous_id = CharField(max_length=64, db_index=True, null=True, blank=True)
 
-    start  = IntegerField(blank=True, null=True)
-    stop   = IntegerField(blank=True, null=True)
+    start = IntegerField(blank=True, null=True)
+    stop = IntegerField(blank=True, null=True)
     length = IntegerField(blank=True, null=True)
     strand = CharField(max_length=5, choices=STRANDS, blank=True, null=True)
 

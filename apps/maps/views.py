@@ -29,7 +29,7 @@ from django.db.models.functions import Cast
 from apps.mutations.models import (
     ImportSource, StrainSource, Mutation, GeneLocus, Genome,
     RESISTANCE, RESISTANCE_GROUP,
-    Paper, BioProject,
+    Paper
 )
 
 from .mixins import JsonView, DataSlicerMixin
@@ -183,22 +183,23 @@ class LocusRange(JsonView, DataSlicerMixin):
         try:
             locus = GeneLocus.objects.get(name=locus[0])
             mutations = mutations.filter(gene_locus=locus)
+            count = mutations.count()
             start = locus.start
             end = locus.stop
-            yield 'title', "{0.name} / {0.previous_id} ({1} mutations)"\
-                    .format(locus, mutations.count())
+            yield 'title', "{0.name} / {0.previous_id} ({1} mutations)".format(locus, count)
         except GeneLocus.DoesNotExist:
             # All mutations in the whole genome
+            count = mutations.count()
             start = 0
             end = int(genome.length)
-            yield 'title', "{0.code} ({1} mutations)".format(genome, mutations.count())
+            yield 'title', "{0.code} ({1} mutations)".format(genome, count)
 
         yield 'start', start
         yield 'end', end
         if synonymous in (False, 0, 'false'):
             mutations = mutations.exclude(syn='S')
 
-        yield 'count', mutations.count()
+        yield 'count', count
         values = defaultdict(list)
         girth = (end - start) / 50
         for name, pos in self.get_list(mutations, 'name', 'nucleotide_position'):
