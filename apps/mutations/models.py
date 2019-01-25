@@ -70,6 +70,7 @@ class Drug(Model):
     code = CharField(max_length=12, db_index=True, unique=True)
     abbr = CharField(max_length=8, null=True, blank=True)
 
+    priority = IntegerField(default=0, help_text="Priority of drug in regimen")
     regimen = ForeignKey(DrugRegimen, null=True, blank=True, related_name='drugs') 
 
     mutations = ManyToManyField("Mutation", blank=True, related_name='drugs',

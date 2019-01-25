@@ -120,7 +120,7 @@ class Places(JsonView, DataSlicerMixin):
 class DrugList(JsonView, DataSlicerMixin):
     """Provide a json data slice into the drug resistance data"""
     model = StrainSource
-    order = ['drugs__drug__regimen', 'drugs__drug__name',]
+    order = ['drugs__drug__regimen', 'drugs__drug__order',]
     values = ['drugs__drug__name', 'drugs__drug__code', 'drugs__resistance']
     filters = dict(
         [
