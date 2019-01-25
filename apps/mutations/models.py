@@ -79,7 +79,7 @@ class Drug(Model):
     objects = DrugManager()
 
     class Meta:
-        ordering = ('code',)
+        ordering = ('regimen', 'priority',)
 
     def natural_key(self):
         """We want the drug code to be the key into this table"""
