@@ -29,8 +29,8 @@ class ImportSourceAdmin(ModelAdmin):
 site.register(ImportSource, ImportSourceAdmin)
 
 class DrugAdmin(ModelAdmin):
-    list_display = ('__str__', 'abbr', 'mutation_count', 'kind',)
-    list_filter = ('kind',)
+    list_display = ('__str__', 'abbr', 'mutation_count', 'kind', 'regimen')
+    list_filter = ('kind', 'regimen')
     readonly_fields = ('mutations',)
 
 #    def get_form(self, *args, **kw):
@@ -39,6 +39,7 @@ class DrugAdmin(ModelAdmin):
     def mutation_count(self, obj):
         return obj.mutations.count()
 
+site.register(DrugRegimen)
 site.register(DrugClass)
 site.register(Drug, DrugAdmin)
 

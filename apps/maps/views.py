@@ -29,7 +29,7 @@ from django.db.models.functions import Cast
 from apps.mutations.models import (
     ImportSource, StrainSource, Mutation, GeneLocus, Genome,
     RESISTANCE, RESISTANCE_GROUP,
-    Paper
+    Paper, BioProject
 )
 
 from .mixins import JsonView, DataSlicerMixin
@@ -58,15 +58,17 @@ class Sources(JsonView, DataSlicerMixin):
 
     def get_sources(self):
         """Return a list of data sources"""
-        for source in self.get_data():
-            yield dict(kind='source', pk=source.pk, name=source.name,
-                       uploader=str(source.uploader), count=source.strainsource_set.count())
-        for paper in Paper.objects.filter(strains__isnull=False):
-            yield dict(kind='paper', pk=paper.pk, name=paper.name,
-                       url=paper.url, count=paper.strains.count())
-        #for bioproject in BioProject.objects.filter(strains__isnull=False):
-            #yield dict(kind='bioproject', pk=bioproject.pk, name=bioproject.name,
-            #           count=bioproject.strains.count())
+        if self.request.GET.get('fields', '') == 'bio':
+            for bioproject in BioProject.objects.filter(strains__isnull=False):
+                yield dict(kind='bioproject', pk=bioproject.pk, name=bioproject.name,
+                           count=bioproject.strains.count())
+        else:
+            for source in self.get_data():
+                yield dict(kind='source', pk=source.pk, name=source.name,
+                           uploader=str(source.uploader), count=source.strainsource_set.count())
+            for paper in Paper.objects.filter(strains__isnull=False):
+                yield dict(kind='paper', pk=paper.pk, name=paper.name,
+                           url=paper.url, count=paper.strains.count())
 
 
 class Places(JsonView, DataSlicerMixin):
@@ -78,9 +80,9 @@ class Places(JsonView, DataSlicerMixin):
     values = ['country__iso2', 'resistance_group']
     filters = dict(
         [
-            ('drug', 'drugs__drug__code'),
             ('source', 'importer'),
             ('paper', 'source_paper'),
+            ('drug', 'drugs__drug__code'),
         ] + zip(LINEAGE_NAMES, LINEAGE_COLS)
     )
 
@@ -118,7 +120,7 @@ class Places(JsonView, DataSlicerMixin):
 class DrugList(JsonView, DataSlicerMixin):
     """Provide a json data slice into the drug resistance data"""
     model = StrainSource
-    order = ['drugs__drug__name', 'drugs__drug__kind']
+    order = ['drugs__drug__regimen', 'drugs__drug__name',]
     values = ['drugs__drug__name', 'drugs__drug__code', 'drugs__resistance']
     filters = dict(
         [

@@ -53,6 +53,15 @@ class DrugManager(Manager):
     def get_by_natural_key(self, name):
         return self.get(Q(name=name) | Q(code=name) | Q(abbr=name))
 
+class DrugRegimen(Model):
+    """A grouping of drugs that are given together in waves"""
+    code = CharField(max_length=4, primary_key=True)
+    name = CharField(max_length=32)
+    desc = CharField(max_length=255, null=True, blank=True)
+
+    def __str__(self):
+        return self.name
+
 class Drug(Model):
     """Each antibiotic drug which resistance might be known"""
     kind = ForeignKey(DrugClass, verbose_name='Drug Class', null=True, blank=True)
@@ -60,6 +69,8 @@ class Drug(Model):
     name = CharField(max_length=255, db_index=True, unique=True)
     code = CharField(max_length=12, db_index=True, unique=True)
     abbr = CharField(max_length=8, null=True, blank=True)
+
+    regimen = ForeignKey(DrugRegimen, null=True, blank=True, related_name='drugs') 
 
     mutations = ManyToManyField("Mutation", blank=True, related_name='drugs',
         help_text="Implicated gene mutations which cause resistance to this drug")
