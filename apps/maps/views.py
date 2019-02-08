@@ -181,7 +181,9 @@ class LocusRange(JsonView, DataSlicerMixin):
     def get_gene_range(self, locus, synonymous=False, **_):
         """Returns a list of segments in a gene, as a dict-generator"""
         genome = Genome.objects.get(code='H37Rv')
-        mutations = self.get_queryset().filter(nucleotide_position__isnull=False)
+        mutations = self.get_queryset().filter(
+            nucleotide_position__isnull=False,
+            strain_mutations__isnull=False)
         try:
             locus = GeneLocus.objects.get(name=locus[0])
             mutations = mutations.filter(gene_locus=locus)
@@ -258,6 +260,13 @@ class Mutations(JsonView, DataSlicerMixin):
             'msg': "Found %d mutations" % qset.count(),
             'values': list(self.get_my_list(qset)),
         }
+
+    def get_queryset(self, without=None):
+        """Filter out empty mutations (no strains)"""
+        qset = super(Mutations, self).get_queryset(without=without)
+        return qset.filter(
+            nucleotide_position__isnull=False,
+            strain_mutations__isnull=False)
 
     def get_my_list(self, _qs):
         """The core get list for thsi json data"""
