@@ -14,13 +14,18 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
+# pylint: disable=too-few-public-methods, missing-docstring
+#
 """
 A basic set of administrative functions for genes and mutations
 """
 
-from django.contrib.admin import *
-from .models import *
-from .forms import DrugForm
+from django.contrib.admin import site, ModelAdmin, StackedInline, TabularInline
+from .models import (
+    Drug, DrugClass, DrugRegimen, ImportSource, Mutation, Genome, GeneLocus,
+    GeneDrugInteraction, TargetSet, TargetRegion, StrainResistance, Paper,
+    BioProject, StrainSource, StrainMutation
+)
 
 class ImportSourceAdmin(ModelAdmin):
     list_display = ('name', 'created', 'uploader', 'complete')
@@ -28,15 +33,19 @@ class ImportSourceAdmin(ModelAdmin):
 
 site.register(ImportSource, ImportSourceAdmin)
 
+class InteractionInline(TabularInline):
+    model = GeneDrugInteraction
+    raw_id_fields = ('gene',)
+    fields = ('gene', 'interaction', 'weight', 'paper')
+
 class DrugAdmin(ModelAdmin):
     list_display = ('__str__', 'abbr', 'mutation_count', 'kind', 'regimen')
     list_filter = ('kind', 'regimen')
     readonly_fields = ('mutations',)
+    inlines = (InteractionInline,)
 
-#    def get_form(self, *args, **kw):
-#        return DrugForm
-
-    def mutation_count(self, obj):
+    @staticmethod
+    def mutation_count(obj):
         return obj.mutations.count()
 
 site.register(DrugRegimen)
@@ -52,7 +61,8 @@ class GeneLocusAdmin(ModelAdmin):
     list_filter = ('genome', 'gene_type', 'strand')
     list_display = ('name', 'description', 'previous_id', 'gene_symbol', 'mutation_count', 'genome')
 
-    def mutation_count(self, obj):
+    @staticmethod
+    def mutation_count(obj):
         return obj.mutations.count()
 
 site.register(Genome)

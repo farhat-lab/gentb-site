@@ -14,6 +14,8 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
+# pylint: disable=too-few-public-methods, no-init, old-style-class
+#
 """
 Drug resistance and strain source for gene mutations django app.
 """
@@ -32,7 +34,9 @@ from apps.uploads.models import UploadFile
 from .validators import is_octal
 
 class DrugClassManager(Manager):
+    """Allow exporting of drug classes with natural keys"""
     def get_by_natural_key(self, code):
+        """The drug class code is the natural key"""
         return self.get(code=code)
 
 class DrugClass(Model):
@@ -50,7 +54,9 @@ class DrugClass(Model):
         return self.name
 
 class DrugManager(Manager):
+    """Allow drugs to be exported using natural keys"""
     def get_by_natural_key(self, name):
+        """The name, or the code or the abbrivation are all good keys"""
         return self.get(Q(name=name) | Q(code=name) | Q(abbr=name))
 
 class DrugRegimen(Model):
@@ -71,9 +77,9 @@ class Drug(Model):
     abbr = CharField(max_length=8, null=True, blank=True)
 
     priority = IntegerField(default=0, help_text="Priority of drug in regimen")
-    regimen = ForeignKey(DrugRegimen, null=True, blank=True, related_name='drugs') 
+    regimen = ForeignKey(DrugRegimen, null=True, blank=True, related_name='drugs')
 
-    mutations = ManyToManyField("Mutation", blank=True, related_name='drugs',
+    mutations = ManyToManyField("Mutation", blank=True, related_name='drugs',\
         help_text="Implicated gene mutations which cause resistance to this drug")
 
     objects = DrugManager()
@@ -174,6 +180,28 @@ class GeneLocus(Model):
         return self.name
 
 
+class GeneDrugInteraction(Model):
+    """
+    Classify a gene drug interaction (experimental).
+    """
+    drug = ForeignKey(Drug, related_name='gene_interactions')
+    gene = ForeignKey(GeneLocus, related_name='drug_interactions')
+    paper = ForeignKey("Paper", related_name='interactions', null=True, blank=True,\
+        help_text="Reference the paper this interaction was found in, only one blank "
+                  "interaction allowed per drug/gene")
+    weight = IntegerField(default=1,\
+        help_text="How important is this interaction considered")
+    interaction = CharField(max_length=5, default='RES', choices=[
+        ('RES', 'Increases Drug Resistance'),
+    ], help_text="What kind of interaction is involved in this relationship.")
+
+    class Meta:
+        unique_together = ('drug', 'gene', 'paper')
+
+    def __str__(self):
+        return "Gene '{0.gene}' {0.interaction} to '{0.drug}'".format(self)
+
+
 class MutationQuerySet(QuerySet):
     def matrix_csv(self, name, mutations):
         """Creates a matrix.csv file for prediction"""
@@ -227,7 +255,7 @@ class Mutation(Model):
     nucleotide_position = IntegerField(null=True, blank=True)
     nucleotide_reference = CharField(max_length=7, null=True, blank=True)
     nucleotide_varient = CharField(max_length=7, null=True, blank=True)
-    
+
     # aapos, aaref, aavar
     aminoacid_position = IntegerField(null=True, blank=True)
     aminoacid_reference = CharField(max_length=41, null=True, blank=True)
