@@ -205,8 +205,11 @@ class Program(Model):
 
         for (_io, prefix, literal, name, suffix, start, end) in self.io():
             try:
-                args = (_io, prefix, name, suffix)
-                fname = self.prepare_file(files_in, files_out, *args)
+                if literal:
+                    fname = name
+                else:
+                    args = (_io, prefix, name, suffix)
+                    fname = self.prepare_file(files_in, files_out, *args)
                 if '/' not in fname:
                     fname = os.path.join(output_dir, fname)
                 yield ((_io, name, start, end), fname)
@@ -266,7 +269,7 @@ class Program(Model):
                     raise PrepareError("Can't find file %s in %s" % (str(key), str(files)))
                 filename = files[key]
             else:
-                filename = data['name'] + match['suffix']
+                filename = data['name'] + data['suffix']
             if ' ' in filename:
                 filename = '"%s"' % filename
             # Replace the command line section that matches with out filename
