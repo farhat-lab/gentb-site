@@ -36,6 +36,7 @@ Testing is done by including PipelineFiles as testing files.
 import re
 import os
 from datetime import timedelta
+import random
 
 import logging
 LOGGER = logging.getLogger('apps.pipeline')
@@ -75,11 +76,17 @@ class Pipeline(Model):
     def get_absolute_url(self):
         return reverse('pipeline:detail', kwargs={'pk': self.pk})
 
-    def run(self, name, commit=True, rerun=False, for_test=False, **kwargs):
+    def run(self, name=None, commit=True, rerun=False, for_test=False, **kwargs):
         """
         Run this pipeline for this named identifier,
         the id should be unique.
         """
+
+        # if name isn't given, use the existing pipeline name and append a
+        # random number
+        if name is None:
+            name = self.name + '_' + str(random.randint(0, 9999))
+
         if commit:
             (runner, created) = self.runs.get_or_create(name=slugify(name))
             if not created and rerun:
@@ -113,7 +120,7 @@ class Program(Model):
     ER3 = "Input '%s' not available in inputs"
 
     PARSER = re.compile(r'(?P<io>\$|\@)(?P<prefix>[^{]*)' \
-                        r'{(?P<name>[-\w]+)\}(?P<suffix>[^\s;|>]*)')
+                        r'{(?P<literal>"?)(?P<name>[-\w]+)"?\}(?P<suffix>[^\s;|>]*)')
 
     name = CharField(max_length=128)
     description = TextField(null=True, blank=True,
@@ -158,7 +165,7 @@ class Program(Model):
         """
         Prepares the files by testing the command line's required filenames
         while causing an error if there are pipeline mismatches.
-        
+
         This is the main call for making a ready to use command line from
         this program given a set of input filenames.
 
@@ -196,10 +203,14 @@ class Program(Model):
             for file_in in value:
                 files_in[name].append(file_in)
 
-        for (_io, prefix, name, suffix, start, end) in self.io():
+        for (_io, prefix, literal, name, suffix, start, end) in self.io():
             try:
-                args = (_io, prefix, name, suffix)
-                fname = self.prepare_file(files_in, files_out, *args)
+                if literal:
+                    fname = name
+                else:
+                    args = (_io, prefix, name, suffix)
+                    fname = self.prepare_file(files_in, files_out, *args)
+
                 if '/' not in fname:
                     fname = os.path.join(output_dir, fname)
                 yield ((_io, name, start, end), fname)
@@ -334,6 +345,7 @@ class PipelineRun(TimeStampedModel):
     def clean_the_files(self):
         """Deletes any of the files marked for cleaning"""
         for fname in self.clean_filenames():
+            print(fname)
             try:
                 os.unlink(fname)
             except (OSError, IOError):
@@ -377,6 +389,7 @@ class PipelineRun(TimeStampedModel):
                         kwargs[name] = [kwargs[name], filename]
                 else:
                     kwargs[name] = [filename]
+
         return True
 
     def all_programs(self):
