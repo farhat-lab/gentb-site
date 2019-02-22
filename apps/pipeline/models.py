@@ -210,6 +210,7 @@ class Program(Model):
                 else:
                     args = (_io, prefix, name, suffix)
                     fname = self.prepare_file(files_in, files_out, *args)
+
                 if '/' not in fname:
                     fname = os.path.join(output_dir, fname)
                 yield ((_io, name, start, end), fname)
@@ -262,14 +263,10 @@ class Program(Model):
         cmd = self.command_line
         for match in reversed(list(self.PARSER.finditer(cmd))):
             data = match.groupdict()
-            literal = bool(data['literal'])
-            if not literal:
-                key = (data['io'], data['name']) + match.span()
-                if key not in files:
-                    raise PrepareError("Can't find file %s in %s" % (str(key), str(files)))
-                filename = files[key]
-            else:
-                filename = data['name'] + data['suffix']
+            key = (data['io'], data['name']) + match.span()
+            if key not in files:
+                raise PrepareError("Can't find file %s in %s" % (str(key), str(files)))
+            filename = files[key]
             if ' ' in filename:
                 filename = '"%s"' % filename
             # Replace the command line section that matches with out filename
@@ -348,6 +345,7 @@ class PipelineRun(TimeStampedModel):
     def clean_the_files(self):
         """Deletes any of the files marked for cleaning"""
         for fname in self.clean_filenames():
+            print(fname)
             try:
                 os.unlink(fname)
             except (OSError, IOError):
