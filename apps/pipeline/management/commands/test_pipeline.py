@@ -3,6 +3,7 @@ Initialize a pipeline run from a pipeline and run it
 """
 
 import time
+import datetime
 
 from django.core.management.base import BaseCommand
 from apps.pipeline.models import Pipeline
@@ -16,9 +17,54 @@ class Command(BaseCommand):
     help = __doc__
 
     def __print_status(self, program_run):
+        labels = ('PROGRAM', 'TIME', 'TOTAL')
+
+        # data for each row
+        rows = []
+
+        # longest string in each column
+        cmax = dict()
+
+        for l in labels:
+            cmax[l] = len(l)
+
+        prev_seconds = 0
+
         pgruns = program_run.all_programs()
         for pgr in pgruns:
-            print(pgr, pgr.run_time(), '\n')
+            pgr_name = str(pgr)
+            pgr_total = pgr.run_time()
+
+            # convert time to seconds
+            pgr_seconds = 0
+            if pgr_total != '-':
+                parts = map(int, pgr_total.split(':'))
+                parts = map(lambda a, b: a * b, parts, [3600, 60, 1])
+                pgr_seconds = reduce(lambda a, b: a + b, parts, pgr_seconds)
+
+            # find delta from previous program's time
+            pgr_delta = '-'
+            if pgr_seconds > prev_seconds:
+                pgr_delta = str(datetime.timedelta(seconds=pgr_seconds - prev_seconds))
+
+            prev_seconds = pgr_seconds
+
+            # max column lengths
+            cmax['PROGRAM'] = max(cmax['PROGRAM'], len(pgr_name))
+            cmax['TIME'] = max(cmax['TIME'], len(pgr_delta))
+            cmax['TOTAL'] = max(cmax['TOTAL'], len(pgr_total))
+
+            rows.append((pgr_name, pgr_delta, pgr_total))
+
+        # template widths defined by longest output per column
+        template = ' '.join(['{' + str(i) + ':%d}' for i in range(len(labels))])
+        template = template % tuple(cmax[l] + 1 for l in labels)
+
+        # print it all out
+        print(template.format(*labels))
+        for row in rows:
+            print(template.format(*row))
+        print('')
 
     def add_arguments(self, parser):
             parser.add_argument(
