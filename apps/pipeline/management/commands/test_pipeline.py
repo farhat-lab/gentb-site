@@ -2,6 +2,7 @@
 Initialize a pipeline run from a pipeline and run it
 """
 
+import sys
 import time
 import datetime
 
@@ -61,6 +62,8 @@ class Command(BaseCommand):
         template = template % tuple(cmax[l] + 1 for l in labels)
 
         # print it all out
+        # clears screen and puts cursor at top left
+        sys.stdout.write('\033[2J\033[1;1H')
         print(template.format(*labels))
         for row in rows:
             print(template.format(*row))
@@ -97,7 +100,6 @@ class Command(BaseCommand):
 
             # TODO see if this can update based on when program runs finish,
             # not on a clock
-            # TODO more descriptive output
             while True:
                 if prun.update_all():
                     self.__print_status(prun)
