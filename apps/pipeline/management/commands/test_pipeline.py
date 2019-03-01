@@ -7,7 +7,7 @@ import time
 import datetime
 
 from django.core.management.base import BaseCommand
-from apps.pipeline.models import Pipeline
+from apps.pipeline.models import Pipeline, PipelineRun
 
 
 class PipelineDoesNotExist(Exception):
@@ -16,6 +16,10 @@ class PipelineDoesNotExist(Exception):
 
 class Command(BaseCommand):
     help = __doc__
+
+    verbosity = 1
+    pipeline_name = ''
+    pipeline_run_name = ''
 
     def __print_status(self, program_run):
         labels = ('PROGRAM', 'TIME', 'TOTAL')
@@ -63,40 +67,46 @@ class Command(BaseCommand):
 
         # print it all out
         # clears screen and puts cursor at top left
-        sys.stdout.write('\033[2J\033[1;1H')
+        if self.verbosity < 2:
+            sys.stdout.write('\033[2J\033[1;1H')
+
+        print('--- {} ---\n'.format(self.pipeline_run_name))
         print(template.format(*labels))
         for row in rows:
             print(template.format(*row))
         print('')
 
     def add_arguments(self, parser):
-            parser.add_argument(
-                'pipeline_name',
-                type=str,
-                help='Name of the pipeline to test'
-            )
+        parser.add_argument(
+            'pipeline_name',
+            type=str,
+            help='Name of the pipeline to test'
+        )
 
-            parser.add_argument(
-                'update_rate',
-                type=float,
-                help='Rate to update status of program runs'
-            )
+        parser.add_argument(
+            '--update_rate',
+            type=float,
+            help='Rate to update status of program runs',
+            default=1
+        )
 
     def handle(self, **kwargs):
-        if 'update_rate' not in kwargs:
-            update_rate = 1
-        else:
-            update_rate = kwargs['update_rate']
+        self.pipeline_name = kwargs.get('pipeline_name')
+        self.verbosity = kwargs.get('verbosity', 1)
 
-        pname = kwargs['pipeline_name']
+        update_rate = kwargs.get('update_rate')
+        pname = self.pipeline_name
+
         ps = Pipeline.objects.filter(name=pname)
 
         # TODO make exception more descriptive
         if not ps:
             raise PipelineDoesNotExist
 
+        # TODO this should probably only handle one pipeline
         for pipeline in ps:
             prun = pipeline.run(for_test=True)
+            self.pipeline_run_name = prun.name
 
             # TODO see if this can update based on when program runs finish,
             # not on a clock
