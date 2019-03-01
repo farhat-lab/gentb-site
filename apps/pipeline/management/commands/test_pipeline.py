@@ -44,7 +44,7 @@ class Command(BaseCommand):
 
             # find delta from previous program's time
             pgr_delta = '-'
-            if pgr_seconds > prev_seconds:
+            if pgr_seconds > prev_seconds or (pgr.completed and not pgr.is_error):
                 pgr_delta = str(datetime.timedelta(seconds=pgr_seconds - prev_seconds))
 
             prev_seconds = pgr_seconds
