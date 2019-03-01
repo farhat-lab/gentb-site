@@ -60,7 +60,7 @@
               <!--Okay so this is that blue thing at the top-->
                 <div class="vertical-tab-content">
                   <div class="alert alert-info" style="margin: 0px;" role="alert">
-                    {% if perms.maps.can_upload_strains %}
+                    {% if perms.mutations.add_strainsource %}
                       <a href="{% url 'genes:upload' %}" class="btn btn-primary pull-right"><span class="glyphicon glyphicon-upload"></span></a>
                     {% endif %}
                     <span class="glyphicon glyphicon-question-sign pull-left" style="font-size:1.2em; padding-right: 8px;"></span>
