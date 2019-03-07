@@ -3,21 +3,26 @@
 
 {% block extra_css %}
   <link rel="stylesheet" href="{% static "css/nv.d3.css" %}"/>
+  <link rel="stylesheet" href="{% static "css/datatables.min.css" %}">
   <link rel="stylesheet" href="{% static "css/leaflet.css" %}"/>
   <link rel="stylesheet" href="{% static "css/genetics-map.css" %}"/>
   <link rel="stylesheet" href="{% static "css/vertical-tabs.css" %}"/>
 {% endblock %}
 {% block extra_js %}
+  <script src="{% static "js/datatables.min.js" %}"></script>
   <script src="{% static "js/d3.js" %}"></script>
   <script src="{% static "js/nv.d3.js" %}"></script>
-  <script src="{% static "js/vertical-tabs.js" %}"></script>
+
   <script src="{% static "js/sources-list.js" %}"></script>
   <script src="{% static "js/leaflet.js" %}"></script>
   <script src="{% static "js/genetics-map.js" %}"></script>
   <script src="{% static "js/drugs-chart.js" %}"></script>
   <script src="{% static "js/lineage-chart.js" %}"></script>
-  <script src="{% static "js/mutations-chart.js" %}"></script>
+  <script src="{% static "js/gene-chart.js" %}"></script>
+  <!--script src="{% static "js/mutations-chart.js" %}"></script-->
+  <script src="{% static "js/vertical-tabs.js" %}"></script>
 {% endblock %}
+
 
 {% block content %}
     <div class="container">
@@ -34,7 +39,7 @@
                   <p>All Data</p>
                 </a>
                 <!--See how this class is active, thats cause thats currently the tab you are looking at-->
-                <a href="#" class="list-group-item text-center active" id="map-store" data-json-url="{% url 'maps:map.places' %}">
+                <a href="#" class="list-group-item text-center defaultactive" id="map-store" data-json-url="{% url 'maps:map.places' %}">
                   <h2 class="glyphicon glyphicon-globe"></h2>
                   <p>World</p>
                 </a>
@@ -87,56 +92,40 @@
                     </a>
                   </div>
                 </div>
-                <div class="vertical-tab-content active">
-      <div class="alert alert-info" style="margin: 0px;" role="alert">
-        <span class="glyphicon glyphicon-question-sign pull-left" style="font-size:1.2em; padding-right: 8px;"></span>
-        You may select a country by clicking on it and then clicking <strong>'Select Country'</strong> in the popup bubble. Deselecting a country can be done by clicking on the country again and click <strong>Deselect</strong>. When a country is selected it will narrow down the charts in the rest of the tabs.
-      </div>
+                <div class="vertical-tab-content defaultactive">
+                  <div class="alert alert-info" style="margin: 0px;" role="alert">
+                    <span class="glyphicon glyphicon-question-sign pull-left" style="font-size:1.2em; padding-right: 8px;"></span>
+                    You may select a country by clicking on it and then clicking <strong>'Select Country'</strong> in the popup bubble. Deselecting a country can be done by clicking on the country again and click <strong>Deselect</strong>. When a country is selected it will narrow down the charts in the rest of the tabs.
+                  </div>
                   <div class="maps" id="mapid"></div>
                 </div>
                 <div class="vertical-tab-content">
-      <div class="alert alert-info" style="margin: 0px;" role="alert">
-        <span class="glyphicon glyphicon-question-sign pull-left" style="font-size:1.2em; padding-right: 8px;"></span>
-        You may select a drug by clicking on any of it's bars. Clicking anywhere else on the chart will deselect.
-      </div>
+                  <div class="alert alert-info" style="margin: 0px;" role="alert">
+                    <span class="glyphicon glyphicon-question-sign pull-left" style="font-size:1.2em; padding-right: 8px;"></span>
+                    You may select a drug by clicking on any of it's bars. Clicking anywhere else on the chart will deselect.
+                  </div>
                   <div class="d3graph">
                     <!--This is where that cool graphic goes look at hte drug-chart.js to see how the javascript creates the bar chart-->
                     <svg class="drugs" id="drugs"></svg>
                   </div>
                 </div>
                 <div class="vertical-tab-content">
-      <div class="alert alert-info" style="margin: 0px;" role="alert">
-        <span class="glyphicon glyphicon-question-sign pull-left" style="font-size:1.2em; padding-right: 8px;"></span>
-        You may select a lineage by clicking on any of it's bars. Clicking anywhere else on the chart will deselect.
-      </div>
+                  <div class="alert alert-info" style="margin: 0px;" role="alert">
+                    <span class="glyphicon glyphicon-question-sign pull-left" style="font-size:1.2em; padding-right: 8px;"></span>
+                    You may select a lineage by clicking on any of it's bars. Clicking anywhere else on the chart will deselect.
+                  </div>
                   <div class="d3graph">
                     <svg class="lineages" id="lineages"></svg>
                   </div>
                 </div>
                 <div class="vertical-tab-content">
-                  <div class="mutation_graph">
-                      <div id="gene_map" data-locus-lookup="{% url 'maps:map.locuses' %}" data-locus-range="{% url 'maps:map.locus.range' %}">
-                      <div id="gene_map_title">
-                          <span id="gene_start">3432424</span>
-                          <h4>
-                            <input type="text" list="locus-list" id="locus" autocomplete="off" title="Type name of gene locus" value="All"></input>
-                            <datalist id="locus-list"></datalist>
-                          </h4>
-                          <span id="gene_end">3432424</span>
-                      </div>
-                      <div id="mutation_selector">
-                          {% for i in "x"|rjust:"50" %}<span id="ms-{{ forloop.counter }}" class="{% cycle 'odd' 'even' %}"><span style="animation-delay: {% cycle '0.0' '0.4' '0.8' '1.0' '1.6' '2.0' '2.4' '2.8' '2.4' '2.0' '1.6' '1.2' '0.8' '0.4' %}s;">&nbsp;</span></span>{% endfor %}
-                      </div>
-                    </div>
-                    <div class="lister" data-toggle="tooltips">
-                      <label for="synon" class="text-primary">Synonymous:</label>
-                      <input type="checkbox" name="synon" title="Include Synonymous Mutations"/>
-                      <label for="snp" class="text-primary">Mutation:</label>
-                      <input type="text" list="mutation-list" id="snp" autocomplete="off" title="Select a locus to continue"/>
-                      <datalist id="mutation-list"></datalist>
-                      <a class="btn btn-danger btn-sm pull-right" id="clear-mutation">Clear</a>
-                    </div>
-                    <svg class="mutations" id="mutations" data-json-url="{% url 'maps:map.mutation' %}" style="display: none;"></svg>
+                  <div class="alert alert-info" style="margin: 0px;" role="alert">
+                    <span class="glyphicon glyphicon-question-sign pull-left" style="font-size:1.2em; padding-right: 8px;"></span>
+                    You may select multiple gene locuses to focus on by clicking the checkboxes.
+                  </div>
+                  <div id="gene_map" data-locus-lookup="{% url 'maps:map.locuses' %}" style="padding: 15px;">
+                    <table class="table table-striped dt">
+                    </table>
                   </div>
                 </div>
             </div>
