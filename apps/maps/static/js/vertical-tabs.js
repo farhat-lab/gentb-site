@@ -57,8 +57,14 @@ $(document).ready(function() {
       //Get the data currently stored in this tab
       var data = getAllTabData(this.id);
 
-      //sends a json request to the server and sends the data currently stored in the tab and once it is done 
-      $.getJSON(url, data).done(function(json) {
+      // Remove any querystring from the url
+      if (url.indexOf("?") > 0) {
+          url = uri.substring(0, uri.indexOf("?"));
+      }
+
+      if(tab.data('json-signal')) {
+        //sends a json request to the server and sends the data currently stored in the tab and once it is done 
+        $.getJSON(url, data).done(function(json) {
 
       	  //calls a function using the json data just fetched, the data already stored in the tabs, and the url used to fetch the data
           tab.data('json-signal')(json, url, data);
@@ -71,9 +77,23 @@ $(document).ready(function() {
           var err = textStatus + ", " + error;
           console.log( "Request Failed: " + err );
         });
+      } else if(tab.data('url-signal')) {
+          tab.data('url-signal')(url, data);
+      } else {
+          console.error("Couldn't find url handler: ", tab.attr('id'));
+      }
     }
+    var last_tab = localStorage.setItem("last_tab", tab.attr('id'));
   });
   //Okay now that all the data stuff has been dealt with we just move on now and actually move on the new tab that was just clicked
+
+  var last_tab = localStorage.getItem("last_tab");
+  if (last_tab) {
+      $('#' + last_tab).addClass("active");
+  } else {
+      $('.defaultactive').addClass("active");
+  }
+  $('.defaultactive').removeClass("defaultactive");
 
   // Activate the existing active tab.
   $(all_tabs+'.active').click();
