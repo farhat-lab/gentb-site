@@ -3,12 +3,12 @@
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
-# published by the Free Software Foundation, either version 3 of the 
+# published by the Free Software Foundation, either version 3 of the
 # License, or (at your option) any later version.
 #
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the 
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU Affero General Public License for more details.
 #
 # You should have received a copy of the GNU Affero General Public License
@@ -37,12 +37,13 @@ from django.conf import settings
 class DjangoJSONEncoder2(DjangoJSONEncoder):
     """A json encoder to deal with the python objects we may want to encode"""
     def default(self, obj):
-        #Add the ability to deal with timedelta
+        """Add the ability to deal with timedelta"""
         if isinstance(obj, timedelta):
-            ARGS = ('days', 'seconds', 'microseconds')
-            #So if we get a time-delta object return a dictionary with type and a list of the day, second, microseconds
+            args = ('days', 'seconds', 'microseconds')
+            # So if we get a time-delta object return a dictionary with
+            # type and a list of the day, second, microseconds
             return {'__type__': 'datetime.timedelta',
-                    'args': [getattr(obj, a) for a in ARGS]}
+                    'args': [getattr(obj, arg) for arg in args]}
         if isinstance(obj, QuerySet):
             return [item for item in obj]
         return DjangoJSONEncoder.default(self, obj)
@@ -116,17 +117,18 @@ class DataSlicerMixin(object):
 
     def get_queryset(self, without=None):
         """Applies any filters from the request query to the given model"""
-        qs = self.get_model().objects.all()
+        qset = self.get_model().objects.all()
         if self.order:
-            qs = qs.order_by(*self.order)
-        return qs.filter(reduce(and_, self.get_filters(without), Q()))
+            qset = qset.order_by(*self.order)
+        return qset.filter(reduce(and_, self.get_filters(without), Q()))
 
     def get_data(self, without=None):
-        qs = self.get_queryset(without=without)
+        """Returns the queryset with the default values"""
+        qset = self.get_queryset(without=without)
         if self.values:
             vals = [v for v in self.values if v != without]
-            qs = qs.values(*vals)
-        return qs
+            qset = qset.values(*vals)
+        return qset
 
     def get_list(self, qs, column, *cols):
         """Returns a flat list for this column"""
@@ -137,7 +139,13 @@ class DataSlicerMixin(object):
         return qs.distinct().order_by(column)
 
 def as_set(val):
+    """
+    Turn the value into a set, three outputs are possible:
+
+        None -> Empty set set()
+        list -> Set of items in the list set(list)
+        item -> Set of one item set([item])
+    """
     if val is None:
         return set()
     return set(val) if isinstance(val, (tuple, list)) else set([val])
-
