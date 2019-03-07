@@ -206,7 +206,7 @@ class Program(Model):
         for (_io, prefix, literal, name, suffix, start, end) in self.io():
             try:
                 if literal:
-                    fname = name
+                    fname = name + suffix
                 else:
                     args = (_io, prefix, name, suffix)
                     fname = self.prepare_file(files_in, files_out, *args)
