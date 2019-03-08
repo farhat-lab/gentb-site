@@ -22,17 +22,17 @@ from __future__ import print_function
 
 import json
 from collections import defaultdict, OrderedDict
-from django.views.generic import TemplateView
+from django.views.generic import TemplateView, ListView
 from django.db.models import Count, Q, F, IntegerField
 from django.db.models.functions import Cast
 
 from apps.mutations.models import (
     ImportSource, StrainSource, Mutation, GeneLocus, Genome,
     RESISTANCE, RESISTANCE_GROUP,
-    Paper, BioProject
+    Paper, BioProject, Lineage
 )
 
-from .mixins import JsonView, DataSlicerMixin
+from .mixins import JsonView, DataSlicerMixin, DataTableMixin
 from .utils import GraphData
 from .models import Country
 
@@ -140,6 +140,41 @@ class DrugList(JsonView, DataSlicerMixin):
         }
 
 
+class LineageBreakdown(JsonView, DataSlicerMixin):
+    """
+    Breakdown lineages with strain data added on.
+    """
+    model = Lineage
+    order = ['slug']
+    filters = {
+        'map': 'strains__country__iso2',
+        'drug': 'strains__drugs__drug__code',
+    }
+
+    def get_queryset(self):
+        qset = super().get_queryset()
+        return qset
+
+    def sort_lineages(self):
+        """
+        We need to get all lineages, hopefully unique and sort them, taking all items with
+        parents and putting them into a dictionary, then taking all items without
+        parents and adding them to the top level.
+
+        Then the top level needs each of the children added to it. Amounts needs to be
+        figured for each child level so that counts of the parent (raw parent)
+        ann children counts are added together for the rings that we want to display
+
+        XXX The target is called a "Sunburst" NVD3 chart
+        """
+
+    def get_context_data(self, **_):
+        return {
+            'data': (
+                self.get_data().annotate(count=Count('strains')),
+            )
+        }
+
 class Lineages(JsonView, DataSlicerMixin):
     """Provide a json data slice into the Lineages data"""
     model = StrainSource
@@ -213,23 +248,15 @@ class LocusRange(JsonView, DataSlicerMixin):
         yield 'max', max([len(i) for i in values.values()] + [0])
 
 
-class LocusList(JsonView, DataSlicerMixin):
+class LocusList(DataTableMixin, ListView):
     """Get a list of locuses that somewhat match the given locus string"""
-    model = Mutation
+    model = GeneLocus
+    search_fields = ['name', 'description']
 
-    def get_context_data(self, **_):
-        """Return a list of locuses with this name"""
-        locus = self.request.GET['locus']
-        qset = GeneLocus.objects.filter(
-            Q(name__istartswith=locus)
-            | Q(previous_id__istartswith=locus)
-            | Q(gene_symbol__istartswith=locus),
-        )
-        return {
-            'msg': "Found %d genes" % qset.count(),
-            'values': self.get_list(qset, 'name')
-        }
-
+    def get_queryset(self):
+        qset = super(LocusList, self).get_queryset()
+        qset = qset.filter(start__isnull=False, stop__isnull=False)
+        return qset.annotate(mcount=Count('mutations'))
 
 class Mutations(JsonView, DataSlicerMixin):
     """Provide a lookup into the mutations database for selecting anavailable mutation"""

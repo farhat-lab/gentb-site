@@ -3,12 +3,12 @@
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
-# published by the Free Software Foundation, either version 3 of the 
+# published by the Free Software Foundation, either version 3 of the
 # License, or (at your option) any later version.
 #
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the 
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU Affero General Public License for more details.
 #
 # You should have received a copy of the GNU Affero General Public License
@@ -168,4 +168,70 @@ class GraphData(defaultdict):
             if values or not self.trims['z']:
                 yield {"key": name, "values": values}
 
+class Sdict(OrderedDict):
+    """
+    Decodes query dictionaries (from django's QueryDict) into multi-level python structures.
 
+    For example, order__0__foo = 'desc' becomes {'order': [{'foo': 'desc'}]}
+    """
+    _filter_key = staticmethod(lambda key: key)
+    def __init__(self, querydict=None):
+        super(Sdict, self).__init__()
+        if querydict is not None:
+            self.update(querydict)
+
+    def update(self, querydict):
+        """Add the dictionary, parsing out multi-level values"""
+        for (key, value) in querydict.items():
+            self[self._filter_key(key)] = value
+        self.toarrays()
+
+    def toarrays(self):
+        """Looks at the keys in this dictionary and returns it as an array
+        if all the keys are sequential integers."""
+        for key, value in self.items():
+            if isinstance(value, Sdict):
+                self[key] = self[key].toarrays()
+        try:
+            ints = sorted([(int(key), key) for key in self])
+            if not ints:
+                return []
+            if tuple(next(iter(zip(*ints)))) != tuple(range(len(ints))):
+                raise ValueError("Integers aren't sequential.")
+            return [self[key] for _, key in ints]
+        except ValueError:
+            return self
+
+    def __setitem__(self, key, value):
+        if isinstance(key, (str, unicode)):
+            keys = key.split('__')
+        elif isinstance(key, (list, tuple)):
+            keys = key
+        else:
+            raise TypeError("Unknown key type: {}".format(type(key).__name__))
+
+        if not keys:
+            return None # Don't set empty keys
+
+        key = keys[0]
+
+        if len(keys) == 1:
+            return super(Sdict, self).__setitem__(key, value)
+
+        if key not in self or not isinstance(self[key], OrderedDict):
+            super(Sdict, self).__setitem__(key, type(self)())
+
+        self[key][keys[1:]] = value
+        return value
+
+class Jdict(Sdict):
+    """
+    Decodes data tables ajax request information into python. (see Sdict for details)
+
+    For example, order[0][foo] = 'desc' becomes {'order': [{'foo': 'desc'}]}
+
+    All keys and values are treated genertically with no foreknowlege about dataTables.
+    """
+    @staticmethod
+    def _filter_key(key):
+        return key.replace('][', '__').replace('[', '__').replace(']', '')

@@ -30,6 +30,7 @@ from django.views.generic import View
 from django.http import JsonResponse, HttpResponse
 from django.conf import settings
 
+from .utils import Jdict
 
 #Inherit from the parent class DjangoJsonEncoder and modify the default method to create our own encoder
 #ParentClass: https://github.com/django/django/blob/master/django/core/serializers/json.py
@@ -149,3 +150,90 @@ def as_set(val):
     if val is None:
         return set()
     return set(val) if isinstance(val, (tuple, list)) else set([val])
+
+class DataTableMixin(object):
+    """
+    Return context rendered as a Json output for the DataTables plugin.
+    """
+    search_fields = []
+
+    def get(self, request, pk=None):
+        """
+        Overload the ListView's get and replace with datatable getter.
+        """
+        super(DataTableMixin, self).get(request)
+        data = super(DataTableMixin, self).get_context_data()
+        dt_settings = Jdict(request.GET)
+        if 'draw' not in dt_settings:
+            return JsonResponse({'error': "Please use with dataTables."})
+        try:
+            draw = int(dt_settings['draw'])
+            aset = data['object_list']
+            qset, count = self.process_datatable(aset, **dt_settings)
+            if dt_settings.get('pks', False):
+                return JsonResponse({
+                    'data': qset.values_list('pk', flat=True),
+                })
+            return JsonResponse({
+                'draw': draw,
+                'recordsTotal': aset.count(),
+                'recordsFiltered': count,
+                'data': self.prep_data(qset, dt_settings.get('columns', [])),
+            })
+        except Exception as err:
+            return JsonResponse({'error': str(err)})
+
+    def prep_data(self, qset, columns):
+        """
+        Prepare the full data set.
+        """
+        db_columns = [self.column_to_django(col) for col in columns]
+        return [self.prep_item(item, columns) for item in qset.values(*db_columns)]
+
+    def prep_item(self, obj, columns):
+        """
+        Prepare this item for output using the requested columns.
+        """
+        return obj
+
+    def column_to_django(self, column, db=True):
+        """We calculate the column's django address,
+        
+        If db is True, then this must return the database field, if false
+        then we must return the attribute getter.
+        """
+        return column['data']
+
+    def process_datatable(self, qset, columns=(), order=(), search=None, start=0, length=-1, **junk):
+        """
+        Takes the options as shown in https://datatables.net/manual/server-side
+        and returns the query set as modified by the options.
+        """
+        query = Q()
+        for column in columns:
+            column['django'] = self.column_to_django(column)
+            col_search = column.get('search', None)
+            if col_search is not None and 'value' in col_search and col_search['value']:
+                query &= Q(**{column['django'] + '__icontains': col_search['value']})
+
+        if search is not None and 'value' in search and search['value']:
+            for col in self.search_fields:
+                query &= Q(**{col + '__icontains': search['value']})
+
+        qset = qset.filter(query)
+
+        # Do this before ordering, because we have a BUG in jsonb
+        count = qset.count()
+
+        ordering = []
+        for order_col in order:
+            column = columns[int(order_col['column'])]['django']
+            if order_col['dir'][0] == 'd':
+                column = '-' + column
+            ordering.append(column)
+        if ordering:
+            qset = qset.order_by(*ordering)
+
+        if int(length) > 0:
+            return qset[int(start):int(start) + int(length)], count
+        return qset, count

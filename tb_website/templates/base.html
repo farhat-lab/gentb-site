@@ -30,7 +30,7 @@
     {% block extra_css %}
     {% endblock %}
 
-    <script src="{% static 'js/jquery.min.js' %}"></script>
+    <script src="{% static 'js/jquery-3.3.1.min.js' %}"></script>
     <script src="{% static 'js/basic.js' %}"></script>
     <script src="{% static 'js/bootstrap.min.js' %}"></script>
     {% block extra_js %}
@@ -109,16 +109,10 @@
     </div>
     <!-- /.container -->
 
-    <!-- jQuery Version 1.11.0 -->
-    <script src="{% static 'js/jquery.min.js' %}"></script>
-
-    <!-- Bootstrap Core JavaScript -->
-    <script src="{% static 'js/bootstrap.min.js' %}"></script>
-
     {% block extra_footer_js %}
     {% endblock %}
 
-    {% include "google_analytics.html" %}
+    {# include "google_analytics.html" #}
 
 </body>
 
