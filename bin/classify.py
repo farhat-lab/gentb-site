@@ -12,8 +12,8 @@ import re
 # Then finds the percentage classified, and returns 0 only if the percentage
 # classfied is greater than or equal to 90%.
 def main():
+    classified = re.compile(r'(?<!(un))classified \([0-9]+\.[0-9]*%\)')
     for line in sys.stdin:
-        classified = re.compile(r'(?<!(un))classified \([0-9]+\.[0-9]*%\)')
         match = classified.search(line)
         if match:
             perc = re.compile(r'[0-9]+\.[0-9]*')
