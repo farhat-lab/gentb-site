@@ -1,7 +1,7 @@
 /*
  * Enable multi-uploader for each uploader field.
  */
-$(window).load(function() {
+$(window).on('load', function() {
   $('input[type=upload-chooser]').each(function() {
     var field = this;
 
