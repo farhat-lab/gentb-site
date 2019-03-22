@@ -24,14 +24,14 @@ $(document).ready(function() {
 
     //var chart = initialiseMutationChart(svg);
     $('#genelocus-store').data('url-signal', function(url, args) {
+        var t_table = $('table');
 
-      if($('table').data('loaded')) {
+      if(t_table.data('loaded')) {
           return
       }
-      $('table').data('loaded', 1);
-      var table = $('table').on('error.dt', function(e, settings, techNote, message) {
-          console.log( 'An error has been reported by DataTables: ', message );
-      }).DataTable({
+      t_table.data('loaded', 1);
+
+      var table = t_table.DataTable({
         "processing": true,
         "serverSide": true,
         "ajax": {
@@ -77,6 +77,21 @@ $(document).ready(function() {
           },
         ],
         'order': [[1, 'asc']],
+      });
+
+      table.on('error.dt', function(e, settings, techNote, message) {
+          console.log( 'An error has been reported by DataTables: ', message );
+        })
+        .on('click', 'tr', function () {
+          var data = table.row( this.rowIndex - 1 ).data();
+          if ( $(this).hasClass('selected') ) {
+            $(this).removeClass('selected');
+            unsetTabData('genelocus');
+          } else {
+            $('tr.selected', t_table).removeClass('selected');
+            $(this).addClass('selected');
+            setTabData('genelocus', data.name, data.name, ' icon-helix')
+          }
       });
     });
 });

@@ -23,7 +23,7 @@ $(document).ready(function() {
   var chart = initialiseLineageChart(svg);
   $('#lineage-store').data('json-signal', function(data) {
     console.log("Lineage ahoy!");
-    chartLineageData(svg, chart, data.data);
+    //chartLineageData(svg, chart, data.data);
   }); 
 });
 
@@ -40,7 +40,66 @@ function chartLineageData(svg, chart, data) {
 }
 
 function initialiseLineageChart(svg) {
-    var chart = nv.models.multiBarChart()
+
+var dataset = {
+  apples: [53245, 28479, 19697],
+  oranges: [53, 74]
+};
+
+var width = 200,
+  height = 200,
+  cwidth = 20;
+
+var pie = d3.layout.pie()
+  .sort(null);
+
+var arc = d3.svg.arc();
+
+function tweenPie(finish, k) {
+  var j = parseInt(d3.select(this).attr("note"));
+  var start = {
+    startAngle: 0,
+    endAngle: 0,
+    innerRadius: 100 - cwidth * j,
+    outerRadius: 80 - cwidth * j
+
+  };
+  console.log(j)
+  var i = d3.interpolate(start, finish);
+  return function(d, j) {
+    return arc(i(d));
+  };
+}
+var clr = function(d, i, j) {
+    var arr = [
+      ["red", "green", "blue"],
+      ["blue", "white"]
+    ];
+    return arr[j][i];
+  }
+var svg = d3.select(svg)
+            .attr("width", width)
+            .attr("height", height)
+            .append("g")
+            .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
+
+var gs = svg.selectAll("g").data(d3.values(dataset)).enter().append("g");
+var path = gs.selectAll("path")
+  .data(function(d) {
+    return pie(d);
+  })
+  .enter().append("path").attr("note", function(d, i, j) {
+    return j;
+  }).attr("class", clr)
+  .transition().duration(750)
+  .attrTween("d", tweenPie)
+
+    return svg;
+}
+
+
+
+    /*var chart = nv.models.multiBarChart()
       .stacked(false) // Do not stack!
       .reduceXTicks(false);
 
@@ -77,7 +136,7 @@ function initialiseLineageChart(svg) {
     $('#lineages').parent().click(function(e) {
       unsetTabData('lineage');
     });
-    return chart;
-}
+    return chart;*/
+//}
 
 
