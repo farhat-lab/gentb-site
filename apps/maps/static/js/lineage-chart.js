@@ -23,7 +23,7 @@ $(document).ready(function() {
   var chart = initialiseLineageChart(svg);
   $('#lineage-store').data('json-signal', function(data) {
     console.log("Lineage ahoy!");
-    //chartLineageData(svg, chart, data.data);
+    chartLineageData(svg, chart, data.data);
   }); 
 });
 
@@ -40,6 +40,47 @@ function chartLineageData(svg, chart, data) {
 }
 
 function initialiseLineageChart(svg) {
+    var chart = nv.models.multiBarChart()
+      .stacked(false) // Do not stack!
+      .reduceXTicks(false);
+
+    var width = 1000;
+    var height = 600;
+
+    chart.margin({top: 20, right: 0, bottom: 120, left: 80});
+    chart.height(height);
+    chart.width(width);
+    chart.yAxis.scale(100).orient("left")
+        .axisLabel('Number of strains')
+        .tickFormat(d3.format("d"));
+
+    // Single click selection of chart type
+    chart.legend.radioButtonMode(true);
+    // Disable the stacked/unstacked option
+    chart.showControls(false);
+
+    chart.xAxis
+        .rotateLabels(-20);
+
+    chart.showLegend(true);
+
+    var svg = d3.select(svg)
+          .attr('perserveAspectRatio', 'xMinYMid')
+          .attr('width', width)
+          .attr('height', height)
+          .attr('viewBox', '0 0 ' + width + ' ' + height);
+
+    chart.multibar.dispatch.on("elementClick", function(e) {
+        setTabData('lineage', e.data.x, e.data.x, 'ok-circle', e.series.key)
+    });
+
+    $('#lineages').parent().click(function(e) {
+      unsetTabData('lineage');
+    });
+    return chart;
+}
+
+function initialiseLineageChartExperiment(svg) {
 
 var dataset = {
   apples: [53245, 28479, 19697],
@@ -98,45 +139,5 @@ var path = gs.selectAll("path")
 }
 
 
-
-    /*var chart = nv.models.multiBarChart()
-      .stacked(false) // Do not stack!
-      .reduceXTicks(false);
-
-    var width = 1000;
-    var height = 600;
-
-    chart.margin({top: 20, right: 0, bottom: 120, left: 80});
-    chart.height(height);
-    chart.width(width);
-    chart.yAxis.scale(100).orient("left")
-        .axisLabel('Number of strains')
-        .tickFormat(d3.format("d"));
-
-    // Single click selection of chart type
-    chart.legend.radioButtonMode(true);
-    // Disable the stacked/unstacked option
-    chart.showControls(false);
-
-    chart.xAxis
-        .rotateLabels(-20);
-
-    chart.showLegend(true);
-
-    var svg = d3.select(svg)
-          .attr('perserveAspectRatio', 'xMinYMid')
-          .attr('width', width)
-          .attr('height', height)
-          .attr('viewBox', '0 0 ' + width + ' ' + height);
-
-    chart.multibar.dispatch.on("elementClick", function(e) {
-        setTabData('lineage', e.data.x, e.data.x, 'ok-circle', e.series.key)
-    });
-
-    $('#lineages').parent().click(function(e) {
-      unsetTabData('lineage');
-    });
-    return chart;*/
-//}
 
 
