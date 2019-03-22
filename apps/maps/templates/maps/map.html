@@ -19,7 +19,7 @@
   <script src="{% static "js/drugs-chart.js" %}"></script>
   <script src="{% static "js/lineage-chart.js" %}"></script>
   <script src="{% static "js/gene-chart.js" %}"></script>
-  <!--script src="{% static "js/mutations-chart.js" %}"></script-->
+  <script src="{% static "js/mutations-chart.js" %}"></script>
   <script src="{% static "js/vertical-tabs.js" %}"></script>
 {% endblock %}
 
@@ -126,6 +126,23 @@
                   <div id="gene_map" data-locus-lookup="{% url 'maps:map.locuses' %}" style="padding: 15px;">
                     <table class="table table-striped dt">
                     </table>
+                  </div>
+                </div>
+                <div class="vertical-tab-content">
+                  <div class="alert alert-info" style="margin: 0px;" role="alert">
+                    <span class="glyphicon glyphicon-question-sign pull-left" style="font-size:1.2em; padding-right: 8px;"></span>
+                    Here you can search for specific mutations to compare them next to each other, the graph will show how often they show up in resistant strains.
+                  </div>
+                  <div class="mutation_graph" style="margin-top: 15px;">
+                    <div class="lister" data-toggle="tooltips">
+                      <label for="synon" class="text-primary">Synonymous:</label>
+                      <input type="checkbox" name="synon" title="Include Synonymous Mutations"/>
+                      <label for="snp" class="text-primary">Mutation:</label>
+                      <input type="text" list="mutation-list" id="snp" autocomplete="off" title="Search for a mutation"/>
+                      <datalist id="mutation-list"></datalist>
+                      <a class="btn btn-danger btn-sm pull-right" id="clear-mutation">Clear</a>
+                    </div>
+                    <svg class="mutations" id="mutations" data-json-url="{% url 'maps:map.mutation' %}" style="display: none;"></svg>
                   </div>
                 </div>
             </div>

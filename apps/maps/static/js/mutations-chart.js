@@ -79,6 +79,7 @@ $(document).ready(function() {
     var svg = 'svg.mutations';
     var chart = initialiseMutationChart(svg);
     $('#mutation-store').data('json-signal', function(data, url, args) {
+        console.log("MUTATIONS!");
       if($('#level-0').length == 0) {
         initialiseMutationList(data, url, args, function(mutations) {
         $.getJSON($(svg).data('json-url'), getAllTabData())
