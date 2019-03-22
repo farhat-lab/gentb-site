@@ -95,3 +95,19 @@ div.d3graph {
 div.mutation_graph {
   padding: 0px 10px 30px 20px;
 }
+/* Pie chart colours */
+path.red {
+  fill: red;
+}
+
+path.green {
+  fill: green;
+}
+
+path.blue {
+  fill: blue;
+}
+
+path.white {
+  fill: white;
+}

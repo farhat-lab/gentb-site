@@ -275,7 +275,9 @@ class Program(Model):
 
         # Do the line replacer after the matching to preserve file placements.
         cmd = cmd.replace('\r', '').replace('\n\n', '\n')
+        cmd = cmd.replace(';\n', '<NL>')
         cmd = cmd.replace('\n', ' && ')
+        cmd = cmd.replace('<NL>', '\n')
 
         return cmd
 

@@ -1,7 +1,7 @@
 /*
  * Enable table uploader for each field.
  */
-$(window).load(function() {
+$(window).on('load', function() {
   $('textarea[type=upload-table]').each(function() {
     var field = this;
     var data = field.dataset;
