@@ -223,7 +223,7 @@ class Program(Model):
 
     def prepare_file(self, files_in, files_out, io, prefix, name, suffix):
         # Generic finder pattern
-        pattern = "%s(?P<name>[^/]*)%s" % (prefix, suffix)
+        pattern = "^%s(?P<name>[^/]*)%s$" % (prefix, suffix)
         # Get the file input from a list of available files.
         # It's reversed so the last added file is first.
         filenames = list(reversed(files_in[name]))
