@@ -347,7 +347,6 @@ class PipelineRun(TimeStampedModel):
     def clean_the_files(self):
         """Deletes any of the files marked for cleaning"""
         for fname in self.clean_filenames():
-            print(fname)
             try:
                 os.unlink(fname)
             except (OSError, IOError):
