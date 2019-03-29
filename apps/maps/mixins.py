@@ -214,11 +214,11 @@ class DataTableMixin(object):
             column['django'] = self.column_to_django(column)
             col_search = column.get('search', None)
             if col_search is not None and 'value' in col_search and col_search['value']:
-                query &= Q(**{column['django'] + '__icontains': col_search['value']})
+                query |= Q(**{column['django'] + '__icontains': col_search['value']})
 
         if search is not None and 'value' in search and search['value']:
             for col in self.search_fields:
-                query &= Q(**{col + '__icontains': search['value']})
+                query |= Q(**{col + '__icontains': search['value']})
 
         qset = qset.filter(query)
 

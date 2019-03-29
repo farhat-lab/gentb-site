@@ -123,7 +123,7 @@
                     <span class="glyphicon glyphicon-question-sign pull-left" style="font-size:1.2em; padding-right: 8px;"></span>
                     You may select multiple gene locuses to focus on by clicking the checkboxes.
                   </div>
-                  <div id="gene_map" data-locus-lookup="{% url 'maps:map.locuses' %}" style="padding: 15px;">
+                  <div id="gene_map" style="padding: 15px;">
                     <table class="table table-striped dt">
                     </table>
                   </div>
@@ -133,15 +133,23 @@
                     <span class="glyphicon glyphicon-question-sign pull-left" style="font-size:1.2em; padding-right: 8px;"></span>
                     Here you can search for specific mutations to compare them next to each other, the graph will show how often they show up in resistant strains.
                   </div>
-                  <div class="mutation_graph" style="margin-top: 15px;">
-                    <div class="lister" data-toggle="tooltips">
-                      <label for="synon" class="text-primary">Synonymous:</label>
-                      <input type="checkbox" name="synon" title="Include Synonymous Mutations"/>
-                      <label for="snp" class="text-primary">Mutation:</label>
-                      <input type="text" list="mutation-list" id="snp" autocomplete="off" title="Search for a mutation"/>
-                      <datalist id="mutation-list"></datalist>
-                      <a class="btn btn-danger btn-sm pull-right" id="clear-mutation">Clear</a>
+                    <div id="gene_map" data-locus-range="{% url 'maps:map.locus.range' %}" style="display: none;">
+                      <div id="gene_map_title">
+                          <span id="gene_start">3432424</span>
+                          <h4>{ANY GENE LOCUS}</h4>
+                          <span id="gene_end">3432424</span>
+                      </div>
+                      <div id="mutation_selector">
+                          {% for i in "x"|rjust:"50" %}<span id="ms-{{ forloop.counter }}" class="{% cycle 'odd' 'even' %}"><span style="animation-delay: {% cycle '0.0' '0.4' '0.8' '1.0' '1.6' '2.0' '2.4' '2.8' '2.4' '2.0' '1.6' '1.2' '0.8' '0.4' %}s;">&nbsp;</span></span>{% endfor %}
+                      </div>
                     </div>
+
+                  <div id="mutation_map" style="padding: 15px;">
+                    <table class="table table-striped dt">
+                    </table>
+                  </div>
+
+                  <div class="mutation_graph" style="margin-top: 15px;">
                     <svg class="mutations" id="mutations" data-json-url="{% url 'maps:map.mutation' %}" style="display: none;"></svg>
                   </div>
                 </div>

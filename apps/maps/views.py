@@ -258,18 +258,26 @@ class LocusList(DataTableMixin, ListView):
         qset = qset.filter(start__isnull=False, stop__isnull=False)
         return qset.annotate(mcount=Count('mutations'))
 
-class Mutations(JsonView, DataSlicerMixin):
+class Mutations(DataTableMixin, ListView):
     """Provide a lookup into the mutations database for selecting anavailable mutation"""
     model = Mutation
-    values = ['pk']
-    filters = {
-        'snp': 'name__icontains',
-        'ecoli': 'ecoli_aapos',
-        'locus': 'gene_locus__name',
-        'drug': 'strain_mutations__strain__drugs__drug__code',
-        'map': 'strain_mutations__strain__country__iso2',
-        'src': 'strain_mutations__strain__importer',
-    }
+    search_fields = ['name', 'old_id', 'gene_locus__name']
+
+    def get_queryset(self):
+        qset = super(Mutations, self).get_queryset()
+        qset = qset #.annotate(gene_locus_name='gene_locus__name')
+        return qset
+
+class OldMutations(JsonView, DataSlicerMixin):
+    #values = ['pk']
+    #filters = {
+    #    'snp': 'name__icontains',
+    #    'ecoli': 'ecoli_aapos',
+    #    'locus': 'gene_locus__name',
+    #    'drug': 'strain_mutations__strain__drugs__drug__code',
+    #    'map': 'strain_mutations__strain__country__iso2',
+    #    'src': 'strain_mutations__strain__importer',
+    #}
 
     def get_context_data(self, **_):
         """Return a dictionary of template variables"""

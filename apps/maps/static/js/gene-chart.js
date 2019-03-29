@@ -24,7 +24,7 @@ $(document).ready(function() {
 
     //var chart = initialiseMutationChart(svg);
     $('#genelocus-store').data('url-signal', function(url, args) {
-        var t_table = $('table');
+      var t_table = $('#gene_map table');
 
       if(t_table.data('loaded')) {
           return

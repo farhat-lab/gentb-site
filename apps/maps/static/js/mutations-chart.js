@@ -18,6 +18,8 @@
  * along with gentb.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+var mutations = [];
+
 set_tooltip = function(elem, title) {
     return elem.attr('data-original-title', title)
                .tooltip('fixTitle')
@@ -71,38 +73,127 @@ function unique(array) {
     });
 }
 
+var mutations_chart;
+
 $(document).ready(function() {
     $('body').tooltip({
         selector: 'input#snp'
     });
 
     var svg = 'svg.mutations';
-    var chart = initialiseMutationChart(svg);
-    $('#mutation-store').data('json-signal', function(data, url, args) {
-        console.log("MUTATIONS!");
-      if($('#level-0').length == 0) {
-        initialiseMutationList(data, url, args, function(mutations) {
-        $.getJSON($(svg).data('json-url'), getAllTabData())
-          .done(function(json) {
-              if(json.data.length > 0) {
-                $('#mutations').show();
-                $('#mutation_explainer').hide();
-              } else {
-                $('#mutations').hide();
-                $('#mutation_explainer').show();
+    mutations_chart = initialiseMutationChart(svg);
+
+    $('#mutation-store').data('url-signal', function(url, args) {
+
+        // Setup mutations table first
+        var t_table = $('#mutation_map table');
+  
+        if(t_table.data('loaded')) {
+            return
+        }   
+        t_table.data('loaded', 1); 
+  
+        var table = t_table.DataTable({
+          "processing": true,
+          "serverSide": true,
+          "ajax": {
+              "url": url,
+              "data": function ( data ) { 
+                  // Sent json, store for future use in selecting
+                  return data;
+              },  
+              "dataSrc": function ( json ) { 
+                  // Returned json, filter and etc here.
+                  return json.data;
+              },  
+          },  
+          "language": {
+            "processing": "Loading...",
+          },  
+          "columns": [
+            {   
+              "data": "name",
+              "title": "Name",
+              "description": "Name of the Gene Locus",
+              //"render": $.fn.dataTable.render.number(',', '.', 3, ''),
+            },  
+            {   
+              "data": "gene_locus__name",
+              "title": "Gene Locus",
+            },  
+            {   
+              "data": "nucleotide_position",
+              "title": "Position",
+            },  
+            {   
+              "data": "nucleotide_reference",
+              "title": "Reference",
+            },  
+            {   
+              "data": "nucleotide_varient",
+              "title": "Varient",
+            },
+            {
+              "data": "codon_reference",
+              "title": "Codon",
+            },
+            {
+              "data": "codon_varient",
+              "title": "Varient",
+            },
+          ],
+          'order': [[2, 'asc']],
+        })
+
+        table.on('draw', function(a, b, c) {
+          $('tr', t_table).click(function() {
+            var data = table.row( this.rowIndex - 1 ).data();
+            var snp = $('#snp');
+            if($(this).hasClass('selected')) {
+                $(this).removeClass('selected');
+                mutations = mutations.filter(function(value, index, arr){return value != data.name;});
+                $('#mutation-store').data('value', mutations);
+            } else {
+                $(this).addClass('selected');
+                mutations.push(data.name);
+                mutations = unique(mutations);
+                $('#mutation-store').data('value', mutations);
+            }
+            refresh_mutations_graph();
+          }).each(function(key, value) {
+            // Keep highlights as paging happens.
+            var data = table.row( value.rowIndex - 1 ).data();
+            for(var i = 0; i < mutations.length; i++) {
+              if(data && mutations[i] == data.name) {
+                $(value).addClass('selected');
               }
-              chartData(svg, chart, json.data);
-          })
-          .fail(function(jqxhr, textStatus, error) {
-            var err = textStatus + ", " + error;
-            console.log("Request Failed: " + err);
+            }
           });
         });
+
+      if($('#level-0').length == 0) {
+        initialiseMutationList(url, args);
       }
-      $('#locus').select();
-      refreshMutation(svg, chart, data);
-    }); 
+    });
 });
+
+function refresh_mutations_graph() {
+    $.getJSON($('svg.mutations').data('json-url'), getAllTabData())
+      .done(function(json) {
+          if(json.data.length > 0) {
+            $('#mutations').show();
+            $('#mutation_explainer').hide();
+          } else {
+            $('#mutations').hide();
+            $('#mutation_explainer').show();
+          }
+          chartData('svg.mutations', mutations_chart, json.data);
+      })
+      .fail(function(jqxhr, textStatus, error) {
+        var err = textStatus + ", " + error;
+        console.log("Request Failed: " + err);
+      });
+}
 
 function refreshMutation(svg, chart, data) {
   // The goal here is to list all mutations within the
@@ -113,9 +204,11 @@ function refreshMutation(svg, chart, data) {
       //$('#level-0').change();
   });
   $('#clear-mutation').click();
+
+
 }
 
-function initialiseMutationList(data, url, args, refresh_function) {
+function initialiseMutationList(url, args, refresh_function) {
     var locus = $('#locus');
     var locus_datalist = $('#locus-list');
     var snp = $('#snp');
