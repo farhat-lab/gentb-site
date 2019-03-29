@@ -135,6 +135,20 @@ class Program(Model):
             help_text="Files used when running this program")
     test_files = ManyToManyField('ProgramFile', related_name='test_in',
             blank=True, help_text="Files to test just this program.")
+    memory = CharField(max_length=16, default='1000M', choices=[
+        ('500M', '500MB'),
+        ('1M', '1GB'),
+        ('2G', '2GB'),
+        ('5G', '5GB'),
+        ('10G', '10GB'),
+        ('20G', '20GB'),
+        ('50G', '50GB'),
+        ('100G', '100GB'),
+    ], help_text="Amount of memory to request")
+    limit = CharField(max_length=12, null=True, blank=True,
+                      help_text="Specify amount of time to limit this process, "
+                                "[days]-[hours]:[minutes]:[seconds]")
+    threads = PositiveIntegerField(default=1)
 
     def __str__(self):
         return self.name
@@ -510,6 +524,10 @@ class ProgramRun(TimeStampedModel):
             self.submitted = now()
 
             if commit:
+                job_kwargs['memory'] = self.program.memory
+                job_kwargs['threads'] = self.program.threads
+                if self.program.limit:
+                    job_kwargs['limit'] = self.program.limit
                 self.job_submit(cmd, **job_kwargs)
                 self.save()
 
