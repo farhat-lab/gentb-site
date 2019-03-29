@@ -37,7 +37,10 @@ class Command(BaseCommand):
         if status is STATUS_ERROR:
             raise IOError("Download Error")
 
-        return strain.run()
+        try:
+            return strain.run()
+        except JobSubmissionError:
+            raise ValueError("Can't run job")
 
     def handle(self, **_):
         """Called from the command line"""
@@ -50,7 +53,6 @@ class Command(BaseCommand):
                 log("RUN: {} ({})", strain, strain.pipeline)
                 time.sleep(0.25)
             except IOError as err:
-                raise
                 log("ERR: {} (Bad Download) {}", strain, err)
             except Exception as err: # pylint: disable=broad-except
                 log("ERR: {} ({}): {}", strain, strain.pipeline, err)
