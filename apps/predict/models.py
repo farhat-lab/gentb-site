@@ -165,7 +165,7 @@ class PredictDataset(TimeStampedModel):
             row = {'name': strain.name, 'cols': []}
             output['rows'].append(row)
 
-            for drug, (drug, fpos, fneg, graph) in strain.get_prediction(locusts):
+            for drug, (drprob, fpos, fneg, graph) in strain.get_prediction(locusts):
                 if drug not in output['cols']:
                     output['cols'].append(drug)
 
@@ -176,7 +176,7 @@ class PredictDataset(TimeStampedModel):
                     'scatter': graph,
                     'false_positive': fpos,
                     'false_negative': fneg,
-                    'dr_probability': drug,
+                    'dr_probability': drprob,
                 }
 
         return output
