@@ -24,7 +24,7 @@ def main():
 
     with open(args.mutations, 'r') as fhl:
         variants = list(set(fhl.read().rstrip().split(",")))
-    generate_matrix(variants, args.strian)
+    generate_matrix(variants, args.strain)
 
 def generate_matrix(variants, filename):
     """Generate the matrix"""
