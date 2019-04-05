@@ -650,13 +650,13 @@ class ProgramRun(TimeStampedModel):
     def input_filenames(self):
         """Return a list of fully qualified input filenames"""
         if self.input_files is not None and self.input_files.strip():
-            return self.input_files.split("\n")
+            return self.input_files.replace('\r', '').split("\n")
         return []
 
     def output_filenames(self):
         """Return a list of fully qualified output filenames"""
         if self.output_files is not None and self.output_files.strip():
-            return self.output_files.split("\n")
+            return self.output_files.replace('\r', '').split("\n")
         return []
 
     def update_size(self, *files):
