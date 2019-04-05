@@ -9,6 +9,7 @@ from django.core.management.base import BaseCommand
 
 from chore import JobSubmissionError
 
+from apps.pipeline.models import PrepareError
 from apps.predict.models import (
     PredictStrain, get_timeout, STATUS_WAIT, STATUS_START, STATUS_ERROR
 )
@@ -52,6 +53,8 @@ class Command(BaseCommand):
                 self.submit_strain_pipeline(strain)
                 log("RUN: {} ({})", strain, strain.pipeline)
                 time.sleep(0.25)
+            except PrepareError as err:
+                log("BAD: {}: {}".format(strain, err))
             except IOError as err:
                 log("ERR: {} (Bad Download) {}", strain, err)
             except Exception as err: # pylint: disable=broad-except
