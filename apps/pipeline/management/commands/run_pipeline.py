@@ -47,6 +47,7 @@ class Command(BaseCommand):
             if not run.has_input:
                 continue
             log("RERUN: {}", run)
+            run.error_text = ''
             run.is_error = False
             run.is_started = False
             run.is_complete = False
