@@ -38,7 +38,7 @@ def generate_matrix(variants, filename):
 
     for line in open(filename):
         items = line.rstrip().split("\t") #variant name i.e. snpname
-        snpname = items[3]
+        snpname = items[5]
         if snpname != "varname":
             parts = snpname.split('_')
             if snpname in variants:
