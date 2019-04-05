@@ -59,4 +59,6 @@ class Command(BaseCommand):
             except Exception as err: # pylint: disable=broad-except
                 run.is_error = True
                 run.error_text = "Owch Error: " + str(err)
+            if run.error_text:
+                log(run.error_text)
             run.save()
