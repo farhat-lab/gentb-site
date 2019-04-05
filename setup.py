@@ -89,12 +89,12 @@ tb_website.templatetags
     install_requires = [
         'logutils==0.3.3',
         'MySQL-python==1.2.5',
-        'Django==1.11.9',
+        'Django==1.11.20',
         'PyVCF==0.6.8',
         'django-model-utils==3.1.1',
         'requests-file==1.1',
         'requests-ftp==0.3.1',
-        'requests==2.4.1',
+        'requests>=2.20.0',
         'pytz==2015.4',
     ],
     data_files=[
