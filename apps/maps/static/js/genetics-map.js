@@ -29,6 +29,7 @@ $(document).ready(function() {
     $('#map-store').data('json-signal', function(data) {
       console.log("Re-mapping!");
       mapStrainData(map, color, data);
+      map.invalidateSize();
     });
   });
 });

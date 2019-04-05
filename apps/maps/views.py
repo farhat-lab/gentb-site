@@ -132,11 +132,15 @@ class DrugList(JsonView, DataSlicerMixin):
 
     def get_context_data(self, **_):
         """Return a dictionary of template variables"""
+
+        drug_dict = GraphData(self.get_data().annotate(count=Count('pk')),'drugs__drug__code', 'count', 'drugs__resistance',).set_axis('z', RESISTANCE).to_graph()
+        
+        # sorting alphabetically by drug codename to prevent floating-bar errors in D3
+        for idx, _ in enumerate(drug_dict):
+            drug_dict[idx]['values'].sort(key=lambda el: el['x'])
+
         return {
-            'data': GraphData(
-                self.get_data().annotate(count=Count('pk')),
-                'drugs__drug__code', 'count', 'drugs__resistance',
-            ).set_axis('z', RESISTANCE).to_graph(),
+            'data': drug_dict,
         }
 
 
