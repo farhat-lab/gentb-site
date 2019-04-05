@@ -573,6 +573,13 @@ class ProgramRun(TimeStampedModel):
             dur = None
             data = job_manager.status(self.job_id, clean=False)
 
+            if not data:
+                # This usually means the job is so old that it's gone from
+                # the job manager queue and we have no further information about it
+                self.is_complete = True
+                self.is_error = True
+                self.error_text = "Job Disapeared from Job Queue"
+
             if data.get('return', None) is not None:
                 if data['finished'] and data['started']:
                     dur = data['finished'] - data['started']
