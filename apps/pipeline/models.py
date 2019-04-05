@@ -572,8 +572,9 @@ class ProgramRun(TimeStampedModel):
         if self.is_submitted and not self.is_complete:
             dur = None
             data = job_manager.status(self.job_id, clean=False)
+            age = now() - self.submitted
 
-            if not data:
+            if not data and age > timedelta(hours=1):
                 # This usually means the job is so old that it's gone from
                 # the job manager queue and we have no further information about it
                 self.is_complete = True
