@@ -581,7 +581,7 @@ class ProgramRun(TimeStampedModel):
                 self.is_error = True
                 self.error_text = "Job Disapeared from Job Queue"
 
-            if data.get('return', None) is not None:
+            if data.get('status', 'notfound') in ('finished',):
                 if data['finished'] and data['started']:
                     dur = data['finished'] - data['started']
                     self.duration = dur.total_seconds() + int(dur.microseconds > 0)
