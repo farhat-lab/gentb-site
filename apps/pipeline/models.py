@@ -524,10 +524,10 @@ class ProgramRun(TimeStampedModel):
             self.submitted = now()
 
             if commit:
-                job_kwargs['memory'] = self.program.memory
-                job_kwargs['threads'] = self.program.threads
+                job_kwargs['memory'] = str(self.program.memory)
+                job_kwargs['threads'] = str(self.program.threads)
                 if self.program.limit:
-                    job_kwargs['limit'] = self.program.limit
+                    job_kwargs['limit'] = str(self.program.limit)
                 self.job_submit(cmd, **job_kwargs)
                 self.save()
 
