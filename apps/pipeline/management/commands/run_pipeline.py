@@ -51,6 +51,7 @@ class Command(BaseCommand):
             run.is_started = False
             run.is_complete = False
             run.is_submitted = True
+            run.job_clean()
             try:
                 run.job_submit(run.debug_text)
             except JobSubmissionError as err:

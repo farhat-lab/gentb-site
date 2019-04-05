@@ -566,6 +566,11 @@ class ProgramRun(TimeStampedModel):
         job_manager = get_job_manager()
         job_manager.submit(self.job_id, cmd, **kwargs)
 
+    def job_clean(self):
+        """Remove old command files"""
+        job_manager = get_job_manager()
+        job_manager.job_clean(self.job_id)
+
     def update_status(self, commit=True):
         """Take data from the job manager and populate the database"""
         job_manager = get_job_manager()
