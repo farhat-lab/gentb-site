@@ -144,7 +144,7 @@ class Command(BaseCommand):
         datum = dict(
             importer=importer,
             country=country, city=city,
-            patient_id=pat.get('ID', 'None'), #~
+            patient_id=pat.get('ID', 'None'),
             patient_sex=pat.get('SEX', None),
             patient_age=(pat.get('AGE', None) or None),
             patient_hiv=pat.get('HIV', None),
@@ -206,7 +206,7 @@ class Command(BaseCommand):
 
         for snp in var.values():
             #gene = snp['regionid1']
-            if 'varname' not in snp or len(snp['varname']) > 80: #~
+            if 'varname' not in snp or len(snp['varname']) > 80:
                 continue
             try:
                 (_, locus, mutation) = unpack_mutation_format(snp['varname'])
