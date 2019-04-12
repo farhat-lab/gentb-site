@@ -152,7 +152,7 @@ class Command(BaseCommand):
         datum = dict(
             importer=importer,
             country=country, city=city,
-            patient_id=pat.get('ID', None),
+            patient_id=pat.get('ID', 'None'),
             patient_sex=pat.get('SEX', None),
             patient_age=(pat.get('AGE', None) or None),
             patient_hiv=pat.get('HIV', None),
@@ -175,8 +175,10 @@ class Command(BaseCommand):
             if other_name is None:
                 raise DataError("No valid STRAIN_NAME or bio SAMPLE_ID")
             name, other_name = other_name, None
-
         datum['old_id'] = other_name
+
+        if 'LINEAGE' in vcf.metadata:
+            datum['lineage'] = Lineage.objects.get_or_create(name=vcf.metadata['LINEAGE'][0], slug=name)[0]
 
         study = None
         if 'STUDY' in vcf.metadata:
@@ -212,7 +214,7 @@ class Command(BaseCommand):
 
         for snp in var.values():
             #gene = snp['regionid1']
-            if len(snp['varname']) > 80:
+            if 'varname' not in snp or len(snp['varname']) > 80:
                 continue
             try:
                 (_, locus, mutation) = unpack_mutation_format(snp['varname'])
@@ -239,9 +241,9 @@ class Command(BaseCommand):
                 aminoacid_position=None,
                 aminoacid_reference=None,
                 aminoacid_varient=None,
-                codon_position=snp['codpos'],
-                codon_varient=snp['altcodon'],
-                codon_reference=snp['codon'],
+                codon_position=snp.get('codpos', None),
+                codon_varient=snp.get('altcodon', None),
+                codon_reference=snp.get('codon', None),
             ))
 
         return name
