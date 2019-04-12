@@ -247,7 +247,7 @@ class Command(BaseCommand):
                     codon_varient=snp.get('altcodon', None),
                     codon_reference=snp.get('codon', None),
                 ))
-            except DataError as err:
+            except Exception as err:
                 sys.stderr.write("Failed to add mutation: {} ({}) {}\n".format(mutation, err, snp))
                 continue
 
