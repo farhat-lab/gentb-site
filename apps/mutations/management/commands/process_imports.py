@@ -86,9 +86,10 @@ class Command(BaseCommand):
                         upload.flag = 'VCF'
                     upload.save()
 
-        err = uploads.filter(flag='ERR')
-        if err.count():
-            raise DataError("Errors in VAR loading caused us to stop.")
+        # Dying so quickly if a single one failed is very flaky
+        #err = uploads.filter(flag='ERR')
+        #if err.count():
+        #    raise DataError("Errors in VAR loading caused us to stop.")
 
         for upload in uploads.exclude(flag='VCF'):
             if os.path.isfile(upload.fullpath[:-4] + '.var'):
