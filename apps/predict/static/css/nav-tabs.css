@@ -60,10 +60,10 @@
 
 .process > li {
   display: table-cell;
-  vertical-align: middle;
+  vertical-align: top;
   width: 1%;
   color: white;
-  padding: 10px 0 10px 0px;
+  padding: 15px 10px 10px 10px;
   border-right: 2px solid white;
   background-color: hsla(0, 0%, 83%, 1);
   text-align: center;
@@ -74,6 +74,10 @@
 
 .process > li.download {
   background: #efa91b;
+}
+.process > li.download.completed {
+  vertical-align: middle;
+  padding: 10px 10px 10px 10px;
 }
 .process > li.start {
   background: brown;
@@ -125,7 +129,7 @@
 }
 
 .nav-tabs li.disabled a:hover {
-  
+
 }
 
 h3.well-label {
@@ -172,7 +176,7 @@ h3.well-label {
   border-color: #ddd;
 }
 .nav-tabs > li.dropdown .dropdown-menu > li > a {
-  color: #777;   
+  color: #777;
 }
 .nav-tabs > li.dropdown .dropdown-menu > li > a:hover,
 .nav-tabs > li.dropdown .dropdown-menu > li > a:focus {

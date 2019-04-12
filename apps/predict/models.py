@@ -45,7 +45,7 @@ from django.utils.timezone import now
 from django.utils.translation import ugettext_lazy as _
 
 from apps.uploads.models import UploadFile
-from apps.pipeline.models import Pipeline, PipelineRun
+from apps.pipeline.models import Pipeline, PipelineRun, ProgramRun
 from apps.mutations.models import Drug
 from apps.mutations.utils import unpack_mutation_format
 
@@ -144,6 +144,34 @@ class PredictDataset(TimeStampedModel):
     def has_output_files(self):
         """Return true if any strain has output files"""
         return any([list(strain.output_files) for strain in self.strains.all()])
+
+    @property
+    def time_taken(self):
+        strain = self.strains.first()
+
+        # check if these exist
+        if not strain:
+            return None
+
+        if not strain.piperun:
+            return 'Error: pipeline not started'
+
+        prs = ProgramRun.objects.filter(piperun=strain.piperun)
+
+        # one of the program runs had an error
+        if prs.filter(is_error=True).count():
+            return 'Error in pipeline'
+
+        # time of the final program run completion or now if still running
+        dt = now()
+        if not prs.filter(completed__isnull=True).count():
+            pr = prs.filter(completed__isnull=False).order_by('-completed').first()
+            if pr:
+                dt = pr.completed
+
+        # TODO: awkward way to format time
+        # removes microseconds from output
+        return str(dt - self.created).split('.')[0]
 
     def is_manual(self):
         """Return true if this dataset is a manual input (rather than a file based input)"""
@@ -478,4 +506,3 @@ class PredictDatasetNote(TimeStampedModel):
 
     class Meta:
         ordering = ('-modified', '-created')
-

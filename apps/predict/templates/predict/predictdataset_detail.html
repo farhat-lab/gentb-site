@@ -47,8 +47,8 @@
             </li>
 	  </ul>
 	</div>
-	<div class="panel-body">
-	  <div class="tab-content">
+	<div class="panel-body" style="overflow-x: auto;">
+	  <div class="tab-content" style="width: min-content;">
 	    <div class="tab-pane fade" id="processing-tab">
               {% include "predict/predictdataset_processing.html" %}
             </div>
@@ -83,7 +83,7 @@
        <form method="POST" id="addnote" action="{% url "predict:add_note" object.md5 %}" style="display: inherit;">
         {% csrf_token %}
         <input type="text" id="note" name="note" class="form-control input-sm chat-input" placeholder="New note..." />
-	<span class="input-group-btn">     
+	<span class="input-group-btn">
             <button type="submit" class="btn btn-primary btn-sm"><span class="glyphicon glyphicon-comment"></span> Add Note</button>
         </span>
       </form>
@@ -107,4 +107,3 @@
     </div>
 </div>
 {% endblock %}
-
