@@ -121,7 +121,7 @@ class BaseLookup(dict):
             lookup = self.reverse if name == self.key else self.key
 
             # Skipped columns are ignored when requested
-            if lookup is None or name is None:
+            if lookup is None or name is None or lookup not in row: #~
                 continue
 
             key = self.set_type(lookup, row[lookup])
