@@ -99,9 +99,9 @@ class Command(BaseCommand):
             
         ready = uploads.filter(flag='VCF')
         notready = count - ready.count()
-        if notready:
-            print(uploads.exclude(flag='VCF'))
-            return sys.stderr.write("Waiting for {} VCF Files\n".format(notready))
+        #if notready:
+            #print(uploads.exclude(flag='VCF'))
+            #return sys.stderr.write("Waiting for {} VCF Files\n".format(notready))
 
         self.genome = Genome.objects.get(code='H37Rv')
 
