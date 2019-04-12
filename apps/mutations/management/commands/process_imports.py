@@ -7,6 +7,7 @@ from vcf import VCFReader
 
 from collections import defaultdict
 
+from django.db.utils import DataError
 from django.core.management.base import BaseCommand, CommandError
 
 from apps.maps.models import Country, Place
@@ -234,16 +235,20 @@ class Command(BaseCommand):
                 sys.stderr.write("Mutation name is too large, can not add to database.\n")
                 continue
 
-            locus.mutations.get_or_create(name=mutation, defaults=dict(
-                nucleotide_position=None,
-                nucleotide_reference=None,
-                nucleotide_varient=None,
-                aminoacid_position=None,
-                aminoacid_reference=None,
-                aminoacid_varient=None,
-                codon_position=snp.get('codpos', None),
-                codon_varient=snp.get('altcodon', None),
-                codon_reference=snp.get('codon', None),
-            ))
+            try:
+                locus.mutations.get_or_create(name=mutation, defaults=dict(
+                    nucleotide_position=None,
+                    nucleotide_reference=None,
+                    nucleotide_varient=None,
+                    aminoacid_position=None,
+                    aminoacid_reference=None,
+                    aminoacid_varient=None,
+                    codon_position=snp.get('codpos', None),
+                    codon_varient=snp.get('altcodon', None),
+                    codon_reference=snp.get('codon', None),
+                ))
+            except DataError as err:
+                sys.stderr.write("Failed to add mutation: {} ({}) {}\n".format(mutation, err, snp))
+                continue
 
         return name
