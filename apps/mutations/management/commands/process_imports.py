@@ -58,9 +58,16 @@ class Command(BaseCommand):
     def import_source(self, importer):
         count = importer.vcf_files().count()
         uploads = importer.vcf_files().filter(retrieval_end__isnull=False)
-        notloads = count - uploads.count()
+        err = importer.vcf_files().filter(retrieval_error__isnull=False)\
+                                  .exclude(retrieval_error='').count()
+        notloads = count - uploads.count() - err
+
         if notloads:
             return sys.stderr.write("Waiting for {} Uploads\n".format(notloads))
+        elif err:
+            sys.stderr.write("Trying to continue past {} errors\n".format(err))
+        if count == 0:
+            return sys.stderr.write("No files to upload!")
 
         uploads.filter(flag='ERR').update(flag='OK', retrieval_error='')
 
