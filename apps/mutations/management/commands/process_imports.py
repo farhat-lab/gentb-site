@@ -72,7 +72,7 @@ class Command(BaseCommand):
         #uploads.filter(flag='ERR').update(flag='OK', retrieval_error='')
 
         # Create a pipeline to process all the uploads
-        for upload in uploads.exclude(flag='VCF'):
+        for upload in uploads.exclude(flag__in=('VCF', 'ERR')):
             output_dir = os.path.dirname(upload.fullpath)
             runner = self.pipeline.run(
                 'IMPORTER{:d}:VCF{:d}'.format(importer.pk, upload.pk),
@@ -91,7 +91,7 @@ class Command(BaseCommand):
         #if err.count():
         #    raise DataError("Errors in VAR loading caused us to stop.")
 
-        for upload in uploads.exclude(flag='VCF'):
+        for upload in uploads.exclude(flag__in=('VCF', 'ERR')):
             if os.path.isfile(upload.fullpath[:-4] + '.var'):
                 print("Manual flag {} as DONE".format(upload.fullpath))
                 upload.flag = 'VCF'
