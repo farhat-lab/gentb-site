@@ -58,18 +58,18 @@ class Command(BaseCommand):
     def import_source(self, importer):
         count = importer.vcf_files().count()
         uploads = importer.vcf_files().filter(retrieval_end__isnull=False)
-        err = importer.vcf_files().filter(retrieval_error__isnull=False)\
-                                  .exclude(retrieval_error='').count()
-        notloads = count - uploads.count() - err
+        #err = importer.vcf_files().filter(retrieval_error__isnull=False)\
+        #                          .exclude(retrieval_error='').count()
+        #notloads = count - uploads.count() - err
 
-        if notloads:
-            return sys.stderr.write("Waiting for {} Uploads\n".format(notloads))
-        elif err:
-            sys.stderr.write("Trying to continue past {} errors\n".format(err))
-        if count == 0:
-            return sys.stderr.write("No files to upload!")
+        #if notloads:
+        #    return sys.stderr.write("Waiting for {} Uploads\n".format(notloads))
+        #elif err:
+        #    sys.stderr.write("Trying to continue past {} errors\n".format(err))
+        #if count == 0:
+        #    return sys.stderr.write("No files to upload!")
 
-        uploads.filter(flag='ERR').update(flag='OK', retrieval_error='')
+        #uploads.filter(flag='ERR').update(flag='OK', retrieval_error='')
 
         # Create a pipeline to process all the uploads
         for upload in uploads.exclude(flag='VCF'):
@@ -99,7 +99,7 @@ class Command(BaseCommand):
             
         ready = uploads.filter(flag='VCF')
         notready = count - ready.count()
-        if err.count() == 0 and notready:
+        if notready:
             print(uploads.exclude(flag='VCF'))
             return sys.stderr.write("Waiting for {} VCF Files\n".format(notready))
 
