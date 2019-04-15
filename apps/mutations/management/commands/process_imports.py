@@ -7,6 +7,7 @@ from vcf import VCFReader
 
 from collections import defaultdict
 
+from django.db.utils import DataError
 from django.core.management.base import BaseCommand, CommandError
 
 from apps.maps.models import Country, Place
@@ -58,14 +59,21 @@ class Command(BaseCommand):
     def import_source(self, importer):
         count = importer.vcf_files().count()
         uploads = importer.vcf_files().filter(retrieval_end__isnull=False)
-        notloads = count - uploads.count()
-        if notloads:
-            return sys.stderr.write("Waiting for {} Uploads\n".format(notloads))
+        #err = importer.vcf_files().filter(retrieval_error__isnull=False)\
+        #                          .exclude(retrieval_error='').count()
+        #notloads = count - uploads.count() - err
 
-        uploads.filter(flag='ERR').update(flag='OK', retrieval_error='')
+        #if notloads:
+        #    return sys.stderr.write("Waiting for {} Uploads\n".format(notloads))
+        #elif err:
+        #    sys.stderr.write("Trying to continue past {} errors\n".format(err))
+        #if count == 0:
+        #    return sys.stderr.write("No files to upload!")
+
+        #uploads.filter(flag='ERR').update(flag='OK', retrieval_error='')
 
         # Create a pipeline to process all the uploads
-        for upload in uploads.exclude(flag='VCF'):
+        for upload in uploads.exclude(flag__in=('VCF', 'ERR')):
             output_dir = os.path.dirname(upload.fullpath)
             runner = self.pipeline.run(
                 'IMPORTER{:d}:VCF{:d}'.format(importer.pk, upload.pk),
@@ -79,11 +87,12 @@ class Command(BaseCommand):
                         upload.flag = 'VCF'
                     upload.save()
 
-        err = uploads.filter(flag='ERR')
-        if err.count():
-            raise DataError("Errors in VAR loading caused us to stop.")
+        # Dying so quickly if a single one failed is very flaky
+        #err = uploads.filter(flag='ERR')
+        #if err.count():
+        #    raise DataError("Errors in VAR loading caused us to stop.")
 
-        for upload in uploads.exclude(flag='VCF'):
+        for upload in uploads.exclude(flag__in=('VCF', 'ERR')):
             if os.path.isfile(upload.fullpath[:-4] + '.var'):
                 print("Manual flag {} as DONE".format(upload.fullpath))
                 upload.flag = 'VCF'
@@ -91,9 +100,9 @@ class Command(BaseCommand):
             
         ready = uploads.filter(flag='VCF')
         notready = count - ready.count()
-        if err.count() == 0 and notready:
-            print(uploads.exclude(flag='VCF'))
-            return sys.stderr.write("Waiting for {} VCF Files\n".format(notready))
+        #if notready:
+            #print(uploads.exclude(flag='VCF'))
+            #return sys.stderr.write("Waiting for {} VCF Files\n".format(notready))
 
         self.genome = Genome.objects.get(code='H37Rv')
 
@@ -144,7 +153,7 @@ class Command(BaseCommand):
         datum = dict(
             importer=importer,
             country=country, city=city,
-            patient_id=pat.get('ID', None),
+            patient_id=pat.get('ID', 'None'),
             patient_sex=pat.get('SEX', None),
             patient_age=(pat.get('AGE', None) or None),
             patient_hiv=pat.get('HIV', None),
@@ -167,8 +176,10 @@ class Command(BaseCommand):
             if other_name is None:
                 raise DataError("No valid STRAIN_NAME or bio SAMPLE_ID")
             name, other_name = other_name, None
-
         datum['old_id'] = other_name
+
+        if 'LINEAGE' in vcf.metadata:
+            datum['lineage'] = Lineage.objects.get_or_create(name=vcf.metadata['LINEAGE'][0], slug=name)[0]
 
         study = None
         if 'STUDY' in vcf.metadata:
@@ -204,7 +215,7 @@ class Command(BaseCommand):
 
         for snp in var.values():
             #gene = snp['regionid1']
-            if len(snp['varname']) > 80:
+            if 'varname' not in snp or len(snp['varname']) > 80:
                 continue
             try:
                 (_, locus, mutation) = unpack_mutation_format(snp['varname'])
@@ -224,16 +235,20 @@ class Command(BaseCommand):
                 sys.stderr.write("Mutation name is too large, can not add to database.\n")
                 continue
 
-            locus.mutations.get_or_create(name=mutation, defaults=dict(
-                nucleotide_position=None,
-                nucleotide_reference=None,
-                nucleotide_varient=None,
-                aminoacid_position=None,
-                aminoacid_reference=None,
-                aminoacid_varient=None,
-                codon_position=snp['codpos'],
-                codon_varient=snp['altcodon'],
-                codon_reference=snp['codon'],
-            ))
+            try:
+                locus.mutations.get_or_create(name=mutation, defaults=dict(
+                    nucleotide_position=None,
+                    nucleotide_reference=None,
+                    nucleotide_varient=None,
+                    aminoacid_position=None,
+                    aminoacid_reference=None,
+                    aminoacid_varient=None,
+                    codon_position=snp.get('codpos', None),
+                    codon_varient=snp.get('altcodon', None),
+                    codon_reference=snp.get('codon', None),
+                ))
+            except Exception as err:
+                sys.stderr.write("Failed to add mutation: {} ({}) {}\n".format(mutation, err, snp))
+                continue
 
         return name
