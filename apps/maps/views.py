@@ -20,6 +20,7 @@ Views for the mapping application
 
 from __future__ import print_function
 
+import re
 import json
 from collections import defaultdict, OrderedDict
 from django.views.generic import TemplateView, ListView
@@ -155,29 +156,59 @@ class LineageBreakdown(JsonView, DataSlicerMixin):
         'drug': 'strains__drugs__drug__code',
     }
 
-    def get_queryset(self):
-        qset = super().get_queryset()
-        return qset
 
-    def sort_lineages(self):
+    def get_sublineages(self, lin):
+        """Returns list of all ancestors of `lin`, including `lin` (e.g. '3.6.4' -> ['3', '3.6', '3.6.4'])"""
+        dot_indices = [idx for idx, ch in enumerate(lin) if ch == '.']
+        return [lin[:idx] for idx in dot_indices] + [lin]
+
+    def child_index(self, lin, children):
+        """Returns index of child in `children` whose lineage is `lin`"""
+        for idx, child in enumerate(children):
+            if child['name'][1:] == lin:
+                return idx
+
+
+    def get_color(self, depth, idx):
+        """Returns color of sunburst arc given depth and clockwise index.
+           Arcs follow a blue->green gradient clockwise, with lower opacity at higher levels"""
+        if depth == 0:
+            return 'rgb(48,129,189)'
+        blue_green = ['48,129,189', '49,147,185', '49,163,182', '49,178,179', '49,175,158', '49,172,138', '49,169,119', '49,166,101', '48,163,84']
+        return 'rgba({},{})'.format(blue_green[idx % 9], 1-depth/5.0)
+
+    def lineage_tree(self):
         """
-        We need to get all lineages, hopefully unique and sort them, taking all items with
-        parents and putting them into a dictionary, then taking all items without
-        parents and adding them to the top level.
-
-        Then the top level needs each of the children added to it. Amounts needs to be
-        figured for each child level so that counts of the parent (raw parent)
-        ann children counts are added together for the rings that we want to display
-
-        XXX The target is called a "Sunburst" NVD3 chart
+        Returns hierarchical dictionary of lineages for use in D3 charts.
         """
+
+        # Contains frequency of each lineage (e.g. '4.3': 7)
+        lin_counts = defaultdict(int)
+        for lin in self.get_data():
+            if re.compile(r'[0-9.]').match(lin.name):
+                lin_counts[lin.name] += 1
+        lin_counts = sorted(lin_counts.items())
+
+        # Stores all lineages added to `lin_tree`
+        processed = set()
+        lin_tree = {'name': 'Total', 'children': []}
+        for lin, count in lin_counts:
+            curr = lin_tree
+            for depth, sl in enumerate(self.get_sublineages(lin)):
+                if sl in processed:
+                    next_idx = self.child_index(sl, curr['children'])
+                    curr = curr['children'][next_idx]
+                else:
+                    curr['children'].append({'name': 'L'+sl, 'color': self.get_color(depth, len(curr['children'])), 'children': []})
+                    curr = curr['children'][-1] # Step into last child
+                    processed.add(sl)
+            curr['size'] = count
+        return lin_tree
+
 
     def get_context_data(self, **_):
-        return {
-            'data': (
-                self.get_data().annotate(count=Count('strains')),
-            )
-        }
+        return self.lineage_tree()
+
 
 class Lineages(JsonView, DataSlicerMixin):
     """Provide a json data slice into the Lineages data"""
