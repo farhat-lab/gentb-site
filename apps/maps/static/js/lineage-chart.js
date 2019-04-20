@@ -19,125 +19,44 @@
  */
 
 $(document).ready(function() {
-  var svg = 'svg.lineages';
-  var chart = initialiseLineageChart(svg);
+
   $('#lineage-store').data('json-signal', function(data) {
-    console.log("Lineage ahoy!");
-    chartLineageData(svg, chart, data.data);
+    $("#row1").empty(); $("#row2").empty();
+    chartLineageData(data);
   }); 
 });
 
-function chartLineageData(svg, chart, data) {
-    var svg_n = chartData(svg, chart, data);
+function chartLineageData(data) {
+  var numPlots = data.children.length;
+  var height = numPlots <= 2 ? 600 : 300;
 
-    svg_n.transition().duration(0);
-    // Select the first category by "clicking" on it
-    var evt = new MouseEvent("click");
-    var node = d3.select(svg).selectAll('.nv-series')
-        .filter(function(d, i){return i == 0;}).node().dispatchEvent(evt);
-
-    svg_n.transition().duration(1200);
-}
-
-function initialiseLineageChart(svg) {
-    var chart = nv.models.multiBarChart()
-      .stacked(false) // Do not stack!
-      .reduceXTicks(false);
-
-    var width = 1000;
-    var height = 600;
-
-    chart.margin({top: 20, right: 0, bottom: 120, left: 80});
-    chart.height(height);
-    chart.width(width);
-    chart.yAxis.scale(100).orient("left")
-        .axisLabel('Number of strains')
-        .tickFormat(d3.format("d"));
-
-    // Single click selection of chart type
-    chart.legend.radioButtonMode(true);
-    // Disable the stacked/unstacked option
-    chart.showControls(false);
-
-    chart.xAxis
-        .rotateLabels(-20);
-
-    chart.showLegend(true);
-
-    var svg = d3.select(svg)
-          .attr('perserveAspectRatio', 'xMinYMid')
+  // Splits the charts across two rows, with the bottom row having more elements when `numPlots` is odd
+  var counts = {'#row1': Math.floor(numPlots/2), '#row2': Math.ceil(numPlots/2)};
+  for (var idx = 0; idx < numPlots; idx++) {
+    if (data.children[idx].children.length == 0) {
+      data.children[idx].children.push({});
+    }
+    // Puts two-lineage case in the same row to optimize space
+    if (numPlots == 2) {
+      var row = '#row1'; var width = 500;
+    } else {
+      var row = (idx+1)*2 <= numPlots ? '#row1' : '#row2';
+      var width = 1000 / counts[row];
+    }
+    var chart = nv.models.sunburstChart().mode('size');
+    var svg = d3.select(row)
+          .append('svg');
+          svg.datum([data.children[idx]])
           .attr('width', width)
           .attr('height', height)
-          .attr('viewBox', '0 0 ' + width + ' ' + height);
-
-    chart.multibar.dispatch.on("elementClick", function(e) {
-        setTabData('lineage', e.data.x, e.data.x, 'ok-circle', e.series.key)
-    });
-
-    $('#lineages').parent().click(function(e) {
-      unsetTabData('lineage');
-    });
-    return chart;
-}
-
-function initialiseLineageChartExperiment(svg) {
-
-var dataset = {
-  apples: [53245, 28479, 19697],
-  oranges: [53, 74]
-};
-
-var width = 200,
-  height = 200,
-  cwidth = 20;
-
-var pie = d3.layout.pie()
-  .sort(null);
-
-var arc = d3.svg.arc();
-
-function tweenPie(finish, k) {
-  var j = parseInt(d3.select(this).attr("note"));
-  var start = {
-    startAngle: 0,
-    endAngle: 0,
-    innerRadius: 100 - cwidth * j,
-    outerRadius: 80 - cwidth * j
-
-  };
-  console.log(j)
-  var i = d3.interpolate(start, finish);
-  return function(d, j) {
-    return arc(i(d));
-  };
-}
-var clr = function(d, i, j) {
-    var arr = [
-      ["red", "green", "blue"],
-      ["blue", "white"]
-    ];
-    return arr[j][i];
+          .attr('viewBox', '0 0 ' + width + ' ' + height)
+          .attr('class', 'lineages')
+          .call(chart);
+    svg.append('text')
+          .text(data.children[idx].name)
+          .attr('x', '50%')
+          .attr('y', '50%')
+          .attr('class', 'lineage_text');
   }
-var svg = d3.select(svg)
-            .attr("width", width)
-            .attr("height", height)
-            .append("g")
-            .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
-
-var gs = svg.selectAll("g").data(d3.values(dataset)).enter().append("g");
-var path = gs.selectAll("path")
-  .data(function(d) {
-    return pie(d);
-  })
-  .enter().append("path").attr("note", function(d, i, j) {
-    return j;
-  }).attr("class", clr)
-  .transition().duration(750)
-  .attrTween("d", tweenPie)
-
-    return svg;
 }
-
-
-
 
