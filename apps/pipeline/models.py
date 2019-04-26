@@ -528,7 +528,7 @@ class ProgramRun(TimeStampedModel):
                 job_kwargs['threads'] = str(self.program.threads)
                 if self.program.limit:
                     job_kwargs['limit'] = str(self.program.limit)
-                job_kwargs['wckey'] = self.piperun.pipeline.slug
+                job_kwargs['wckey'] = slugify(self.piperun.pipeline.name)
                 self.job_submit(cmd, **job_kwargs)
                 self.save()
 
