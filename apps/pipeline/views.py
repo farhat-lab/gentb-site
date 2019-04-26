@@ -102,10 +102,17 @@ class JobViewer(ProtectedMixin, TemplateView):
     def get_context_data(self, **kw):
         data = super(JobViewer, self).get_context_data(**kw)
         data['pipeline'] = get_job_manager()
+
         kw = {}
         if 'user' in self.request.GET:
             kw['user'] = self.request.GET['user']
+
+        if 'wckeys' in self.request.GET:
+            kw['wckeys'] = [k for k in
+                self.request.GET.get('wckeys', '').split(',') if k]
+
         cols = [c for c in self.request.GET.get('cols', '').split(',') if c]
+
         data['object_list'] = [self.get_item(item, cols)\
             for item in data['pipeline'].jobs_status(*cols, **kw)]
         data['pipeline_name'] = type(data['pipeline']).__name__

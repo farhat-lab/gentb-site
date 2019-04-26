@@ -528,6 +528,7 @@ class ProgramRun(TimeStampedModel):
                 job_kwargs['threads'] = str(self.program.threads)
                 if self.program.limit:
                     job_kwargs['limit'] = str(self.program.limit)
+                job_kwargs['wckey'] = self.piperun.pipeline.slug
                 self.job_submit(cmd, **job_kwargs)
                 self.save()
 
@@ -617,7 +618,7 @@ class ProgramRun(TimeStampedModel):
             if commit:
                 self.save()
 
-        # We're going to force an error out of hidding.
+        # We're going to force an error out of hiding.
         if self.is_complete and self.error_text == 'None':
             (_, error) = job_manager.job_read(self.job_id, 'err')
             if error is not None:
