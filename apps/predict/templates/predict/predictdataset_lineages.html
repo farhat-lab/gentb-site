@@ -23,7 +23,7 @@
             <td>{{ lineage.match }}</td>
           {% elif lineage.type == 'lineage' %}
             <td>{{ lineage.first }}</td>
-            <td>{{ lineage.last }}</td>
+            <td>{{ lineage.lineage }}</td>
           {% elif lineage.type == 'mixed' %}
             <td>
                 {% for lin in lineage.all %}

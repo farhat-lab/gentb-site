@@ -405,7 +405,7 @@ class PredictStrain(Model):
         filename = self.lineage_file
         if filename and os.path.isfile(filename):
             with open(filename, 'r') as fhl:
-                data = fhl.read()
+                data = fhl.read().strip('\n\r')
                 if '\t' in data:
                     data = data.split('\t')
                     return {
@@ -417,7 +417,7 @@ class PredictStrain(Model):
                 data = [lin.replace('lineage', '') for lin in data.split(',')]
                 for x, lin in enumerate(data):
                     # If the next lineage is smaller, it's because it's a mixed lineage call
-                    if x and len(data[-1]) < len(lin):
+                    if x and not lin.startswith(data[-1]):
                         return {
                             'type': 'mixed',
                             'all': data,
