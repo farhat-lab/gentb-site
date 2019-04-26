@@ -108,6 +108,11 @@ class Command(BaseCommand):
 
         for fl in importer.vcf_files():
             fl.retrieval_error = ""
+            if not os.path.isfile(fl.fullpath):
+                fl.retrieval_error = "VCF File is missing!"
+                fl.save()
+                continue
+
             vcf = VCFReader(filename=fl.fullpath)
             var_file = fl.fullpath[:-4] + '.var'
             if not os.path.isfile(var_file):
