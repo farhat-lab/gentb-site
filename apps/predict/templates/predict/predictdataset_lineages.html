@@ -25,11 +25,15 @@
             <td>{{ lineage.first }}</td>
             <td>{{ lineage.lineage }}</td>
           {% elif lineage.type == 'mixed' %}
+            <td>Mixed</td>
             <td>
                 {% for lin in lineage.all %}
-                  <em>{{ line }}</em>
+                  <em>{{ lin }}</em>, 
                 {% endfor %}
             </td>
+          {% else %}
+            <td>Unknown Lineage Format!</td>
+            <td>{{ lineage.type }}</td>
           {% endif %}
         </tr>
       {% endwith %}
