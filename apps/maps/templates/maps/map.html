@@ -47,7 +47,7 @@
                   <h2 class="icon-flask"></h2>
                   <p>Drug</p>
                 </a>
-                <a href="#" class="list-group-item text-center" id="lineage-store" data-json-url="{% url 'maps:map.lineages' %}">
+                <a href="#" class="list-group-item text-center" id="lineage-store" data-json-url="{% url 'maps:map.lineage_breakdown' %}">
                   <h2 class="icon-graph"></h2>
                   <p>Lineage</p>
                 </a>
@@ -112,10 +112,11 @@
                 <div class="vertical-tab-content">
                   <div class="alert alert-info" style="margin: 0px;" role="alert">
                     <span class="glyphicon glyphicon-question-sign pull-left" style="font-size:1.2em; padding-right: 8px;"></span>
-                    You may select a lineage by clicking on any of it's bars. Clicking anywhere else on the chart will deselect.
+                    Hover over any arc to view the number of strains in each lineage group. Clicking an arc narrows down the plotted data, and clicking the inner circle zooms out to the default view.
                   </div>
                   <div class="d3graph">
-                    <svg class="lineages" id="lineages"></svg>
+                    <div id="row1"></div>
+                    <div id="row2"></div>
                   </div>
                 </div>
                 <div class="vertical-tab-content">

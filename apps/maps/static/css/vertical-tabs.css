@@ -111,3 +111,18 @@ path.blue {
 path.white {
   fill: white;
 }
+
+svg.lineages {
+  display: inline;
+  width: auto;
+  height: auto;
+}
+
+text.lineage_text {
+  text-anchor: middle;
+  dominant-baseline: middle;
+  fill: white;
+  font-size: large;
+  pointer-events: none;
+  opacity: 1;
+}
