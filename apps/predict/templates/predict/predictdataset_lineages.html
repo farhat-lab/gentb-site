@@ -2,17 +2,37 @@
   <thead>
     <tr>
       <th></th>
-      <th><em>in silico</em> spoligotype</th>
-      <th>Best match family</th>
+      {% with lineage_type=object.strains.first.lineage.type %}
+        {% if lineage_type == 'spoligo' %}
+          <th><em>in silico</em> spoligotype</th>
+          <th>Best match family</th>
+        {% elif lineage_type == 'lineage' or lineage_type == 'mixed' %}
+          <th>Primary Lineage</th>
+          <th>Final Lineage</th>
+        {% endif %}
+      {% endwith %}
     </tr>
   </thead>
   <tbody>
     {% for strain in object.strains.all %}
-      <tr>
-        <td>{{ strain }}</td>
-        <td>{{ strain.lineage.spoligotype }}</td>
-        <td>{{ strain.lineage.match }}</td>
-      </tr>
+      {% with lineage=strain.lineage %}
+        <tr>
+          <td>{{ strain }}</td>
+          {% if lineage.type == 'spoligo' %}
+            <td>{{ lineage.spoligotype }}</td>
+            <td>{{ lineage.match }}</td>
+          {% elif lineage.type == 'lineage' %}
+            <td>{{ lineage.first }}</td>
+            <td>{{ lineage.last }}</td>
+          {% elif lineage.type == 'mixed' %}
+            <td>
+                {% for lin in lineage.all %}
+                  <em>{{ line }}</em>
+                {% endfor %}
+            </td>
+          {% endif %}
+        </tr>
+      {% endwith %}
     {% endfor %}
   </tbody>
 </table>

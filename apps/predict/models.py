@@ -405,14 +405,29 @@ class PredictStrain(Model):
         filename = self.lineage_file
         if filename and os.path.isfile(filename):
             with open(filename, 'r') as fhl:
-                return dict(zip([
-                    '',
-                    'spoligotype',
-                    'unk',
-                    'unk',
-                    'unk',
-                    'match',
-                ], fhl.read().split('\t')))
+                data = fhl.read()
+                if '\t' in data:
+                    data = data.split('\t')
+                    return {
+                        'type': 'spoligo',
+                        'spoligotype': data[1],
+                        'match': data[-1],
+                    }
+
+                data = [lin.replace('lineage', '') for lin in data.split(',')]
+                for x, lin in enumerate(data):
+                    # If the next lineage is smaller, it's because it's a mixed lineage call
+                    if x and len(data[-1]) < len(lin):
+                        return {
+                            'type': 'mixed',
+                            'all': data,
+                        }
+
+                return {
+                    'type': 'lineage',
+                    'first': data[0],
+                    'lineage': data[-1],
+                }
         return 'Not Found'
 
     @property
