@@ -7,8 +7,8 @@
           <th><em>in silico</em> spoligotype</th>
           <th>Best match family</th>
         {% elif lineage_type == 'lineage' or lineage_type == 'mixed' %}
-          <th>Primary Lineage</th>
-          <th>Final Lineage</th>
+          <th>Major Lineage</th>
+          <th>Sub Lineage(s)</th>
         {% endif %}
       {% endwith %}
     </tr>
@@ -28,7 +28,7 @@
             <td>Mixed</td>
             <td>
                 {% for lin in lineage.all %}
-                  <em>{{ lin }}</em>, 
+                  {% if not forloop.first %}, {% endif %}<em>{{ lin }}</em> 
                 {% endfor %}
             </td>
           {% else %}
