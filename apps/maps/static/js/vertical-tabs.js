@@ -216,7 +216,6 @@ function unsetTabData(key) {
   var store = $('#'+key+'-store');
   store.removeClass('selected');
   $(all_tabs).not(store).data('done', false);
-  store.removeData('value');
   store.removeData('column');
   store.data('values', []);
   store.data('map', {});
