@@ -126,3 +126,7 @@ text.lineage_text {
   pointer-events: none;
   opacity: 1;
 }
+
+g.selected-drug {
+  fill: green;
+}
