@@ -22,7 +22,7 @@
 $(document).ready(function() {
 
     $('#genelocus-store').data('url-signal', function(url, args) {
-      var t_table = $('table');
+      var t_table = $('#gene_map table');
 
       if(t_table.data('loaded')) {
           return;

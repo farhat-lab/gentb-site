@@ -131,7 +131,6 @@ class DrugList(JsonView, DataSlicerMixin):
         ] + zip(LINEAGE_NAMES, LINEAGE_COLS)
     )
 
-
     def get_context_data(self, **_):
         """Return a dictionary of template variables"""
 
@@ -212,8 +211,6 @@ class LineageBreakdown(JsonView, DataSlicerMixin):
         return self.lineage_tree()
 
 
-
-
 class Lineages(JsonView, DataSlicerMixin):
     """Provide a json data slice into the Lineages data"""
     model = StrainSource
@@ -226,19 +223,17 @@ class Lineages(JsonView, DataSlicerMixin):
 
     def get_queryset(self, without=None):
         _qs = super(Lineages, self).get_queryset()
-
         return _qs.filter(spoligotype_family__isnull=False)
 
     def get_context_data(self, **_):
         """Return a dictionary of template variables"""
-
         return {
             'data': GraphData(
                 self.get_data().annotate(count=Count('pk')),
                 self.values, 'count', None, trim=True)
                     .set_axis('z', zip(self.values, LINEAGE_NAMES))
                     .set_axis('x', [(None, "Not Available")])
-                    .to_graph(),
+                    .to_graph()
         }
 
 
@@ -248,7 +243,7 @@ class LocusRange(JsonView, DataSlicerMixin):
     filters = {
         'drug[]': 'strain_mutations__strain__drugs__drug__code__in',
         'map[]': 'strain_mutations__strain__country__iso2__in',
-        'source[]': 'strain_mutations__strain__importer__in', #~ previously called `src`
+        'source[]': 'strain_mutations__strain__importer__in',
     }
     def get_context_data(self, **_):
         """Returns the list of mutations blocked into ranges for this gene"""
@@ -299,18 +294,26 @@ class LocusList(DataTableMixin, ListView):
         qset = qset.filter(start__isnull=False, stop__isnull=False)
         return qset.annotate(mcount=Count('mutations'))
 
-class Mutations(JsonView, DataSlicerMixin):
+class Mutations(DataTableMixin, ListView):
     """Provide a lookup into the mutations database for selecting anavailable mutation"""
     model = Mutation
-    values = ['pk']
-    filters = {
-        'snp': 'name__icontains',
-        'ecoli': 'ecoli_aapos',
-        'genelocus[]': 'gene_locus__name__in', #~ previously called `locus`
-        'drug[]': 'strain_mutations__strain__drugs__drug__code__in',
-        'map[]': 'strain_mutations__strain__country__iso2__in',
-        'source[]': 'strain_mutations__strain__importer__in', #~ previous called `src`
-    }
+    search_fields = ['name', 'old_id', 'gene_locus__name']
+
+    def get_queryset(self):
+        qset = super(Mutations, self).get_queryset()
+        qset = qset #.annotate(gene_locus_name='gene_locus__name')
+        return qset
+
+class OldMutations(JsonView, DataSlicerMixin):
+    #values = ['pk']
+    #filters = {
+    #    'snp': 'name__icontains',
+    #    'ecoli': 'ecoli_aapos',
+    #    'locus': 'gene_locus__name',
+    #    'drug': 'strain_mutations__strain__drugs__drug__code',
+    #    'map': 'strain_mutations__strain__country__iso2',
+    #    'src': 'strain_mutations__strain__importer',
+    #}
 
     def get_context_data(self, **_):
         """Return a dictionary of template variables"""
@@ -358,7 +361,7 @@ class MutationView(JsonView, DataSlicerMixin):
         'mutation[]': 'mutations__mutation__name__in',
         'drug[]': 'drugs__drug__code__in',
         'map[]': 'country__iso2__in',
-        'source[]': 'importer__in', #~ previously called `src`
+        'source[]': 'importer__in',
     }
     @property
     def values(self):
@@ -386,4 +389,4 @@ class MutationView(JsonView, DataSlicerMixin):
                     .set_axis('x', mutations)
                     .set_axis('y', totals, trim=[None])
                     .to_graph()
-        }
+            }
