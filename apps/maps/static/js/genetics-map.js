@@ -18,8 +18,6 @@
  * along with gentb.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-// TODO: want to change domain to quartiles (>40 is kinda meaningless once we have more data)
-
 $(document).ready(function() {
   $('div.maps').each(function() {
     var map = L.map(this.id).setView([12, 25], 2);
