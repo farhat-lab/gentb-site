@@ -26,7 +26,7 @@ $(document).ready(function() {
 });
 
 function listSources(data) {
-  var existing = getTabData("map");
+  var existing = getTabData("source");
   var templates = {
       'source': $('#source_template'),
       'paper': $('#paper_template'),
@@ -57,20 +57,18 @@ function listSources(data) {
       copy.data('id', datum.pk);
       copy.data('kind', datum.kind);
       copy.data('name', datum.name);
+
+      // Highlights selected sources
+      if (existing.includes(datum.pk)) {
+        copy.addClass('btn-primary');
+        copy.removeClass('btn-default');
+      }
+
+      // Selects/deselects the source
       copy.click(function() {
-          // Select or deselect this source.
-          var this_id = $(this).data('kind') + '_' + $(this).data('id');
-          var that_id = getTabColumn('source') + '_' + getTabData('source');
-          var that = $('#' + that_id);
-          that.removeClass('btn-primary');
-          that.addClass('btn-default');
-          if(this_id == that_id) {
-              unsetTabData('source');
-          } else {
-              $(this).addClass('btn-primary');
-              $(this).removeClass('btn-default');
-              setTabData('source', $(this).data('id'), $(this).data('name'), 'list', $(this).data('kind'))
-          }
+          $(this).toggleClass('btn-primary');
+          $(this).toggleClass('btn-default');
+          toggleTabData('source', $(this).data('id'), $(this).data('name'), 'list', $(this).data('kind'));
       });
   }
 }

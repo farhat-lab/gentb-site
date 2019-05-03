@@ -29,7 +29,7 @@ $(document).ready(function() {
 
   //whenever you click on any of the tabs
   $(all_tabs).click(function(e) {
-  	//we get the current tab that was actually clicked
+    //we get the current tab that was actually clicked
     var tab = $(this);
 
     //We don't want to change a tab, we just wanna play with some data so capture the event/prevent default
@@ -48,9 +48,16 @@ $(document).ready(function() {
     $("div.vertical-tab>div.vertical-tab-content").removeClass("active");
     $("div.vertical-tab>div.vertical-tab-content").eq(index).addClass("active");
 
-
     //Access the json-url data currently stored in the tab
     var url = tab.data('json-url');
+
+    // Initializes set of selectors (e.g. drugs, countries)
+    var store = $('#'+this.id);
+    if (!store.data('values')) {
+      store.data('values', []);
+      store.data('map', {});
+    }
+
 
     //If there is actually data and done is false ('meaning that we didn't already do this whole process)
     if(url && !tab.data('done')) {
@@ -66,13 +73,13 @@ $(document).ready(function() {
         //sends a json request to the server and sends the data currently stored in the tab and once it is done 
         $.getJSON(url, data).done(function(json) {
 
-      	  //calls a function using the json data just fetched, the data already stored in the tabs, and the url used to fetch the data
+          //calls a function using the json data just fetched, the data already stored in the tabs, and the url used to fetch the data
           tab.data('json-signal')(json, url, data);
 
           //Signal that the tab data has been fetched and 
           tab.data('done', true);
         })
-      	//for failure
+        //for failure
         .fail(function(jqxhr, textStatus, error) {
           var err = textStatus + ", " + error;
           console.log( "Request Failed: " + err );
@@ -102,34 +109,28 @@ $(document).ready(function() {
 /* Collects all tab values into a dictionary ready for sending to the server */
 function getAllTabData(except) {
   
-  //Access current tab 
   var data = {};
   $(all_tabs).each(function() {
-  	//The ID passed into except is the way we can access the current tab
     if(this.id != except) {
-   	  //see that if some 'value' data is storred if it is
-      if($(this).data('value')) {
-      	
-      	//Change the way the data is indexed in the dictionary if the data comes with a column tagged data
+      // Check for existing data
+      if($(this).data('values')) {
+        
+        // Change the way the data is indexed in the dictionary if the data comes with a column tagged data
         var column = this.id.replace('-store', '');
         if($(this).data('column')) {
           column = $(this).data('column')
         }
-
-        //Storee the value data into the data dictionary
-        data[column] = $(this).data('value');
+        data[column] = $(this).data('values');
       }
     }
   });
-
-  //Return that data
   return data;
 }
 
 /* Returns data for the given tab key name */
 function getTabData(key) {
   var store = $('#'+key+'-store');
-  return store.data('value');
+  return store.data('values');
 }
 /* Returns data for the given tab key name */
 function getTabColumn(key) {
@@ -146,38 +147,80 @@ function getTabColumn(key) {
             the tab can optionally set a column name which replaces
             'key' as the key word argument name sent to the server.
  */
-function setTabData(key, value, text, icon, column) {
+function addTabData(key, value, text, icon, column) {
   var store = $('#'+key+'-store');
 
-  if(!store.data('original-text')) {
-    store.data('original', store.data('value'));
+  if (!store.data('original-text')) {
     store.data('original-column', store.data('column'));
     store.data('original-text', $('p', store).text());
     store.data('original-icon', $('h2', store).attr('class'));
   }
-  if(value != store.data('value')) {
+
+  if (!store.data('values').includes(value)) {
     store.addClass('selected');
-    store.data('value', value)
-    store.data('column', column)
+    store.data('column', column);
+    store.data('values').push(value);
+
     $('p', store).text(text);
     $('h2', store).attr('class', 'glyphicon glyphicon-'+icon);
+  }
+  updateVisuals(key);
 
-    // Clear all existing graph renderings
-    $(all_tabs).not(store).data('done', false);
+  // Updates (id -> name) mapping
+  if (text) { store.data('map')[value] = text };
+}
+
+/* Removes all elements matching `value` from the `key` store */
+function removeTabData(key, value) {
+  var store = $('#'+key+'-store');
+  store.data('values', store.data('values').filter(function(el) { return el != value }));
+  updateVisuals(key);
+  delete store.data('map')[value];
+}
+
+/* Adds `value` to store if not already present, otherwise removes `value` */
+function toggleTabData(key, value, text, icon, column) {
+  var store = $('#'+key+'-store');
+  if (store.data('values').includes(value)) {
+    removeTabData(key, value);
+  } else {
+    addTabData(key, value, text, icon, column);
   }
 }
 
-/* Deselect tab, removing it's value and putting all values back to what they
+/* Refreshes tab icon and plots to match new data */
+function updateVisuals(key) {
+  var store = $('#'+key+'-store');
+  var num_vals = store.data('values').length;
+  switch (num_vals) {
+    case 0:
+      store.removeClass('selected');
+      $('p', store).text(store.data('original-text'));
+      $('h2', store).attr('class', store.data('original-icon'));
+      break;
+    case 1:
+      var remaining = store.data('values')[0];
+      $('p', store).text(store.data('map')[remaining]);
+      break;
+    default:
+      $('p', store).text(num_vals+' selected');
+  }
+
+  // Clears all existing graph renderings
+  $(all_tabs).not(store).data('done', false);
+}
+
+/* Deselects tab, removing its value and putting all values back to what they
    where when the page loaded */
 function unsetTabData(key) {
   var store = $('#'+key+'-store');
   store.removeClass('selected');
   $(all_tabs).not(store).data('done', false);
-  store.removeData('value');
   store.removeData('column');
+  store.data('values', []);
+  store.data('map', {});
 
   if(store.data('original-text')) {
-    store.data('value', store.data('original'));
     store.data('column', store.data('original-column'));
     $('p', store).text(store.data('original-text'));
     $('h2', store).attr('class', store.data('original-icon'));
@@ -190,4 +233,3 @@ function chartData(svg, chart, data) {
     .datum(data)
     .call(chart);
 }
-

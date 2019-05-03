@@ -81,9 +81,9 @@ class Places(JsonView, DataSlicerMixin):
     values = ['country__iso2', 'resistance_group']
     filters = dict(
         [
-            ('source', 'importer'),
+            ('source[]', 'importer__in'),
             ('paper', 'source_paper'),
-            ('drug', 'drugs__drug__code'),
+            ('drug[]', 'drugs__drug__code__in'),
         ] + zip(LINEAGE_NAMES, LINEAGE_COLS)
     )
 
@@ -125,8 +125,8 @@ class DrugList(JsonView, DataSlicerMixin):
     values = ['drugs__drug__name', 'drugs__drug__code', 'drugs__resistance']
     filters = dict(
         [
-            ('map', 'country__iso2'),
-            ('source', 'importer'),
+            ('map[]', 'country__iso2__in'),
+            ('source[]', 'importer__in'),
             ('paper', 'source_paper'),
         ] + zip(LINEAGE_NAMES, LINEAGE_COLS)
     )
@@ -136,7 +136,7 @@ class DrugList(JsonView, DataSlicerMixin):
 
         drug_dict = GraphData(self.get_data().annotate(count=Count('pk')),'drugs__drug__code', 'count', 'drugs__resistance',).set_axis('z', RESISTANCE).to_graph()
         
-        # sorting alphabetically by drug codename to prevent floating-bar errors in D3
+        # Sorting alphabetically by drug codename to prevent floating-bar errors in D3
         for idx, _ in enumerate(drug_dict):
             drug_dict[idx]['values'].sort(key=lambda el: el['x'])
 
@@ -152,8 +152,9 @@ class LineageBreakdown(JsonView, DataSlicerMixin):
     model = Lineage
     order = ['slug']
     filters = {
-        'map': 'strains__country__iso2',
-        'drug': 'strains__drugs__drug__code',
+        'map[]': 'strains__country__iso2__in',
+        'drug[]': 'strains__drugs__drug__code__in',
+        'source[]': 'strains__importer__in',
     }
 
 
@@ -216,8 +217,8 @@ class Lineages(JsonView, DataSlicerMixin):
     order = ['spoligotype_family']
     values = LINEAGE_COLS
     filters = {
-        'map': 'country__iso2',
-        'drug': 'drugs__drug__code',
+        'map[]': 'country__iso2__in',
+        'drug[]': 'drugs__drug__code__in',
     }
 
     def get_queryset(self, without=None):
@@ -240,9 +241,9 @@ class LocusRange(JsonView, DataSlicerMixin):
     """Lookup locuses and return mutations blocked into buckets"""
     model = Mutation
     filters = {
-        'drug': 'strain_mutations__strain__drugs__drug__code',
-        'map': 'strain_mutations__strain__country__iso2',
-        'src': 'strain_mutations__strain__importer',
+        'drug[]': 'strain_mutations__strain__drugs__drug__code__in',
+        'map[]': 'strain_mutations__strain__country__iso2__in',
+        'source[]': 'strain_mutations__strain__importer__in',
     }
     def get_context_data(self, **_):
         """Returns the list of mutations blocked into ranges for this gene"""
@@ -358,9 +359,9 @@ class MutationView(JsonView, DataSlicerMixin):
     required = ['mutation[]',]
     filters = {
         'mutation[]': 'mutations__mutation__name__in',
-        'drug': 'drugs__drug__code',
-        'map': 'country__iso2',
-        'src': 'importer',
+        'drug[]': 'drugs__drug__code__in',
+        'map[]': 'country__iso2__in',
+        'source[]': 'importer__in',
     }
     @property
     def values(self):
