@@ -24,6 +24,11 @@ $(document).ready(function() {
   $('#drug-store').data('json-signal', function(data) {
     console.log("Drugging up!");
     chartData(svg, chart, data.data);
+
+    // Highlights all selected drug labels
+    var existing = getTabData('drug');
+    d3.selectAll('.tick.zero').filter(function() { return existing.includes(d3.select(this).text()) })
+      .classed('selected-drug', true);
   });
 });
 
@@ -62,11 +67,16 @@ function initialiseDrugChart(svg) {
           .transition().duration(1200)
           .call(chart);
 
+    // Selects/deselects the clicked drug
     chart.multibar.dispatch.on("elementClick", function(e) {
-        setTabData('drug', e.data.x, e.data.x, 'map-marker')
+        var label = d3.selectAll('.tick.zero').filter(function() { return d3.select(this).text() == e.data.x });
+        label.classed('selected-drug', !label.classed('selected-drug'));
+        toggleTabData('drug', e.data.x, e.data.x, 'map-marker');
     });
 
+    // Deselects all drugs
     $('#drugs').parent().click(function(e) {
+      d3.selectAll('.tick.zero').classed('selected-drug', false);
       unsetTabData('drug');
     });
 

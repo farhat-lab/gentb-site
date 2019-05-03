@@ -18,6 +18,8 @@
  * along with gentb.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+// TODO: want to change domain to quartiles (>40 is kinda meaningless once we have more data)
+
 $(document).ready(function() {
   $('div.maps').each(function() {
     var map = L.map(this.id).setView([12, 25], 2);
@@ -137,8 +139,6 @@ function mapStrainData(map, color, data) {
     }
     var button1 = $("<button class='btn btn-primary btn-xs'>Select Country</button>").click(function() {
         // WARNING: jquery class selectors and addClass/removeClass DO NOT work here
-        var previous = $('*[class~="countrySelect"]');
-        if(previous.length > 0) { previous.data('deselect')(); }
 
         var next = $('.country-'+country_code);
         // Set element id just in case it's useful later
@@ -149,7 +149,7 @@ function mapStrainData(map, color, data) {
         next.data('deselect', function() { button2.click(); });
 
         // Set the usable data for other charts
-        setTabData('map', country_code, feature.properties.name, 'flag');
+        addTabData('map', country_code, feature.properties.name, 'flag');
 
         button1.hide();
         button2.show();
@@ -160,7 +160,7 @@ function mapStrainData(map, color, data) {
         // WARNING: jquery class selectors and addClass/removeClass DO NOT work here
         var previous = $('.country-'+country_code);
         previous.attr('class', previous.attr('class').replace(' countrySelect', ''));
-        unsetTabData('map');
+        removeTabData('map', country_code);
         button1.show();
         button2.hide();
         map.closePopup();
@@ -171,7 +171,7 @@ function mapStrainData(map, color, data) {
     layer.bindPopup(ret[0]);
 
     var id_cls = 'country-' + country_code;
-    if(existing == country_code) {
+    if(existing.includes(country_code)) {
         id_cls += ' countrySelect';
         button1.hide();
     } else {

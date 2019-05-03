@@ -20,14 +20,12 @@
 
 
 $(document).ready(function() {
-    //$.fn.dataTable.ext.errMode = 'none';
 
-    //var chart = initialiseMutationChart(svg);
     $('#genelocus-store').data('url-signal', function(url, args) {
-      var t_table = $('#gene_map table');
+      var t_table = $('table');
 
       if(t_table.data('loaded')) {
-          return
+          return;
       }
       t_table.data('loaded', 1);
 
@@ -53,7 +51,7 @@ $(document).ready(function() {
             "data": "name",
             "title": "Name",
             "description": "Name of the Gene Locus",
-            //"render": $.fn.dataTable.render.number(',', '.', 3, ''),
+            // "render": $.fn.dataTable.render.number(',', '.', 3, ''),
           },
           {
             "data": "start",
@@ -86,11 +84,10 @@ $(document).ready(function() {
           var data = table.row( this.rowIndex - 1 ).data();
           if ( $(this).hasClass('selected') ) {
             $(this).removeClass('selected');
-            unsetTabData('genelocus');
+            removeTabData('genelocus', data.name);
           } else {
-            $('tr.selected', t_table).removeClass('selected');
             $(this).addClass('selected');
-            setTabData('genelocus', data.name, data.name, ' icon-helix')
+            addTabData('genelocus', data.name, data.name, ' icon-helix')
           }
       });
     });
