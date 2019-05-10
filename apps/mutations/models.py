@@ -541,13 +541,12 @@ class StrainMutation(Model):
 
     # qual, depth[del], bidir
     quality = IntegerField(null=True, blank=True)
-    bi_directional = BooleanField()
 
     # hqr, hqrref, fq, aavar
     mutation_reads    = IntegerField(null=True, blank=True, help_text="The number of sequencing reads that call the mutation")
     reference_reads   = IntegerField(null=True, blank=True, help_text="The number of sequencing reads that call the reference sequence")
     mapping_quality   = IntegerField(null=True, blank=True, help_text="Mapping quality as the root mean square of mapping qualities")
-    animoacid_varient = CharField(max_length=41, null=True, blank=True, help_text="Takes into account the effect of multiple mutations in the same codon")
+    aminoacid_varient = CharField(max_length=41, null=True, blank=True, help_text="Takes into account the effect of multiple mutations in the same codon")
 
     objects = StrainMutationManager()
 

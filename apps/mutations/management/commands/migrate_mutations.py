@@ -181,8 +181,7 @@ class Command(BaseCommand):
             if 'depth' in data and 'hqr' not in 'data':
                 data['hqr'] = data['depth']
             _ = tr(data, qual='quality', cnsqual='quality', bidir='bi_directional', hqr='mutation_reads', hqrref='reference_reads',
-              fq='mapping_quality', aavar='animoacid_varient', depth=None)
-            data['bi_directional'] = data.get('bi_directional', '') == 'Y'
+              fq='mapping_quality', aavar='aminoacid_varient', depth=None)
             (mu, created) = obj.mutations.update_or_create(defaults=data, mutation=mutation)
 
 

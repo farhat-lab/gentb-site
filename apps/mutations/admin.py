@@ -75,7 +75,7 @@ site.register(GeneLocus, GeneLocusAdmin)
 
 class MutationAdmin(ModelAdmin):
     list_display = ('name', 'old_id', 'gene_locus', 'drugs_list')
-    list_filter = ('predictor', 'gene_locus', 'drugs')
+    list_filter = ('predictor', 'drugs')
     search_fields = ('name', 'old_id')
 
     def drugs_list(self, obj):
@@ -89,9 +89,17 @@ site.register(TargetRegion)
 class StrainSourceAdmin(ModelAdmin):
     list_display = ('__str__', 'old_id', 'patient_id', 'country', 'date')
     list_filter = ('importer', 'source_lab', 'patient_sex', 'patient_hiv', 'resistance_group')
+    search_fields = ('name', 'old_id', 'patient_id')
 
 site.register(StrainSource, StrainSourceAdmin)
-site.register(StrainMutation)
+
+
+class StrainMutationAdmin(ModelAdmin):
+    search_fields = ('mutation__name', 'strain__name')
+    list_display = ('mutation', 'strain')
+    raw_id_fields = ('mutation', 'strain')
+
+site.register(StrainMutation, StrainMutationAdmin)
 
 class StrainResistanceAdmin(ModelAdmin):
     list_filter = ('resistance', 'drug')
