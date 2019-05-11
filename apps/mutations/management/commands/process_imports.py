@@ -4,6 +4,7 @@ import logging
 
 from vcf import VCFReader
 
+from django.db import transaction
 from django.db.utils import DataError
 from django.core.management.base import BaseCommand, CommandError
 
@@ -91,6 +92,7 @@ class Command(BaseCommand):
             vcf_file.retrieval_error = str(err)
         return True
 
+    @transaction.atomic
     def import_vcf(self, importer, vcf, var):
         """Import the VCF file and list of mutations into database"""
         if 'ENRICHED' not in vcf.metadata:
