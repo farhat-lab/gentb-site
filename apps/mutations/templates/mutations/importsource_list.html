@@ -11,8 +11,15 @@
       <tr><th>Name</th><th>Added</th><th>Uploaded</th><th>Imported</th><th>Status</th></tr>
     </thead>
     <tbody>
+      {% if perms.mutations.add_strainsource %}
+      <tr>
+        <td colspan="5"><a href="{% url 'genes:upload' %}" class="btn btn-primary btn-sm pull-right"><span class="glyphicon glyphicon-upload"></span> Upload New Import</a></td>
+      </tr>
+      {% endif %}
       {% for object in object_list %}
-      <tr><td><a href="{{ object.get_absolute_url }}">{{ object.name }}</a></td><td>{{ object.created }}</td>
+      <tr>
+        <td><a href="{{ object.get_absolute_url }}">{{ object.name }}</a></td>
+        <td>{{ object.created }}</td>
         <td>{{ object.uploaded.count }}</td>
         <td>{{ object.strainsource_set.count }}</td>
         <td>

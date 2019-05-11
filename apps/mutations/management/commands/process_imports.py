@@ -1,11 +1,8 @@
 
 import sys
-import json
 import logging
 
 from vcf import VCFReader
-
-from collections import defaultdict
 
 from django.db.utils import DataError
 from django.core.management.base import BaseCommand, CommandError
@@ -13,20 +10,20 @@ from django.core.management.base import BaseCommand, CommandError
 from apps.maps.models import Country, Place
 from apps.maps.utils import COUNTRY_MAP, CITY_MAP
 from apps.uploads.models import UploadFile
-from apps.pipeline.models import Pipeline
 
 from apps.mutations.csv_lookups import Lookup as CsvLookup
-from apps.mutations.models import *
+from apps.mutations.models import (
+    ImportSource, Genome, Lineage, Paper, Drug,
+    StrainSource, BioProject, GeneLocus,
+    StrainMutation,
+)
 from apps.mutations.utils import *
 
 LOGGER = logging.getLogger('apps.mutations')
 EMPTY = {None: None, 'None': None, '': None,}
 
-class DataError(ValueError):
-    pass
-
 class NotEnrichedError(ValueError):
-    pass
+    """The VCF File isn't enriched, so can't be imported"""
 
 
 class Command(BaseCommand):
@@ -36,103 +33,62 @@ class Command(BaseCommand):
     studies = EMPTY.copy()
     drugs = EMPTY.copy()
 
-    def handle(self, **kw):
-        try:
-            self.pipeline = Pipeline.objects.get(name='VCF_TO_VAR')
-        except Pipeline.DoesNotExist:
-            sys.stderr.write("No pipeline 'VCF_TO_VAR' which is required.\n")
-            return
+    def __init__(self):
+        self.genome = Genome.objects.get(code='H37Rv')
 
+    def handle(self, **_):
+        """Handle the command being called"""
         for importer in ImportSource.objects.filter(complete=False, uploader__isnull=False):
+            done = 0
             try:
-                if not self.import_source(importer):
-                    # Only break if we returned a 'WAIT' signal
-                    continue
+                for uploaded_file in importer.vcf_files().filter(retrieval_end__isnull=False):
+                    done += self.import_mutations(importer, uploaded_file)
+                    uploaded_file.save()
             except UploadFile.DoesNotExist:
-                sys.stderr.write(" [!] Missing upload file for importer: {}\n".format(str(importer)))
+                sys.stderr.write(" [!] Missing upload file: {}\n".format(str(importer)))
             except (FileNotFound, FieldsNotFound, DataError) as err:
                 sys.stderr.write(" [!] {}: {}\n".format(str(err), str(importer)))
 
-            importer.complete = True
+            importer.complete = (done == importer.vcf_files().count())
             importer.save()
 
-    def import_source(self, importer):
-        count = importer.vcf_files().count()
-        uploads = importer.vcf_files().filter(retrieval_end__isnull=False)
-        #err = importer.vcf_files().filter(retrieval_error__isnull=False)\
-        #                          .exclude(retrieval_error='').count()
-        #notloads = count - uploads.count() - err
+    def import_mutations(self, importer, vcf_file):
+        """
+        Import mutations from this vcf file, returns True if the process is complete
+        either in error or success. retrieval_error is set when in error while flag
+        is set when waiting.
+        """
+        if vcf_file.flag not in ["", None, "WAIT"]:
+            # Previously processed, ignore
+            return True
 
-        #if notloads:
-        #    return sys.stderr.write("Waiting for {} Uploads\n".format(notloads))
-        #elif err:
-        #    sys.stderr.write("Trying to continue past {} errors\n".format(err))
-        #if count == 0:
-        #    return sys.stderr.write("No files to upload!")
+        vcf_file.retrieval_error = ""
+        if not os.path.isfile(vcf_file.fullpath):
+            # File is missing, even though uploader says the uploading process is complete.
+            vcf_file.retrieval_error = "VCF File is missing!"
+            vcf_file.flag = 'MIA'
+            return True
 
-        #uploads.filter(flag='ERR').update(flag='OK', retrieval_error='')
+        var_file = vcf_file.fullpath[:-4] + '.var'
+        if not os.path.isfile(var_file):
+            # It's not ready yet, an external process will populate the var file
+            vcf_file.flag = "WAIT"
+            return False
 
-        # Create a pipeline to process all the uploads
-        for upload in uploads.exclude(flag__in=('VCF', 'ERR')):
-            output_dir = os.path.dirname(upload.fullpath)
-            runner = self.pipeline.run(
-                'IMPORTER{:d}:VCF{:d}'.format(importer.pk, upload.pk),
-                rerun=True, file=upload.fullpath, output_dir=output_dir)
-            if upload.flag not in ['VCF', 'ERR']:
-                if runner.update_all():
-                    if runner.get_errors():
-                        upload.flag = 'ERR'
-                        upload.retrieval_error = runner.get_errors()
-                    else:
-                        upload.flag = 'VCF'
-                    upload.save()
-
-        # Dying so quickly if a single one failed is very flaky
-        #err = uploads.filter(flag='ERR')
-        #if err.count():
-        #    raise DataError("Errors in VAR loading caused us to stop.")
-
-        for upload in uploads.exclude(flag__in=('VCF', 'ERR')):
-            if os.path.isfile(upload.fullpath[:-4] + '.var'):
-                print("Manual flag {} as DONE".format(upload.fullpath))
-                upload.flag = 'VCF'
-                upload.save()
-            
-        ready = uploads.filter(flag='VCF')
-        notready = count - ready.count()
-        #if notready:
-            #print(uploads.exclude(flag='VCF'))
-            #return sys.stderr.write("Waiting for {} VCF Files\n".format(notready))
-
-        self.genome = Genome.objects.get(code='H37Rv')
-
-        for fl in importer.vcf_files():
-            fl.retrieval_error = ""
-            if not os.path.isfile(fl.fullpath):
-                fl.retrieval_error = "VCF File is missing!"
-                fl.save()
-                continue
-
-            vcf = VCFReader(filename=fl.fullpath)
-            var_file = fl.fullpath[:-4] + '.var'
-            if not os.path.isfile(var_file):
-                print("Failed to find var file: {}".format(var_file))
-                continue
-            var = CsvLookup(filename=fl.fullpath[:-4] + '.var', key='varname')
-            try:
-                fl.name = self.import_vcf(importer, vcf, var)
-                fl.flag = 'DONE'
-            except DataError as err:
-                fl.flag = 'DATA'
-                sys.stderr.write("Error: {}\n".format(err))
-                fl.retrieval_error = str(err)
-            except NotEnrichedError:
-                fl.flag = 'POOR'
-            except Country.DoesNotExist as err:
-                fl.flag = 'NOCO'
-                fl.retrieval_error = str(err)
-
-            fl.save()
+        vcf = VCFReader(filename=vcf_file.fullpath)
+        var = CsvLookup(filename=vcf_file.fullpath[:-4] + '.var', key='varname')
+        try:
+            vcf_file.name = self.import_vcf(importer, vcf, var)
+            vcf_file.flag = 'DONE'
+        except DataError as err:
+            vcf_file.flag = 'DATA'
+            sys.stderr.write("Error: {}\n".format(err))
+            vcf_file.retrieval_error = str(err)
+        except NotEnrichedError:
+            vcf_file.flag = 'POOR'
+        except Country.DoesNotExist as err:
+            vcf_file.flag = 'NOCO'
+            vcf_file.retrieval_error = str(err)
         return True
 
     def import_vcf(self, importer, vcf, var):
@@ -184,7 +140,10 @@ class Command(BaseCommand):
         datum['old_id'] = other_name
 
         if 'LINEAGE' in vcf.metadata:
-            datum['lineage'] = Lineage.objects.get_or_create(name=vcf.metadata['LINEAGE'][0], slug=name)[0]
+            datum['lineage'] = Lineage.objects.get_or_create(
+                name=vcf.metadata['LINEAGE'][0],
+                slug=name,
+            )[0]
 
         study = None
         if 'STUDY' in vcf.metadata:
@@ -217,7 +176,11 @@ class Command(BaseCommand):
             ))
 
         strain.generate_resistance_group()
+        self.save_mutations(strain, var)
+        return name
 
+    def save_mutations(self, strain, var):
+        """Save all the mutations in the var file"""
         for snp in var.values():
             #gene = snp['regionid1']
             if 'varname' not in snp or len(snp['varname']) > 80:
@@ -229,7 +192,6 @@ class Command(BaseCommand):
                 # Ignore that and ask for a new one
                 locus, _ = GeneLocus.objects.update_or_create(name=locus, genome=self.genome)
             except ValueError:
-                #raise DataError("Failed to unpack {varname}".format(**snp))
                 sys.stderr.write("Failed to unpack {varname}\n".format(**snp))
                 continue
             except GeneLocus.DoesNotExist:
@@ -241,7 +203,7 @@ class Command(BaseCommand):
                 continue
 
             try:
-                locus.mutations.get_or_create(name=mutation, defaults=dict(
+                (mutation, _) = locus.mutations.get_or_create(name=mutation, defaults=dict(
                     nucleotide_position=None,
                     nucleotide_reference=None,
                     nucleotide_varient=None,
@@ -252,8 +214,20 @@ class Command(BaseCommand):
                     codon_varient=snp.get('altcodon', None),
                     codon_reference=snp.get('codon', None),
                 ))
-            except Exception as err:
+
+                strain.mutations.get_or_create(mutation=mutation, defaults=dict(
+                    quality=to_num(snp.get('qual', 0)),
+                    mutation_reads=to_num(snp.get('hqr', 0)),
+                    reference_reads=to_num(snp.get('hqr_ref', 0)),
+                    mapping_quality=to_num(snp.get('fq', 0)))
+                )
+            except (ValueError, IndexError, KeyError) as err:
                 sys.stderr.write("Failed to add mutation: {} ({}) {}\n".format(mutation, err, snp))
                 continue
 
-        return name
+def to_num(num):
+    """Force a value to be a number"""
+    try:
+        return int(num)
+    except ValueError:
+        return 0

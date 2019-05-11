@@ -69,7 +69,7 @@
                       <a href="{% url 'genes:upload' %}" class="btn btn-primary pull-right"><span class="glyphicon glyphicon-upload"></span></a>
                     {% endif %}
                     <span class="glyphicon glyphicon-question-sign pull-left" style="font-size:1.2em; padding-right: 8px;"></span>
-                    You may select or deselect a data set by clicking on the <strong>'Name'</strong> from the selection below.{% if perms.maps.can_upload_strains %} You may also upload new data by clicking the upload button on the right side of this box.{% endif %}
+                    You may select or deselect a data set by clicking on the <strong>'Name'</strong> from the selection below.{% if perms.mutations.add_strainsource %} You may also upload new data by clicking the upload button on the right side of this box.{% endif %}
                   </div>
                   <div class="sources" id="sources" style="padding: 10px;">
                     <a href="#" class="btn btn-default" id="source_template" style="margin: 10px;">

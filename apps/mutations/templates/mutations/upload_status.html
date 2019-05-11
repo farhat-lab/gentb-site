@@ -21,18 +21,18 @@
 {% block "dialog-body" %}
     <dl class="dl-horizontal">
       <dt>Source Count</dt>
-      <dd>{{ object.sources.count }}</dd>
+      <dd>{{ object.sources.count|default:0 }}</dd>
       {% if object.complete %}
         <dt>Mutations</dt>
-        <dd>{{ object.mutations.count }}</dd>
+        <dd>{{ object.mutations.count|default:0 }}</dd>
       {% endif %}
       {% if object.uploader and object.vcf_files.count %}
         <dt>VCF Files</dt>
-        <dd>{{ object.vcf_files.count }}</dd>
+        <dd>{{ object.vcf_files.count|default:0 }}</dd>
       {% endif %}
       {% if object.resistances.count %}
         <dt>Resistances</dt>
-        <dd>{{ object.resistances.count }}</dd>
+        <dd>{{ object.resistances.count|default:0 }}</dd>
       {% endif %}
     </dl>
     <table class="table table-striped">
@@ -53,8 +53,10 @@
               <td>
                 {% if item.flag == "DONE" %}
                   <span class="label label-success">Done</span>
-                {% elif item.flag == "VCF" %}
+                {% elif item.flag == "VCF" or not item.flag %}
                   <span class="label label-default">Pending</span>
+                {% elif item.flag == "WAIT" %}
+                  <span class="label label-default">Waiting</span>
                 {% elif item.flag == "ERR" %}
                   <span class="label label-danger" title="{{ item.retrieval_error }}">Processing Error</span>
                 {% elif item.flag == "POOR" %}
