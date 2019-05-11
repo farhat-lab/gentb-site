@@ -391,16 +391,6 @@ class ImportSource(Model):
         """Returns a list of uploaded vcf files"""
         return self.uploaded.filter(filename__contains='vcf')
 
-    def processed(self):
-        """Returns a percentage completion of the pipeline process"""
-        from apps.pipeline.models import ProgramRun
-        qset = ProgramRun.objects.filter(piperun__name__istartswith='IMPORTER{:d}'.format(self.pk))
-        if qset.count() == 0:
-            return None
-        done = float(qset.filter(completed__isnull=False).count())
-        return "{:.0f}%".format(done / qset.count() * 100)
-
-
 TEST_CHOICES = (
     ('', 'Not tested'),
     ('NUL', 'Value does not exist but is not required'),
