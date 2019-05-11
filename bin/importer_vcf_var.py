@@ -4,7 +4,9 @@
 import os
 import sys
 import fnmatch
+import atexit
 
+from datetime import datetime
 from subprocess import Popen
 
 DIR = os.path.abspath(os.path.dirname(__file__))
@@ -30,6 +32,21 @@ def prepare_lmod():
         module('load', 'gcc')
         module('load', 'perl')
 
+def lock_dir(path):
+    """Prevent this command from running more than once"""
+    lock_file = os.path.join(path, '.import.lock')
+    if os.path.isfile(lock_file):
+        sys.stderr.write("Importer is locked: {}\n".format(lock_file))
+        sys.exit(5)
+
+    def unlock():
+        """Remove the lock file on request"""
+        if os.path.isfile(lock_file):
+            os.unlink(lock_file)
+
+    atexit.register(unlock)
+    with open(lock_file, 'w') as fhl:
+        fhl.write(str(datetime.now()))
 
 def annotate(vcf_file):
     """Attempt to annotate the given file"""
@@ -52,6 +69,8 @@ if __name__ == '__main__':
         if not os.path.isfile(fname):
             sys.stderr.write("Can't find data file: {}\n".format(fname))
             sys.exit(3)
+
+    lock_dir(sys.argv[1])
 
     prepare_lmod()
 
