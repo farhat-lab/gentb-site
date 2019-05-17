@@ -124,7 +124,7 @@ class ManualUploadView(View):
             except AttributeError as err:
                 return HttpResponse(str(err), status=404)
 
-        HttpResponse(status=404)
+        return HttpResponse(status=404)
 
     def get_files(self, prot, url):
         """
