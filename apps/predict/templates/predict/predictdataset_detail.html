@@ -22,6 +22,11 @@
     <div class="col-lg-12">
         <h1 class="page-header">{{ title }} <small><span class="label label-{{ object.get_status_level }}">{{ object.get_status }}</span></small></h1>
 
+{% if object.get_status_level == "danger" %}
+<div class="alert alert-danger">
+  <strong>Please note</strong> genTB predict is still in beta-version and runs on an academic compute cluster that faces occasional outages. Unfortunately the submitted job failed to run. We have notified the developers to trouble shoot. Please try again later.
+</div>
+{% endif %}
 
     <div class="col-lg-12 col-sm-12" id="dataselect">
       <div class="col-lg-12 col-md-12 col-sm-12">
