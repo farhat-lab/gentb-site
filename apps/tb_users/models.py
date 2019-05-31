@@ -7,7 +7,7 @@ from django.contrib.auth.models import User
 from model_utils.models import TimeStampedModel
 
 class TBUser(models.Model):
-    user = models.OneToOneField(User)
+    user = models.OneToOneField(User, related_name='tbuser')
     affiliation = models.CharField(max_length=255)
 
     md5 = models.CharField(max_length=40, blank=True, db_index=True, help_text='auto-filled on save')

@@ -1,0 +1,23 @@
+-----------
+Dataset
+-----------
+
+ * Title: {{ object.title }}
+ * Description: {{ object.description }}
+ * Status: {{ object.get_status }}
+ * Link: https://{{ site.domain }}{{ object.get_absolute_url }}
+
+-----------
+Processing
+-----------
+
+{% for strain in object.strains.all %} * {{ strain }}: [{{ strain.piperun.text_status }}] {{ strain.get_status }}
+{% endfor %}
+-----------
+Contact
+-----------
+* Name: {{ user }}
+* Affiliation: {{ user.tbuser.affiliation }}
+* Email: {{ user.email }}
+
+({% now "F jS, Y f:s a" %})

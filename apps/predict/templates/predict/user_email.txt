@@ -1,0 +1,30 @@
+-----------
+Dataset
+-----------
+
+ * Title: {{ object.title }}
+ * Description: {{ object.description }}
+ * Status: {{ object.get_status }}
+{% if object.status == 6 or object.status == 7 %}
+Your dataset has been processed.  The details are below:
+{% else %}
+Sorry! The processing of your file has failed.
+
+We are sorry for any inconvenience, we are looking into the error and will email you about next steps shortly.
+{% endif %}
+Link to your dataset details page: https://{{ site.domain }}{{ object.get_absolute_url }}
+
+-----------
+Processing
+-----------
+
+{% for strain in object.strains.all %} * {{ strain }}: [{{ strain.piperun.text_status }}] {{ strain.get_status }}
+{% endfor %}
+-----------
+Contact
+-----------
+* Name: {{ user }}
+* Affiliation: {{ user.tbuser.affiliation }}
+* Email: {{ user.email }}
+
+({% now "F jS, Y f:s a" %})

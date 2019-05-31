@@ -98,6 +98,8 @@ class PredictDataset(TimeStampedModel):
     delete_sources = BooleanField(default=False,\
         help_text="If this is checked, we will delete all your input files"\
             " downloaded from dropbox after running the predict.")
+    has_notified = BooleanField(default=False,\
+        help_text="Has this predict messaged the user about the status of their jobs.")
 
     description = TextField('Dataset description')
     file_directory = CharField(max_length=255, blank=True)
