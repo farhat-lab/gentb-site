@@ -10,10 +10,6 @@ from chore import JobSubmissionError
 
 from apps.pipeline.models import PipelineRun, ProgramRun
 
-def bitset(*args):
-    """Turn a set of booleans into a bit array and then into an integer"""
-    return int(''.join(reversed([str(int(bool(arg))) for arg in args])), 2)
-
 def log(msg, *args, **kwargs):
     """Write consistantly to output"""
     kwargs['dt'] = datetime.now().isoformat()
@@ -35,12 +31,7 @@ class Command(BaseCommand):
 
             piperun.update_all()
 
-            stat = ''.join(['_> =!!?!'[bitset(
-                progrun.is_submitted,
-                progrun.is_complete,
-                progrun.is_error)] for progrun in piperun.programs.all()])
-
-            log("STAT: {} |{}|".format(piperun, stat))
+            log("STAT: {} |{}|".format(piperun, piperun.text_status()))
 
         # Rerun process
         for run in ProgramRun.objects.filter(is_submitted=False, is_error=True):

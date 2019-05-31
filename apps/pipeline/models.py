@@ -348,6 +348,18 @@ class PipelineRun(TimeStampedModel):
     def __str__(self):
         return "Pipeline Run %s" % self.name
 
+    def text_status(self):
+        """Generate a textual status of the run"""
+        def bitset(*args):
+            """Turn a set of booleans into a bit array and then into an integer"""
+            return int(''.join(reversed([str(int(bool(arg))) for arg in args])), 2)
+
+        return ''.join(['_> =!!?!'[bitset(
+            progrun.is_submitted,
+            progrun.is_complete,
+            progrun.is_error
+        )] for progrun in self.programs.all()])
+
     def get_absolute_url(self):
         """Return a link to this pipeline run for review"""
         return reverse('pipeline:run', kwargs={'pk': self.pk})
