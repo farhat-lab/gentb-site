@@ -126,6 +126,8 @@ class JobViewer(ProtectedMixin, TemplateView):
         if item['error'] and item['error'] != 'None':
             finished = 'danger'
         item['cols'] = [item.get(c, None) for c in cols]
+        if item['started'] == item['finished'] and item['return'] == 129:
+            item['status'] = 'not run'
         item['context'] = {
             'finished': finished,
             'pending': 'default',
