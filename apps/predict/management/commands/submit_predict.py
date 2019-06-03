@@ -1,8 +1,10 @@
 """
 Submit the pipeline job as soon as the file download is complete.
 """
+import os
 import sys
 import time
+import shutil
 from datetime import datetime
 
 from django.core.management.base import BaseCommand
@@ -95,3 +97,29 @@ class Command(BaseCommand):
                 log("ERR: {} ({}): {}", strain, strain.pipeline, err)
 
         self.notify_users()
+        clean_predict_dir()
+
+
+def clean_predict_dir():
+    """
+    Attempt to remove any of the directories no longer in use to save space.
+    """
+    parent = '/n/groups/gentb_www/predictData'
+    log("Starting cleaning process: {}".format(parent))
+    expected = list(PredictDataset.objects.values_list('file_directory', flat=True))
+    found = os.listdir(parent)
+
+    for fname in found:
+        path = unicode(os.path.join(parent, fname))
+        if path not in expected:
+            try:
+                shutil.rmtree(path)
+            except OSError:
+                sys.stderr.write(" [!] {}\n".format(path))
+            else:
+                sys.stderr.write(" [X] {}\n".format(path))
+
+    for path in expected:
+        if not os.path.isdir(path):
+            sys.stderr.write(" [R] {}\n".format(path))
+            PredictDataset.objects.get(file_directory=path).delete()
