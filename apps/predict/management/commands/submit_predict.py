@@ -96,8 +96,8 @@ class Command(BaseCommand):
             except Exception as err: # pylint: disable=broad-except
                 log("ERR: {} ({}): {}", strain, strain.pipeline, err)
 
-        self.notify_users()
         clean_predict_dir()
+        self.notify_users()
 
 
 def clean_predict_dir():
@@ -122,4 +122,4 @@ def clean_predict_dir():
     for path in expected:
         if not os.path.isdir(path):
             sys.stderr.write(" [R] {}\n".format(path))
-            PredictDataset.objects.get(file_directory=path).delete()
+            PredictDataset.objects.filter(file_directory=path).delete()
