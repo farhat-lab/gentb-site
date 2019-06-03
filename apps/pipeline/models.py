@@ -39,7 +39,6 @@ from datetime import timedelta
 import random
 
 import logging
-LOGGER = logging.getLogger('apps.pipeline')
 
 from django.db.models import (
     Model, Q, PositiveIntegerField, FileField, SlugField, DateTimeField,
@@ -57,6 +56,8 @@ from django.utils.timezone import now
 
 from .utils import file_as_inputs
 
+LOGGER = logging.getLogger('apps.pipeline')
+
 class PrepareError(ValueError):
     """Error when preparing a command fails"""
 
@@ -64,16 +65,17 @@ class Pipeline(Model):
     """
     Keeps a list of programs to run and what they do.
     """
-    name        = CharField(max_length=128)
-    description = TextField(null=True, blank=True,
-            help_text='Describe the pipeline and what it does in detail.')
-    test_files  = ManyToManyField('ProgramFile', related_name='tested_in',
-            help_text='Input files used to run the pipeline test', blank=True)
+    name = CharField(max_length=128)
+    description = TextField(null=True, blank=True,\
+        help_text='Describe the pipeline and what it does in detail.')
+    test_files = ManyToManyField('ProgramFile', related_name='tested_in',\
+        help_text='Input files used to run the pipeline test', blank=True)
 
     def __str__(self):
         return self.name
 
     def get_absolute_url(self):
+        """Return a link to the details page for this pipeline"""
         return reverse('pipeline:detail', kwargs={'pk': self.pk})
 
     def run(self, name=None, commit=True, rerun=False, for_test=False, **kwargs):
@@ -123,18 +125,21 @@ class Program(Model):
                         r'{(?P<literal>"?)(?P<name>[-\w]+)"?\}(?P<suffix>[^\s;|>]*)')
 
     name = CharField(max_length=128)
-    description = TextField(null=True, blank=True,
-            help_text='Describe the program and what it does in detail.')
+    description = TextField(null=True, blank=True,\
+        help_text='Describe the program and what it does in detail.')
 
     command_line = TextField(
-            help_text='Write the command line using replacement syntax '
-            'for inputs and outputs')
-    keep = BooleanField(default=True,
-            help_text="Should the output files be kept or deleted.")
-    files = ManyToManyField('ProgramFile', related_name='use_in', blank=True,
-            help_text="Files used when running this program")
-    test_files = ManyToManyField('ProgramFile', related_name='test_in',
-            blank=True, help_text="Files to test just this program.")
+        help_text='Write the command line using replacement syntax '
+        'for inputs and outputs')
+    keep = BooleanField(default=True,\
+        help_text="Should the output files be kept or deleted.")
+    wait_for_files = BooleanField(default=False,\
+        help_text="Wait for files, use this if the cluster is not syncing files before"\
+        "running the job and causing errors.")
+    files = ManyToManyField('ProgramFile', related_name='use_in', blank=True,\
+        help_text="Files used when running this program")
+    test_files = ManyToManyField('ProgramFile', related_name='test_in',\
+        blank=True, help_text="Files to test just this program.")
     memory = CharField(max_length=16, default='1000M', choices=[
         ('500M', '500MB'),
         ('1M', '1GB'),
@@ -286,6 +291,14 @@ class Program(Model):
             # Replace the command line section that matches with out filename
             (start, end) = match.span()
             cmd = cmd[:start] + filename + cmd[end:]
+
+        if self.wait_for_files:
+            # Add a process to wait for files to exist
+            template = "while [[ ! `head -c 10 \"{}\"` ]]; do sleep 30; done\n"
+            for key in files:
+                # It must be an input file that DOES NOT already exist
+                if key[0] == '$' and (not os.path.isfile(files[key]) or 1):
+                    cmd = template.format(files[key]) + cmd
 
         # Do the line replacer after the matching to preserve file placements.
         cmd = cmd.replace('\r', '').replace('\n\n', '\n')
