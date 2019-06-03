@@ -80,7 +80,6 @@ class DropDownData(JsonView):
     """Drop and drag data response"""
     def get_context_data(self, *args, **kwargs):
         """Gather together all the data for drugs"""
-        super(DropDownData, self).get_context_data(*args, **kwargs)
         ret = {
             'levels': ['Drug', 'Gene Locus', 'Mutation'],
             'children': [],
