@@ -112,7 +112,9 @@ class PredictDataset(TimeStampedModel):
 
     def get_absolute_url(self):
         """Return a link to thedataset view"""
-        return reverse('predict:view_single_dataset', kwargs=dict(slug=self.md5))
+        if self.md5:
+            return reverse('predict:view_single_dataset', kwargs=dict(slug=self.md5))
+        return '/'
 
     def get_status(self):
         """Returns the status as a string"""
