@@ -3,7 +3,7 @@ use strict;
 use warnings;
 ### script that takes in .vcf file and produces a .var file. Filters and combines the mutation data in .vcf file with data from 2 genome coordinate files (with headers) #####(one for coding ###regions and one for non coding regions) to add functional data. Also requires h37rv.fasta file (there reference genome sequence file) and ###get_seq_coord.pl script to exist ###in the same folder
 
-### example command ./flatAnnotatorVAR.pl test.vcf qual{0-255} hetero{0-1} platypusfilter{PASS|ALL} (output will be test.var) 
+### example command ./flatAnnotatorVAR.pl test.vcf qual{0-255} hetero{0-1} filter{PASS|ALL|AMB}(multiple filter tags can be included separated by space) (output will be test.var) 
 use Cwd qw(abs_path);
 use FindBin qw($Bin);
 use lib abs_path($Bin);
@@ -21,17 +21,17 @@ my $Creference = shift @ARGV; # ${h37rv_coding}.txt
 my $Nreference = shift @ARGV; # ${h37rv_noncoding}.txt
 my $snpfile = shift @ARGV; # ${file}.vcf
 #my $refPath= shift @ARGV;
-my $qualThresh = (shift@ARGV)||0; # 15
+my $qualThresh = (shift@ARGV)||0; # 10
 my $heteroThresh = (shift@ARGV)||0; # 0.1
-my $platypusFilter = (shift@ARGV)||'PASS'; # PASS
-if ($platypusFilter =~ m/pass/i) {
-  $platypusFilter = 'PASS'; #NOTE: can include '|badReads|alleleBias' if using stampy/platypus pipeline as calls are conservative
-} else {
-  #$platypusFilter =~ s/\-/\|/g;
-  #$platypusFilter = "qr/(?!\A.*$platypusFilter.*\z)/"; 
-  $platypusFilter = ".+?"; #match anything
-}
-#print STDERR $platypusFilter;
+my $Filter = (join '|', @ARGV)||'PASS';
+#if ($Filter =~ m/pass/i) {
+#  $Filter = 'PASS'; #NOTE: can include '|badReads|alleleBias' if using stampy/platypus pipeline as calls are conservative
+#} else {
+  #$Filter =~ s/\-/\|/g;
+  #$Filter = "qr/(?!\A.*$platypusFilter.*\z)/"; 
+  #$Filter = ".+?"; #match anything
+#}
+print STDERR "including all variants with filter tag $Filter, at purity >= $heteroThresh and quality >= $qualThresh";
 #my $aasnp;
 (my $strain) = ($snpfile =~ m/(strain\d+)/);
 my $DEBUG=1;
@@ -148,7 +148,7 @@ open IN,"<$snpfile";
 my $asnpfile  = $snpfile;
 
 my $OUT = *STDOUT;
-print $OUT "reference\tregionid1\tgenesymbol1\tregionid2\tgenesymbol2\tvarname\tvar_len\tdesc1\tdesc2\tqual\tdepth\tbidir\thqr\thqr_ref\tfq\tcodon\taltcodon\tcodpos\tplatypusfilter";
+print $OUT "reference\tregionid1\tgenesymbol1\tregionid2\tgenesymbol2\tvarname\tvar_len\tdesc1\tdesc2\tqual\tdepth\tbidir\tvar_depth\tpurity\tfq\tcodon\taltcodon\tcodpos\tfilter";
 my $counthc;
 my $source;
 while (<IN>) {
@@ -326,7 +326,6 @@ if ($_ =~ m/^source/i) {
   } #close high Quality
 } #vcf file complete
 
-close SNP;
 close IN;
 
 #####################################################################################################################################################
@@ -837,19 +836,27 @@ sub qualityControl_pilon
   $ex=1 if $ref_allele =~ /N/; #ambiguous reference
   $ex=1 if $allele =~ /N/; #ambiguous/imprecise change
   $ex=1 if $allele =~ m/,|</; #heterogenous allele or <dup>
-  (my $hqr)= ($info =~ /AF=((\d+(\.\d*)?)|(\.\d+))$/)||0.7666666;    ###MARTIN PLEASE CHECK THIS REGEX
-  if ($hqr eq ".") { #for some indels this may happen
-   $hqr=0.7666666; #to patch this error
+  my $hqr;
+  if ($info =~ /AF=/) {
+	($hqr)= ($info =~ /AF=([0-9|\.]*)/);	
+  } else { #imprecise excluded above
+	#print STDERR "here!!!!\n";
+	$hqr=0.766;
   }
+  #print STDERR "$info\n$hqr\n";
   if ($snpqual eq ".") {
-    $snpqual=21;
+    $snpqual=11;
   }
-  if ($filter =~ m/;/ || $snpqual <=$qualThresh || $filter !~ m/$platypusFilter/  || $hqr <=$heteroThresh ) {
+  if ($filter =~ m/;/ || $snpqual <$qualThresh ) {
       $ex=1;
   }
-  my $hqr_var = $hqr * $depth;
-  my $hqr_ref = (1-$hqr) * $depth;
-  return $depth, '-', $hqr_var, $hqr_ref, -1, $ex;
+  if ($filter =~ m/$Filter/i && $hqr >= $heteroThresh ) {
+  } else {
+      $ex=1;
+  }
+  my $hqr_var = int( $hqr * $depth +0.5);
+  #my $hqr_ref = int( (1-$hqr) * $depth +0.5);
+  return $depth, '-', $hqr_var, $hqr, -1, $ex;
 }
 
 #---------------------------------------------------------------------------------------
@@ -882,7 +889,7 @@ sub qualityControl_platypus
   if ($snpqual eq ".") {
     $snpqual=21;
   }
-  if ($filter =~ m/;/ || $snpqual <=$qualThresh || $filter !~ m/$platypusFilter/ || $hqr_var/($hqr_var + $hqr_ref) < $heteroThresh) { 
+  if ($filter =~ m/;/ || $snpqual <=$qualThresh || $filter !~ m/$Filter/ || $hqr_var/($hqr_var + $hqr_ref) < $heteroThresh) { 
     $ex=1;
   }
   return $depth, $bidir, $hqr_var, $hqr_ref, $fq, $ex;
