@@ -142,7 +142,7 @@ class Program(Model):
         blank=True, help_text="Files to test just this program.")
     memory = CharField(max_length=16, default='1000M', choices=[
         ('500M', '500MB'),
-        ('1M', '1GB'),
+        ('1G', '1GB'),
         ('2G', '2GB'),
         ('5G', '5GB'),
         ('10G', '10GB'),
