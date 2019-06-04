@@ -197,7 +197,7 @@ class PredictDataset(TimeStampedModel):
             row = {'name': strain.name, 'cols': []}
             output['rows'].append(row)
 
-            for drug, (drprob, fpos, fneg, graph) in strain.get_prediction(locusts):
+            for drug, (drprob, fneg, fpos, graph) in strain.get_prediction(locusts):
                 if drug not in output['cols']:
                     output['cols'].append(drug)
 
@@ -469,14 +469,14 @@ class PredictStrain(Model):
 
     def get_prediction(self, locusts=None):
         """Get the prediction data formatted for heatmap and scatter plots"""
-        for name, dat in self.get_raw_prediction():
-            for (drug_code, dr, fp, fn), A, B in dat:
+        for _, dat in self.get_raw_prediction():
+            for (drug_code, dr, fneg, fpos), A, B in dat:
                 try:
                     drug = Drug.objects.get(code__iexact=drug_code)
                 except Drug.DoesNotExist:
                     sys.stderr.write("Can't find drug %s\n" % drug_code)
                     continue
-                yield (drug_code, (dr, fp, fn, self.get_graph(drug, A, B, locusts)))
+                yield (drug_code, (dr, fneg, fpos, self.get_graph(drug, A, B, locusts)))
 
     def get_graph(self, drug, A, B, locusts=None):
         locusts = [] if locusts is None else locusts
