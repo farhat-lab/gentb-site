@@ -43,6 +43,8 @@ def generate_matrix(variants, filename):
             parts = snpname.split('_')
             if snpname in variants:
                 out[snpname] = "1"
+                #sys.stderr.write(snpname)
+                #sys.stderr.write("\tmatch!!!!!!!\n")
             elif parts[1] in ['CN', 'CS', 'CZ']:
                 # coding snps pool changes that cause the same aachange
                 if re.search(r'\*$', parts[4]): #for to stop changes
@@ -53,39 +55,52 @@ def generate_matrix(variants, filename):
                     parts[5] = parts[5][0:(len(parts[5])-1)] + "."
                 pattern = parts[4] + "_" + parts[5]
                 pattern = r"\s?([\w\.]+%s[\w\.]*)\s?" % pattern
-                ita = tuple(re.finditer(pattern, "\t".join(variants), re.IGNORECASE))
+                ita = tuple(re.finditer(pattern, ",".join(variants), re.IGNORECASE))
                 if len(ita) > 1:
                     out[ita[0].group()] = "1"
                     #plan to add more matching to the right mutation here in a future version
+                    #sys.stderr.write(ita[0].group())
+                    #sys.stderr.write("match!!!!!!!\n")
                 elif len(ita) == 1:
                     out[ita[0].group()] = "1"
+                    #sys.stderr.write(ita[0].group())
+                    #sys.stderr.write("match!!!!!!!\n")
             elif parts[1] in ['CF']:
                 #coding frameshifts pool all that occur at the same nucleotide start
                 pattern = parts[1] + '_' + parts[2] + r'_[^\s\,]+_' + parts[5]
                 pattern = r"\s?([\w\.]+%s[\w\.]*)\s?" % pattern
-                itb = tuple(re.finditer(pattern, "\t".join(variants), re.IGNORECASE))
+                itb = tuple(re.finditer(pattern, ",".join(variants), re.IGNORECASE))
                 if len(itb) > 1:
                     out[itb[0].group()] = "1"
                     #plan to add more matching to the right mutation here in a future version
+                    #sys.stderr.write(itb[0].group())
+                    #sys.stderr.write("match!!!!!!!\n")
                 elif len(itb) == 1:
                     out[itb[0].group()] = "1"
+                    #sys.stderr.write(itb[0].group())
+                    #sys.stderr.write("match!!!!!!!\n")
             elif parts[1] == 'P':
                 # promoter (to maintain compatibility with old naming used in
                 # randomforest built from MIP data
                 operon = parts[len(parts)-1].split('-')
+                #sys.stderr.write(str(operon))
                 if operon[0] == "promoter":
                     pattern = parts[3] + '_' + operon[0] + '_' + operon[1]
                 else:
                     pattern = parts[3] + '_' + parts[4] + '_' + operon[0]
 
+                #sys.stderr.write(str(pattern))
+                #sys.stderr.write("\n")
                 pattern = r"\s?([\w\.]+%s[\w\.]*)\s?" % pattern
-                itc = tuple(re.finditer(pattern, "\t".join(variants), re.IGNORECASE))
+                itc = tuple(re.finditer(pattern, ",".join(variants), re.IGNORECASE))
                 if len(itc) > 1:
                     out[itc[0].group()] = "1"
                     #plan to add more matching to the right mutation here in a future version
                 elif len(itc) == 1:
                     out[itc[0].group()] = "1"
-
+                    #sys.stderr.write(itc[0].group())
+                    #sys.stderr.write("match!!!!!!!\n")
+    
     for variant in variants:
         output2.write("," + str(int(variant in out)))
     output2.write("\n")
