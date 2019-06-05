@@ -1,4 +1,4 @@
-{% load static %}
+{% load static filetype %}
 
 {% for strain in object.strains.all %}
   <h3 class="well-label"><span class="label label-success">{{ strain.name }}</span></h3>
@@ -6,10 +6,10 @@
     <div class="row">
       {% for url, fn, name in strain.output_files %}
         <a href="{{ url }}" class="btn btn-default">
-	  <!--img src="{% static "images/files/base.png" %}"-->
-          <h1 class="glyphicon glyphicon-file"></h1>
-          <br/>
-	  <p href="{{ url }}">{{ name }}</p>
+          {% with fn|fileicon as ft %}
+            <img src="{% static ft %}">
+            <p href="{{ url }}">{{ name }}</p>
+          {% endwith %}
         </a>
       {% endfor %}
     </div>

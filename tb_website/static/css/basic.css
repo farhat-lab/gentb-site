@@ -100,3 +100,66 @@ td.field input[type="checkbox"] {
   background-color: #bbb;
   border-color: #555;
 }
+.well.files {
+  padding: 5px;
+  margin: 0px;
+}
+
+.well.files .row {
+  padding: 0px;
+  margin: 0px;
+}
+.well.files a.btn.btn-default {
+  background-color: transparent;
+  border: 1px solid transparent;
+  border-radius: 5px;
+  margin: 0px;
+  padding: 0px;
+  width: 98%;
+  color: #444;
+  transition: background-color 0.5s ease-in-out;
+}
+@media (min-width: 350px) and (min-width: 12em) {
+  .well.files a.btn.btn-default {
+    width: 48%;
+  }
+}
+@media (min-width: 500px) and (min-width: 20em) {
+  .well.files a.btn.btn-default {
+    width: 24%;
+  }
+}
+@media (min-width: 900px) and (min-width: 40em) {
+  .well.files a.btn.btn-default {
+    width: 15%;
+  }
+}
+.well.files a.btn.btn-default p {
+  color: #444;
+  background-color: white;
+  padding: 5px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  margin: 0px;
+  overflow: hidden;
+  font-size: 85%;
+  text-align: center;
+  transition: background-color,border-color 0.5s ease-in-out;
+}
+.well.files a.btn.btn-default:hover {
+  color: #666;
+  background-color: white;
+  border-color: #ccc;
+  transition: background-color .3s ease-in-out;
+}
+.well.files a.btn.btn-default:hover p {
+  color: #666;
+  background-color: transparent;
+  border-color: transparent;
+  font-weight: bold;
+  transition: background-color,border-color .3s ease-in-out;
+}
+.well.files a.btn img {
+  height: 90px;
+  padding: 5px 10px;
+}
