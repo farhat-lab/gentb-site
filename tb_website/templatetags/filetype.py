@@ -18,6 +18,7 @@ TYPES = OrderedDict([
     ('image', ('png', 'gif', 'jpg', 'jpeg', 'tiff')),
     ('audio', ('wav', 'mp3', 'aiff')),
     ('code', ('py', 'pl', 'r', 'json')),
+    ('html', ('html', 'htm')),
     ('text', ('txt', 'var')),
     ('pdf', ('pdf',)),
     ('xml', ('xml',)),
