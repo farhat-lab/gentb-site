@@ -14,16 +14,16 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
+"""URLs for mutation data"""
 
 from django.conf.urls import include, url
 
-from .views import *
+from .views import DropDownData, UploadData, UploadList, UploadView, MutationView
 
-urlpatterns = [
-  url(r'^json/$', DropDownData.as_view(), name="json"),
-  url(r'^upload/$', UploadData.as_view(), name="upload"),
-  url(r'^upload/list/$', UploadList.as_view(), name="upload.list"),
-  url(r'^upload/(?P<pk>\d+)/$', UploadView.as_view(), name="upload.view"),
-  url(r'^parse/$', MutationView.as_view(), name="parse"),
+urlpatterns = [ # pylint: disable=invalid-name
+    url(r'^json/$', DropDownData.as_view(), name="json"),
+    url(r'^upload/$', UploadData.as_view(), name="upload"),
+    url(r'^upload/list/$', UploadList.as_view(), name="upload.list"),
+    url(r'^upload/(?P<pk>\d+)/$', UploadView.as_view(), name="upload.view"),
+    url(r'^parse/$', MutationView.as_view(), name="parse"),
 ]
-

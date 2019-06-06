@@ -1,14 +1,14 @@
 #
-# Copyright (C) 2016   Dr. Maha Farhat
+# Copyright (C) 2018-2019 - Dr. Maha Farhat
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
-# published by the Free Software Foundation, either version 3 of the 
+# published by the Free Software Foundation, either version 3 of the
 # License, or (at your option) any later version.
 #
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the 
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU Affero General Public License for more details.
 #
 # You should have received a copy of the GNU Affero General Public License
@@ -23,7 +23,6 @@ import re
 import csv
 import json
 import sys
-import time
 
 from collections import defaultdict, OrderedDict
 from operator import or_
@@ -34,51 +33,53 @@ from django.db.models import Q
 
 MONTHS = ['', 'jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec']
 DATE_FORMATS = [
-   r'^(?P<year>\d{4})-(?P<mm>\d{2})-(?P<dd>\d{2})$',
-   r'^(?P<year>\d{2,4})$',
-   r'^(?P<mm>\d{1,2})/(?P<year>\d{2,4})$',
-   r'^(?P<mon>[A-Za-z]{3})/(?P<year>\d{2,4})$',
-   r'^(?P<mm>\d{1,2})/(?P<dd>\d{1,2})/(?P<year>\d{2,4})$',
-   r'^(?P<dd>\d{2})(?P<mon>[A-Za-z]{3})(?P<year>\d{2,4})$',
+    r'^(?P<year>\d{4})-(?P<mm>\d{2})-(?P<dd>\d{2})$',
+    r'^(?P<year>\d{2,4})$',
+    r'^(?P<mm>\d{1,2})/(?P<year>\d{2,4})$',
+    r'^(?P<mon>[A-Za-z]{3})/(?P<year>\d{2,4})$',
+    r'^(?P<mm>\d{1,2})/(?P<dd>\d{1,2})/(?P<year>\d{2,4})$',
+    r'^(?P<dd>\d{2})(?P<mon>[A-Za-z]{3})(?P<year>\d{2,4})$',
 ]
 
-def re_match(re_list, string, raw=False):
+def re_match_raw(re_list, string):
     """
     Match the first regular expression in a list of regular expressions
     and return the groupdict of the matching expression.
 
-    Will return raw match object and index in list if raw is True.
-
     Will replace your list items with re objects in place! for caching.
     """
-    string = unicode(string).strip()
-    for (x, r) in enumerate(re_list):
+    string = str(string).strip()
+    for (x, rex) in enumerate(re_list):
         # Compile only once per run
-        if isinstance(r, str):
-            r = re.compile(r)
-            re_list[x] = r
-        match = r.search(string)
+        if isinstance(rex, str):
+            rex = re.compile(rex)
+            re_list[x] = rex
+        match = rex.search(string)
         if match is not None:
-            return x, match if raw else match.groupdict()
+            return x, match
     raise ValueError("Couldn't match string: %s" % str(string))
+
+def re_match(re_list, string):
+    """Returns the groupdict for re_match_raw"""
+    return re_match_raw(re_list, string)[-1].groupdict()
 
 def re_match_dict(re_dict, string):
     """
     Like re_match(), but instead of a list, it takes a dictionary. The first
     matching regular expression then has it's value populated with the
     match's group dictionary as a template. So for example:
-    
-    re_match_dict({r'P(\d+)': 'A%s'}, 'P45') == 'A45'
+
+    re_match_dict({r'P(\\d+)': 'A%s'}, 'P45') == 'A45'
 
     It will also take a list of tuples for ordered matching.
     """
-    string = unicode(string).strip()
+    string = str(string).strip()
     re_dict = re_dict.items() if isinstance(re_dict, dict) else re_dict
-    for (r, value) in re_dict:
+    for (rex, value) in re_dict:
         # Compile only once per run
-        if isinstance(r, str):
-            r = re.compile(r)
-        match = r.search(string)
+        if isinstance(rex, str):
+            rex = re.compile(rex)
+        match = rex.search(string)
         if match is not None:
             if '%' in value:
                 return value % match.groupdict()
@@ -116,35 +117,47 @@ def get_date(string):
         day = int(bits['dd'])
     return date(year, month, day)
 
-mutation_re = [
-      r'^SNP_(?P<syn>[A-Z]{1,2})_(?P<ntpos>\d+)_(?P<coding>[ACTG]\d+[ACTG])_(((?P<amino>[A-Z\*]\d+[A-Z\*])|(?P<noncode>promoter|inter))_(?P<gene>[a-zA-Z\d\-_]+)|(?P<rgene>rr[sl]))\'?$',
-      r'^LSP_(?P<syn>[A-Z]{1,2})_(?P<ntpos>\d+)_(?P<coding>[ACTG]+\d+-\d+[ACTG]+)_(((?P<amino>[A-Z\*]+\d+-\d+[A-Z\*]+)|(?P<noncode>promoter|inter))_(?P<gene>[a-zA-Z\d\-_]+)|(?P<rgene>rr[sl]))\'?$',
-      r'^(?P<mode>(INS|DEL))_(?P<syn>[A-Z]{1,2})_(?P<ntpos>\d+)_(i|d|\.|i\.)?(?P<codes>[\d\-]+[ATGC]*)_((?P<noncode>promoter|inter|\d+)_)?(?P<gene>[a-zA-Z\d\-_]+?)(_(?P<amino>[A-Z\*]\d+[A-Z\*]))?\'?$',
-      # These are older SNP names and should probably be converted
-      r'SNP_(?P<syn>[A-Z]{1,2})_(?P<ntpos>\d+)_(?P<coding>[ACTG]\d+[ACTG])_(?P<gene>Rv\w+)',
-      r'SNP_(?P<syn>[A-Z]{1,2})_(?P<ntpos>\d+)_(?P<coding>[ACTG]\d*[ACTG])_PE_(?P<gene>[a-zA-Z\d\-]+)_(?P<amino>[A-Z\*]\d+[A-Z\*])',
-      r'SNP_(?P<syn>[A-Z]{1,2})_(?P<ntpos>\d+)_(?P<coding>[ACTG]\d*[ACTG])_(?P<gene>[a-zA-Z\d\-]+)_(?P<amino>[A-Z\*]\d+[A-Z\*])',
-      r'SNP_(?P<syn>[A-Z]{1,2})_(?P<ntpos>\d+)_(?P<coding>[ACTG]\d*[ACTG])_(?P<gene>[a-zA-Z\d\-_]+)',
+SNP = r'^SNP_(?P<syn>[A-Z]{1,2})_(?P<ntpos>\d+)_(?P<coding>[ACTG]\d+[ACTG])'
+LSP = r'^LSP_(?P<syn>[A-Z]{1,2})_(?P<ntpos>\d+)_(?P<coding>[ACTG]+\d+-\d+[ACTG]+)'
+GENE = r'(?P<gene>[a-zA-Z\d\-_]+)|(?P<rgene>rr[sl]))\'?$'
+GENE = r'(?P<gene>[a-zA-Z\d\-_]+)|(?P<rgene>rr[sl]))\'?$'
+
+MUTATION_RE = [
+    SNP + r'_(((?P<amino>[A-Z\*]\d+[A-Z\*])|(?P<noncode>promoter|inter))_' + GENE,
+    LSP + r'_(((?P<amino>[A-Z\*]+\d+-\d+[A-Z\*]+)|(?P<noncode>promoter|inter))_' + GENE,
+    r'^(?P<mode>(INS|DEL))_(?P<syn>[A-Z]{1,2})_(?P<ntpos>\d+)_(i|d|\.|i\.)?'\
+        r'(?P<codes>[\d\-]+[ATGC]*)_((?P<noncode>promoter|inter|\d+)_)?'\
+        r'(?P<gene>[a-zA-Z\d\-_]+?)(_(?P<amino>[A-Z\*]\d+[A-Z\*]))?\'?$',
+    # These are older SNP names and should probably be converted
+    SNP + r'_(?P<gene>Rv\w+)',
+    SNP + r'_PE_(?P<gene>[a-zA-Z\d\-]+)_(?P<amino>[A-Z\*]\d+[A-Z\*])',
+    SNP + r'_(?P<gene>[a-zA-Z\d\-]+)_(?P<amino>[A-Z\*]\d+[A-Z\*])',
+    SNP + r'_(?P<gene>[a-zA-Z\d\-_]+)',
+    SNP + r'\.(\d+)_(?P<gene>[a-zA-Z\d\-_\.]+)',
 ]
 
-def match_snp_name(name, **kw):
+def match_snp_name(name):
     """
-    Tries to regex match the snp name and returns a dictionary of information decoded from the SNP name.
+    Tries to regex match the snp name and returns a dictionary of info decoded from the SNP name.
     """
-    return re_match(mutation_re, name, **kw)
+    return re_match(MUTATION_RE, name)
+
+def match_snp_name_raw(name):
+    """Same as above but raw values returned"""
+    return re_match_raw(MUTATION_RE, name)
 
 SYN_A = {
-  'I': 'Integenic',
-  'P': 'Promoter',
-  'C': 'Coding',
-  'N': 'Noncoding',
+    'I': 'Integenic',
+    'P': 'Promoter',
+    'C': 'Coding',
+    'N': 'Noncoding',
 }
 SYN_B = {
-  'D': 'Deletion',
-  'I': 'Insertion',
-  'F': 'Frame shift',
-  'S': 'Silent or Synonymous',
-  'Z': 'Stop codon, nonsense mutation',
+    'D': 'Deletion',
+    'I': 'Insertion',
+    'F': 'Frame shift',
+    'S': 'Silent or Synonymous',
+    'Z': 'Stop codon, nonsense mutation',
 }
 
 def info_mutation_format(mutation):
@@ -152,7 +165,7 @@ def info_mutation_format(mutation):
     Processes a mutation name into a dictionary of parsing statements
     """
     # Process the snp name into it's parts
-    index, match = match_snp_name(mutation, raw=True)
+    index, match = match_snp_name_raw(mutation)
     items = [(name,) + match.span(name) for name in match.groupdict()]
 
     # Sort by the start of the match
@@ -176,7 +189,7 @@ def info_mutation_format(mutation):
     if last_end != len(mutation) - 1:
         ret.append(mutation[last_end:])
 
-    return ''.join(ret), mutation_re[index].pattern, snp
+    return ''.join(ret), MUTATION_RE[index].pattern, snp
 
 
 def unpack_mutation_format(name):
@@ -195,7 +208,7 @@ def unpack_mutation_format(name):
             index = int(index)
         except:
             raise ValueError("Optional sort index should be a number.")
-    _, snp = match_snp_name(name)
+    snp = match_snp_name(name)
     orig = snp.get('gene', None)
     if orig is None:
         orig = snp.get('rgene', None)
@@ -224,6 +237,7 @@ def unpack_mutation_format(name):
 
 
 def generate_mutation_name(mode='SNP', **snp):
+    """Takes the properties and attempts to generate a name"""
     snp['mode'] = mode
     snp['gene'] = snp.get('gene', snp.pop('rgene', None))
     snp['coding'] = snp.get('coding', snp.pop('codes', None))
@@ -234,7 +248,7 @@ def generate_mutation_name(mode='SNP', **snp):
     return '%(mode)s_%(syn)s_%(ntpos)s_%(coding)s_%(noncode)s_%(gene)s' % snp
 
 
-class defaultlist(defaultdict):
+class defaultlist(defaultdict): # pylint: disable=invalid-name
     """Like a defaultdict, but generates a list of items with the same key"""
     def __init__(self, generator):
         super(defaultlist, self).__init__(list)
@@ -246,41 +260,42 @@ class defaultlist(defaultdict):
         for key, value in self.items():
             self[key] = method(value, **kw)
 
-    def re_key(self, new_key, pop=True):
+    def re_key(self, new_key):
         """Assuming each value is a dictionary, re-key the dictionary"""
         for key in list(self):
             value = self.pop(key)
             self[value.pop(new_key)].append(value)
 
 class FileNotFound(IOError):
-    pass
+    """File not found error"""
 
 class FieldsNotFound(KeyError):
-    pass
+    """Fields not found error"""
 
 def csv_merge(fhl, **kw):
     """Merge csv header into each row for dictionary output"""
-    it = csv.reader(fhl, **kw)
-    header = next(it)
+    reader = csv.reader(fhl, **kw)
+    header = next(reader)
     yield header
-    for row in it:
+    for row in reader:
         yield dict(zip(header, row))
 
 LOADERS = {
-  'json': lambda fhl: (json.loads(fhl.read()), False),
-  'csv': lambda fhl: (csv_merge(fhl, delimiter=','), True),
-  'tsv': lambda fhl: (csv_merge(fhl, delimiter='\t'), True),
+    'json': lambda fhl: (json.loads(fhl.read()), False),
+    'csv': lambda fhl: (csv_merge(fhl, delimiter=','), True),
+    'tsv': lambda fhl: (csv_merge(fhl, delimiter='\t'), True),
 }
 
-def file_generator(*required, **kw):
+def file_generator(*required, **_):
     """Decorate a method that uses csv data"""
     required = set(required)
     def _check(header, filename):
         missing = (header ^ required) & required
         if missing:
-            raise FieldsNotFound("Fields '%s' missing from input file %s" % ("', '".join(missing), filename))
+            raise FieldsNotFound("Fields '%s' missing from file %s" %\
+                ("', '".join(missing), filename))
 
-    def _outer(f):
+    def _outer(func):
         def _inner(*args, **kw):
             #args = list(args)
             # Handle cases of 'self' being the first argument
@@ -298,14 +313,14 @@ def file_generator(*required, **kw):
                 raise TypeError("Can't parse '%s' unknown type." % filename)
 
             with open(filename, 'r') as fhl:
+                (rows, header) = _loader(fhl)
                 if 'status' in kw:
                     rows = StatusBar(kw.pop('status'), len(rows), rows, True)
-                (rows, header) = _loader(fhl)
                 if header:
                     _check(set(next(rows)), filename)
 
                 for row in rows:
-                    value = f(*(args[:index] + (row,) + args[index+1:]), **kw)
+                    value = func(*(args[:index] + (row,) + args[index+1:]), **kw)
                     if not header:
                         _check(set(row), filename)
                     if value is not None:
@@ -313,16 +328,16 @@ def file_generator(*required, **kw):
         return _inner
     return _outer
 
-def json_generator(f):
+def json_generator(func):
     """Decorate a method that processes one row in a json filename list"""
     # Backwards compatible
-    return file_generator(loader='json')(f)
+    return file_generator(loader='json')(func)
 
-def to(method):
+def to(method): # pylint: disable=invalid-name
     """Turn generators into objects, method can be a type, object or function"""
-    def _outer(f):
+    def _outer(func):
         def _inner(*args, **kw):
-            return method(f(*args, **kw))
+            return method(func(*args, **kw))
         return _inner
     return _outer
 
@@ -336,13 +351,15 @@ def json_dict(row, key_id):
 @json_generator
 def json_dictlist(row, key):
     """Creates a list of dictionaries using the key as a template"""
-    return (key % row, row) 
+    return (key % row, row)
 
 def get_bool(string):
+    """Forces the datum to a boolean"""
     return str(string).upper() not in ['N', 'NO', 'FALSE', 'F', '0', 'NONE']
 
 def get_int(datum):
-    if isinstance(datum, basestring):
+    """Forces the datum into an integer"""
+    if isinstance(datum, str):
         try:
             return int(datum)
         except ValueError:
@@ -350,32 +367,32 @@ def get_int(datum):
                 return ord(datum)
     return datum
 
-tr_methods = {
-  'date': get_date,
-  'bool': get_bool,
-  'int': get_int,
+TR_METHODS = {
+    'date': get_date,
+    'bool': get_bool,
+    'int': get_int,
 }
-def tr(data, **kw):
+def tr(data, **kw): # pylint: disable=invalid-name
     """Translate between two dictionaries, apply a filter if needed"""
     for (source, dest) in kw.items():
         if source in data:
             value = data.pop(source)
             if isinstance(dest, tuple):
                 # Translate the value using a predefined tr method
-                value = tr_methods.get(dest[1], dest[1])(value, *dest[2:])
+                value = TR_METHODS.get(dest[1], dest[1])(value, *dest[2:])
                 dest = dest[0]
             if dest is not None and value not in ['', u'', None, 0]:
                 data[dest] = value
 
 
-def long_match(MAP, d, value, model=None, default='NOP', *cols, **filter):
+def long_match(MAP, d, value, model=None, default='NOP', *cols, **filt):
     """Match in a model with case-insensitive multi-column matching."""
-    match = filter.pop('_match', 'iexact')
+    match = filt.pop('_match', 'iexact')
     value = MAP.get(value, value)
     if value not in d and model and cols:
         query = reduce(or_, [Q(**{'{}__{}'.format(col, match): value}) for col in cols])
         try:
-            d[value] = model.objects.filter(**filter).get(query)
+            d[value] = model.objects.filter(**filt).get(query)
         except model.DoesNotExist:
             if default != 'NOP':
                 return default
@@ -391,22 +408,24 @@ class StatusBar(object):
 
     It will catch errors and return before the error prints.
     """
-    io = sys.stderr
+    io = sys.stderr # pylint: disable=invalid-name
     width = 40
 
-    def __init__(self, label='', size=100, iterator=[], count=False):
+    def __init__(self, label='', size=100, iterator=()):
         self.label = label
         self.size = size
         self.iter = iterator
-        self.pos = 0 
+        self.pos = 0
         self.down = self.width
         self.write("%s X%s]\r%s [" % (label, " " * self.width, label))
 
     def write(self, msg):
+        """write the message to the status bar"""
         self.io.write(msg)
         self.io.flush()
 
     def count(self, item):
+        """Return the count"""
         if self.count:
             return self.pos + 1
         return self.pos + len(item)
@@ -415,11 +434,10 @@ class StatusBar(object):
         try:
             for item in self.iter:
                 self.pos = self.count(item)
-                p = int((self.pos / float(self.size)) * self.width)
-                if self.width - p < self.down:
-                    self.write('-' * (self.down - self.width + p)) 
-                    self.down = self.width - p 
+                pon = int((self.pos / float(self.size)) * self.width)
+                if self.width - pon < self.down:
+                    self.write('-' * (self.down - self.width + pon))
+                    self.down = self.width - pon
                 yield item
         finally:
             self.write('X' * self.down + "\n")
-
