@@ -17,8 +17,6 @@
 """
 Django forms for adding PredictDataset objects as well as a Confirmation form
 """
-import os
-import json
 
 from django.utils.text import slugify
 from django.core.urlresolvers import reverse_lazy
@@ -30,6 +28,7 @@ from apps.mutations.fields import GeneticInputField
 from apps.mutations.models import Mutation
 
 from .models import PredictDataset, PredictStrain, PredictPipeline
+from .utils import static_lazy
 
 FASTQ_FILES = ['.fastq', '.fastq.gz']
 VCF_FILES = ['.vcf', '.vcf.gz']
@@ -133,7 +132,7 @@ class ManualInputForm(UploadForm):
     my_file_type = PredictDataset.FILE_TYPE_MANUAL
     doc_title = "Manually Entered Prediction"
     doc = """Create a prediction though manual selection of 1 or more mutations from a list. This option involves the shortest processing time but does assume that any non-entered mutations have been tested for and are absent. Minimal genotypic information for accurate resistance predictions are below. Genetic regions are listed in order of decreasing importance. For more detailed list of genetic variants see reference <a href="http://www.ncbi.nlm.nih.gov/pubmed/26910495">Farhat MR, Sultana R et al. Genetic Determinants of Drug Resistance in Mycobacterium tuberculosis and Their Diagnostic Value. AJRCCM 2016</a>"""
-    genetic_information = GeneticInputField(reverse_lazy('genes:json'))
+    genetic_information = GeneticInputField(static_lazy('manual_predict.json'))
     ordered = 20
     btn = 'default'
 
