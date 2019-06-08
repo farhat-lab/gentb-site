@@ -20,7 +20,11 @@ Django forms for adding PredictDataset objects as well as a Confirmation form
 
 from django.utils.text import slugify
 from django.core.urlresolvers import reverse_lazy
-from django.forms import * 
+from django.core.exceptions import ValidationError
+from django.forms import (
+    ModelForm, Form, ModelChoiceField, HiddenInput, Textarea,
+    BooleanField, CharField,
+)
 
 from apps.uploads.fields import UploadField
 from apps.uploads.models import UploadFile
@@ -28,7 +32,6 @@ from apps.mutations.fields import GeneticInputField
 from apps.mutations.models import Mutation
 
 from .models import PredictDataset, PredictStrain, PredictPipeline
-from .utils import static_lazy
 
 FASTQ_FILES = ['.fastq', '.fastq.gz']
 VCF_FILES = ['.vcf', '.vcf.gz']
@@ -144,9 +147,9 @@ class ManualInputForm(UploadForm):
         data = self.cleaned_data.get('genetic_information')
         mutations = [m.strip() for m in data.split('\n') if m.strip()]
         name = slugify(self.cleaned_data.get('title'))
-        #(output, left_over) = Mutation.objects.matrix_csv(name, mutations)
-        #if left_over:
-        #    raise ValidationError("Mutations are not available in prediction: %s" % ", ".join(list(left_over)))
+        (output, left_over) = Mutation.objects.matrix_csv(name, mutations)
+        if left_over:
+            raise ValidationError("Mutations are not available in prediction: %s" % ", ".join(list(left_over)))
         return output
 
     def save(self, *args, **kw):
