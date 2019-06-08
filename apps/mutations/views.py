@@ -20,14 +20,17 @@
 Provides the drug, locus, mutation data for the progressive dropdown inputs.
 """
 
+from collections import defaultdict
+
 from apps.maps.mixins import JsonView
 
 from django.views.generic import TemplateView, FormView, DetailView, ListView
 from django.core.urlresolvers import reverse
 
-from .models import ImportSource, Drug, GeneLocus
+from .models import ImportSource, Mutation
 from .forms import DataUploaderForm
-from .utils import info_mutation_format
+from .utils import info_mutation_format, match_snp_name
+
 
 class MutationView(TemplateView):
     """View mutations"""
@@ -75,32 +78,29 @@ class UploadList(ListView):
         qset = super(UploadList, self).get_queryset()
         return qset.filter(uploader=self.request.user)
 
-
 class DropDownData(JsonView):
     """Drop and drag data response"""
-    def get_context_data(self, *args, **kwargs):
+    @staticmethod
+    def get_context_data():
         """Gather together all the data for drugs"""
         ret = {
-            'levels': ['Drug', 'Gene Locus', 'Mutation'],
+            'levels': ['Gene Locus', 'Mutation'],
             'children': [],
         }
-        for drug in Drug.objects.all():
+        names = Mutation.objects.all().variant_names()
+        matrix = defaultdict(list)
+        for name in names:
+            lookup = match_snp_name(name)
+            if 'rgene' in lookup and lookup['rgene']:
+                lookup['gene'] = lookup['rgene']
+            if 'gene' in lookup and lookup['gene']:
+                matrix[lookup['gene']].append(name)
+            else:
+                raise ValueError("Gene name missing from: {}".format(name))
+
+        for gene in sorted(matrix):
             ret['children'].append({
-                'name': str(drug),
-                'children': [],
+                'name': "{}".format(str(gene)),
+                'children': [{'name': name, 'value': name} for name in matrix[gene]],
             })
-            qset = drug.mutations.all()
-            if not self.request.GET.get('all', False):
-                qset = qset.filter(predictor=True)
-            loci = qset.values_list('gene_locus__name', flat=True).distinct()
-            for locus in GeneLocus.objects.filter(name__in=loci):
-                ret['children'][-1]['children'].append({
-                    'name': str(locus),
-                    'children': [],
-                })
-                for mutation in qset.filter(gene_locus__name=locus):
-                    ret['children'][-1]['children'][-1]['children'].append({
-                        'name': str(mutation),
-                        'value': mutation.name,
-                    })
         return ret

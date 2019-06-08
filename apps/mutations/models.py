@@ -203,17 +203,20 @@ class GeneDrugInteraction(Model):
 
 
 class MutationQuerySet(QuerySet):
+    def variant_names(self):
+        """Returns a list of mutations involved in predictions"""
+        # Disabled while the database and RandomForest are incongruent
+        #names = self.values_list('name', flat=True)
+        with open(os.path.join(settings.DATA_ROOT, 'variant_name_list.csv'), 'r') as fhl:
+            return [line.strip() for line in fhl.read().split(',')]
+
     def matrix_csv(self, name, mutations):
         """Creates a matrix.csv file for prediction"""
         headers = ['strain']
         row = [name.replace(',', '-')]
 
-        # Disabled while the database and RandomForest are incongruent
-        #names = self.values_list('name', flat=True)
         # Replaced with static file for now XXX:
-        fn = os.path.join(settings.DATA_ROOT, 'variant_name_list.csv')
-        with open(fn, 'r') as fhl:
-            names = [line.strip() for line in fhl.read().split(',')]
+        names = self.variant_names()
 
         # Mutation names could still be wrong though.
         def normalise(txt):
@@ -221,7 +224,6 @@ class MutationQuerySet(QuerySet):
                 txt = txt.replace(char, '_')
             return txt
 
-        #mutations = set(mutations)
         mutations = set([normalise(m) for m in mutations])
 
         for name in names:

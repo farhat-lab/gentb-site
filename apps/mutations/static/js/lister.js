@@ -27,7 +27,7 @@ $(document).ready(function() {
     $.getJSON($(this).data('data-url'), function(data) {
       target.data('data', data);
       $.each(data.levels, function(index, level) {
-        if(index == 2) {
+        if(index == 1) {
             var input = $('<input type="text"></input>');
             input.attr('id', "level-"+index);
             input.attr('list', "list-"+index);
@@ -92,10 +92,10 @@ $(document).ready(function() {
       add_button.attr('id', 'level-button');
       add_button.attr('style', 'width: 45;');
       add_button.click(function() {
-        var value = $('#level-2').val();
+        var value = $('#level-1').val();
         if(value && value != '---') {
           $(target).val(value + '\n' + $(target).val());
-          $('#level-2').val('').trigger('input');
+          $('#level-1').val('').trigger('input');
         }
       });
       $('#level-0').replaceOptions(data.children);

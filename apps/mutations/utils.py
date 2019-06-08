@@ -119,21 +119,20 @@ def get_date(string):
 
 SNP = r'^SNP_(?P<syn>[A-Z]{1,2})_(?P<ntpos>\d+)_(?P<coding>[ACTG]\d+[ACTG])'
 LSP = r'^LSP_(?P<syn>[A-Z]{1,2})_(?P<ntpos>\d+)_(?P<coding>[ACTG]+\d+-\d+[ACTG]+)'
-GENE = r'(?P<gene>[a-zA-Z\d\-_]+)|(?P<rgene>rr[sl]))\'?$'
-GENE = r'(?P<gene>[a-zA-Z\d\-_]+)|(?P<rgene>rr[sl]))\'?$'
+GENE = r'(?P<gene>[a-zA-Z\d\-_\.]+)|(?P<rgene>rr[sl]))\'?$'
 
 MUTATION_RE = [
     SNP + r'_(((?P<amino>[A-Z\*]\d+[A-Z\*])|(?P<noncode>promoter|inter))_' + GENE,
     LSP + r'_(((?P<amino>[A-Z\*]+\d+-\d+[A-Z\*]+)|(?P<noncode>promoter|inter))_' + GENE,
     r'^(?P<mode>(INS|DEL))_(?P<syn>[A-Z]{1,2})_(?P<ntpos>\d+)_(i|d|\.|i\.)?'\
         r'(?P<codes>[\d\-]+[ATGC]*)_((?P<noncode>promoter|inter|\d+)_)?'\
-        r'(?P<gene>[a-zA-Z\d\-_]+?)(_(?P<amino>[A-Z\*]\d+[A-Z\*]))?\'?$',
+        r'(?P<gene>[a-zA-Z\d\-_\.]+?)(_(?P<amino>[A-Z\*]\d+[A-Z\*]))?\'?$',
     # These are older SNP names and should probably be converted
-    SNP + r'_(?P<gene>Rv\w+)',
-    SNP + r'_PE_(?P<gene>[a-zA-Z\d\-]+)_(?P<amino>[A-Z\*]\d+[A-Z\*])',
-    SNP + r'_(?P<gene>[a-zA-Z\d\-]+)_(?P<amino>[A-Z\*]\d+[A-Z\*])',
-    SNP + r'_(?P<gene>[a-zA-Z\d\-_]+)',
-    SNP + r'\.(\d+)_(?P<gene>[a-zA-Z\d\-_\.]+)',
+    SNP + r'_(?P<gene>(Rv\w+|rrl|rrs))',
+    SNP + r'_PE_(?P<gene>[a-zA-Z\d\-]+)_(?P<amino>[A-Z\*]\d+[A-Z\*])$',
+    SNP + r'_(?P<gene>[a-zA-Z\d\-]+)_(?P<amino>[A-Z\*]\d+[A-Z\*])$',
+    SNP + r'_?[\.A-Z](\d+)[\.A-Z]_(?P<gene>[a-zA-Z\d\-_\.]+)$',
+    SNP + r'_(?P<gene>[a-zA-Z\d\-_]+)$',
 ]
 
 def match_snp_name(name):

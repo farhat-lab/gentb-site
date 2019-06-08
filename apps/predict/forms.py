@@ -132,7 +132,7 @@ class ManualInputForm(UploadForm):
     my_file_type = PredictDataset.FILE_TYPE_MANUAL
     doc_title = "Manually Entered Prediction"
     doc = """Create a prediction though manual selection of 1 or more mutations from a list. This option involves the shortest processing time but does assume that any non-entered mutations have been tested for and are absent. Minimal genotypic information for accurate resistance predictions are below. Genetic regions are listed in order of decreasing importance. For more detailed list of genetic variants see reference <a href="http://www.ncbi.nlm.nih.gov/pubmed/26910495">Farhat MR, Sultana R et al. Genetic Determinants of Drug Resistance in Mycobacterium tuberculosis and Their Diagnostic Value. AJRCCM 2016</a>"""
-    genetic_information = GeneticInputField(static_lazy('manual_predict.json'))
+    genetic_information = GeneticInputField(reverse_lazy('genes:json'))
     ordered = 20
     btn = 'default'
 
@@ -144,9 +144,9 @@ class ManualInputForm(UploadForm):
         data = self.cleaned_data.get('genetic_information')
         mutations = [m.strip() for m in data.split('\n') if m.strip()]
         name = slugify(self.cleaned_data.get('title'))
-        (output, left_over) = Mutation.objects.matrix_csv(name, mutations)
-        if left_over:
-            raise ValidationError("Mutations are not available in prediction: %s" % ", ".join(list(left_over)))
+        #(output, left_over) = Mutation.objects.matrix_csv(name, mutations)
+        #if left_over:
+        #    raise ValidationError("Mutations are not available in prediction: %s" % ", ".join(list(left_over)))
         return output
 
     def save(self, *args, **kw):
