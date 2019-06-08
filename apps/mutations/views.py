@@ -93,6 +93,9 @@ class DropDownData(JsonView):
             lookup = match_snp_name(name)
             if 'rgene' in lookup and lookup['rgene']:
                 lookup['gene'] = lookup['rgene']
+            if 'noncode' in lookup and lookup['noncode']:
+                if not lookup['noncode'].isdigit():
+                    lookup['gene'] = lookup['noncode'] + ' ' + lookup['gene']
             if 'gene' in lookup and lookup['gene']:
                 matrix[lookup['gene']].append(name)
             else:
@@ -101,6 +104,6 @@ class DropDownData(JsonView):
         for gene in sorted(matrix):
             ret['children'].append({
                 'name': "{}".format(str(gene)),
-                'children': [{'name': name, 'value': name} for name in matrix[gene]],
+                'children': [{'name': name, 'value': name} for name in sorted(matrix[gene])],
             })
         return ret
