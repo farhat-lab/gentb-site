@@ -44,7 +44,7 @@ function initialiseDrugChart(svg) {
     var height = 600;
 
     //Some properties of the chart
-    chart.margin({top: 20, right: 0, bottom: 60, left: 80});
+    chart.margin({top: 50, right: 0, bottom: 60, left: 80});
     chart.height(height);
     chart.width(width);
     chart.yAxis.scale(100).orient("left")
