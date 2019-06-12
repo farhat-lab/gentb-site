@@ -481,9 +481,15 @@ else:
                     results2[i][j] = lineage_variants_identified[drs[d]][i]
 
 
-with open(args.json_file, "a") as outfile:
-    outfile.write("\n")
-    json.dump(results1, outfile)
-    outfile.write("\n")
-    json.dump(results2, outfile)
-    outfile.write("\n")
+
+def append_results(filename, *results):
+    """Write the resulting structures to the output filename"""
+    with open(filename, "r") as infile:
+        structure = json.loads(infile.read())
+        structure.extend(results)
+
+    with open(filename, "w") as outfile:
+        outfile.write(json.dumps(structure))
+
+
+append_results(args.json_file, results1, results2)
