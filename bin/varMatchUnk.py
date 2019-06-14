@@ -489,7 +489,7 @@ def append_results(filename, *results):
         structure.extend(results)
 
     with open(filename, "w") as outfile:
-        outfile.write(json.dumps(structure))
+        outfile.write(json.dumps(structure, indent=2))
 
 
 append_results(args.json_file, results1, results2)

@@ -450,35 +450,59 @@ class PredictStrain(Model):
 
     def get_raw_prediction(self):
         """Get the raw data slightly bound better"""
+        def filter_none(vals):
+            """Remove none values"""
+            ret = []
+            for x in vals:
+                if x in (u'None', u'Null'):
+                    x = None
+                ret.append(x)
+            return ret
+
         matrix_fn = self.prediction_file
         if matrix_fn and os.path.isfile(matrix_fn):
+            m_A, m_B, m_C, m_D = {}, {}, {}, {}
             with open(matrix_fn, 'r') as fhl:
                 try:
-                    (pr, m_A, m_B) = json.loads(fhl.read())
+                    parts = json.loads(fhl.read())
+                    (pr, m_A, m_B) = parts[:3]
+
+                    # this is different because it assumes that there's only one strain.
+                    name = list(m_A)[0]
+                    m_C[name] = [([None] * len(m_A[name][0]))] * len(m_A[name])
+                    m_D[name] = [([None] * len(m_A[name][0]))] * len(m_A[name])
+
+                    ex_1, ex_2 = parts[-2:] if len(parts) == 5 else ({}, {})
+                    for index, value in ex_1.items():
+                        m_C[name][int(index)] = filter_none(value)
+                    for index, value in ex_2.items():
+                        m_D[name][int(index)] = filter_none(value)
+
                 except ValueError:
-                    logging.error("Can't load prediction file: %s" % matrix_fn)
-                    m_A = []
+                    logging.error("Can't load prediction file: %s", matrix_fn)
 
                 # Rotate mutation matrix 90 degrees
                 for name in m_A:
                     yield (name, zip(
-                      [(b,c,d,e) for (a,b,c,d,e) in pr if a == name],
-                      zip(*m_A[name]),
-                      zip(*m_B[name]),
+                        [(b,c,d,e) for (a,b,c,d,e) in pr if a == name],
+                        zip(*m_A[name]),
+                        zip(*m_B[name]),
+                        zip(*m_C[name]),
+                        zip(*m_D[name]),
                     ))
 
     def get_prediction(self, locusts=None):
         """Get the prediction data formatted for heatmap and scatter plots"""
         for _, dat in self.get_raw_prediction():
-            for (drug_code, dr, fneg, fpos), A, B in dat:
+            for (drug_code, dr, fneg, fpos), A, B, C, D in dat:
                 try:
                     drug = Drug.objects.get(code__iexact=drug_code)
                 except Drug.DoesNotExist:
                     sys.stderr.write("Can't find drug %s\n" % drug_code)
                     continue
-                yield (drug_code, (dr, fneg, fpos, self.get_graph(drug, A, B, locusts)))
+                yield (drug_code, (dr, fneg, fpos, self.get_graph(drug, A, B, C, D, locusts)))
 
-    def get_graph(self, drug, A, B, locusts=None):
+    def get_graph(self, drug, A, B, C, D, locusts=None):
         locusts = [] if locusts is None else locusts
         return [{
             "yAxis": "1",
@@ -489,6 +513,8 @@ class PredictStrain(Model):
         } for key, color, datum in (
             ("Important", "255, 0, 0, 0.8", A),
             ("Other", "0, 0, 255, 0.17", B),
+            ("New", "255, 255, 0, 0.5", C),
+            ("Lineage SNPs", "0, 255, 255, 0.5", D),
         )]
 
     def make_scatter(self, locusts, data):
