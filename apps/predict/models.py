@@ -522,7 +522,10 @@ class PredictStrain(Model):
         regions = defaultdict(list)
         for gene in data:
             if gene:
-                (_, region, _) = unpack_mutation_format(gene)
+                try:
+                    (_, region, _) = unpack_mutation_format(gene)
+                except ValueError:
+                    region = 'parser-error'
                 regions[region].append(gene)
                 if region not in locusts:
                     locusts.append(region)
