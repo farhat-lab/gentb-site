@@ -21,12 +21,18 @@ class Command(BaseCommand):
         """Add all the files to the coding"""
         genome = Genome.objects.get()
         gene_lookup = GeneLookup.from_files(*files)
+        loci = set(genome.gene_locuses.values_list('name', flat=True))
         count = 0
         for name in gene_lookup:
             count += 1
-            self.import_item(genome, name, gene_lookup[name], gene_lookup)
+            obj = self.import_item(genome, name, gene_lookup[name], gene_lookup)
+            try:
+                loci.remove(obj.name)
+            except KeyError:
+                pass
             if count % 100 == 0:
                 print("Processed {}".format(count))
+        print("Found {} non-found loci".format(len(loci)))
         print("finished: {}".format(count))
 
     @staticmethod
@@ -85,3 +91,5 @@ class Command(BaseCommand):
                 obj.save()
         except Exception:
             print("Transaction ignored....")
+
+        return obj
