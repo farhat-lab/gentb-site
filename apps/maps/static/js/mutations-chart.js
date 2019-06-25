@@ -371,17 +371,17 @@ function initialiseMutationChart() {
         .tickFormat(d3.format(".2%"));
 
     chart.tooltip.contentGenerator(function (data) {
-  data.extra = {
-     'head': chart.tooltip.headerFormatter()(data.value),
-     'y': chart.tooltip.valueFormatter()(data.data.y),
-  };
-  template = '<table><thead>' +
-    '<tr><th colspan="3">{extra.head:s}</th></tr>' +
-    '<tr><td class="legend-color-guide">' +
-      '<div style="background-color:{color:s}"></div></td>' +
-      '<td><strong>{data.key:s}</strong></td>' +
-    '<td>{extra.y:s}</td><td>{data.value:d} of {data.total:d}</td></tr></thead></table>';
-        return template.format(data);
+      data.extra = {
+         'head': chart.tooltip.headerFormatter()(data.value),
+         'y': chart.tooltip.valueFormatter()(data.data.y),
+      };
+      template = '<table><thead>' +
+        '<tr><th colspan="3">{extra.head:s}</th></tr>' +
+        '<tr><td class="legend-color-guide">' +
+          '<div style="background-color:{color:s}"></div></td>' +
+          '<td><strong>{data.key:s}</strong></td>' +
+        '<td>{extra.y:s}</td><td>{data.value:d} of {data.total:d}</td></tr></thead></table>';
+      return template.format(data);
     });
 
 
