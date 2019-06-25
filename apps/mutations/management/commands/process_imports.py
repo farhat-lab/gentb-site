@@ -190,9 +190,7 @@ class Command(BaseCommand):
             try:
                 (_, locus, mutation) = unpack_mutation_format(snp['varname'])
                 # All genes in the gene summary should be already loaded.
-                #locus = GeneLocus.objects.get(name=locus, genome=self.genome)
-                # Ignore that and ask for a new one
-                locus, _ = GeneLocus.objects.update_or_create(name=locus, genome=self.genome)
+                locus = GeneLocus.objects.get(name=locus, genome=self.genome)
             except ValueError:
                 sys.stderr.write("Failed to unpack {varname}\n".format(**snp))
                 continue

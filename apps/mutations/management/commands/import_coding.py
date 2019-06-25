@@ -26,8 +26,8 @@ class Command(BaseCommand):
             count += 1
             self.import_item(genome, name, gene_lookup[name], gene_lookup)
             if count % 100 == 0:
-                print "Processed {}".format(count)
-        print "finished: {}".format(count)
+                print("Processed {}".format(count))
+        print("finished: {}".format(count))
 
     @staticmethod
     def import_item(genome, name, item, lookup):
@@ -84,4 +84,4 @@ class Command(BaseCommand):
             with transaction.atomic():
                 obj.save()
         except Exception:
-            print "Transaction ignored...."
+            print("Transaction ignored....")
