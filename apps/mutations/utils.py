@@ -141,6 +141,12 @@ def match_snp_name(name):
     """
     return re_match(MUTATION_RE, name)
 
+def match_snp_half(name):
+    """
+    Backup attempt to match the ntpos only (for cross reference of bad names)
+    """
+    return re_match([SNP], name)
+
 def match_snp_name_raw(name):
     """Same as above but raw values returned"""
     return re_match_raw(MUTATION_RE, name)
