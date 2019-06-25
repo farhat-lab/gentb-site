@@ -46,8 +46,7 @@ from django.utils.translation import ugettext_lazy as _
 
 from apps.uploads.models import UploadFile
 from apps.pipeline.models import Pipeline, PipelineRun, ProgramRun
-from apps.mutations.models import Drug
-from apps.mutations.utils import unpack_mutation_format
+from apps.mutations.models import Drug, GeneLocus
 
 LOGGER = logging.getLogger('apps.predict')
 
@@ -502,14 +501,14 @@ class PredictStrain(Model):
                     sys.stderr.write("Can't find drug %s\n" % drug_code)
                     continue
                 if drug_code not in loci:
-                    loci[drug_code] = list(drug.loci.values_list('name', flat=True))
+                    loci[drug_code] = list(drug.loci.all())
                 yield (drug_code, (dr, fneg, fpos, self.get_graph(drug, A, B, C, D, loci[drug_code])))
 
     def get_graph(self, drug, A, B, C, D, loci=None):
         loci = [] if loci is None else loci
         return [{
             "yAxis": "1",
-            "cols": loci,
+            "cols": [str(locus) for locus in loci],
             "key": key,
             "color": "rgba(%s)" % color,
             "values": list(self.make_scatter(loci, datum)),
@@ -525,20 +524,17 @@ class PredictStrain(Model):
         regions = defaultdict(list)
         for gene in data:
             if gene:
-                try:
-                    (_, region, _) = unpack_mutation_format(gene)
-                except ValueError:
-                    region = 'parser-error'
-                regions[region].append(gene)
-                if region not in loci:
-                    loci.append(region)
+                locus = GeneLocus.objects.for_mutation_name(gene)
+                regions[str(locus)].append(gene)
+                if locus not in loci:
+                    loci.append(locus)
 
-        for x, locust in enumerate(loci):
+        for x, locus in enumerate(loci):
             ret = {"x": x, "y": 0, "size": 5, "tip": ["No mutations"]}
-            if locust in regions:
-                ret["y"] = len(regions[locust])
+            if str(locus) in regions:
+                ret["y"] = len(regions[str(locus)])
                 ret["size"] = 9
-                ret["tip"] = regions[locust]
+                ret["tip"] = regions[str(locus)]
             yield ret
 
     def __str__(self):
