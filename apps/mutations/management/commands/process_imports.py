@@ -187,20 +187,20 @@ class Command(BaseCommand):
             #gene = snp['regionid1']
             if 'varname' not in snp or len(snp['varname']) > 80:
                 continue
-            try:
-                (_, locus, mutation) = unpack_mutation_format(snp['varname'])
-                # All genes in the gene summary should be already loaded.
-                locus = GeneLocus.objects.get(name=locus, genome=self.genome)
-            except ValueError:
-                sys.stderr.write("Failed to unpack {varname}\n".format(**snp))
-                continue
-            except GeneLocus.DoesNotExist:
-                raise DataError("Failed to get gene {varname}, "\
-                    "are all genes loaded from reference?".format(**snp))
+
+            mutation = snp['varname']
 
             if len(mutation) > 150:
                 sys.stderr.write("Mutation name is too large, can not add to database.\n")
                 continue
+
+            locus = GeneLocus.objects.for_mutation_name(mutation)
+            if locus is None:
+                sys.stderr.write("Failed to unpack {varname}\n".format(**snp))
+                continue
+
+            # Correct any issues with the mutation name
+            mutation = unpack_mutation_format(mutation)[2]
 
             try:
                 (mutation, _) = locus.mutations.get_or_create(name=mutation, defaults=dict(

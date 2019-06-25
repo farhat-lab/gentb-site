@@ -32,6 +32,7 @@ from django.core.urlresolvers import reverse
 from apps.maps.models import Country, Place
 from apps.uploads.models import UploadFile
 from .validators import is_octal
+from .utils import match_snp_name, match_snp_half
 
 class DrugClassManager(Manager):
     """Allow exporting of drug classes with natural keys"""
@@ -119,6 +120,44 @@ class Genome(Model):
 class GeneLocusManager(Manager):
     def get_by_natural_key(self, genome, name):
         return self.get(genome__code=genome, name=name)
+
+    def for_mutation_name(self, name):
+        """Match a mutation name to a gene locus"""
+        try:
+            raw = match_snp_name(name)
+        except ValueError:
+            raw = match_snp_half(name)
+        return self._for_mutation(int(raw['ntpos']), name)
+
+    def for_mutation(self, obj):
+        """Match to a mutation object"""
+        if obj.nucleotide_position is None:
+            return self.for_mutation_name(obj.name)
+        return self._for_mutation(obj.nucleotide_position, obj.name)
+
+    def _for_mutation(self, pos, name):
+        loci = self.filter(start__lte=pos, stop__gte=pos)
+        if loci.count() == 1:
+            return loci.get()
+        elif loci.count() == 0:
+            return None
+
+        # Overlapping loci, try and detect what we have
+        (first, second) = loci
+        symbol = name.replace('inter-', 'intergenic ')\
+                     .replace('promoter_', 'promoter ')\
+                     .split('_')[-1].lower()
+        is_a = str(first.gene_symbol).lower() == symbol or str(first.name).lower() == symbol
+        is_b = str(second.gene_symbol).lower() == symbol or str(second.name).lower() == symbol
+        lk_a = first.name.lower() in symbol or str(first.gene_symbol).lower() in symbol
+        lk_b = second.name.lower() in symbol or str(second.gene_symbol).lower() in symbol
+        if (is_a and not is_b) or (lk_a and not lk_b):
+            return first
+        elif (is_b and not is_a) or (lk_b and not lk_a):
+            return second
+
+        return None
+
 
 class GeneLocus(Model):
     """
