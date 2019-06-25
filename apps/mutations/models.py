@@ -179,6 +179,8 @@ class GeneLocus(Model):
         return (self.genome.code, self.name)
 
     def __str__(self):
+        if self.gene_symbol:
+            return self.gene_symbol
         return self.name
 
 
