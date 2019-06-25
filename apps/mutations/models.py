@@ -79,6 +79,8 @@ class Drug(Model):
     priority = IntegerField(default=0, help_text="Priority of drug in regimen")
     regimen = ForeignKey(DrugRegimen, null=True, blank=True, related_name='drugs')
 
+    loci = ManyToManyField("GeneLocus", blank=True, related_name='drugs',\
+        help_text="Implicated gene loci which are important to drug resistance")
     mutations = ManyToManyField("Mutation", blank=True, related_name='drugs',\
         help_text="Implicated gene mutations which cause resistance to this drug")
 

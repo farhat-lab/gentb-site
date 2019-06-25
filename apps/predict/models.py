@@ -188,16 +188,16 @@ class PredictDataset(TimeStampedModel):
             'cols': [],
         }
         # Track all locusts for all strains, Mutable variable populated by make_scatter!
-        locusts = []
+        loci = {}
         for strain in self.strains.all():
-            for _ in strain.get_prediction(locusts):
-                pass # Populates locusts for square plots
+            for _ in strain.get_prediction(loci):
+                pass # Populates loci for square plots
 
         for strain in self.strains.all():
             row = {'name': strain.name, 'cols': []}
             output['rows'].append(row)
 
-            for drug, (drprob, fneg, fpos, graph) in strain.get_prediction(locusts):
+            for drug, (drprob, fneg, fpos, graph) in strain.get_prediction(loci):
                 if drug not in output['cols']:
                     output['cols'].append(drug)
 
@@ -491,8 +491,9 @@ class PredictStrain(Model):
                         zip(*m_D[name]),
                     ))
 
-    def get_prediction(self, locusts=None):
+    def get_prediction(self, loci=None):
         """Get the prediction data formatted for heatmap and scatter plots"""
+        loci = {} if loci is None else loci
         for _, dat in self.get_raw_prediction():
             for (drug_code, dr, fneg, fpos), A, B, C, D in dat:
                 try:
@@ -500,16 +501,18 @@ class PredictStrain(Model):
                 except Drug.DoesNotExist:
                     sys.stderr.write("Can't find drug %s\n" % drug_code)
                     continue
-                yield (drug_code, (dr, fneg, fpos, self.get_graph(drug, A, B, C, D, locusts)))
+                if drug_code not in loci:
+                    loci[drug_code] = list(drug.loci.values_list('name', flat=True))
+                yield (drug_code, (dr, fneg, fpos, self.get_graph(drug, A, B, C, D, loci[drug_code])))
 
-    def get_graph(self, drug, A, B, C, D, locusts=None):
-        locusts = [] if locusts is None else locusts
+    def get_graph(self, drug, A, B, C, D, loci=None):
+        loci = [] if loci is None else loci
         return [{
             "yAxis": "1",
-            "cols": locusts,
+            "cols": loci,
             "key": key,
             "color": "rgba(%s)" % color,
-            "values": list(self.make_scatter(locusts, datum)),
+            "values": list(self.make_scatter(loci, datum)),
         } for key, color, datum in (
             ("Important", "255, 0, 0, 0.8", A),
             ("Other", "0, 0, 255, 0.17", B),
@@ -517,7 +520,7 @@ class PredictStrain(Model):
             ("Lineage SNPs", "0, 255, 255, 0.5", D),
         )]
 
-    def make_scatter(self, locusts, data):
+    def make_scatter(self, loci, data):
         """Turn a mutations data in a by-gene plot"""
         regions = defaultdict(list)
         for gene in data:
@@ -527,10 +530,10 @@ class PredictStrain(Model):
                 except ValueError:
                     region = 'parser-error'
                 regions[region].append(gene)
-                if region not in locusts:
-                    locusts.append(region)
+                if region not in loci:
+                    loci.append(region)
 
-        for x, locust in enumerate(locusts):
+        for x, locust in enumerate(loci):
             ret = {"x": x, "y": 0, "size": 5, "tip": ["No mutations"]}
             if locust in regions:
                 ret["y"] = len(regions[locust])

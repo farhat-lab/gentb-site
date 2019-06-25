@@ -43,6 +43,7 @@ class DrugAdmin(ModelAdmin):
     list_filter = ('kind', 'regimen')
     readonly_fields = ('mutations',)
     inlines = (InteractionInline,)
+    filter_horizontal = ('loci',)
 
     @staticmethod
     def gene_count(obj):
