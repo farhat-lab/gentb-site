@@ -115,7 +115,7 @@ $(document).ready(function() {
               "data": "name",
               "title": "Name",
               "description": "Name of the Gene Locus",
-              //"render": $.fn.dataTable.render.number(',', '.', 3, ''),
+              // "render": $.fn.dataTable.render.number(',', '.', 3, ''),
             },  
             {   
               "data": "gene_locus__name",
@@ -146,27 +146,21 @@ $(document).ready(function() {
         })
 
         table.on('draw', function(a, b, c) {
-          $('tr', t_table).click(function() {
+          $('tbody tr', t_table).click(function() {
             var data = table.row( this.rowIndex - 1 ).data();
             var snp = $('#snp');
-            if($(this).hasClass('selected')) {
-                $(this).removeClass('selected');
-                mutations = mutations.filter(function(value, index, arr){return value != data.name;});
-                $('#mutation-store').data('value', mutations);
-            } else {
-                $(this).addClass('selected');
-                mutations.push(data.name);
-                mutations = unique(mutations);
-                $('#mutation-store').data('value', mutations);
-            }
+
+            $(this).toggleClass('selected');
+            toggleTabData('mutation', data.name, data.name, ' icon-mutation');
+
+            mutations = getTabData('mutation');
             refresh_mutations_graph();
+
           }).each(function(key, value) {
             // Keep highlights as paging happens.
             var data = table.row( value.rowIndex - 1 ).data();
-            for(var i = 0; i < mutations.length; i++) {
-              if(data && mutations[i] == data.name) {
-                $(value).addClass('selected');
-              }
+            if (data && mutations.includes(data.name)) {
+              $(value).addClass('selected');
             }
           });
         });
@@ -199,9 +193,9 @@ function refreshMutation(svg, chart, data) {
   // The goal here is to list all mutations within the
   // selected drug, lineage or country
   $('#mselect').each(function() {
-      //replaceOptions($('#level-0'), data.children);
-      //$('#level-0').show();
-      //$('#level-0').change();
+      // replaceOptions($('#level-0'), data.children);
+      // $('#level-0').show();
+      // $('#level-0').change();
   });
   $('#clear-mutation').click();
 
@@ -217,6 +211,7 @@ function initialiseMutationList(url, args, refresh_function) {
 
     var lookup_url = $('#gene_map').data('locus-lookup');
     var range_url = $('#gene_map').data('locus-range');
+
 
     var locus_select = function(val) {
       snp.val('');
@@ -367,6 +362,7 @@ function initialiseMutationChart() {
     var width = 1000;
     var height = 600;
 
+
     chart.margin({top: 40, right: 20, bottom: 120, left: 80});
     chart.height(height);
     chart.width(width);
@@ -375,16 +371,16 @@ function initialiseMutationChart() {
         .tickFormat(d3.format(".2%"));
 
     chart.tooltip.contentGenerator(function (data) {
-	data.extra = {
-	   'head': chart.tooltip.headerFormatter()(data.value),
-	   'y': chart.tooltip.valueFormatter()(data.data.y),
-	};
-	template = '<table><thead>' +
-	  '<tr><th colspan="3">{extra.head:s}</th></tr>' +
-	  '<tr><td class="legend-color-guide">' +
-	    '<div style="background-color:{color:s}"></div></td>' +
-	    '<td><strong>{data.key:s}</strong></td>' +
-	  '<td>{extra.y:s}</td><td>{data.value:d} of {data.total:d}</td></tr></thead></table>';
+  data.extra = {
+     'head': chart.tooltip.headerFormatter()(data.value),
+     'y': chart.tooltip.valueFormatter()(data.data.y),
+  };
+  template = '<table><thead>' +
+    '<tr><th colspan="3">{extra.head:s}</th></tr>' +
+    '<tr><td class="legend-color-guide">' +
+      '<div style="background-color:{color:s}"></div></td>' +
+      '<td><strong>{data.key:s}</strong></td>' +
+    '<td>{extra.y:s}</td><td>{data.value:d} of {data.total:d}</td></tr></thead></table>';
         return template.format(data);
     });
 
