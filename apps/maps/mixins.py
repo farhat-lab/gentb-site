@@ -216,10 +216,10 @@ class DataTableMixin(object):
             if col_search is not None and 'value' in col_search and col_search['value']:
                 query |= Q(**{column['django'] + '__icontains': col_search['value']})
 
+        # Objects in the filtered `qset` contain each `pattern` in at least one search field
         if search is not None and 'value' in search and search['value']:
-            for col in self.search_fields:
-                query |= Q(**{col + '__icontains': search['value']})
-
+            for pattern in search['value'].split():
+                query &= reduce(or_, [Q(**{col + '__icontains': pattern}) for col in self.search_fields])
         qset = qset.filter(query)
 
         # Do this before ordering, because we have a BUG in jsonb
