@@ -107,6 +107,9 @@ $(document).ready(function() {
                   return json.data;
               },  
           },  
+          "rowCallback": function(row, data) {
+            if (mutations.includes(data.name)) { $(row).addClass('selected'); }
+          },
           "language": {
             "processing": "Loading...",
           },  
@@ -156,12 +159,6 @@ $(document).ready(function() {
             mutations = getTabData('mutation');
             refresh_mutations_graph();
 
-          }).each(function(key, value) {
-            // Keep highlights as paging happens.
-            var data = table.row( value.rowIndex - 1 ).data();
-            if (data && mutations.includes(data.name)) {
-              $(value).addClass('selected');
-            }
           });
         });
 
