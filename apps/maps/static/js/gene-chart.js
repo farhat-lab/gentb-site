@@ -43,6 +43,9 @@ $(document).ready(function() {
                 return json.data;
             },
         },
+        "rowCallback": function(row, data) {
+          if (getTabData('genelocus').includes(data.name)) { $(row).addClass('selected'); }
+        },
         "language": {
           "processing": "Loading...",
         },
