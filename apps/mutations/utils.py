@@ -122,7 +122,7 @@ LSP = r'^LSP_(?P<syn>[A-Z]{1,2})_(?P<ntpos>\d+)_(?P<coding>[ACTG]+\d+-\d+[ACTG]+
 GENE = r'(?P<gene>[a-zA-Z\d\-_\.]+)|(?P<rgene>rr[sl]))\'?$'
 
 MUTATION_RE = [
-    SNP + r'_(((?P<amino>[A-Z\*]\d+[A-Z\*])|(?P<noncode>promoter|inter))_' + GENE,
+    SNP + r'_(((?P<amino>[A-Z\*]\d+[A-Z\*])|(?P<noncode>promoter|inter))[-_]' + GENE,
     LSP + r'_(((?P<amino>[A-Z\*]+\d+-\d+[A-Z\*]+)|(?P<noncode>promoter|inter))_' + GENE,
     r'^(?P<mode>(INS|DEL))_(?P<syn>[A-Z]{1,2})_(?P<ntpos>\d+)_(i|d|\.|i\.)?'\
         r'(?P<codes>[\d\-]+[ATGC]*)_((?P<noncode>promoter|inter|\d+)_)?'\
