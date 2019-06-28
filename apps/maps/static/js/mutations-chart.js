@@ -117,11 +117,11 @@ $(document).ready(function() {
             {   
               "data": "name",
               "title": "Name",
-              "description": "Name of the Gene Locus",
+              "description": "Name of the Mutation",
               // "render": $.fn.dataTable.render.number(',', '.', 3, ''),
             },  
             {   
-              "data": "gene_locus__name",
+              "data": "gene_locus",
               "title": "Gene Locus",
             },  
             {   

@@ -210,7 +210,7 @@ class GeneLocus(Model):
     objects = GeneLocusManager()
 
     class Meta:
-        ordering = ('name',)
+        ordering = ('start',)
         unique_together = ('genome', 'name')
 
     def natural_key(self):

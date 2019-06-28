@@ -22,7 +22,7 @@ from operator import or_, and_
 from datetime import timedelta
 
 from django.core.serializers.json import DjangoJSONEncoder
-from django.db.models.query import Q, QuerySet
+from django.db.models import Q, QuerySet, Model
 from django.template.response import SimpleTemplateResponse
 from django.views.decorators.cache import cache_page
 from django.views.generic import View
@@ -188,13 +188,21 @@ class DataTableMixin(object):
         Prepare the full data set.
         """
         db_columns = [self.column_to_django(col) for col in columns]
-        return [self.prep_item(item, columns) for item in qset.values(*db_columns)]
+        return [self.prep_item(item, db_columns) for item in qset] #.values(*db_columns)]
 
     def prep_item(self, obj, columns):
         """
         Prepare this item for output using the requested columns.
         """
-        return obj
+        ret = {}
+        for col in columns:
+            if col == 'str':
+                ret[col] = str(obj)
+            else:
+                ret[col] = getattr(obj, col, 'Null')
+                if isinstance(ret[col], Model):
+                    ret[col] = str(ret[col])
+        return ret
 
     def column_to_django(self, column, db=True):
         """We calculate the column's django address,

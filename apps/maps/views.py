@@ -256,12 +256,12 @@ class LocusRange(JsonView, DataSlicerMixin):
             nucleotide_position__isnull=False,
             strain_mutations__isnull=False)
         try:
-            locus = GeneLocus.objects.get(name=locus[0])
+            locus = GeneLocus.objects.get(Q(name=locus[0]) | Q(gene_symbol=locus[0]))
             mutations = mutations.filter(gene_locus=locus)
             count = mutations.count()
             start = locus.start
             end = locus.stop
-            yield 'title', "{0.name} / {0.previous_id} ({1} mutations)".format(locus, count)
+            yield 'title', "{0} / {0.previous_id} ({1} mutations)".format(locus, count)
         except GeneLocus.DoesNotExist:
             # All mutations in the whole genome
             count = mutations.count()
@@ -287,7 +287,7 @@ class LocusRange(JsonView, DataSlicerMixin):
 class LocusList(DataTableMixin, ListView):
     """Get a list of locuses that somewhat match the given locus string"""
     model = GeneLocus
-    search_fields = ['name', 'description']
+    search_fields = ['name', 'gene_symbol', 'description']
 
     def get_queryset(self):
         qset = super(LocusList, self).get_queryset()

@@ -64,7 +64,7 @@ class MutationInline(StackedInline):
 class GeneLocusAdmin(ModelAdmin):
     inlines = (MutationInline,)
     list_filter = ('genome', 'gene_type', 'strand')
-    list_display = ('name', 'description', 'previous_id', 'gene_symbol', 'mutation_count', 'genome')
+    list_display = ('__str__', 'description', 'previous_id', 'gene_symbol', 'mutation_count', 'genome')
     search_fields = ('name', 'description', 'gene_symbol', 'previous_id')
 
     @staticmethod

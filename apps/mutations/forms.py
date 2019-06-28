@@ -21,6 +21,7 @@ Drop mutation for pasting in mutation information quickly.
 import os
 
 from django.conf import settings
+from django.db.models import Q
 from django.utils.html import escape
 from django.core.urlresolvers import reverse
 from django.contrib.admin.sites import site
@@ -71,7 +72,7 @@ class DrugForm(ModelForm):
             muts = self.cleaned_data.get('mutations')
             pks = list(muts.values_list('pk', flat=True))
             for (index, locus_name, mutation) in self.cleaned_data.get('paste'):
-                locus = GeneLocus.objects.get(name=locus_name)
+                locus = GeneLocus.objects.get(Q(name=locus_name) | Q(gene_symbol=locus_name))
                 (mutation, _) = Mutation.objects.get_or_create(
                     name=mutation, defaults={'gene_locus': locus, 'order': index or -1})
                 obj.mutations.add(mutation)

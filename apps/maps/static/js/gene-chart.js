@@ -44,14 +44,14 @@ $(document).ready(function() {
             },
         },
         "rowCallback": function(row, data) {
-          if (getTabData('genelocus').includes(data.name)) { $(row).addClass('selected'); }
+          if (getTabData('genelocus').includes(data.str)) { $(row).addClass('selected'); }
         },
         "language": {
           "processing": "Loading...",
         },
         "columns": [
           {
-            "data": "name",
+            "data": "str",
             "title": "Name",
             "description": "Name of the Gene Locus",
             // "render": $.fn.dataTable.render.number(',', '.', 3, ''),
@@ -85,12 +85,13 @@ $(document).ready(function() {
         })
         .on('click', 'tbody tr', function () {
           var data = table.row( this.rowIndex - 1 ).data();
+          var name = data.str;
           if ( $(this).hasClass('selected') ) {
             $(this).removeClass('selected');
-            removeTabData('genelocus', data.name);
+            removeTabData('genelocus', name);
           } else {
             $(this).addClass('selected');
-            addTabData('genelocus', data.name, data.name, ' icon-helix')
+            addTabData('genelocus', name, name, ' icon-helix')
           }
       });
     });
