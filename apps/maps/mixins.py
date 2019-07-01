@@ -228,7 +228,12 @@ class DataTableMixin(object):
         if search is not None and 'value' in search and search['value']:
             for pattern in search['value'].split():
                 query &= reduce(or_, [Q(**{col + '__icontains': pattern}) for col in self.search_fields])
-        qset = qset.filter(query)
+
+        for key in self.filters:
+            val = self.request.GET.getlist(key, None)
+            if val: query &= Q(**{self.filters[key]: val})
+        qset = qset.filter(query).distinct()
+
 
         # Do this before ordering, because we have a BUG in jsonb
         count = qset.count()

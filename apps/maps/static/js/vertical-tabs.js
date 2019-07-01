@@ -86,6 +86,7 @@ $(document).ready(function() {
         });
       } else if(tab.data('url-signal')) {
           tab.data('url-signal')(url, data);
+          tab.data('done', true);
       } else {
           console.error("Couldn't find url handler: ", tab.attr('id'));
       }
