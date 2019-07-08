@@ -94,6 +94,15 @@ class Country(Model):
     def __str__(self):
         return self.name
 
+@python_2_unicode_compatible
+class CountryHealth(Model):
+    """Extra WHO data about a country"""
+    country = OneToOneField(Country, related_name='health')
+    est_mdr = FloatField(null=True, blank=True,\
+        help_text="Estimated % Drug Resistance for the country")
+
+    def __str__(self):
+        return "WHO Data for {}".format(self.country)
 
 @python_2_unicode_compatible
 class CountryDetail(Model):
