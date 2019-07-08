@@ -89,7 +89,11 @@ $(document).ready(function() {
         var t_table = $('#mutation_map table');
   
         if(t_table.data('loaded')) {
-            return
+          // Reloads table if parameters from other tabs have changed
+          if (!$('#mutation-store').data('done')) {
+            t_table.DataTable().ajax.reload();
+          }
+          return;
         }   
         t_table.data('loaded', 1); 
   
@@ -100,6 +104,7 @@ $(document).ready(function() {
               "url": url,
               "data": function ( data ) { 
                   // Sent json, store for future use in selecting
+                  $.extend(data, getAllTabData());
                   return data;
               },  
               "dataSrc": function ( json ) { 
