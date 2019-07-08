@@ -35,7 +35,7 @@ from apps.mutations.models import (
 
 from .mixins import JsonView, DataSlicerMixin, DataTableMixin
 from .utils import GraphData
-from .models import Country
+from .models import Country, CountryHealth
 
 LINEAGE_COLS = ['spoligotype_family', 'rflp_family', 'principle_group', 'wgs_group']
 LINEAGE_NAMES = ['Spoligo', 'RFLP', 'PGG', 'WGS']
@@ -134,16 +134,59 @@ class DrugList(JsonView, DataSlicerMixin):
     def get_context_data(self, **_):
         """Return a dictionary of template variables"""
 
-        drug_dict = GraphData(self.get_data().annotate(count=Count('pk')),'drugs__drug__code', 'count', 'drugs__resistance',).set_axis('z', RESISTANCE).to_graph()
+        drug_dict = list(GraphData(
+            self.get_data().annotate(count=Count('pk')),
+            'drugs__drug__code', 'count', 'drugs__resistance'
+        ).set_axis('z', RESISTANCE).to_graph())
         
         # Sorting alphabetically by drug codename to prevent floating-bar errors in D3
-        for idx, _ in enumerate(drug_dict):
-            drug_dict[idx]['values'].sort(key=lambda el: el['x'])
+        colors = ('#969696', '#3182bd', '#6baed6', '#fc8740')
+        for x, section in enumerate(drug_dict):
+            section['values'].sort(key=lambda el: el['x'])
+            # Set the colors manually
+            section['color'] = colors[x]
+            section['d'] = section['key'].lower().replace(' ', '_')
+
+        if len(self.request.GET.getlist('map[]')) == 1:
+            country = Country.objects.get(iso2=self.request.GET.get('map[]'))
+            try:
+                self.add_estimate_corrections(drug_dict, country.health.est_mdr / 100)
+            except CountryHealth.DoesNotExist:
+                section['COR'] = False
 
         return {
             'data': drug_dict,
         }
 
+    def add_estimate_corrections(self, graph, expected):
+        """Correct for sensitivity error"""
+        cors = []
+        for x, drug in enumerate(graph[0]['values']):
+            vals = dict([(section['d'], section['values'][x]['value']) for section in graph])
+            # Calculate correction based on expected percentage.
+            cor = self.estimate_correction(expected, **vals)
+            cors.append({
+                'x': drug['x'],
+                'col': drug['col'],
+                'value': cor,
+                'y': cor,
+                'total': -1,
+            })
+        graph.insert(1, {
+            'values': cors,
+            'color': "#9ecae1",
+            'key': 'Oversampling',
+            'expected': expected,
+        })
+
+    def estimate_correction(self, expected, sensitive_to_drug=0, intermediate=0, resistant_to_drug=0, **kw):
+        """Estimate the corrects"""
+        sensitive = sensitive_to_drug
+        resistant = intermediate + resistant_to_drug
+        total = float(sensitive + resistant)
+        if total == 0 or not expected:
+            return 0
+        return max([int((resistant / expected) - total), 0])
 
 class LineageBreakdown(JsonView, DataSlicerMixin):
     """
