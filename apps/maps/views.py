@@ -346,7 +346,7 @@ class Mutations(DataTableMixin, ListView):
         'src[]': 'strain_mutations__strain__importer__in',
         'map[]': 'strain_mutations__strain__country__iso2__in',
         'drug[]': 'strain_mutations__strain__drugs__drug__code__in',
-        'genelocus[]': 'gene_locus__name__in'
+        'genelocus[]': 'gene_locus__gene_symbol__in'
     }
 
     def get_queryset(self):
