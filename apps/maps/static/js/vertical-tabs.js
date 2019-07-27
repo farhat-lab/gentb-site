@@ -52,14 +52,11 @@ $(document).ready(function() {
     var url = tab.data('json-url');
 
     // Initializes set of selectors (e.g. drugs, countries)
-    var store = $('#'+this.id);
-    if (!store.data('values')) {
-      store.data('values', []);
-      store.data('map', {});
-    }
+    var key = this.id.replace('-store', '');
+    var store = getTabStore(key);
 
-
-    //If there is actually data and done is false ('meaning that we didn't already do this whole process)
+    // If there is actually data and done is false ('meaning that
+    //   we didn't already do this whole process).
     if(url && !tab.data('done')) {
       //Get the data currently stored in this tab
       var data = getAllTabData(this.id);
@@ -70,10 +67,12 @@ $(document).ready(function() {
       }
 
       if(tab.data('json-signal')) {
-        //sends a json request to the server and sends the data currently stored in the tab and once it is done 
+        // sends a json request to the server and sends the data currently
+        //   stored in the tab and once it is done.
         $.getJSON(url, data).done(function(json) {
 
-          //calls a function using the json data just fetched, the data already stored in the tabs, and the url used to fetch the data
+          // calls a function using the json data just fetched, the data already
+          //   stored in the tabs, and the url used to fetch the data.
           tab.data('json-signal')(json, url, data);
 
           //Signal that the tab data has been fetched and 
@@ -82,7 +81,7 @@ $(document).ready(function() {
         //for failure
         .fail(function(jqxhr, textStatus, error) {
           var err = textStatus + ", " + error;
-          console.log( "Request Failed: " + err );
+          console.error( "Request Failed: " + err );
         });
       } else if(tab.data('url-signal')) {
           tab.data('url-signal')(url, data);
@@ -93,7 +92,8 @@ $(document).ready(function() {
     }
     var last_tab = localStorage.setItem("last_tab", tab.attr('id'));
   });
-  //Okay now that all the data stuff has been dealt with we just move on now and actually move on the new tab that was just clicked
+  // Okay now that all the data stuff has been dealt with we just move on now
+  //   and actually move on the new tab that was just clicked.
 
   var last_tab = localStorage.getItem("last_tab");
   if (last_tab) {
@@ -102,6 +102,9 @@ $(document).ready(function() {
       $('.defaultactive').addClass("active");
   }
   $('.defaultactive').removeClass("defaultactive");
+
+  // Recover previously entered data
+  liquidateData();
 
   // Activate the existing active tab.
   $(all_tabs+'.active').click();
@@ -179,9 +182,18 @@ function removeTabData(key, value) {
   delete store.data('map')[value];
 }
 
+function getTabStore(key) {
+  var store = $('#'+key+'-store');
+  if(store && !store.data('values')) {
+    store.data('values', []);
+    store.data('map', []);
+  }
+  return store;
+}
+
 /* Adds `value` to store if not already present, otherwise removes `value` */
 function toggleTabData(key, value, text, icon, column) {
-  var store = $('#'+key+'-store');
+  var store = getTabStore(key);
   if (store.data('values').includes(value)) {
     removeTabData(key, value);
   } else {
@@ -191,7 +203,7 @@ function toggleTabData(key, value, text, icon, column) {
 
 /* Refreshes tab icon and plots to match new data */
 function updateVisuals(key) {
-  var store = $('#'+key+'-store');
+  var store = getTabStore(key);
   var num_vals = store.data('values').length;
   switch (num_vals) {
     case 0:
@@ -209,6 +221,50 @@ function updateVisuals(key) {
 
   // Clears all existing graph renderings
   $(all_tabs).not(store).data('done', false);
+  freezeData();
+}
+
+/*
+ * Stores all the data into localStorage.
+ */
+function freezeData() {
+  var data = {};
+  $(all_tabs).each(function() {
+    var store = $(this);
+    var text = $('p', store).text();
+    var clas = $('h2', store).attr('class');
+    var icon = clas.replace('glyphicon glyphicon-', '');
+
+    // Change the way the data is indexed in the dictionary if the data comes with a column tagged data
+
+    var key = this.id.replace('-store', '');
+    data[key] = {
+        'text': text,
+        'icon': icon,
+        'values': store.data('values'),
+        'column': store.data('column'),
+    }
+  });
+  localStorage.setItem("all_tab_data", JSON.stringify(data));
+}
+function liquidateData() {
+  var data = localStorage.getItem("all_tab_data");
+  if(data) {
+    data = JSON.parse(data);
+    for(key in data) {
+      var datum = data[key];
+      if(!datum['text']) {
+          console.error("Invalid data structure!");
+          return;
+      }
+      for(i in datum['values']) {
+        toggleTabData(key, datum['values'][i], datum['text'], datum['icon'], datum['column']);
+      }
+      if(datum['values']) {
+        updateVisuals(key);
+      }
+    }
+  }
 }
 
 /* Deselects tab, removing its value and putting all values back to what they

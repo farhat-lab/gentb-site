@@ -27,7 +27,6 @@ $(document).ready(function() {
 
     initialiseStrainMap(map, color);
     $('#map-store').data('json-signal', function(data) {
-      console.log("Re-mapping!");
       mapStrainData(map, color, data);
       map.invalidateSize();
     });
