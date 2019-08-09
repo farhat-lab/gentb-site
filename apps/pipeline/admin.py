@@ -16,6 +16,7 @@
 #
 
 from django.contrib import admin
+from django.utils.safestring import mark_safe
 
 try:
     from adminsortable2.admin import SortableAdminMixin, SortableInlineAdminMixin
@@ -52,8 +53,19 @@ class PipelineAdmin(admin.ModelAdmin):
 admin.site.register(Pipeline, PipelineAdmin)
 
 class ProgramAdmin(admin.ModelAdmin):
-    list_display = ('name', 'description', 'keep',)
+    list_display = ('name', 'description', 'pipeline', 'keep',)
     filter_horizontal = ('files', 'test_files')
+
+    @staticmethod
+    def pipeline(obj):
+        urk = 'admin:pipeline_pipeline_change'
+        res = []
+        for pipe in obj.pipelines.all():
+            url = reverse(urk, args=[pipe.pipeline.pk])
+            res.append(
+                "<a href='{}'>{}</a>".format(url, str(pipe.pipeline))
+            )
+        return mark_safe('<br/>'.join(res))
 
 admin.site.register(Program, ProgramAdmin)
 
