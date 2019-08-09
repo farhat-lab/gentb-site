@@ -132,7 +132,7 @@ class GeneLocusManager(Manager):
                 if not brute:
                     raise
                 name = name.lower()
-                for gene in self:
+                for gene in self.all():
                     if gene.code.lower() in name or gene.name in name:
                         return gene
         return self._for_mutation(int(raw['ntpos']), name)
