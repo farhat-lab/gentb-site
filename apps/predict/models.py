@@ -524,7 +524,11 @@ class PredictStrain(Model):
         regions = defaultdict(list)
         for gene in data:
             if gene:
-                locus = GeneLocus.objects.for_mutation_name(gene)
+                try:
+                    locus = GeneLocus.objects.for_mutation_name(gene)
+                except ValueError:
+                    continue
+
                 regions[str(locus)].append(gene)
                 if locus not in loci:
                     loci.append(locus)

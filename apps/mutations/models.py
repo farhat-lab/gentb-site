@@ -126,7 +126,10 @@ class GeneLocusManager(Manager):
         try:
             raw = match_snp_name(name)
         except ValueError:
-            raw = match_snp_half(name)
+            try:
+                raw = match_snp_half(name)
+            except ValueError:
+                pass
         return self._for_mutation(int(raw['ntpos']), name)
 
     def for_mutation(self, obj):
