@@ -133,8 +133,9 @@ class GeneLocusManager(Manager):
                     raise
                 name = name.lower()
                 for gene in self.all():
-                    if gene.code.lower() in name or gene.name in name:
-                        return gene
+                    for col in ('gene_symbol', 'name', 'previous_id'):
+                        if getattr(gene, col) and getattr(gene, col).lower() in name:
+                            return gene
         return self._for_mutation(int(raw['ntpos']), name)
 
     def for_mutation(self, obj):
