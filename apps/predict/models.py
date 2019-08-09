@@ -525,7 +525,7 @@ class PredictStrain(Model):
         for gene in data:
             if gene:
                 try:
-                    locus = GeneLocus.objects.for_mutation_name(gene)
+                    locus = GeneLocus.objects.for_mutation_name(gene, True)
                 except ValueError:
                     continue
 

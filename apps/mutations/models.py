@@ -121,7 +121,7 @@ class GeneLocusManager(Manager):
     def get_by_natural_key(self, genome, name):
         return self.get(genome__code=genome, name=name)
 
-    def for_mutation_name(self, name):
+    def for_mutation_name(self, name, brute=False):
         """Match a mutation name to a gene locus"""
         try:
             raw = match_snp_name(name)
@@ -129,7 +129,12 @@ class GeneLocusManager(Manager):
             try:
                 raw = match_snp_half(name)
             except ValueError:
-                pass
+                if not brute:
+                    raise
+                name = name.lower()
+                for gene in self:
+                    if gene.code.lower() in name or gene.name in name:
+                        return gene
         return self._for_mutation(int(raw['ntpos']), name)
 
     def for_mutation(self, obj):
