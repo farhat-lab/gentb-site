@@ -147,7 +147,8 @@ class DrugList(JsonView, DataSlicerMixin):
             section['color'] = colors[x]
             section['d'] = section['key'].lower().replace(' ', '_')
 
-        if len(self.request.GET.getlist('map[]')) == 1:
+        if self.request.user.is_admin and \
+                len(self.request.GET.getlist('map[]')) == 1:
             country = Country.objects.get(iso2=self.request.GET.get('map[]'))
             try:
                 self.add_estimate_corrections(drug_dict, country.health.est_mdr / 100)
