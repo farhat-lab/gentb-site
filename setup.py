@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #
 # Copyright (C) 2018 Maha Farhat
 #
@@ -88,8 +88,8 @@ tb_website.templatetags
     scripts=[os.path.join('bin', a) for a in os.listdir('bin')],
     install_requires = [
         'logutils==0.3.3',
-        'MySQL-python==1.2.5',
-        'Django==1.11.20',
+        'mysqlclient==1.4.4',
+        'Django==2.2.4',
         'PyVCF==0.6.8',
         'django-model-utils==3.1.1',
         'requests-file==1.1',
