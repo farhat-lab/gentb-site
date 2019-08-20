@@ -28,7 +28,7 @@ class Error(TemplateView):
     @classmethod
     def as_error(cls, status):
         view = cls.as_view(template_name='error/%s.html' % status)
-        def _inner(request):
+        def _inner(request, *args, **kwargs):
             response = view(request, status=int(status))
             if hasattr(response, 'render'):
                 response.render()
