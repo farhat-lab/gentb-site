@@ -5,4 +5,4 @@ python-crontab>=2.0.1
 croniter>=0.3.12
 gunicorn>=19.3
 supervisor>=3.1
-MySQL-python==1.2.5
+mysqlclient==1.4.4
