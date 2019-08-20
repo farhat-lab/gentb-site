@@ -26,7 +26,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('name', models.CharField(max_length=255, db_index=True)),
-                ('drug', models.ForeignKey(related_name='gene_locuses', to='mutations.Drug')),
+                ('drug', models.ForeignKey(related_name='gene_locuses', to='mutations.Drug', on_delete=models.CASCADE)),
             ],
             options={
                 'ordering': ('name',),
@@ -38,7 +38,7 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('name', models.CharField(max_length=255, db_index=True)),
                 ('order', models.IntegerField(default=0)),
-                ('gene_locus', models.ForeignKey(related_name='mutations', to='mutations.GeneLocus')),
+                ('gene_locus', models.ForeignKey(related_name='mutations', to='mutations.GeneLocus', on_delete=models.CASCADE)),
             ],
             options={
                 'ordering': ('order',),

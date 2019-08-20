@@ -23,7 +23,7 @@
 Provide widgets for uploading files to the server.
 """
 
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.conf import settings
 from django.forms import TextInput, Textarea
 
@@ -106,7 +106,7 @@ class UploadTableWidget(Textarea):
         # Add each parser as it's own data attribute on the Text element.
         for key, parser in (parsers or {}).items():
             if parser is not None:
-                kwargs['data-parser_' + key] = unicode(parser)
+                kwargs['data-parser_' + key] = str(parser)
 
         super(UploadTableWidget, self).__init__(kwargs)
 

@@ -2,12 +2,13 @@ from datetime import datetime
 from hashlib import md5
 
 from django.db import models
+from django.db.models import CASCADE
 from django.contrib.auth.models import User
 
 from model_utils.models import TimeStampedModel
 
 class TBUser(models.Model):
-    user = models.OneToOneField(User, related_name='tbuser')
+    user = models.OneToOneField(User, related_name='tbuser', on_delete=CASCADE)
     affiliation = models.CharField(max_length=255)
 
     md5 = models.CharField(max_length=40, blank=True, db_index=True, help_text='auto-filled on save')
@@ -24,7 +25,8 @@ class TBUser(models.Model):
         # The md5 changes each time the object is saved
         #
         if not self.md5:
-            self.md5 = md5('%s%s%s' % (str(datetime.now()), self.id, self.user)).hexdigest()
+            key = '{}{}{}'.format(datetime.now(), self.pk, self.user)
+            self.md5 = md5(key.encode('utf8')).hexdigest()
 
         super(TBUser, self).save(*args, **kwargs)
 
@@ -45,11 +47,3 @@ class TBAdminContact(TimeStampedModel):
         verbose_name = 'TB Admin Contact'
         verbose_name_plural = 'TB Admin Contacts'
         ordering = ('email', )
-
-"""
-class UserActivation(TimeStampedModel):
-
-    tb_user = models.ForeignKey(TBUser)
-    activation_key = models.CharField(max_length=40)
-    key_expires = models.DateTimeField()
-"""

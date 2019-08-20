@@ -101,11 +101,21 @@ $(document).ready(function() {
           "processing": true,
           "serverSide": true,
           "ajax": {
+              //"type": "POST",
               "url": url,
               "data": function ( data ) { 
-                  // Sent json, store for future use in selecting
-                  $.extend(data, getAllTabData());
-                  return data;
+                // Remove some of the unneeded parts of the column lookup to conserve http request space.
+                delete data['search']['regex'];
+                for(var i = 0; i < data.columns.length; i++) {
+                    col = data.columns[i];
+                    delete col['name'];
+                    delete col['orderable'];
+                    delete col['searchable'];
+                    delete col['search']['regex'];
+                }
+                // Sent json, store for future use in selecting
+                $.extend(data, getAllTabData());
+                return data;
               },  
               "dataSrc": function ( json ) { 
                   // Returned json, filter and etc here.
@@ -148,6 +158,18 @@ $(document).ready(function() {
             {
               "data": "codon_varient",
               "title": "Varient",
+            },
+            {
+              "data": "strain_count",
+              "title": "Strains",
+            },
+            {
+              "data": "resistant_count",
+              "title": "Resistance",
+            },
+            {
+              "data": "sensitive_count",
+              "title": "Sensitivity",
             },
           ],
           'order': [[2, 'asc']],

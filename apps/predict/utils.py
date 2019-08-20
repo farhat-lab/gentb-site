@@ -3,12 +3,6 @@
 from django.contrib.staticfiles.templatetags.staticfiles import static as _static
 from django.utils.functional import lazy
 
-try:
-    # For django >= 2.0
-    from django.urls import reverse as _reverse
-except ImportError:
-    from django.core.urlresolvers import reverse as _reverse
-
 def static(path, site_id=None):
     return _static(path)
 

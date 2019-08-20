@@ -14,10 +14,12 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
+# pylint: disable=invalid-name
 """
 Predict app's urls
 """
 
+from django.urls import path
 from django.conf.urls import include, url
 
 from .views import Datasets, UploadChoices, UploadView, DatasetView, AddNote
@@ -27,15 +29,17 @@ def url_tree(regex, *urls):
         urlpatterns = urls
     return url(regex, include(UrlTwig))
 
+app_name = 'predict'
 urlpatterns = [
-  url(r'^$', Datasets.as_view(), name="view_my_datasets"),
-  url_tree(r'^upload/',
-    url(r'^$', UploadChoices.as_view(), name="upload"),
-    url(r'^(?P<type>[\w-]+)/$', UploadView.as_view(), name="upload"),
-  ),
-  url_tree(r'^(?P<slug>\w{32})/',
-    url(r'^$',          DatasetView.as_view(),   name="view_single_dataset"),
-    url(r'^note/$',     AddNote.as_view(),       name="add_note"),
-  ),
+    path('', Datasets.as_view(), name="view_my_datasets"),
+    url_tree(
+        r'^upload/',
+        url(r'^$', UploadChoices.as_view(), name="upload"),
+        url(r'^(?P<type>[\w-]+)/$', UploadView.as_view(), name="upload"),
+    ),
+    url_tree(
+        r'^(?P<slug>\w{32})/',
+        url(r'^$', DatasetView.as_view(), name="view_single_dataset"),
+        url(r'^note/$', AddNote.as_view(), name="add_note"),
+    ),
 ]
-

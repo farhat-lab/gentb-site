@@ -25,7 +25,7 @@ from collections import defaultdict
 from apps.maps.mixins import JsonView
 
 from django.views.generic import TemplateView, FormView, DetailView, ListView
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 
 from .models import ImportSource, Mutation
 from .forms import DataUploaderForm

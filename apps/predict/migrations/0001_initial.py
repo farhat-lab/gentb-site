@@ -73,7 +73,7 @@ class Migration(migrations.Migration):
                 ('name', models.CharField(help_text=b'Name of the file (w/o) the path', max_length=255)),
                 ('fullpath', models.TextField(help_text=b'Full path to the file')),
                 ('size', models.IntegerField(default=0, help_text=b'Size of the file in bytes')),
-                ('dataset', models.ForeignKey(to='predict.PredictDataset')),
+                ('dataset', models.ForeignKey(to='predict.PredictDataset', on_delete=models.CASCADE)),
             ],
             options={
                 'ordering': ('-created', 'dataset', 'name'),
@@ -87,7 +87,7 @@ class Migration(migrations.Migration):
                 ('modified', model_utils.fields.AutoLastModifiedField(default=django.utils.timezone.now, verbose_name='modified', editable=False)),
                 ('title', models.CharField(max_length=255)),
                 ('note', models.TextField()),
-                ('dataset', models.ForeignKey(to='predict.PredictDataset')),
+                ('dataset', models.ForeignKey(to='predict.PredictDataset', on_delete=models.CASCADE)),
             ],
             options={
                 'ordering': ('-modified', '-created'),
@@ -126,16 +126,16 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='predictdataset',
             name='status',
-            field=models.ForeignKey(to='predict.PredictDatasetStatus'),
+            field=models.ForeignKey(to='predict.PredictDatasetStatus', on_delete=models.CASCADE),
         ),
         migrations.AddField(
             model_name='predictdataset',
             name='user',
-            field=models.ForeignKey(to='tb_users.TBUser'),
+            field=models.ForeignKey(to='tb_users.TBUser', on_delete=models.CASCADE),
         ),
         migrations.AddField(
             model_name='datasetscriptrun',
             name='dataset',
-            field=models.ForeignKey(to='predict.PredictDataset'),
+            field=models.ForeignKey(to='predict.PredictDataset', on_delete=models.CASCADE),
         ),
     ]

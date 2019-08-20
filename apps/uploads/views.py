@@ -22,7 +22,7 @@
 Allow uploads to be 'chunked' and saved in descrete chunks.
 """
 
-from md5 import md5
+from hashlib import md5
 
 from django.core.exceptions import PermissionDenied
 from django.utils.decorators import method_decorator
@@ -102,7 +102,7 @@ class ManualUploadView(View):
     """
     def post(self, *args, **kwargs):
         """Get the URL and process"""
-        url = unicode(self.request.POST.get('url', ''))
+        url = str(self.request.POST.get('url', ''))
 
         # Support local /server/ filenames
         if url.startswith('/'):
@@ -133,7 +133,7 @@ class ManualUploadView(View):
         for url in Download(url):
             if self.match_file(url.name):
                 yield {
-                  'id': md5(str(url)).hexdigest(),
+                  'id': md5(str(url).encode('utf8')).hexdigest(),
                   'name': url.name,
                   'bytes': url.size,
                   'link': url.public_url(),

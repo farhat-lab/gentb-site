@@ -1,6 +1,6 @@
 
 from django.views.generic import CreateView, TemplateView
-from django.core.urlresolvers import reverse_lazy
+from django.urls import reverse_lazy
 from apps.tb_users.forms import SignUpForm
 
 class UserSignUp(CreateView):

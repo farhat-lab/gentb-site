@@ -23,7 +23,7 @@ import os
 from django.conf import settings
 from django.db.models import Q
 from django.utils.html import escape
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.contrib.admin.sites import site
 from django.contrib.admin.widgets import FilteredSelectMultiple, ForeignKeyRawIdWidget
 from django.forms import (

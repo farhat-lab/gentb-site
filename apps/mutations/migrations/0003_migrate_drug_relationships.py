@@ -26,8 +26,8 @@ def to_drug_mutations(apps, schema_editor):
             # Now get rid of this pretender!
             locus.delete()
         else:
-	    # Record this unique locus using it's name as the unique property
-	    unique_locus[locus.name] = locus
+            # Record this unique locus using it's name as the unique property
+            unique_locus[locus.name] = locus
             locus.genome = genome
             locus.save()
 

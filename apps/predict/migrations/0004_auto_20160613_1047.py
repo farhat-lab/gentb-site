@@ -14,6 +14,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='predictdatasetfile',
             name='dataset',
-            field=models.ForeignKey(related_name='results', to='predict.PredictDataset'),
+            field=models.ForeignKey(related_name='results', to='predict.PredictDataset', on_delete=models.CASCADE),
         ),
     ]

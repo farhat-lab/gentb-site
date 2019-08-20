@@ -51,11 +51,11 @@ class ProgramTest(ExtraTestCase):
 
     def test_no_output_error(self):
         """Test output error"""
-        dict(self.program.prepare_files(file=unicode(self.files[0].store.file)))
+        dict(self.program.prepare_files(file=str(self.files[0].store.file)))
         self.program.command_line = 'ls -l ${file} > @{output}'
 
         with self.assertRaises(ValueError):
-            dict(self.program.prepare_files(file=unicode(self.files[0].store.file)))
+            dict(self.program.prepare_files(file=str(self.files[0].store.file)))
 
     def test_io_output(self):
         """Test the processing of io"""
@@ -71,7 +71,7 @@ class ProgramTest(ExtraTestCase):
         """Test the program"""
         output = '/tmp/test_one.txt'
         files = dict(self.program.prepare_files(output_dir='/tmp'))
-        self.assertEqual(files[('$', 'file', 6, 13)], unicode(self.files[0].store.file))
+        self.assertEqual(files[('$', 'file', 6, 13)], str(self.files[0].store.file))
         self.assertEqual(files[('@', 'file', 16, 23)], output)
 
         cmd = self.program.prepare_command(files)
@@ -117,8 +117,8 @@ class ProgramTest(ExtraTestCase):
                         file=['/tmp/in_one.ps', '/tmp/in_two.ps']))
 
         self.assertEqual(files, [
-            (('$', 'file', 3, 18), unicode(self.files[0].store.file)),
-            (('$', 'file', 19, 34), unicode(self.files[1].store.file)),
+            (('$', 'file', 3, 18), str(self.files[0].store.file)),
+            (('$', 'file', 19, 34), str(self.files[1].store.file)),
             (('$', 'file', 35, 49), '/tmp/in_one.ps'),
             (('$', 'file', 50, 64), '/tmp/in_two.ps'),
         ])
@@ -129,7 +129,7 @@ class PipelineTest(ExtraTestCase):
     def setUp(self):
         self.pipeline = Pipeline.objects.create(name='TEST')
         self.file = ProgramFile(name='file', store='test_one.txt')
-        self.filename = unicode(self.file.store.file)
+        self.filename = str(self.file.store.file)
         self.dir = os.path.dirname(self.filename)
 
     def setup_pipeline(self, *programs):

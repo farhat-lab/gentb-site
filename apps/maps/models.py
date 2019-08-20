@@ -4,9 +4,8 @@ Provide a place for city and country geo data for showing on maps.
 import os
 
 from django.db.models import (
-    Model, OneToOneField, ForeignKey, IntegerField, FloatField, CharField,
+    Model, OneToOneField, ForeignKey, IntegerField, FloatField, CharField, CASCADE,
 )
-from django.utils.encoding import python_2_unicode_compatible
 
 from .gis import GeoManager, MultiPolygonField, MultiPointField
 
@@ -58,7 +57,6 @@ class CountryManager(GeoManager):
     def get_by_natural_key(self, cid):
         return self.get(iso2=cid)
 
-@python_2_unicode_compatible
 class Country(Model):
     """Provides a simple shape and a couple of useful fields to identify a country."""
     name = CharField(max_length=128, unique=True)
@@ -94,20 +92,18 @@ class Country(Model):
     def __str__(self):
         return self.name
 
-@python_2_unicode_compatible
 class CountryHealth(Model):
     """Extra WHO data about a country"""
-    country = OneToOneField(Country, related_name='health')
+    country = OneToOneField(Country, related_name='health', on_delete=CASCADE)
     est_mdr = FloatField(null=True, blank=True,\
         help_text="Estimated % Drug Resistance for the country")
 
     def __str__(self):
         return "WHO Data for {}".format(self.country)
 
-@python_2_unicode_compatible
 class CountryDetail(Model):
     """Provides a much more detailed country outline and more fields"""
-    country = OneToOneField(Country, related_name='detail')
+    country = OneToOneField(Country, related_name='detail', on_delete=CASCADE)
 
     name_short = CharField(max_length=36, null=True, blank=True)
     name_abbr = CharField(max_length=13, null=True, blank=True)
@@ -145,11 +141,10 @@ class PlaceManager(GeoManager):
     def get_by_natural_key(self, name, country):
         return self.get(name=name, country=country)
 
-@python_2_unicode_compatible
 class Place(Model):
     """A populated place from the world map source"""
     name = CharField(max_length=128)
-    country = ForeignKey(Country, related_name='places')
+    country = ForeignKey(Country, related_name='places', on_delete=CASCADE)
 
     latitude = FloatField()
     longitude = FloatField()

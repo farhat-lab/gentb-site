@@ -24,19 +24,17 @@
 Extra functionality for getting titles and breadcrumbs from views.
 """
 
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.utils.translation import ugettext_lazy as _
-from django.utils.encoding import smart_unicode
 
 from django.db.models import Manager, QuerySet
-from django.views.generic import View
 from django.contrib.contenttypes.models import ContentType
 
-def IterObject(t=list):
+def IterObject(typ=list): # pylint: disable=invalid-name
     """Create an object from a generator function, default is list"""
-    def __outer__(f):
+    def __outer__(func):
         def __inner__(*args, **kwargs):
-            return t(f(*args, **kwargs))
+            return typ(func(*args, **kwargs))
         return __inner__
     return __outer__
 
@@ -91,7 +89,7 @@ class AutoBreadcrumbMiddleware(object):
             args = (obj.pk,) if obj else ()
             if user.has_perm('%s.%s_%s' % (ct.app_label, 'change', ct.model)):
                 return {
-                    'name': 'Edit "%s"' % unicode(obj),
+                    'name': 'Edit "%s"' % str(obj, errors='ignore'),
                     'url': reverse('admin:%s_%s_%s' % bits, args=args),
                 }
 
@@ -161,7 +159,7 @@ class AutoBreadcrumbMiddleware(object):
             name = obj.title
         else:
             try:
-                name = smart_unicode(obj, errors='ignore')
+                name = str(obj, errors='ignore')
             except UnicodeEncodeError:
                 name = "Name Error"
         if hasattr(obj, 'get_absolute_url'):
@@ -169,5 +167,3 @@ class AutoBreadcrumbMiddleware(object):
         if name is not None and name.startswith('['):
             return None
         return (url, name)
-
-

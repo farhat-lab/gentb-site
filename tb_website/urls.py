@@ -18,39 +18,38 @@
 Global anchor for the website's urls
 """
 
+from django.urls import path
 from django.conf.urls import include, url
 from django.conf.urls.static import static
 from django.conf import settings
-from django.views.generic import TemplateView as Tv
-
-# Uncomment the next two lines to enable the admin:
 from django.contrib import admin
-admin.autodiscover()
+
+from django.views.generic import TemplateView as Tv
 
 from apps.versioner.views import Version
 
-urlpatterns = [
-    url(r'^$', Tv.as_view(template_name='home.html'), name="home"),
-    url(r'^about/$', Tv.as_view(template_name='about.html'), name="about"),
-    url(r'^data/$', Tv.as_view(template_name='data.html'), name="data"),
-    url(r'^data/info/$', Tv.as_view(template_name='info.html'), name="info"),
-    url(r'^terms/$', Tv.as_view(template_name='terms.html'), name="terms"),
+urlpatterns = [ # pylint: disable=invalid-name
+    path('', Tv.as_view(template_name='home.html'), name="home"),
+    path('about/', Tv.as_view(template_name='about.html'), name="about"),
+    path('data/', Tv.as_view(template_name='data.html'), name="data"),
+    path('data/info/', Tv.as_view(template_name='info.html'), name="info"),
+    path('terms/', Tv.as_view(template_name='terms.html'), name="terms"),
 
-    url(r'^gentb-admin/', include(admin.site.urls)),
-    url(r'^models/', include('django_spaghetti.urls', namespace='spaghetti')),
-    url(r'^user/', include('apps.tb_users.urls', namespace='users')),
+    path('gentb-admin/', admin.site.urls),
+    url(r'^models/', include('django_spaghetti.urls')),
+    url(r'^user/', include('apps.tb_users.urls')),
     url(r'^auth/', include('apps.tb_users.auth_urls')),
 
     #url(r'.+', Tv.as_view(template_name='offline.html'), name="offline"),
 
-    url(r'^explore/', include('apps.explore.urls', namespace='explore')),
+    url(r'^explore/', include('apps.explore.urls')),
     url(r'^predict/', include('apps.predict.urls', namespace='predict')),
-    url(r'^pipeline/', include('apps.pipeline.urls', namespace='pipeline')),
-    url(r'^uploads/', include('apps.uploads.urls', namespace='uploads')),
-    url(r'^genes/', include('apps.mutations.urls', namespace='genes')),
-    url(r'^maps/', include('apps.maps.urls', namespace='maps')),
+    url(r'^pipeline/', include('apps.pipeline.urls')),
+    url(r'^uploads/', include('apps.uploads.urls')),
+    url(r'^genes/', include('apps.mutations.urls')),
+    url(r'^maps/', include('apps.maps.urls')),
 
-    url(r'^version/', Version.as_view(), name='version'),
+    path('version/', Version.as_view(), name='version'),
 ]
 
 if settings.DEBUG:

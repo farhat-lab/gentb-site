@@ -30,13 +30,14 @@ except ImportError:
     except ImportError:
         pass
 
-for n, v in globals().items():
+for n in list(globals())[:]:
+    v = globals()[n]
     if n.split('_')[-1] in ('DIR', 'DIRECTORY', 'PATH', 'ROOT'):
         if 'FORMAT' in n or 'LIBRARY' in n:
             continue
         if v and v[0] != '/':
             continue
-        if not isdir(v):
+        if not os.path.isdir(v):
             try:
                 sys.stderr.write("INFO: Making directory: %s for %s\n" % (v, n))
                 os.makedirs(v)

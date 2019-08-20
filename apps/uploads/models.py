@@ -25,7 +25,7 @@ import logging
 from django.conf import settings
 from django.db.models import (
     Model, SlugField, CharField, PositiveIntegerField, URLField,
-    DateTimeField, TextField, ForeignKey
+    DateTimeField, TextField, ForeignKey, CASCADE, SET_NULL
 )
 from django.utils.timezone import now
 
@@ -170,7 +170,7 @@ class DropboxUploadFile(UploadFile):
 class ResumableUploadFile(UploadFile):
     """An upload from a desktop computer"""
     upload_id = SlugField(default=get_uuid)
-    user = ForeignKey(settings.AUTH_USER_MODEL)
+    user = ForeignKey(settings.AUTH_USER_MODEL, on_delete=CASCADE)
 
     def resumable_file(self, **kwargs):
         """Returns the resumable file object for this uf"""

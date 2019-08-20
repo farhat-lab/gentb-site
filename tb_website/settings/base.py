@@ -1,21 +1,17 @@
 """Common settings and globals."""
 
-from os.path import abspath, basename, dirname, join, normpath, isdir
+from os.path import abspath, basename, dirname, join, normpath
 from sys import path
 
-# Provide some data for packaging so database models can be used outside of the website.
-MOD_VERSION = '0.5.2'
+MOD_VERSION = '0.6.0'
 MOD_PACKAGE = 'gentb'
 
-########## PATH CONFIGURATION
-# Absolute filesystem path to the Django project directory:
 DJANGO_ROOT = normpath(join(abspath(__file__), '..', '..'))
 
-# Absolute filesystem path to the top-level project folder:
 SITE_ROOT = dirname(DJANGO_ROOT)
 
-# Site name:
 SITE_NAME = basename(DJANGO_ROOT)
+WSGI_APPLICATION = '%s.wsgi.application' % SITE_NAME
 
 # Absolute path where all data (media, logs, etc) should go:
 DATA_ROOT = join(SITE_ROOT, 'data')
@@ -125,25 +121,20 @@ TEMPLATES = [
 ########## END TEMPLATE CONFIGURATION
 
 
-########## MIDDLEWARE CONFIGURATION
-# See: https://docs.djangoproject.com/en/dev/ref/settings/#middleware-classes
-MIDDLEWARE_CLASSES = (
+MIDDLEWARE = [
     # Default Django middleware.
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     # App based middleware
-    'tb_website.middleware.AutoBreadcrumbMiddleware',
+    #'tb_website.middleware.AutoBreadcrumbMiddleware',
     # Support Middleware
     'apps.versioner.middleware.VersionInformation',
-)
-########## END MIDDLEWARE CONFIGURATION
-
+]
 
 ########## URL CONFIGURATION
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#root-urlconf
@@ -169,7 +160,6 @@ DJANGO_APPS = (
 # Apps from the internet (see requirements.txt)
 WEBSITE_APPS = (
     'django.contrib.gis',
-    'cachebuster',
     'django_spaghetti',
     'adminsortable2',
     'autotest',
@@ -270,8 +260,3 @@ SPAGHETTI_SAUCE = {
 VERSION_BRANCHES = [
     ('Incoming', 'master')
 ]
-
-########## WSGI CONFIGURATION
-# See: https://docs.djangoproject.com/en/dev/ref/settings/#wsgi-application
-WSGI_APPLICATION = '%s.wsgi.application' % SITE_NAME
-########## END WSGI CONFIGURATION

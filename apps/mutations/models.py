@@ -26,8 +26,8 @@ from django.conf import settings
 from django.db.models import Model, Manager, Q, QuerySet, \
     CharField, PositiveIntegerField, ForeignKey, ManyToManyField, URLField, \
     SlugField, IntegerField, BooleanField, DateField, DateTimeField, \
-    TextField, DecimalField, CASCADE
-from django.core.urlresolvers import reverse
+    TextField, DecimalField, CASCADE, SET_NULL
+from django.urls import reverse
 
 from apps.maps.models import Country, Place
 from apps.uploads.models import UploadFile
@@ -71,14 +71,16 @@ class DrugRegimen(Model):
 
 class Drug(Model):
     """Each antibiotic drug which resistance might be known"""
-    kind = ForeignKey(DrugClass, verbose_name='Drug Class', null=True, blank=True)
+    kind = ForeignKey(DrugClass, verbose_name='Drug Class', null=True, blank=True,
+                      on_delete=SET_NULL)
 
     name = CharField(max_length=255, db_index=True, unique=True)
     code = CharField(max_length=12, db_index=True, unique=True)
     abbr = CharField(max_length=8, null=True, blank=True)
 
     priority = IntegerField(default=0, help_text="Priority of drug in regimen")
-    regimen = ForeignKey(DrugRegimen, null=True, blank=True, related_name='drugs')
+    regimen = ForeignKey(DrugRegimen, null=True, blank=True, related_name='drugs',
+                         on_delete=SET_NULL)
 
     loci = ManyToManyField("GeneLocus", blank=True, related_name='drugs',\
         help_text="Implicated gene loci which are important to drug resistance")
@@ -186,7 +188,8 @@ class GeneLocus(Model):
         ('R', 'RNA'),
     )
 
-    genome = ForeignKey(Genome, related_name='gene_locuses', null=True, blank=True)
+    genome = ForeignKey(Genome, related_name='gene_locuses', null=True, blank=True,
+                        on_delete=SET_NULL)
     name = CharField(max_length=255, db_index=True)
     previous_id = CharField(max_length=64, db_index=True, null=True, blank=True)
 
@@ -236,11 +239,11 @@ class GeneDrugInteraction(Model):
     """
     Classify a gene drug interaction (experimental).
     """
-    drug = ForeignKey(Drug, related_name='gene_interactions')
-    gene = ForeignKey(GeneLocus, related_name='drug_interactions')
+    drug = ForeignKey(Drug, related_name='gene_interactions', on_delete=CASCADE)
+    gene = ForeignKey(GeneLocus, related_name='drug_interactions', on_delete=CASCADE)
     paper = ForeignKey("Paper", related_name='interactions', null=True, blank=True,\
         help_text="Reference the paper this interaction was found in, only one blank "
-                  "interaction allowed per drug/gene")
+                  "interaction allowed per drug/gene", on_delete=SET_NULL)
     weight = IntegerField(default=1,\
         help_text="How important is this interaction considered")
     interaction = CharField(max_length=5, default='RES', choices=[
@@ -298,7 +301,7 @@ class MutationManager(Manager.from_queryset(MutationQuerySet)):
 # db_table: gtbdr.var_h37rv
 class Mutation(Model):
     # genesymbol
-    gene_locus = ForeignKey(GeneLocus, related_name='mutations')
+    gene_locus = ForeignKey(GeneLocus, related_name='mutations', on_delete=CASCADE)
 
     # gene_id/snpname, snpid, index
     name   = CharField(max_length=255, db_index=True)
@@ -380,7 +383,7 @@ RESISTANCE_GROUP = (
 # wgsmtb - Full sequences, must specify Null targeting.
 class TargetSet(Model):
     """For targeted genes (where the whole set of mutations is imported)"""
-    genome = ForeignKey(Genome)
+    genome = ForeignKey(Genome, on_delete=CASCADE)
     name = CharField(max_length=64)
 
     def __str__(self):
@@ -388,8 +391,8 @@ class TargetSet(Model):
 
 
 class TargetRegion(Model):
-    target_set = ForeignKey(TargetSet, related_name='regions')
-    gene = ForeignKey(GeneLocus, blank=True, null=True)
+    target_set = ForeignKey(TargetSet, related_name='regions', on_delete=CASCADE)
+    gene = ForeignKey(GeneLocus, blank=True, null=True, on_delete=CASCADE)
 
     length = IntegerField(blank=True, null=True)
     start = IntegerField(blank=True, null=True)
@@ -409,7 +412,7 @@ class ImportSource(Model):
     """Track data by how it was imported."""
     name = CharField(max_length=256)
 
-    uploader = ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True)
+    uploader = ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=SET_NULL)
     uploaded = ManyToManyField(UploadFile, blank=True, through='ImportStrain')
     complete = BooleanField(default=True)
 
@@ -490,7 +493,7 @@ class Lineage(Model):
     """
     slug = SlugField('Lineage ID', primary_key=True)
     name = CharField('Lineage Name', max_length=128, null=True, blank=True)
-    parent = ForeignKey('self', null=True, blank=True)
+    parent = ForeignKey('self', null=True, blank=True, on_delete=CASCADE)
 
     def __str__(self):
         return self.name or self.slug
@@ -511,13 +514,17 @@ class StrainSource(Model):
     cluster = CharField(max_length=15, null=True, blank=True)
     date = DateField(null=True, blank=True)
 
-    country = ForeignKey(Country, null=True, blank=True, related_name='sources')
-    city = ForeignKey(Place, null=True, blank=True, related_name='sources')
+    country = ForeignKey(Country, null=True, blank=True, related_name='sources', on_delete=SET_NULL)
+    city = ForeignKey(Place, null=True, blank=True, related_name='sources', on_delete=SET_NULL)
 
-    importer = ForeignKey(ImportSource, verbose_name='Import Source', null=True, blank=True)
-    source_lab = CharField(max_length=100, verbose_name='Laboratory Source', db_index=True, null=True, blank=True)
-    source_paper = ForeignKey(Paper, related_name="strains", null=True, blank=True)
-    bioproject = ForeignKey(BioProject, related_name="strains", null=True, blank=True)
+    importer = ForeignKey(ImportSource, verbose_name='Import Source', null=True, blank=True,
+                          on_delete=CASCADE)
+    source_lab = CharField(max_length=100, verbose_name='Laboratory Source', db_index=True,
+                           null=True, blank=True)
+    source_paper = ForeignKey(Paper, related_name="strains", null=True, blank=True,
+                              on_delete=SET_NULL)
+    bioproject = ForeignKey(BioProject, related_name="strains", null=True, blank=True,
+                            on_delete=SET_NULL)
 
     patient_id = CharField(max_length=16, db_index=True)
     patient_age = PositiveIntegerField(null=True, blank=True)
@@ -528,7 +535,7 @@ class StrainSource(Model):
     spoligotype_family = CharField("Spoligotype Family Parent Strain", max_length=255, null=True, blank=True)
     spoligotype_octal  = CharField(validators=[is_octal], max_length=15, null=True, blank=True)
 
-    lineage = ForeignKey(Lineage, related_name='strains', null=True, blank=True)
+    lineage = ForeignKey(Lineage, related_name='strains', null=True, blank=True, on_delete=SET_NULL)
     rflp_type = CharField("Restriction fragment length polymorphism type", max_length=10, null=True, blank=True)
     rflp_family = CharField("Restriction fragment length polymorphism family", max_length=10, null=True, blank=True)
     insert_type = IntegerField("Insertion sequence 6110 type", null=True, blank=True)
@@ -536,7 +543,7 @@ class StrainSource(Model):
     wgs_group = CharField("Whole Genome Sequence Group", max_length=10, null=True, blank=True)
     principle_group = IntegerField("Principle Generic Group", null=True, blank=True)
     resistance_group = CharField(max_length=4, choices=RESISTANCE_GROUP, null=True, blank=True)
-    targeting = ForeignKey(TargetSet, null=True, blank=True)
+    targeting = ForeignKey(TargetSet, null=True, blank=True, on_delete=CASCADE)
 
     notes = TextField(null=True, blank=True)
 
@@ -579,9 +586,9 @@ class StrainMutationManager(Manager):
 
 class StrainMutation(Model):
     # id (link to StrainSource imported data)
-    strain = ForeignKey(StrainSource, related_name='mutations')
+    strain = ForeignKey(StrainSource, related_name='mutations', on_delete=CASCADE)
     # snpid (via parent_id)
-    mutation = ForeignKey(Mutation, related_name='strain_mutations')
+    mutation = ForeignKey(Mutation, related_name='strain_mutations', on_delete=CASCADE)
 
     # qual, depth[del], bidir
     quality = IntegerField(null=True, blank=True)
@@ -616,8 +623,8 @@ class StrainResistanceManager(Manager):
         return self.get(strain__name=strain, drug__code=drug)
 
 class StrainResistance(Model):
-    strain     = ForeignKey(StrainSource, related_name='drugs')
-    drug       = ForeignKey(Drug, related_name='strains')
+    strain     = ForeignKey(StrainSource, related_name='drugs', on_delete=CASCADE)
+    drug       = ForeignKey(Drug, related_name='strains', on_delete=CASCADE)
     resistance = CharField(max_length=1, choices=RESISTANCE, null=True, blank=True)
 
     objects = StrainResistanceManager()

@@ -43,12 +43,13 @@ import logging
 from django.db.models import (
     Model, Q, PositiveIntegerField, FileField, SlugField, DateTimeField,
     BooleanField, CharField, ForeignKey, TextField, ManyToManyField,
+    CASCADE, SET_NULL
 )
 from model_utils.models import TimeStampedModel
 
 from chore import get_job_manager, tripplet, JobSubmissionError
 
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.conf import settings
 from django.utils.timezone import now
 from django.utils.text import slugify
@@ -310,8 +311,8 @@ class Program(Model):
 
 
 class PipelineProgram(Model):
-    pipeline = ForeignKey(Pipeline, related_name='programs')
-    program = ForeignKey(Program, related_name='pipelines')
+    pipeline = ForeignKey(Pipeline, related_name='programs', on_delete=CASCADE)
+    program = ForeignKey(Program, related_name='pipelines', on_delete=CASCADE)
     order = PositiveIntegerField(default=0)
 
     class Meta:
@@ -352,7 +353,7 @@ class PipelineRun(TimeStampedModel):
     values or printed strings attached.
     """
     name = SlugField(max_length=128, db_index=True)
-    pipeline = ForeignKey(Pipeline, related_name='runs')
+    pipeline = ForeignKey(Pipeline, related_name='runs', null=True, on_delete=SET_NULL)
     run_as_test = PositiveIntegerField(null=True, blank=True,\
         help_text="Every (x) days, run this pipeline-run as a test.")
     clean_files = TextField(null=True, blank=True,
@@ -470,8 +471,8 @@ class PipelineRun(TimeStampedModel):
 P_LOG = None
 
 class ProgramRun(TimeStampedModel):
-    piperun = ForeignKey(PipelineRun, related_name='programs')
-    program = ForeignKey(Program, related_name='runs')
+    piperun = ForeignKey(PipelineRun, related_name='programs', on_delete=CASCADE)
+    program = ForeignKey(Program, related_name='runs', null=True, on_delete=SET_NULL)
     job_id = SlugField(max_length=255, help_text="Name or ID of the job in the cloud runner")
 
     previous_id = SlugField(max_length=255, null=True, blank=True,\
@@ -564,7 +565,7 @@ class ProgramRun(TimeStampedModel):
             for key in kwargs:
                 if key in ('output_dir', 'previous', 'follower'):
                     continue
-                if isinstance(kwargs[key], (str, unicode)):
+                if isinstance(kwargs[key], str):
                     self.kwargs[key] = [kwargs[key]]
                 elif isinstance(kwargs[key], (list, tuple)):
                     self.kwargs[key] = kwargs[key]

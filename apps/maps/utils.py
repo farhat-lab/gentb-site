@@ -203,7 +203,7 @@ class Sdict(OrderedDict):
             return self
 
     def __setitem__(self, key, value):
-        if isinstance(key, (str, unicode)):
+        if isinstance(key, str):
             keys = key.split('__')
         elif isinstance(key, (list, tuple)):
             keys = key

@@ -14,16 +14,20 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-"""URLs for mutation data"""
+# pylint: disable=invalid-name
+"""
+URLs for mutation data
+"""
 
-from django.conf.urls import include, url
+from django.urls import path
 
 from .views import DropDownData, UploadData, UploadList, UploadView, MutationView
 
+app_name = 'genes'
 urlpatterns = [ # pylint: disable=invalid-name
-    url(r'^json/$', DropDownData.as_view(), name="json"),
-    url(r'^upload/$', UploadData.as_view(), name="upload"),
-    url(r'^upload/list/$', UploadList.as_view(), name="upload.list"),
-    url(r'^upload/(?P<pk>\d+)/$', UploadView.as_view(), name="upload.view"),
-    url(r'^parse/$', MutationView.as_view(), name="parse"),
+    path('json/', DropDownData.as_view(), name="json"),
+    path('upload/', UploadData.as_view(), name="upload"),
+    path('upload/list/', UploadList.as_view(), name="upload.list"),
+    path('upload/<int:pk>/', UploadView.as_view(), name="upload.view"),
+    path('parse/', MutationView.as_view(), name="parse"),
 ]

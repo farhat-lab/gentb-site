@@ -34,6 +34,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='strainsource',
             name='source_paper',
-            field=models.ForeignKey(related_name='strains', blank=True, to='mutations.Paper', null=True),
+            field=models.ForeignKey(related_name='strains', blank=True, to='mutations.Paper', null=True, on_delete=models.CASCADE),
         ),
     ]

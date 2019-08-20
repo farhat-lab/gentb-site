@@ -14,17 +14,20 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
+# pylint: disable=invalid-name
 """
 Urls to upload files to the system.
 """
-from django.conf.urls import url
+from django.urls import path
+
 from .views import ResumableUploadView, RetryResumableUpload, \
     RetryUpload, ManualUploadView, TestUpload
 
+app_name = 'uploads'
 urlpatterns = [
-    url(r'^test/$', TestUpload.as_view(), name='test'),
-    url(r'^resumable/$', ResumableUploadView.as_view(), name='resumable'),
-    url(r'^resumable/(?P<pk>\d+)/$', RetryResumableUpload.as_view(), name='resumable'),
-    url(r'^manual/$', ManualUploadView.as_view(), name='manual'),
-    url(r'^(?P<pk>\d+)/retry/$', RetryUpload.as_view(), name='retry'),
+    path('test/', TestUpload.as_view(), name='test'),
+    path('resumable/', ResumableUploadView.as_view(), name='resumable'),
+    path('resumable/<int:pk>/', RetryResumableUpload.as_view(), name='resumable'),
+    path('manual/', ManualUploadView.as_view(), name='manual'),
+    path('<int:pk>/retry/', RetryUpload.as_view(), name='retry'),
 ]

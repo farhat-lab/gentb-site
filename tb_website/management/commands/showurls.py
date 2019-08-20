@@ -22,7 +22,7 @@ class Url(object):
         if parent is not None:
             self.depth = parent.depth + 1 
 
-    def __unicode__(self):
+    def __str__(self):
         if self.name:
             return "%s [%s]" % (self.full_pattern, self.name)
         return self.full_pattern
@@ -59,7 +59,7 @@ class Url(object):
         if self.parent:
             if pattern and self.parent.pattern.endswith('$'):
                 logger.warning("Possible broken url, parent url ends "
-                        "string matching: " + unicode(self.parent))
+                        "string matching: " + str(self.parent))
             pattern = self.parent.full_pattern + pattern
         if pattern == 'None/':
             return '/'
@@ -86,8 +86,8 @@ class UrlModule(Url):
     """A url include"""
     is_module = True
 
-    def __unicode__(self):
-        tag = super(UrlModule, self).__unicode__()
+    def __str__(self):
+        tag = super(UrlModule, self).__str__()
         return "%s > %s >>" % (self.full_pattern, self.name)
 
     @property
@@ -103,8 +103,8 @@ class UrlModule(Url):
 
 class UrlFunction(Url):
     """A url using a simple function"""
-    def __unicode__(self):
-        tag = super(UrlFunction, self).__unicode__()
+    def __str__(self):
+        tag = super(UrlFunction, self).__str__()
         return "%s > %s()" % (tag, self.module.__name__)
 
 class WebsiteUrls(object):
@@ -120,8 +120,8 @@ class WebsiteUrls(object):
                 if key is not None and key in dupes:
                     logger.error(
                        "URL Name is already used '%s' -> '%s'" % key\
-                       + "\n  a) " + unicode(dupes[key])\
-                       + "\n  b) " + unicode(item) + '\n')
+                       + "\n  a) " + str(dupes[key])\
+                       + "\n  b) " + str(item) + '\n')
                 dupes[key] = item
             yield item
 
@@ -162,5 +162,5 @@ class Command(BaseCommand):
             self.start_url = args[0]
 
         for url in WebsiteUrls():
-            self.stdout.write(" " * url.depth + unicode(url))
+            self.stdout.write(" " * url.depth + str(url))
 

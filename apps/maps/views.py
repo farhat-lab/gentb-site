@@ -24,8 +24,9 @@ import re
 import json
 from collections import defaultdict, OrderedDict
 from django.views.generic import TemplateView, ListView
-from django.db.models import Count, Q, F, IntegerField
-from django.db.models.functions import Cast
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
+from django.db.models import Count, Q
 
 from apps.mutations.models import (
     ImportSource, StrainSource, Mutation, GeneLocus, Genome,
@@ -84,7 +85,7 @@ class Places(JsonView, DataSlicerMixin):
             ('source[]', 'importer__in'),
             ('paper', 'source_paper'),
             ('drug[]', 'drugs__drug__code__in'),
-        ] + zip(LINEAGE_NAMES, LINEAGE_COLS)
+        ] + list(zip(LINEAGE_NAMES, LINEAGE_COLS))
     )
 
     def get_context_data(self, **_):
@@ -128,7 +129,7 @@ class DrugList(JsonView, DataSlicerMixin):
             ('map[]', 'country__iso2__in'),
             ('source[]', 'importer__in'),
             ('paper', 'source_paper'),
-        ] + zip(LINEAGE_NAMES, LINEAGE_COLS)
+        ] + list(zip(LINEAGE_NAMES, LINEAGE_COLS))
     )
 
     def get_context_data(self, **_):
@@ -142,12 +143,12 @@ class DrugList(JsonView, DataSlicerMixin):
         # Sorting alphabetically by drug codename to prevent floating-bar errors in D3
         colors = ('#969696', '#3182bd', '#6baed6', '#fc8740')
         for x, section in enumerate(drug_dict):
-            section['values'].sort(key=lambda el: el['x'])
+            section['values'].sort(key=lambda el: (el['x'] or ''))
             # Set the colors manually
             section['color'] = colors[x]
             section['d'] = section['key'].lower().replace(' ', '_')
 
-        if self.request.user.is_admin and \
+        if self.request.user.is_staff and \
                 len(self.request.GET.getlist('map[]')) == 1:
             country = Country.objects.get(iso2=self.request.GET.get('map[]'))
             try:
@@ -275,7 +276,7 @@ class Lineages(JsonView, DataSlicerMixin):
             'data': GraphData(
                 self.get_data().annotate(count=Count('pk')),
                 self.values, 'count', None, trim=True)
-                    .set_axis('z', zip(self.values, LINEAGE_NAMES))
+                    .set_axis('z', list(zip(self.values, LINEAGE_NAMES)))
                     .set_axis('x', [(None, "Not Available")])
                     .to_graph()
         }
@@ -339,6 +340,7 @@ class LocusList(DataTableMixin, ListView):
         qset = qset.filter(start__isnull=False, stop__isnull=False)
         return qset.annotate(mcount=Count('mutations'))
 
+@method_decorator(csrf_exempt, name='dispatch')
 class Mutations(DataTableMixin, ListView):
     """Provide a lookup into the mutations database for selecting anavailable mutation"""
     model = Mutation
@@ -352,8 +354,26 @@ class Mutations(DataTableMixin, ListView):
 
     def get_queryset(self):
         qset = super(Mutations, self).get_queryset()
-        qset = qset #.annotate(gene_locus_name='gene_locus__name')
+        qset = qset.filter(
+            strain_mutations__isnull=False,
+        )
+        qset = qset.annotate(
+            strain_count=Count('strain_mutations__pk'),
+            resistant_count=Count('strain_mutations__strain__pk',
+                                  filter=Q(strain_mutations__strain__drugs__resistance='r')),
+            sensitive_count=Count('strain_mutations__strain__pk',
+                                  filter=Q(strain_mutations__strain__drugs__resistance='s')),
+        )
+        qset = qset.filter(
+            #nucleotide_position__isnull=False,
+            strain_count__gt=0,
+        )
+        print(str(qset.query))
         return qset
+
+    def post(self, request, *args, **kwargs):
+        self.request.GET = self.request.POST
+        return self.get(request, *args, **kwargs)
 
 class OldMutations(JsonView, DataSlicerMixin):
     #values = ['pk']

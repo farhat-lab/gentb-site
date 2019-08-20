@@ -105,12 +105,15 @@ def clean_predict_dir():
     Attempt to remove any of the directories no longer in use to save space.
     """
     parent = '/n/groups/gentb_www/predictData'
+    if not os.path.isdir(parent):
+        return
+
     log("Starting cleaning process: {}".format(parent))
     expected = list(PredictDataset.objects.values_list('file_directory', flat=True))
     found = os.listdir(parent)
 
     for fname in found:
-        path = unicode(os.path.join(parent, fname))
+        path = str(os.path.join(parent, fname))
         if path not in expected:
             try:
                 shutil.rmtree(path)

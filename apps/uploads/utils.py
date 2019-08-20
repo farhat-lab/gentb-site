@@ -19,9 +19,10 @@ Allows the downloading of URLs from different schemes using python-requests.
 """
 
 import os
+from os.path import join, getsize
 import uuid
 import json
-import logging
+from hashlib import md5
 
 from requests import Session
 from requests.compat import urlparse, urlunparse
@@ -29,13 +30,11 @@ from requests.compat import urlparse, urlunparse
 from requests_file import FileAdapter
 from requests_ftp import FTPAdapter
 
-from md5 import md5
-from os.path import join, getsize
 from django.conf import settings
 from django.core.files.storage import FileSystemStorage
 
-
 def get_uuid():
+    """Return the hex from a new uuid4 uuid"""
     return uuid.uuid4().hex
 
 class ManagedUrl(object):
@@ -48,7 +47,7 @@ class ManagedUrl(object):
         self.url = urlparse(url, 'file')
         if self.url.scheme == 'url':
             # Load the url from the disk cache
-            with open(self._cache_file(self.url.netloc)) as fhl:
+            with open(self._cache_file(self.url.netloc.encode('utf8'))) as fhl:
                 self.url = self.url._replace(**json.loads(fhl.read()))
 
     def _cache_file(self, digest):

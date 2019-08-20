@@ -20,6 +20,7 @@ Mixins specially for the maps app
 
 from operator import or_, and_
 from datetime import timedelta
+from functools import reduce
 
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db.models import Q, QuerySet, Model

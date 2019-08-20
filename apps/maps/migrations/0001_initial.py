@@ -42,7 +42,7 @@ class Migration(migrations.Migration):
                 ('elevation', models.FloatField()),
                 ('timezone', models.CharField(max_length=254)),
                 ('geom', MultiPointField(srid=4326)),
-                ('country', models.ForeignKey(to='maps.Country')),
+                ('country', models.ForeignKey(to='maps.Country', on_delete=models.CASCADE)),
             ],
         ),
     ]

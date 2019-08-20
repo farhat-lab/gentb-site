@@ -81,12 +81,12 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='place',
             name='country',
-            field=models.ForeignKey(related_name='places', to='maps.Country'),
+            field=models.ForeignKey(related_name='places', to='maps.Country', on_delete=models.CASCADE),
         ),
         migrations.AddField(
             model_name='countrydetail',
             name='country',
-            field=models.OneToOneField(related_name='detail', to='maps.Country'),
+            field=models.OneToOneField(related_name='detail', to='maps.Country', on_delete=models.CASCADE),
         ),
         migrations.AddField(
             model_name='country',

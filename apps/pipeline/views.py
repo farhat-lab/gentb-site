@@ -21,7 +21,7 @@ Provides the views for testing and reviewing pipelines.
 from django.views.generic import ListView, DetailView, TemplateView, RedirectView
 from django.views.generic.detail import SingleObjectMixin
 from django.contrib import messages
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 
 from chore.fake import FakeJobManager
 from chore import get_job_manager

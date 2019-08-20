@@ -14,21 +14,26 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
+# pylint: disable=invalid-name
+"""
+Maps urls
+"""
 
-from django.conf.urls import include, url
+from django.urls import path
 
 from .views import MapPage, Places, DrugList, Lineages, LineageBreakdown, \
     MutationView, LocusRange, LocusList, Mutations, Sources
 
+app_name = 'maps'
 urlpatterns = [
-    url(r'^$', MapPage.as_view(), name="map"),
-    url(r'data/places/$', Places.as_view(), name="map.places"),
-    url(r'data/drugs/$', DrugList.as_view(), name="map.drugs"),
-    url(r'data/lineages/$', Lineages.as_view(), name="map.lineages"),
-    url(r'data/lineages/breakdown/$', LineageBreakdown.as_view(), name="map.lineage_breakdown"),
-    url(r'data/locrange/$', LocusRange.as_view(), name="map.locus.range"),
-    url(r'data/locuses/$', LocusList.as_view(), name="map.locuses"),
-    url(r'data/mutation/$', MutationView.as_view(), name="map.mutation"),
-    url(r'data/mutations/$', Mutations.as_view(), name="map.mutations"),
-    url(r'data/sources/$', Sources.as_view(), name="map.sources"),
+    path('', MapPage.as_view(), name="map"),
+    path('data/places/', Places.as_view(), name="map.places"),
+    path('data/drugs/', DrugList.as_view(), name="map.drugs"),
+    path('data/lineages/', Lineages.as_view(), name="map.lineages"),
+    path('data/lineages/breakdown/', LineageBreakdown.as_view(), name="map.lineage_breakdown"),
+    path('data/locrange/', LocusRange.as_view(), name="map.locus.range"),
+    path('data/locuses/', LocusList.as_view(), name="map.locuses"),
+    path('data/mutation/', MutationView.as_view(), name="map.mutation"),
+    path('data/mutations/', Mutations.as_view(), name="map.mutations"),
+    path('data/sources/', Sources.as_view(), name="map.sources"),
 ]

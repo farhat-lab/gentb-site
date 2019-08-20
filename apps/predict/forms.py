@@ -19,7 +19,7 @@ Django forms for adding PredictDataset objects as well as a Confirmation form
 """
 
 from django.utils.text import slugify
-from django.core.urlresolvers import reverse_lazy
+from django.urls import reverse_lazy
 from django.core.exceptions import ValidationError
 from django.forms import (
     ModelForm, Form, ModelChoiceField, HiddenInput, Textarea,
@@ -88,7 +88,7 @@ class UploadForm(ModelForm):
                 if child not in subclasses:
                     subclasses.add(child)
                     work.append(child)
-        return sorted(subclasses, cmp=lambda a,b: cmp(a.ordered, b.ordered))
+        return sorted(subclasses, key=lambda a: a.ordered)
 
     @classmethod
     def get_form(cls, frm_id):

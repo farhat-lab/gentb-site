@@ -65,9 +65,9 @@ class Migration(migrations.Migration):
                 ('old_id', models.CharField(db_index=True, max_length=50, null=True, blank=True)),
                 ('cluster', models.CharField(max_length=15, null=True, blank=True)),
                 ('date', models.DateField(null=True, blank=True)),
-                ('country', models.ForeignKey(related_name='sources', blank=True, to='maps.Country', null=True)),
-                ('city', models.ForeignKey(related_name='sources', blank=True, to='maps.Place', null=True)),
-                ('importer', models.ForeignKey(verbose_name=b'Import Source', to='mutations.ImportSource', null=True, blank=True)),
+                ('country', models.ForeignKey(related_name='sources', blank=True, to='maps.Country', null=True, on_delete=models.CASCADE)),
+                ('city', models.ForeignKey(related_name='sources', blank=True, to='maps.Place', null=True, on_delete=models.CASCADE)),
+                ('importer', models.ForeignKey(verbose_name=b'Import Source', to='mutations.ImportSource', null=True, blank=True, on_delete=models.CASCADE)),
                 ('source_lab', models.CharField(max_length=100, verbose_name=b'Laboratory Source', db_index=True, null=True, blank=True)),
                 ('patient_id', models.CharField(max_length=16, db_index=True)),
                 ('patient_age', models.PositiveIntegerField(null=True, blank=True)),
@@ -98,7 +98,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('name', models.CharField(max_length=64)),
-                ('genome', models.ForeignKey(to='mutations.Genome')),
+                ('genome', models.ForeignKey(to='mutations.Genome', on_delete=models.CASCADE)),
             ],
         ),
         migrations.AddField(
@@ -227,46 +227,46 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='targetregion',
             name='gene',
-            field=models.ForeignKey(blank=True, to='mutations.GeneLocus', null=True),
+            field=models.ForeignKey(blank=True, to='mutations.GeneLocus', null=True, on_delete=models.CASCADE),
         ),
         migrations.AddField(
             model_name='targetregion',
             name='target_set',
-            field=models.ForeignKey(related_name='regions', to='mutations.TargetSet'),
+            field=models.ForeignKey(related_name='regions', to='mutations.TargetSet', on_delete=models.CASCADE),
         ),
         migrations.AddField(
             model_name='strainsource',
             name='targeting',
-            field=models.ForeignKey(blank=True, to='mutations.TargetSet', null=True),
+            field=models.ForeignKey(blank=True, to='mutations.TargetSet', null=True, on_delete=models.CASCADE),
         ),
         migrations.AddField(
             model_name='strainresistance',
             name='drug',
-            field=models.ForeignKey(related_name='strains', to='mutations.Drug'),
+            field=models.ForeignKey(related_name='strains', to='mutations.Drug', on_delete=models.CASCADE),
         ),
         migrations.AddField(
             model_name='strainresistance',
             name='strain',
-            field=models.ForeignKey(related_name='drugs', to='mutations.StrainSource'),
+            field=models.ForeignKey(related_name='drugs', to='mutations.StrainSource', on_delete=models.CASCADE),
         ),
         migrations.AddField(
             model_name='strainmutation',
             name='mutation',
-            field=models.ForeignKey(related_name='strain_mutations', to='mutations.Mutation'),
+            field=models.ForeignKey(related_name='strain_mutations', to='mutations.Mutation', on_delete=models.CASCADE),
         ),
         migrations.AddField(
             model_name='strainmutation',
             name='strain',
-            field=models.ForeignKey(related_name='mutations', to='mutations.StrainSource'),
+            field=models.ForeignKey(related_name='mutations', to='mutations.StrainSource', on_delete=models.CASCADE),
         ),
         migrations.AddField(
             model_name='drug',
             name='kind',
-            field=models.ForeignKey(verbose_name=b'Drug Class', blank=True, to='mutations.DrugClass', null=True),
+            field=models.ForeignKey(verbose_name=b'Drug Class', blank=True, to='mutations.DrugClass', null=True, on_delete=models.CASCADE),
         ),
         migrations.AddField(
             model_name='genelocus',
             name='genome',
-            field=models.ForeignKey(related_name='gene_locuses', blank=True, to='mutations.Genome', null=True),
+            field=models.ForeignKey(related_name='gene_locuses', blank=True, to='mutations.Genome', null=True, on_delete=models.CASCADE),
         ),
     ]

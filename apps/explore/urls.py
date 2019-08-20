@@ -14,14 +14,16 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
+# pylint: disable=invalid-name
 """
 Any and all explore urls.
 """
 
-from django.conf.urls import include, url
+from django.urls import path
 
 from .views import FirstExplorePage
 
+app_name = 'explore'
 urlpatterns = [
-    url(r'^$', FirstExplorePage.as_view(), name="home"),
+    path('', FirstExplorePage.as_view(), name="home"),
 ]

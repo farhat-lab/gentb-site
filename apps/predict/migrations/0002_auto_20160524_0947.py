@@ -18,7 +18,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='datasetscriptrun',
             name='dataset',
-            field=models.ForeignKey(related_name='runs', to='predict.PredictDataset'),
+            field=models.ForeignKey(related_name='runs', to='predict.PredictDataset', on_delete=models.CASCADE),
         ),
         migrations.AlterField(
             model_name='datasetscriptrun',
@@ -28,11 +28,11 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='predictdataset',
             name='user',
-            field=models.ForeignKey(related_name='datasets', to=settings.AUTH_USER_MODEL),
+            field=models.ForeignKey(related_name='datasets', to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE),
         ),
         migrations.AlterField(
             model_name='predictdatasetnote',
             name='dataset',
-            field=models.ForeignKey(related_name='notes', to='predict.PredictDataset'),
+            field=models.ForeignKey(related_name='notes', to='predict.PredictDataset', on_delete=models.CASCADE),
         ),
     ]

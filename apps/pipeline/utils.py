@@ -26,7 +26,7 @@ def file_as_inputs(m2m, save_to=None):
         save_to = defaultdict(list)
     for pfa in m2m.all():
         try:
-            save_to[pfa.name].append(unicode(pfa.store.file))
+            save_to[pfa.name].append(str(pfa.store.file))
         except IOError:
             save_to[pfa.name].append('XX:%s' % pfa.store.name)
     return save_to

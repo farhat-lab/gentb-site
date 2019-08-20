@@ -17,9 +17,9 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='ResumableUploadFile',
             fields=[
-                ('uploadfile_ptr', models.OneToOneField(parent_link=True, auto_created=True, primary_key=True, serialize=False, to='uploads.UploadFile')),
+                ('uploadfile_ptr', models.OneToOneField(parent_link=True, auto_created=True, primary_key=True, serialize=False, to='uploads.UploadFile', on_delete=models.CASCADE)),
                 ('upload_id', models.SlugField(default=apps.uploads.utils.get_uuid)),
-                ('user', models.ForeignKey(to=settings.AUTH_USER_MODEL)),
+                ('user', models.ForeignKey(to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE)),
             ],
             bases=('uploads.uploadfile',),
         ),

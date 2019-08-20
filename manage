@@ -6,7 +6,7 @@
 # Move us to the script directory (should be the root)
 cd "$( dirname "$0" )"
 
-for filename in */bin/python; do
+for filename in */bin/python3; do
   if [ -f "$filename" ]; then
     # Set the settings to a special management PY file.
     export DJANGO_SETTINGS_MODULE=tb_website.settings.manage

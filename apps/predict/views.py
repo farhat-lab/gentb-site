@@ -11,7 +11,7 @@ from django.views.generic import (
     DetailView, ListView, CreateView, UpdateView, FormView,
     TemplateView,
 )
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.http.response import JsonResponse
 from django.http import Http404
 
@@ -82,7 +82,7 @@ class AddNote(PredictMixin, CreateView):
 
     def form_valid(self, form):
         obj = form.save(commit=False)
-        obj.title = unicode(self.request.user)
+        obj.title = str(self.request.user)
         obj.dataset = self.get_queryset().get(md5=self.kwargs['slug'])
         obj.save()
         return JsonResponse({

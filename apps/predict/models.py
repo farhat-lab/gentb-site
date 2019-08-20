@@ -34,13 +34,13 @@ from datetime import timedelta
 from model_utils.models import TimeStampedModel
 
 from django.db.models import (
-    Model, SET_NULL,
-    ForeignKey, CharField, SlugField, TextField, BooleanField,
+    Model, CASCADE, SET_NULL,
+    ForeignKey, CharField, TextField, BooleanField,
 )
 from django.conf import settings
 from django.utils.text import slugify
 from django.core import serializers
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.utils.timezone import now
 from django.utils.translation import ugettext_lazy as _
 
@@ -89,7 +89,8 @@ class PredictDataset(TimeStampedModel):
         (FILE_TYPE_MANUAL, 'Mutations Manual Entry'),
     ]
 
-    user = ForeignKey(settings.AUTH_USER_MODEL, related_name='datasets')
+    user = ForeignKey(settings.AUTH_USER_MODEL, related_name='datasets',
+                      null=True, on_delete=SET_NULL)
     md5 = CharField(max_length=40, blank=True, db_index=True,\
             help_text='auto-filled on save')
     title = CharField('Dataset Title', max_length=255)
@@ -236,7 +237,8 @@ class PredictDataset(TimeStampedModel):
             super(PredictDataset, self).save(*args, **kwargs)
 
         if not self.md5:
-            self.md5 = md5('%s%s' % (self.id, self.title)).hexdigest()
+            key = '{}{}'.format(self.id, self.title)
+            self.md5 = md5(key.encode('utf8')).hexdigest()
 
         if not self.file_directory:
             # We make a new directory in the BASE_DIR based on this object's
@@ -255,7 +257,7 @@ class PredictDataset(TimeStampedModel):
 
 class PredictPipeline(Model):
     """Each file type can have possible pipelines, this provides a selection"""
-    pipeline = ForeignKey(Pipeline, related_name='predicts')
+    pipeline = ForeignKey(Pipeline, related_name='predicts', null=True, on_delete=SET_NULL)
     file_type = CharField(choices=PredictDataset.FILE_TYPES, max_length=25)
     is_default = BooleanField(default=False)
 
@@ -267,8 +269,8 @@ class PredictStrain(Model):
     """Each strain uploaded for a dataset"""
     name = CharField(max_length=128)
 
-    dataset = ForeignKey(PredictDataset, related_name='strains')
-    pipeline = ForeignKey(Pipeline)
+    dataset = ForeignKey(PredictDataset, related_name='strains', on_delete=CASCADE)
+    pipeline = ForeignKey(Pipeline, null=True, on_delete=SET_NULL)
     piperun = ForeignKey(PipelineRun, null=True, blank=True, on_delete=SET_NULL)
 
     # We need two file slots for pair ended fastq files
@@ -547,7 +549,7 @@ class PredictStrain(Model):
 
 class PredictDatasetNote(TimeStampedModel):
     """Notes of background processes"""
-    dataset = ForeignKey(PredictDataset, related_name='notes')
+    dataset = ForeignKey(PredictDataset, related_name='notes', on_delete=CASCADE)
     title = CharField(max_length=255)
     note = TextField()
 

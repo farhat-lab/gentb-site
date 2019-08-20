@@ -14,7 +14,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='DropboxUploadFile',
             fields=[
-                ('uploadfile_ptr', models.OneToOneField(parent_link=True, auto_created=True, primary_key=True, serialize=False, to='uploads.UploadFile')),
+                ('uploadfile_ptr', models.OneToOneField(parent_link=True, auto_created=True, primary_key=True, serialize=False, to='uploads.UploadFile', on_delete=models.CASCADE)),
                 ('url', models.URLField()),
             ],
             bases=('uploads.uploadfile',),

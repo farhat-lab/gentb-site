@@ -14,20 +14,20 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
+# pylint: disable=invalid-name
 """
 Login and user views which use the 'users:' prefix.
 """
 
-from django.conf.urls import url
+from django.urls import path
 from django.contrib.auth.views import LoginView, LogoutView
 
 from .views import UserSignUp, SignUpSuccess
 
+app_name = 'users'
 urlpatterns = [
-  url(r'^signup/$', UserSignUp.as_view(), name="signup"),
-  url(r'^signup/success/$', SignUpSuccess.as_view(), name="signup_success"),
-
-  url(r'^login/', LoginView.as_view(), name='login'),
-  url(r'^logout/', LogoutView.as_view(), name='logout'),
+    path('signup/', UserSignUp.as_view(), name="signup"),
+    path('signup/success/', SignUpSuccess.as_view(), name="signup_success"),
+    path('login/', LoginView.as_view(), name='login'),
+    path('logout/', LogoutView.as_view(), name='logout'),
 ]
-
