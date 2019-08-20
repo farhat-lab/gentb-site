@@ -368,7 +368,6 @@ class Mutations(DataTableMixin, ListView):
             #nucleotide_position__isnull=False,
             strain_count__gt=0,
         )
-        print(str(qset.query))
         return qset
 
     def post(self, request, *args, **kwargs):
