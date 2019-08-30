@@ -297,6 +297,12 @@ class MutationManager(Manager.from_queryset(MutationQuerySet)):
     def get_by_natural_key(self, genome, locus, name):
         return self.get(gene_locus__genome__code=genome, gene_locus__name=locus, name=name)
 
+MODE_CHOICES = (
+    ("SNP", "Single Nucleotide Polymorphism"),
+    ("LNP", "Long Nucleotide Polymorphism"),
+    ("INS", "Insertion"),
+    ("DEL", "Deletion"),
+)
 
 # db_table: gtbdr.var_h37rv
 class Mutation(Model):
@@ -304,9 +310,13 @@ class Mutation(Model):
     gene_locus = ForeignKey(GeneLocus, related_name='mutations', on_delete=CASCADE)
 
     # gene_id/snpname, snpid, index
-    name   = CharField(max_length=255, db_index=True)
+    name = CharField(max_length=255, db_index=True)
     old_id = CharField(max_length=50, db_index=True, null=True, blank=True)
-    order  = IntegerField(default=0)
+    order = IntegerField(default=0)
+
+    # SNP/INS/DEL
+    mode = CharField(default="SNP", max_length=4, db_index=True,\
+        null=True, blank=True, choices=MODE_CHOICES)
 
     # ntpos, ntref, ntvar
     nucleotide_position = IntegerField(null=True, blank=True)
