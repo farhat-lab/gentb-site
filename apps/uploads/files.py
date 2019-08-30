@@ -98,8 +98,9 @@ class ResumableFile(object):
                 self.storage.save(self.name_template % self.kwargs, _file)
             except AttributeError:
                 pass # Error saving file
-            except IOError:
-                pass # Existing file in the way
+            #except (IOError, OSError) as err:
+                #raise IOError("Tried to save: {}, {}, {}".format(self.name_template, self.kwargs, self.name_template % self.kwargs))
+                #pass # Existing file in the way
 
     def save_to(self, new_dir):
         """When saving all the chunks to a new directory"""

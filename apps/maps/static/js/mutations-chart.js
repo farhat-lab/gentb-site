@@ -132,45 +132,19 @@ $(document).ready(function() {
             {   
               "data": "name",
               "title": "Name",
+              "visible": false,
               "description": "Name of the Mutation",
               // "render": $.fn.dataTable.render.number(',', '.', 3, ''),
             },  
-            {   
-              "data": "gene_locus",
-              "title": "Gene Locus",
-            },  
-            {   
-              "data": "nucleotide_position",
-              "title": "Position",
-            },  
-            {   
-              "data": "nucleotide_reference",
-              "title": "Reference",
-            },  
-            {   
-              "data": "nucleotide_varient",
-              "title": "Varient",
-            },
-            {
-              "data": "codon_reference",
-              "title": "Codon",
-            },
-            {
-              "data": "codon_varient",
-              "title": "Varient",
-            },
-            {
-              "data": "strain_count",
-              "title": "Strains",
-            },
-            {
-              "data": "resistant_count",
-              "title": "Resistance",
-            },
-            {
-              "data": "sensitive_count",
-              "title": "Sensitivity",
-            },
+            { "data": "mode", "title": "Type" },
+            { "data": "gene_locus", "title": "Locus" },
+            { "data": "nucleotide_position", "title": "npos" },
+            { "data": "nucleotide_reference", "title": "nref" },
+            { "data": "nucleotide_varient", "title": "nvar" },
+	    { "data": "aminoacid_reference", "title": "aaref" },
+	    { "data": "aminoacid_position", "title": "aapos" },
+            { "data": "aminoacid_varient", "title": "aavar" },
+            { "data": "strain_count", "title": "Strains" },
           ],
           'order': [[2, 'asc']],
         })

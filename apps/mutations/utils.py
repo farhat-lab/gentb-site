@@ -52,6 +52,7 @@ def re_match_raw(re_list, string):
     for (x, rex) in enumerate(re_list):
         # Compile only once per run
         if isinstance(rex, str):
+            print(rex)
             rex = re.compile(rex)
             re_list[x] = rex
         match = rex.search(string)
@@ -131,7 +132,7 @@ MUTATION_RE = [
     SNP + r'_((' + AMINO + r'|' + NONCODE + ')[-_]' + GENE,
     LSP + r'_((' + AMINOS + r'|' + NONCODE + r')[-_]' + GENE,
     r'^(?P<mode>(INS|DEL))_(?P<syn>[A-Z]{1,2})_(?P<ntpos>\d+)_(i|d|\.|i\.)?'\
-        r'(?P<codes>(?<cpos>[\d\-]+)(?<cref>[ATGC]*))_((?P<noncode>promoter|inter|\d+)_)?'\
+        r'(?P<codes>(?P<cpos>[\d\-]+)(?P<cref>[ATGC]*))_((?P<noncode>promoter|inter|\d+)_)?'\
         r'(?P<gene>[a-zA-Z\d\-_\.]+?)(_' + AMINO + r')?\'?$',
     # These are older SNP names and should probably be converted
     SNP + r'_(?P<gene>(Rv\w+|rrl|rrs))',

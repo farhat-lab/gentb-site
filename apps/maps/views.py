@@ -354,21 +354,9 @@ class Mutations(DataTableMixin, ListView):
 
     def get_queryset(self):
         qset = super(Mutations, self).get_queryset()
-        qset = qset.filter(
-            strain_mutations__isnull=False,
-        )
-        qset = qset.annotate(
-            strain_count=Count('strain_mutations__pk'),
-            resistant_count=Count('strain_mutations__strain__pk',
-                                  filter=Q(strain_mutations__strain__drugs__resistance='r')),
-            sensitive_count=Count('strain_mutations__strain__pk',
-                                  filter=Q(strain_mutations__strain__drugs__resistance='s')),
-        )
-        qset = qset.filter(
-            #nucleotide_position__isnull=False,
+        return qset.annotate(strain_count=Count('strain_mutations__pk'),).filter(
             strain_count__gt=0,
         )
-        return qset
 
     def post(self, request, *args, **kwargs):
         self.request.GET = self.request.POST
