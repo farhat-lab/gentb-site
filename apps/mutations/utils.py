@@ -52,7 +52,6 @@ def re_match_raw(re_list, string):
     for (x, rex) in enumerate(re_list):
         # Compile only once per run
         if isinstance(rex, str):
-            print(rex)
             rex = re.compile(rex)
             re_list[x] = rex
         match = rex.search(string)
