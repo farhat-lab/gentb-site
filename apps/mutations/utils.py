@@ -117,20 +117,26 @@ def get_date(string):
         day = int(bits['dd'])
     return date(year, month, day)
 
-SNP = r'^SNP_(?P<syn>[A-Z]{1,2})_(?P<ntpos>\d+)_(?P<coding>[ACTG]\d+[ACTG])'
-LSP = r'^LSP_(?P<syn>[A-Z]{1,2})_(?P<ntpos>\d+)_(?P<coding>[ACTG]+\d+-\d+[ACTG]+)'
+CODING = r'(?P<coding>(?P<cref>[ACTG])(?P<cpos>\d+)(?P<cver>[ACTG]))'
+CODINGS = r'(?P<coding>(?P<cref>[ACTG]+)(?P<cpos>\d+)-(?P<cpos2>\d+)(?P<cver>[ACTG]+))'
+NONCODE = r'(?P<noncode>promoter|inter)'
+AMINO = r'(?P<amino>(?P<aref>[A-Z\*])(?P<apos>\d+)(?P<aver>[A-Z\*]))'
+AMINOS = r'(?P<amino>(?P<aref>[A-Z\*]+)(?P<apos>\d+)-(?P<apos2>\d+)(?P<aver>[A-Z\*]+))'
+
+SNP = r'^SNP_(?P<syn>[A-Z]{1,2})_(?P<ntpos>\d+)_' + CODING
+LSP = r'^LSP_(?P<syn>[A-Z]{1,2})_(?P<ntpos>\d+)_' + CODINGS
 GENE = r'(?P<gene>[a-zA-Z\d\-_\.]+)|(?P<rgene>rr[sl]))\'?$'
 
 MUTATION_RE = [
-    SNP + r'_(((?P<amino>[A-Z\*]\d+[A-Z\*])|(?P<noncode>promoter|inter))[-_]' + GENE,
-    LSP + r'_(((?P<amino>[A-Z\*]+\d+-\d+[A-Z\*]+)|(?P<noncode>promoter|inter))_' + GENE,
+    SNP + r'_((' + AMINO + r'|' + NONCODE + ')[-_]' + GENE,
+    LSP + r'_((' + AMINOS + r'|' + NONCODE + r')[-_]' + GENE,
     r'^(?P<mode>(INS|DEL))_(?P<syn>[A-Z]{1,2})_(?P<ntpos>\d+)_(i|d|\.|i\.)?'\
-        r'(?P<codes>[\d\-]+[ATGC]*)_((?P<noncode>promoter|inter|\d+)_)?'\
-        r'(?P<gene>[a-zA-Z\d\-_\.]+?)(_(?P<amino>[A-Z\*]\d+[A-Z\*]))?\'?$',
+        r'(?P<codes>(?<cpos>[\d\-]+)(?<cref>[ATGC]*))_((?P<noncode>promoter|inter|\d+)_)?'\
+        r'(?P<gene>[a-zA-Z\d\-_\.]+?)(_' + AMINO + r')?\'?$',
     # These are older SNP names and should probably be converted
     SNP + r'_(?P<gene>(Rv\w+|rrl|rrs))',
-    SNP + r'_PE_(?P<gene>[a-zA-Z\d\-]+)_(?P<amino>[A-Z\*]\d+[A-Z\*])$',
-    SNP + r'_(?P<gene>[a-zA-Z\d\-]+)_(?P<amino>[A-Z\*]\d+[A-Z\*])$',
+    SNP + r'_PE_(?P<gene>[a-zA-Z\d\-]+)_' + AMINO + r'$',
+    SNP + r'_(?P<gene>[a-zA-Z\d\-]+)_' + AMINO + r'$',
     SNP + r'_?[\.A-Z](\d+)[\.A-Z]_(?P<gene>[a-zA-Z\d\-_\.]+)$',
     SNP + r'_(?P<gene>[a-zA-Z\d\-_]+)$',
 ]
