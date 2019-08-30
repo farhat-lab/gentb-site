@@ -299,7 +299,7 @@ class MutationManager(Manager.from_queryset(MutationQuerySet)):
 
 MODE_CHOICES = (
     ("SNP", "Single Nucleotide Polymorphism"),
-    ("LNP", "Long Nucleotide Polymorphism"),
+    ("LSP", "Long String Polymorphism"),
     ("INS", "Insertion"),
     ("DEL", "Deletion"),
 )
