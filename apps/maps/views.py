@@ -56,7 +56,10 @@ class Sources(JsonView, DataSlicerMixin):
 
     def get_context_data(self, **_):
         """Return a dictionary of template variables"""
-        return {'values': list(self.get_sources())}
+        return {
+            'values': list(self.get_sources()),
+            'filters': self.applied_filters(),
+        }
 
     def get_sources(self):
         """Return a list of data sources"""
@@ -101,6 +104,7 @@ class Places(JsonView, DataSlicerMixin):
 
         return {
             "type": "FeatureCollection",
+            'filters': self.applied_filters(),
             'features': [
                 {
                     # Turning this to json and then back to python just to feed
@@ -158,6 +162,7 @@ class DrugList(JsonView, DataSlicerMixin):
 
         return {
             'data': drug_dict,
+            'filters': self.applied_filters(),
         }
 
     def add_estimate_corrections(self, graph, expected):
@@ -237,7 +242,11 @@ class LineageBreakdown(JsonView, DataSlicerMixin):
 
         # Stores all lineages added to `lin_tree`
         processed = set()
-        lin_tree = {'name': 'Total', 'children': []}
+        lin_tree = {
+            'name': 'Total',
+            'children': [],
+            'filters': self.applied_filters(),
+        }
         for lin, count in lin_counts:
             curr = lin_tree
             for depth, sl in enumerate(self.get_sublineages(lin)):
@@ -273,6 +282,7 @@ class Lineages(JsonView, DataSlicerMixin):
     def get_context_data(self, **_):
         """Return a dictionary of template variables"""
         return {
+            'filters': self.applied_filters(),
             'data': GraphData(
                 self.get_data().annotate(count=Count('pk')),
                 self.values, 'count', None, trim=True)
@@ -296,6 +306,7 @@ class LocusRange(JsonView, DataSlicerMixin):
 
     def get_gene_range(self, locus, synonymous=False, **_):
         """Returns a list of segments in a gene, as a dict-generator"""
+        yield 'filters', self.applied_filters()
         genome = Genome.objects.get(code='H37Rv')
         mutations = self.get_queryset().filter(
             nucleotide_position__isnull=False,
@@ -362,55 +373,6 @@ class Mutations(DataTableMixin, ListView):
         self.request.GET = self.request.POST
         return self.get(request, *args, **kwargs)
 
-class OldMutations(JsonView, DataSlicerMixin):
-    #values = ['pk']
-    #filters = {
-    #    'snp': 'name__icontains',
-    #    'ecoli': 'ecoli_aapos',
-    #    'locus': 'gene_locus__name',
-    #    'drug': 'strain_mutations__strain__drugs__drug__code',
-    #    'map': 'strain_mutations__strain__country__iso2',
-    #    'src': 'strain_mutations__strain__importer',
-    #}
-
-    def get_context_data(self, **_):
-        """Return a dictionary of template variables"""
-        if 'snp' not in self.request.GET and 'ecoli' not in self.request.GET:
-            return {'values': []}
-
-        # Otherwise mutation query
-        qset = self.get_data()
-        if qset.count() == 0:
-            return {'msg': 'None found'}
-        elif qset.count() > 200:
-            return {'msg': 'Too many (%d)' % qset.count()}
-
-        return {
-            'msg': "Found %d mutations" % qset.count(),
-            'values': list(self.get_my_list(qset)),
-        }
-
-    def get_queryset(self, without=None):
-        """Filter out empty mutations (no strains)"""
-        qset = super(Mutations, self).get_queryset(without=without)
-        return qset.filter(
-            nucleotide_position__isnull=False,
-            strain_mutations__isnull=False)
-
-    def get_my_list(self, _qs):
-        """The core get list for thsi json data"""
-        for (name, aar, eaa, aav) in self.get_list(
-                _qs, 'name', 'aminoacid_reference', 'ecoli_aapos', 'aminoacid_varient'):
-            if 'ecoli' in self.request.GET:
-                yield {
-                    'name': "%s+%s%s%s (E:%s)" % (name, aar, eaa, aav, eaa),
-                    'value': name,
-                }
-            else:
-                yield name
-
-
-
 class MutationView(JsonView, DataSlicerMixin):
     """Provide a way to look at the resistance data via selected mutations"""
     model = StrainSource
@@ -442,6 +404,7 @@ class MutationView(JsonView, DataSlicerMixin):
         totals = [(row[self.values[1]], row['count']) for row in totals]
         _qs = self.get_data().annotate(count=Count('pk'))
         return {
+            'filters': self.applied_filters(),
             'data': GraphData(_qs, self.values[0], 'count', self.values[-1])
                     .set_axis('z', self.categories, trim=True)
                     .set_axis('x', mutations)

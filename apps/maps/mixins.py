@@ -81,6 +81,10 @@ class JsonView(View):
             return SimpleTemplateResponse('maps/json-debug.html', context)
         return JsonResponse(context, encoder=DjangoJSONEncoder2)
 
+    def get_context_data(self, **_):
+        """The basic data collation for the json output."""
+        raise NotImplementedError("Please provide context data.")
+
 
 class DataSlicerMixin(object):
     """
@@ -140,6 +144,10 @@ class DataSlicerMixin(object):
             qs = qs.values_list(column, flat=True)
         return qs.distinct().order_by(column)
 
+    def applied_filters(self):
+        """Add information about the filtering applied"""
+        return [key.replace('[]', '') for key in self.filters if self.request.GET.get(key, '')]
+
 def as_set(val):
     """
     Turn the value into a set, three outputs are possible:
@@ -156,6 +164,7 @@ class DataTableMixin(object):
     """
     Return context rendered as a Json output for the DataTables plugin.
     """
+    filters = {}
     search_fields = []
 
     def get(self, request, pk=None):
@@ -180,6 +189,8 @@ class DataTableMixin(object):
                 'recordsTotal': aset.count(),
                 'recordsFiltered': count,
                 'data': self.prep_data(qset, dt_settings.get('columns', [])),
+                'filters': [key.replace('[]', '')\
+                    for key in self.filters if self.request.GET.get(key, '')],
             })
         except Exception as err:
             return JsonResponse({'error': str(err)})
@@ -251,3 +262,4 @@ class DataTableMixin(object):
         if int(length) > 0:
             return qset[int(start):int(start) + int(length)], count
         return qset, count
+

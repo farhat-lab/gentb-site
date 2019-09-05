@@ -61,8 +61,8 @@ $(document).ready(function() {
     var index = tab.index();
 
     //Finds that blue introduction tab and does the same active work with that in accordance with the current tab you picked
-    $("div.vertical-tab>div.vertical-tab-content").removeClass("active");
-    $("div.vertical-tab>div.vertical-tab-content").eq(index).addClass("active");
+    $("div.vertical-tab > div.vertical-tab-content").removeClass("active");
+    $("div.vertical-tab > div.vertical-tab-content").eq(index).addClass("active");
 
     if(!tab.data('done')) {
         tab.trigger("data:refresh");
@@ -73,9 +73,7 @@ $(document).ready(function() {
     //Access the json-url data currently stored in the tab
     var url = tab.data('json-url');
 
-    // Initializes set of selectors (e.g. drugs, countries)
-    //var key = this.id.replace('-store', '');
-    //var store = getTabStore(key);
+    $(all_tabs).removeClass("used");
 
     // If there is actually data and done is false ('meaning that
     //   we didn't already do this whole process).
@@ -92,6 +90,13 @@ $(document).ready(function() {
         // sends a json request to the server and sends the data currently
         //   stored in the tab and once it is done.
         $.getJSON(url, data).done(function(json) {
+
+          if(json.filters) {
+              // Set each used filter as "used" for visual indication.
+              for(var x in json.filters) {
+                  $('#'+json.filters[x]+'-store').addClass("used");
+              }
+          }
 
           // calls a function using the json data just fetched, the data already
           //   stored in the tabs, and the url used to fetch the data.
@@ -250,7 +255,6 @@ function updateVisuals(key) {
  * Stores all the data into localStorage.
  */
 function freezeData() {
-    console.log("FREEZE! Brrrr!");
   var data = {};
   $(all_tabs).each(function() {
     var store = $(this);
