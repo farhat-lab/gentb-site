@@ -345,6 +345,7 @@ class LocusList(DataTableMixin, ListView):
     model = GeneLocus
     search_fields = ['name', 'gene_symbol', 'description']
     filters = {}
+    selected = ['genelocus[]', 'pk', int]
 
     def get_queryset(self):
         qset = super(LocusList, self).get_queryset()
@@ -357,11 +358,12 @@ class Mutations(DataTableMixin, ListView):
     model = Mutation
     search_fields = ['name', 'old_id', 'gene_locus__name']
     filters = {
-        'src[]': 'strain_mutations__strain__importer__in',
-        'map[]': 'strain_mutations__strain__country__iso2__in',
+        'genelocus[]': (int, 'gene_locus_id__in'),
         'drug[]': 'strain_mutations__strain__drugs__drug__code__in',
-        'genelocus[]': 'gene_locus__gene_symbol__in'
+        'map[]': 'strain_mutations__strain__country__iso2__in',
+        'source[]': 'strain_mutations__strain__importer__in',
     }
+    selected = ['mutation[]', 'name', str]
 
     def get_queryset(self):
         qset = super(Mutations, self).get_queryset()

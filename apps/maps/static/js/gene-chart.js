@@ -35,7 +35,17 @@ $(document).ready(function() {
         "ajax": {
             "url": url,
             "data": function ( data ) {
+                // Remove some of the unneeded parts of the column lookup to conserve http request space.
+                delete data['search']['regex'];
+                for(var i = 0; i < data.columns.length; i++) {
+                    col = data.columns[i];
+                    delete col['name'];
+                    delete col['orderable'];
+                    delete col['searchable'];
+                    delete col['search']['regex'];
+                }
                 // Sent json, store for future use in selecting
+                $.extend(data, getAllTabData());
                 return data;
             },
             "dataSrc": function ( json ) {
@@ -44,12 +54,18 @@ $(document).ready(function() {
             },
         },
         "rowCallback": function(row, data) {
-          if (getTabData('genelocus').includes(data.str)) { $(row).addClass('selected'); }
+          if (getTabData('genelocus').includes(data.pk)) { $(row).addClass('selected'); }
         },
         "language": {
           "processing": "Loading...",
         },
         "columns": [
+          {
+            "data": "pk",
+            "title": "ID",
+            "visible": false,
+            "description": "Locus Primary Key",
+          },
           {
             "data": "str",
             "title": "Name",
@@ -77,7 +93,7 @@ $(document).ready(function() {
             "title": "strand",
           },
         ],
-        'order': [[1, 'asc']],
+        'order': [[2, 'asc']],
       });
 
       table.on('error.dt', function(e, settings, techNote, message) {
@@ -86,12 +102,13 @@ $(document).ready(function() {
         .on('click', 'tbody tr', function () {
           var data = table.row( this.rowIndex - 1 ).data();
           var name = data.str;
-          if ( $(this).hasClass('selected') ) {
+          var pk = data.pk;
+          if ($(this).hasClass('selected') ) {
             $(this).removeClass('selected');
-            removeTabData('genelocus', name);
+            removeTabData('genelocus', pk);
           } else {
             $(this).addClass('selected');
-            addTabData('genelocus', name, name, ' icon-helix')
+            addTabData('genelocus', pk, name, ' icon-helix')
           }
       });
     });

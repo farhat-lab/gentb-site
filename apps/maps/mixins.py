@@ -165,6 +165,7 @@ class DataTableMixin(object):
     Return context rendered as a Json output for the DataTables plugin.
     """
     filters = {}
+    selected = None
     search_fields = []
 
     def get(self, request, pk=None):
@@ -179,30 +180,33 @@ class DataTableMixin(object):
         try:
             draw = int(dt_settings['draw'])
             aset = data['object_list']
-            qset, count = self.process_datatable(aset, **dt_settings)
+            selected, qset, count = self.process_datatable(aset, **dt_settings)
             if dt_settings.get('pks', False):
                 return JsonResponse({
+                    'selected': selected.values_list('pk', flat=True),
                     'data': qset.values_list('pk', flat=True),
                 })
             return JsonResponse({
                 'draw': draw,
                 'recordsTotal': aset.count(),
                 'recordsFiltered': count,
-                'data': self.prep_data(qset, dt_settings.get('columns', [])),
+                'data': \
+                    self.prep_data(selected, dt_settings.get('columns', []), selected=True)\
+                    + self.prep_data(qset, dt_settings.get('columns', [])),
                 'filters': [key.replace('[]', '')\
                     for key in self.filters if self.request.GET.get(key, '')],
             })
         except Exception as err:
             return JsonResponse({'error': str(err)})
 
-    def prep_data(self, qset, columns):
+    def prep_data(self, qset, columns, **extra):
         """
         Prepare the full data set.
         """
         db_columns = [self.column_to_django(col) for col in columns]
-        return [self.prep_item(item, db_columns) for item in qset] #.values(*db_columns)]
+        return [self.prep_item(item, db_columns, **extra) for item in qset] #.values(*db_columns)]
 
-    def prep_item(self, obj, columns):
+    def prep_item(self, obj, columns, **extra):
         """
         Prepare this item for output using the requested columns.
         """
@@ -214,17 +218,18 @@ class DataTableMixin(object):
                 ret[col] = getattr(obj, col, 'Null')
                 if isinstance(ret[col], Model):
                     ret[col] = str(ret[col])
+        ret.update(extra)
         return ret
 
     def column_to_django(self, column, db=True):
         """We calculate the column's django address,
-        
+
         If db is True, then this must return the database field, if false
         then we must return the attribute getter.
         """
         return column['data']
 
-    def process_datatable(self, qset, columns=(), order=(), search=None, start=0, length=-1, **junk):
+    def process_datatable(self, qset, columns=(), order=(), search=None, start=0, length=-1, **_):
         """
         Takes the options as shown in https://datatables.net/manual/server-side
         and returns the query set as modified by the options.
@@ -239,13 +244,34 @@ class DataTableMixin(object):
         # Objects in the filtered `qset` contain each `pattern` in at least one search field
         if search is not None and 'value' in search and search['value']:
             for pattern in search['value'].split():
-                query &= reduce(or_, [Q(**{col + '__icontains': pattern}) for col in self.search_fields])
+                query &= reduce(or_, [Q(**{col + '__icontains': pattern})
+                                      for col in self.search_fields])
 
         for key in self.filters:
             val = self.request.GET.getlist(key, None)
-            if val: query &= Q(**{self.filters[key]: val})
-        qset = qset.filter(query).distinct()
 
+            col = self.filters[key]
+            if isinstance(col, (list, tuple)) and len(col) == 2:
+                mtype, col = col
+                if isinstance(val, (list, tuple)):
+                    val = [mtype(v) for v in val]
+                else:
+                    val = mtype(val)
+
+            if val:
+                query &= Q(**{col: val})
+
+        # Selected items appear above (sticky) to others on every page.
+        selected = qset.none()
+        if self.selected:
+            (key, col, mtype) = self.selected
+            values = self.request.GET.getlist(key, None)
+            values = [mtype(v) for v in values]
+            if values:
+                selected = qset.filter(**{col+'__in': values})
+
+        print("HI! {}".format(query))
+        qset = qset.filter(query).exclude(pk__in=selected.values('pk')).distinct()
 
         # Do this before ordering, because we have a BUG in jsonb
         count = qset.count()
@@ -260,6 +286,6 @@ class DataTableMixin(object):
             qset = qset.order_by(*ordering)
 
         if int(length) > 0:
-            return qset[int(start):int(start) + int(length)], count
-        return qset, count
+            return selected, qset[int(start):int(start) + int(length)], count
+        return selected, qset, count
 
