@@ -27,6 +27,22 @@ $(document).ready(function() {
   //Setup the ajax agent that we will use to get data from the server
   $.ajaxSetup({ cache: false });
 
+  // Right click resets the tab data
+  $(all_tabs).mousedown(function(e) {
+    var tab = $(this);
+    var key = this.id.replace('-store', '');
+    if(e.which == 3) { // Right click
+        // Unset any data
+        unsetTabData(key);
+        // Refresh the current script
+        $(all_tabs + '.active').trigger("data:refresh");
+        // Stop any click() event from triggering
+        e.preventDefault();
+        return false;
+    }
+  // Prevent context menu popping up on right click
+  }).on("contextmenu", function(e) { return false; });
+
   //whenever you click on any of the tabs
   $(all_tabs).click(function(e) {
     //we get the current tab that was actually clicked
@@ -48,16 +64,22 @@ $(document).ready(function() {
     $("div.vertical-tab>div.vertical-tab-content").removeClass("active");
     $("div.vertical-tab>div.vertical-tab-content").eq(index).addClass("active");
 
+    if(!tab.data('done')) {
+        tab.trigger("data:refresh");
+    }
+
+  }).on("data:refresh", function() {
+    var tab = $(this);
     //Access the json-url data currently stored in the tab
     var url = tab.data('json-url');
 
     // Initializes set of selectors (e.g. drugs, countries)
-    var key = this.id.replace('-store', '');
-    var store = getTabStore(key);
+    //var key = this.id.replace('-store', '');
+    //var store = getTabStore(key);
 
     // If there is actually data and done is false ('meaning that
     //   we didn't already do this whole process).
-    if(url && !tab.data('done')) {
+    if(url) {
       //Get the data currently stored in this tab
       var data = getAllTabData(this.id);
 
@@ -228,6 +250,7 @@ function updateVisuals(key) {
  * Stores all the data into localStorage.
  */
 function freezeData() {
+    console.log("FREEZE! Brrrr!");
   var data = {};
   $(all_tabs).each(function() {
     var store = $(this);
@@ -247,6 +270,7 @@ function freezeData() {
   });
   localStorage.setItem("all_tab_data", JSON.stringify(data));
 }
+
 function liquidateData() {
   var data = localStorage.getItem("all_tab_data");
   if(data) {
@@ -276,12 +300,7 @@ function unsetTabData(key) {
   store.removeData('column');
   store.data('values', []);
   store.data('map', {});
-
-  if(store.data('original-text')) {
-    store.data('column', store.data('original-column'));
-    $('p', store).text(store.data('original-text'));
-    $('h2', store).attr('class', store.data('original-icon'));
-  }
+  updateVisuals(key);
 }
 
 /* d3 function for adding data to a d3 svg chart */
