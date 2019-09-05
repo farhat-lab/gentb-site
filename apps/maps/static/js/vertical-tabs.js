@@ -175,7 +175,7 @@ function getTabColumn(key) {
             'key' as the key word argument name sent to the server.
  */
 function addTabData(key, value, text, icon, column) {
-  var store = $('#'+key+'-store');
+  var store = getTabStore(key);
 
   if (!store.data('original-text')) {
     store.data('original-column', store.data('column'));
@@ -199,7 +199,7 @@ function addTabData(key, value, text, icon, column) {
 
 /* Removes all elements matching `value` from the `key` store */
 function removeTabData(key, value) {
-  var store = $('#'+key+'-store');
+  var store = getTabStore(key);
   store.data('values', store.data('values').filter(function(el) { return el != value }));
   updateVisuals(key);
   delete store.data('map')[value];
@@ -294,7 +294,7 @@ function liquidateData() {
 /* Deselects tab, removing its value and putting all values back to what they
    where when the page loaded */
 function unsetTabData(key) {
-  var store = $('#'+key+'-store');
+  var store = getTabStore(key);
   store.removeClass('selected');
   $(all_tabs).not(store).data('done', false);
   store.removeData('column');
