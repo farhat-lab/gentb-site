@@ -270,7 +270,6 @@ class DataTableMixin(object):
             if values:
                 selected = qset.filter(**{col+'__in': values})
 
-        print("HI! {}".format(query))
         qset = qset.filter(query).exclude(pk__in=selected.values('pk')).distinct()
 
         # Do this before ordering, because we have a BUG in jsonb

@@ -22,8 +22,6 @@
 var all_tabs = 'div.vertical-tab-menu > div.list-group > a';
 
 $(document).ready(function() {
-  // DEBUG
-
   //Setup the ajax agent that we will use to get data from the server
   $.ajaxSetup({ cache: false });
 
@@ -160,13 +158,11 @@ function getAllTabData(except) {
 
 /* Returns data for the given tab key name */
 function getTabData(key) {
-  var store = $('#'+key+'-store');
-  return store.data('values');
+  return getTabStore(key).data('values');
 }
 /* Returns data for the given tab key name */
 function getTabColumn(key) {
-  var store = $('#'+key+'-store');
-  return store.data('column');
+  return getTabStore(key).data('column');
 }
 
 /*

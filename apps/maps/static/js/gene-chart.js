@@ -54,10 +54,7 @@ $(document).ready(function() {
             },
         },
         "rowCallback": function(row, data) {
-          var store = store.data('values');
-          if (store && store.includes(data.pk)) {
-              $(row).addClass('selected');
-          }
+          if (getTabData('genelocus').includes(data.pk)) { $(row).addClass('selected'); }
         },
         "language": {
           "processing": "Loading...",
