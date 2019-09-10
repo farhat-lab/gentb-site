@@ -375,10 +375,17 @@ class Mutations(DataTableMixin, ListView):
     def prep_data(self, qset, columns, **kwargs):
         """TESTS"""
         rows = super().prep_data(qset, columns, **kwargs)
-        if 'debug_strains' in self.request.GET:
+        debug = self.request.GET.get('debug', None)
+        if debug == 'strain':
             for row in rows:
                 obj = Mutation.objects.get(name=row['name'])
-                row['strains'] = list(set([str(sm.strain) for sm in obj.strain_mutations.all()]))
+                ret = [str(sm.strain) for sm in obj.strain_mutations.all()]
+                row['strains'] = ret
+                row['strains_unique'] = list(set(ret))
+        #elif debug == 'strain_mutation':
+        #    for row in rows:
+        #        obj = Mutation.objects.get(name=row['name'])
+        #        ret = [str(sm.strain) for sm in obj.strain_mutations.all()]
         return rows
 
     def get_filter_value(self, key):
