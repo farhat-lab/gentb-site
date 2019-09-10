@@ -367,9 +367,10 @@ class Mutations(DataTableMixin, ListView):
 
     def get_queryset(self):
         qset = super(Mutations, self).get_queryset()
-        return qset.annotate(strain_count=Count('strain_mutations__pk'),).filter(
+        qset = qset.annotate(strain_count=Count('strain_mutations__pk'),).filter(
             strain_count__gt=0,
         )
+        return qset
 
     def post(self, request, *args, **kwargs):
         self.request.GET = self.request.POST
@@ -403,13 +404,18 @@ class MutationView(JsonView, DataSlicerMixin):
         """Return a dictionary of template variables"""
         mutations = self.request.GET.getlist(self.required[0])
         totals = self.get_data(without=self.values[0]).annotate(count=Count('pk'))
-        totals = [(row[self.values[1]], row['count']) for row in totals]
+        totals = [(row[self.values[1]].upper(), row['count']) for row in totals]
         _qs = self.get_data().annotate(count=Count('pk'))
         return {
             'filters': self.applied_filters(),
-            'data': GraphData(_qs, self.values[0], 'count', self.values[-1])
+            'data': GraphData(_qs, self.values[0], 'count', self.values[-1], filter_label=self.filter_label)
                     .set_axis('z', self.categories, trim=True)
                     .set_axis('x', mutations)
                     .set_axis('y', totals, trim=[None])
                     .to_graph()
             }
+
+    def filter_label(self, axis, label):
+        if axis == 'z':
+            return label.upper()
+        return label

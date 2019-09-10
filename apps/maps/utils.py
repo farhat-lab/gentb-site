@@ -78,8 +78,9 @@ class OrderlyDict(OrderedDict):
 
 class GraphData(defaultdict):
     """Format three columns into a format suitable for d3 graphs"""
-    def __init__(self, qset, x_axis, y_axis, z_axis, trim=False):
+    def __init__(self, qset, x_axis, y_axis, z_axis, trim=False, filter_label=None):
         super(GraphData, self).__init__(lambda: defaultdict(int))
+        self._filter_label = filter_label
         self.keys = defaultdict(OrderedDict)
         self.trims = {'x': trim, 'y': trim, 'z': trim}
 
@@ -87,11 +88,23 @@ class GraphData(defaultdict):
             # Collapse multiple fields into categories
             if isinstance(x_axis, list):
                 for col_name in x_axis:
-                    self[col_name][row[col_name]] += row[y_axis]
+                    x_col = self.filter_label('x', row[col_name])
+                    y_col = self.filter_label('y', row[y_axis])
+                    z_col = self.filter_label('z', col_name)
+                    self[z_col][x_col] += y_col
             # Or take categories from one field
             elif row[y_axis] > 0:
-                self.keys['x'][row[x_axis]] = row[x_axis]
-                self[row.get(z_axis, None)][row[x_axis]] += row[y_axis]
+                x_col = self.filter_label('x', row[x_axis])
+                y_col = self.filter_label('y', row[y_axis])
+                z_col = self.filter_label('z', row.get(z_axis, None))
+                self.keys['x'][x_col] = x_col
+                self[z_col][x_col] += y_col
+
+    def filter_label(self, axis, label):
+        """Apply any filters to the axis labels"""
+        if label is None or not self._filter_label:
+            return label
+        return self._filter_label(axis, label)
 
     def set_axis(self, axis, keys=None, trim=None):
         """
