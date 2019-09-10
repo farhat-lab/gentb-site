@@ -88,13 +88,7 @@ $(document).ready(function() {
         // sends a json request to the server and sends the data currently
         //   stored in the tab and once it is done.
         $.getJSON(url, data).done(function(json) {
-
-          if(json.filters) {
-              // Set each used filter as "used" for visual indication.
-              for(var x in json.filters) {
-                  $('#'+json.filters[x]+'-store').addClass("used");
-              }
-          }
+        setUsedFilters(data.filters);
 
           // calls a function using the json data just fetched, the data already
           //   stored in the tabs, and the url used to fetch the data.
@@ -163,6 +157,15 @@ function getTabData(key) {
 /* Returns data for the given tab key name */
 function getTabColumn(key) {
   return getTabStore(key).data('column');
+}
+
+// Set each used filter as "used" for visual indication.
+function setUsedFilters(filters) {
+  if(filters) {
+    for(var x in filters) {
+        $('#'+filters[x]+'-store').addClass("used");
+    }
+  }
 }
 
 /*

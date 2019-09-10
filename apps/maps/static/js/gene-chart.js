@@ -50,6 +50,10 @@ $(document).ready(function() {
             },
             "dataSrc": function ( json ) {
                 // Returned json, filter and etc here.
+                if(json.error != undefined) {
+                    console.error("Error getting json:" + json.error);
+                    return [];
+                }
                 return json.data;
             },
         },
