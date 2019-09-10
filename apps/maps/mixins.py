@@ -28,8 +28,7 @@ from django.template.response import SimpleTemplateResponse
 from django.views.decorators.cache import cache_page
 from django.views.generic import View
 
-from django.http import JsonResponse, HttpResponse
-from django.conf import settings
+from django.http import JsonResponse
 
 from .utils import Jdict
 
@@ -197,6 +196,7 @@ class DataTableMixin(object):
                     for key in self.filters if self.request.GET.get(key, '')],
             })
         except Exception as err:
+            raise
             return JsonResponse({'error': str(err)})
 
     def prep_data(self, qset, columns, **extra):
@@ -229,6 +229,29 @@ class DataTableMixin(object):
         """
         return column['data']
 
+    def get_filter_value(self, key):
+        """Get a list of values that will apply to this filter (key)"""
+        return self.request.GET.getlist(key, None)
+
+    def apply_filters(self, filters, query=None):
+        """Generate a query object with the given filters"""
+        if not query:
+            query = Q()
+
+        for key, col in filters.items():
+            val = self.get_filter_value(key)
+
+            if isinstance(col, (list, tuple)) and len(col) == 2:
+                mtype, col = col
+                if isinstance(val, (list, tuple)):
+                    val = [mtype(v) for v in val]
+                else:
+                    val = mtype(val)
+
+            if val:
+                query &= Q(**{col: val})
+        return query
+
     def process_datatable(self, qset, columns=(), order=(), search=None, start=0, length=-1, **_):
         """
         Takes the options as shown in https://datatables.net/manual/server-side
@@ -247,19 +270,7 @@ class DataTableMixin(object):
                 query &= reduce(or_, [Q(**{col + '__icontains': pattern})
                                       for col in self.search_fields])
 
-        for key in self.filters:
-            val = self.request.GET.getlist(key, None)
-
-            col = self.filters[key]
-            if isinstance(col, (list, tuple)) and len(col) == 2:
-                mtype, col = col
-                if isinstance(val, (list, tuple)):
-                    val = [mtype(v) for v in val]
-                else:
-                    val = mtype(val)
-
-            if val:
-                query &= Q(**{col: val})
+        query = self.apply_filters(self.filters, query)
 
         # Selected items appear above (sticky) to others on every page.
         selected = qset.none()

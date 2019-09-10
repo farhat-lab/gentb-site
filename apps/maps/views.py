@@ -29,7 +29,7 @@ from django.utils.decorators import method_decorator
 from django.db.models import Count, Q
 
 from apps.mutations.models import (
-    ImportSource, StrainSource, Mutation, GeneLocus, Genome,
+    ImportSource, StrainMutation, StrainSource, Mutation, GeneLocus, Genome,
     RESISTANCE, RESISTANCE_GROUP,
     Paper, BioProject, Lineage
 )
@@ -359,11 +359,34 @@ class Mutations(DataTableMixin, ListView):
     search_fields = ['name', 'old_id', 'gene_locus__name']
     filters = {
         'genelocus[]': (int, 'gene_locus_id__in'),
+        #'_strains': 'strain_mutations__strain_id__in',
         'drug[]': 'strain_mutations__strain__drugs__drug__code__in',
         'map[]': 'strain_mutations__strain__country__iso2__in',
         'source[]': 'strain_mutations__strain__importer__in',
     }
     selected = ['mutation[]', 'name', str]
+
+    strain_filters = {
+        'drug[]': 'drugs__drug__code__in',
+        'map[]': 'country__iso2__in',
+        'source[]': 'importer__in',
+    }
+
+    def prep_data(self, qset, columns, **kwargs):
+        """TESTS"""
+        rows = super().prep_data(qset, columns, **kwargs)
+        if 'debug_strains' in self.request.GET:
+            for row in rows:
+                obj = Mutation.objects.get(name=row['name'])
+                row['strains'] = list(set([str(sm.strain) for sm in obj.strain_mutations.all()]))
+        return rows
+
+    def get_filter_value(self, key):
+        if key == '_strains':
+            return StrainSource.objects\
+                .filter(self.apply_filters(self.strain_filters))\
+                .values('pk').distinct()
+        return super().get_filter_value(key)
 
     def get_queryset(self):
         qset = super(Mutations, self).get_queryset()
