@@ -88,7 +88,7 @@ $(document).ready(function() {
         // sends a json request to the server and sends the data currently
         //   stored in the tab and once it is done.
         $.getJSON(url, data).done(function(json) {
-        setUsedFilters(data.filters);
+          setUsedFilters(json.filters);
 
           // calls a function using the json data just fetched, the data already
           //   stored in the tabs, and the url used to fetch the data.
