@@ -359,7 +359,6 @@ class Mutations(DataTableMixin, ListView):
     search_fields = ['name', 'old_id', 'gene_locus__name']
     filters = {
         'genelocus[]': (int, 'gene_locus_id__in'),
-        #'_strains': 'strain_mutations__strain_id__in',
         'drug[]': 'strain_mutations__strain__drugs__drug__code__in',
         'map[]': 'strain_mutations__strain__country__iso2__in',
         'source[]': 'strain_mutations__strain__importer__in',
@@ -373,30 +372,21 @@ class Mutations(DataTableMixin, ListView):
     }
 
     def prep_data(self, qset, columns, **kwargs):
-        """TESTS"""
+        """Re-add counts for strains"""
         rows = super().prep_data(qset, columns, **kwargs)
-        debug = self.request.GET.get('debug', None)
-        if debug == 'strain':
-            for row in rows:
-                obj = Mutation.objects.get(name=row['name'])
-                ret = [str(sm.strain) for sm in obj.strain_mutations.all()]
-                row['strains'] = ret
-                row['strains_unique'] = list(set(ret))
-        #elif debug == 'strain_mutation':
-        #    for row in rows:
-        #        obj = Mutation.objects.get(name=row['name'])
-        #        ret = [str(sm.strain) for sm in obj.strain_mutations.all()]
+        # Should only be 10 items as a maximum, meaning it should be 'ok' (but not great)
+        for x, row in enumerate(rows):
+            if x > 15:
+                break
+            obj = Mutation.objects.get(name=row['name'])
+            # This is a manual smacking because the database can't count
+            qset = obj.strain_mutations.filter(self.apply_filters(self.strain_filters))
+            row['strain_count'] = qset.count()
         return rows
-
-    def get_filter_value(self, key):
-        if key == '_strains':
-            return StrainSource.objects\
-                .filter(self.apply_filters(self.strain_filters))\
-                .values('pk').distinct()
-        return super().get_filter_value(key)
 
     def get_queryset(self):
         qset = super(Mutations, self).get_queryset()
+        # We have to get the count so we can remove mutations with no strains too.
         qset = qset.annotate(strain_count=Count('strain_mutations__pk'),).filter(
             strain_count__gt=0,
         )
