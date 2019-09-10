@@ -366,9 +366,9 @@ class Mutations(DataTableMixin, ListView):
     selected = ['mutation[]', 'name', str]
 
     strain_filters = {
-        'drug[]': 'drugs__drug__code__in',
-        'map[]': 'country__iso2__in',
-        'source[]': 'importer__in',
+        'drug[]': 'strain__drugs__drug__code__in',
+        'map[]': 'strain__country__iso2__in',
+        'source[]': 'strain__importer__in',
     }
 
     def prep_data(self, qset, columns, **kwargs):
