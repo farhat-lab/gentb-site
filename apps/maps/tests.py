@@ -19,7 +19,7 @@ Test for maps
 """
 
 from django.test import TestCase
-from autotest.base import ExtraTestCase
+from extratest.base import ExtraTestCase
 
 from .utils import OrderlyDict, OrderedDict, GraphData
 
@@ -74,16 +74,15 @@ class UtilsTest(TestCase):
         self.assertEqual(values[0], {'y': 6, 'x': 'Apple', 'total': -1, 'col': 'a', 'value': 6})
         self.assertEqual(values[1], {'y': 0, 'x': 'b-berry', 'total': -1, 'col': 'b', 'value': 0})
 
+        values = graph[2]['values']
+        self.assertEqual(values[2], {'y': 0, 'x': 'Carrot', 'total': -1, 'col': 'c', 'value': 0})
+        self.assertEqual(values[1], {'y': 4, 'x': 'Apple', 'total': -1, 'col': 'a', 'value': 4})
+        self.assertEqual(values[0], {'y': 20, 'x': 'b-berry', 'total': -1, 'col': 'b', 'value': 20})
 
         values = graph[2]['values']
         self.assertEqual(values[2], {'y': 0, 'x': 'Carrot', 'total': -1, 'col': 'c', 'value': 0})
-        self.assertEqual(values[0], {'y': 4, 'x': 'Apple', 'total': -1, 'col': 'a', 'value': 4})
-        self.assertEqual(values[1], {'y': 20, 'x': 'b-berry', 'total': -1, 'col': 'b', 'value': 20})
-
-        values = graph[2]['values']
-        self.assertEqual(values[2], {'y': 0, 'x': 'Carrot', 'total': -1, 'col': 'c', 'value': 0})
-        self.assertEqual(values[0], {'y': 4, 'x': 'Apple', 'total': -1, 'col': 'a', 'value': 4})
-        self.assertEqual(values[1], {'y': 20, 'x': 'b-berry', 'total': -1, 'col': 'b', 'value': 20})
+        self.assertEqual(values[1], {'y': 4, 'x': 'Apple', 'total': -1, 'col': 'a', 'value': 4})
+        self.assertEqual(values[0], {'y': 20, 'x': 'b-berry', 'total': -1, 'col': 'b', 'value': 20})
 
 
 

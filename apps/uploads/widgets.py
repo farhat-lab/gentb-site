@@ -53,12 +53,12 @@ class UploadChooserWidget(TextInput):
             else:
                 yield '.' + ext
 
-    def render(self, name, value, attrs):
-        render = super(UploadChooserWidget, self).render
+    def render(self, name, value, attrs=None, renderer=None):
+        render = super().render
         attrs.pop('required', None)
         attrs['data-resumable_url'] = reverse('uploads:resumable')
         attrs['data-manual_url'] = reverse('uploads:manual')
-        ret = render(name, value, attrs)
+        ret = render(name, value, attrs=attrs, renderer=renderer)
         for bucket, match, label, link in self.buckets:
             # This is evil, but django changed how it works
             self.input_type = 'bucket'

@@ -162,7 +162,6 @@ WEBSITE_APPS = (
     'django.contrib.gis',
     'django_spaghetti',
     'adminsortable2',
-    'autotest',
     'apps.versioner',
 
     # Holds dataverse file ids for Two Ravens

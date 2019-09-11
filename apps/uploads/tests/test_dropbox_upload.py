@@ -25,9 +25,8 @@ import json
 
 from django.contrib.auth import get_user_model
 
-from autotest.base import ExtraTestCase
+from extratest.base import ExtraTestCase
 
-from ..forms import TestUploadForm
 from ..models import DropboxUploadFile
 
 class TestDropbox(ExtraTestCase):
