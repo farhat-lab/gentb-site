@@ -1,5 +1,53 @@
 [
 {
+  "model": "mutations.drugregimen",
+  "pk": "1F",
+  "fields": {
+    "name": "First Line",
+    "desc": "These are the antitubercular drugs that generally have the greatest activity against TB bacteria. This medicine for TB is  particularly used for someone with active TB disease who has not had TB drug treatment before."
+  }
+},
+{
+  "model": "mutations.drugregimen",
+  "pk": "2G1",
+  "fields": {
+    "name": "Second Line Group A",
+    "desc": "Fluoroquinolones"
+  }
+},
+{
+  "model": "mutations.drugregimen",
+  "pk": "2G2",
+  "fields": {
+    "name": "Second Line Group B",
+    "desc": "Second-line injectable agents"
+  }
+},
+{
+  "model": "mutations.drugregimen",
+  "pk": "2G3",
+  "fields": {
+    "name": "Second Line Group C",
+    "desc": "Other core second-line agents"
+  }
+},
+{
+  "model": "mutations.drugregimen",
+  "pk": "2G4",
+  "fields": {
+    "name": "Second Line Group D",
+    "desc": "Add-on agents"
+  }
+},
+{
+  "model": "mutations.drugregimen",
+  "pk": "UNK",
+  "fields": {
+    "name": "Unknown",
+    "desc": null
+  }
+},
+{
   "model": "mutations.drugclass",
   "fields": {
     "name": "Fluoroquinolone",
@@ -23,18 +71,39 @@
 {
   "model": "mutations.drugclass",
   "fields": {
-    "name": "Oxazolidinones",
+    "name": "Oxazolidinone",
     "code": "OXA"
+  }
+},
+{
+  "model": "mutations.drugclass",
+  "fields": {
+    "name": "Polypeptide",
+    "code": "POLY"
+  }
+},
+{
+  "model": "mutations.drugclass",
+  "fields": {
+    "name": "Mycolic acid",
+    "code": "MAD"
   }
 },
 {
   "model": "mutations.drug",
   "fields": {
-    "kind": null,
+    "kind": [
+      "MAD"
+    ],
     "name": "Isoniazid",
     "code": "INH",
     "abbr": "Hydra",
-    "mutations": []
+    "priority": 100,
+    "regimen": "1F",
+    "loci": [
+    ],
+    "mutations": [
+    ]
   }
 },
 {
@@ -44,7 +113,12 @@
     "name": "Rifampicin",
     "code": "RIF",
     "abbr": "Rifadin",
-    "mutations": []
+    "priority": 0,
+    "regimen": "1F",
+    "loci": [
+    ],
+    "mutations": [
+    ]
   }
 },
 {
@@ -54,7 +128,12 @@
     "name": "Pyrazinamide",
     "code": "PZA",
     "abbr": "Rifater",
-    "mutations": []
+    "priority": 0,
+    "regimen": "1F",
+    "loci": [
+    ],
+    "mutations": [
+    ]
   }
 },
 {
@@ -64,7 +143,12 @@
     "name": "Ethambutol",
     "code": "EMB",
     "abbr": "Etibi",
-    "mutations": []
+    "priority": 0,
+    "regimen": "1F",
+    "loci": [
+    ],
+    "mutations": [
+    ]
   }
 },
 {
@@ -76,37 +160,63 @@
     "name": "Streptomycin",
     "code": "STR",
     "abbr": null,
-    "mutations": []
+    "priority": 0,
+    "regimen": "2G2",
+    "loci": [
+    ],
+    "mutations": [
+    ]
   }
 },
 {
   "model": "mutations.drug",
   "fields": {
-    "kind": null,
+    "kind": [
+      "MAD"
+    ],
     "name": "Ethionamide",
     "code": "ETH",
     "abbr": "Trecator",
-    "mutations": []
+    "priority": 0,
+    "regimen": "2G3",
+    "loci": [
+    ],
+    "mutations": [
+    ]
   }
 },
 {
   "model": "mutations.drug",
   "fields": {
-    "kind": null,
+    "kind": [
+      "AMG"
+    ],
     "name": "Kanamycin A",
     "code": "KAN",
     "abbr": null,
-    "mutations": []
+    "priority": 0,
+    "regimen": "2G2",
+    "loci": [
+    ],
+    "mutations": [
+    ]
   }
 },
 {
   "model": "mutations.drug",
   "fields": {
-    "kind": null,
+    "kind": [
+      "POLY"
+    ],
     "name": "Capreomycin",
     "code": "CAP",
     "abbr": "Capastat",
-    "mutations": []
+    "priority": 0,
+    "regimen": "2G2",
+    "loci": [
+    ],
+    "mutations": [
+    ]
   }
 },
 {
@@ -118,7 +228,12 @@
     "name": "Amikacin",
     "code": "AMK",
     "abbr": null,
-    "mutations": []
+    "priority": 0,
+    "regimen": "2G3",
+    "loci": [
+    ],
+    "mutations": [
+    ]
   }
 },
 {
@@ -130,7 +245,12 @@
     "name": "Ciprofloxacin",
     "code": "CIP",
     "abbr": "Cipro",
-    "mutations": []
+    "priority": 0,
+    "regimen": "2G1",
+    "loci": [
+    ],
+    "mutations": [
+    ]
   }
 },
 {
@@ -142,7 +262,12 @@
     "name": "Levofloxacin",
     "code": "LEVO",
     "abbr": "Levaquin",
-    "mutations": []
+    "priority": 0,
+    "regimen": "2G1",
+    "loci": [
+    ],
+    "mutations": [
+    ]
   }
 },
 {
@@ -152,7 +277,12 @@
     "name": "Ofloxacin",
     "code": "OFLX",
     "abbr": "Floxin",
-    "mutations": []
+    "priority": 0,
+    "regimen": "2G1",
+    "loci": [
+    ],
+    "mutations": [
+    ]
   }
 },
 {
@@ -162,7 +292,12 @@
     "name": "Para-aminosalicylic acid",
     "code": "PAS",
     "abbr": "Paser",
-    "mutations": []
+    "priority": 0,
+    "regimen": "2G4",
+    "loci": [
+    ],
+    "mutations": [
+    ]
   }
 },
 {
@@ -172,6 +307,9 @@
     "name": "Cycloserine",
     "code": "CYS",
     "abbr": "Seromyci",
+    "priority": 0,
+    "regimen": "2G3",
+    "loci": [],
     "mutations": []
   }
 },
@@ -184,6 +322,9 @@
     "name": "Moxifloxacin",
     "code": "MOXI",
     "abbr": "Avelox",
+    "priority": 0,
+    "regimen": "2G1",
+    "loci": [],
     "mutations": []
   }
 },
@@ -194,6 +335,9 @@
     "name": "Amoxicillin Clavulanate",
     "code": "AMOXCLAV",
     "abbr": "CoAmoxiC",
+    "priority": 0,
+    "regimen": "2G4",
+    "loci": [],
     "mutations": []
   }
 },
@@ -204,6 +348,9 @@
     "name": "Clofazimine",
     "code": "CLOF",
     "abbr": "Lamprene",
+    "priority": 0,
+    "regimen": "2G3",
+    "loci": [],
     "mutations": []
   }
 },
@@ -214,16 +361,24 @@
     "name": "Gatifloxacin",
     "code": "GATI",
     "abbr": "Zymar",
+    "priority": 0,
+    "regimen": "2G1",
+    "loci": [],
     "mutations": []
   }
 },
 {
   "model": "mutations.drug",
   "fields": {
-    "kind": null,
+    "kind": [
+      "MAD"
+    ],
     "name": "Thiacetazone",
     "code": "THA",
     "abbr": "USAN",
+    "priority": 0,
+    "regimen": "2G4",
+    "loci": [],
     "mutations": []
   }
 },
@@ -236,16 +391,24 @@
     "name": "Clarithromycin",
     "code": "CLAR",
     "abbr": "Biaxin",
+    "priority": 0,
+    "regimen": "UNK",
+    "loci": [],
     "mutations": []
   }
 },
 {
   "model": "mutations.drug",
   "fields": {
-    "kind": null,
+    "kind": [
+      "MAD"
+    ],
     "name": "Prothionamide",
     "code": "PRO",
     "abbr": null,
+    "priority": 0,
+    "regimen": "2G3",
+    "loci": [],
     "mutations": []
   }
 },
@@ -256,6 +419,9 @@
     "name": "Rifabutin",
     "code": "RFB",
     "abbr": null,
+    "priority": 0,
+    "regimen": "UNK",
+    "loci": [],
     "mutations": []
   }
 },
@@ -268,6 +434,22 @@
     "name": "Linezolid",
     "code": "LIN",
     "abbr": "Zyvox",
+    "priority": 0,
+    "regimen": "2G3",
+    "loci": [],
+    "mutations": []
+  }
+},
+{
+  "model": "mutations.drug",
+  "fields": {
+    "kind": null,
+    "name": "Bedaquiline",
+    "code": "Bdq",
+    "abbr": null,
+    "priority": 0,
+    "regimen": "2G4",
+    "loci": [],
     "mutations": []
   }
 }
