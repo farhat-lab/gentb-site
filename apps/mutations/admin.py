@@ -20,24 +20,24 @@
 A basic set of administrative functions for genes and mutations
 """
 
-from django.contrib.admin import site, ModelAdmin, StackedInline, TabularInline
+from django.contrib.admin import register, site, ModelAdmin, StackedInline, TabularInline
 from .models import (
     Drug, DrugClass, DrugRegimen, ImportSource, Mutation, Genome, GeneLocus,
     GeneDrugInteraction, TargetSet, TargetRegion, StrainResistance, Paper,
     BioProject, StrainSource, StrainMutation
 )
 
+@register(ImportSource)
 class ImportSourceAdmin(ModelAdmin):
     list_display = ('name', 'created', 'uploader', 'complete')
     exclude = ('uploaded',)
-
-site.register(ImportSource, ImportSourceAdmin)
 
 class InteractionInline(TabularInline):
     model = GeneDrugInteraction
     raw_id_fields = ('gene',)
     fields = ('gene', 'interaction', 'weight', 'paper')
 
+@register(Drug)
 class DrugAdmin(ModelAdmin):
     list_display = ('__str__', 'abbr', 'gene_count', 'mutation_count', 'kind', 'regimen')
     list_filter = ('kind', 'regimen')
@@ -53,14 +53,19 @@ class DrugAdmin(ModelAdmin):
     def mutation_count(obj):
         return obj.mutations.count()
 
-site.register(DrugRegimen)
-site.register(DrugClass)
-site.register(Drug, DrugAdmin)
+@register(DrugRegimen)
+class DrugRegimenAdmin(ModelAdmin):
+    list_display = ('code', 'name', 'desc')
+
+@register(DrugClass)
+class DrugClassAdmin(ModelAdmin):
+    list_display = ('code', 'name')
 
 class MutationInline(StackedInline):
     model = Mutation
     extra = 2
 
+@register(GeneLocus)
 class GeneLocusAdmin(ModelAdmin):
     inlines = (MutationInline,)
     list_filter = ('genome', 'gene_type', 'strand')
@@ -72,8 +77,8 @@ class GeneLocusAdmin(ModelAdmin):
         return obj.mutations.count()
 
 site.register(Genome)
-site.register(GeneLocus, GeneLocusAdmin)
 
+@register(Mutation)
 class MutationAdmin(ModelAdmin):
     list_display = ('name', 'old_id', 'gene_locus', 'drugs_list')
     list_filter = ('predictor', 'drugs')
@@ -82,30 +87,24 @@ class MutationAdmin(ModelAdmin):
     def drugs_list(self, obj):
         return ", ".join(obj.drugs.values_list('code', flat=True))
 
-site.register(Mutation, MutationAdmin)
-
 site.register(TargetSet)
 site.register(TargetRegion)
 
+@register(StrainSource)
 class StrainSourceAdmin(ModelAdmin):
     list_display = ('__str__', 'old_id', 'patient_id', 'country', 'date')
     list_filter = ('importer', 'source_lab', 'patient_sex', 'patient_hiv', 'resistance_group')
     search_fields = ('name', 'old_id', 'patient_id')
 
-site.register(StrainSource, StrainSourceAdmin)
-
-
+@register(StrainMutation)
 class StrainMutationAdmin(ModelAdmin):
     search_fields = ('mutation__name', 'strain__name')
     list_display = ('mutation', 'strain')
     raw_id_fields = ('mutation', 'strain')
 
-site.register(StrainMutation, StrainMutationAdmin)
-
+@register(StrainResistance)
 class StrainResistanceAdmin(ModelAdmin):
     list_filter = ('resistance', 'drug')
-
-site.register(StrainResistance, StrainResistanceAdmin)
 
 site.register(BioProject)
 site.register(Paper)
