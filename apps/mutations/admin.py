@@ -24,8 +24,12 @@ from django.contrib.admin import register, site, ModelAdmin, StackedInline, Tabu
 from .models import (
     Drug, DrugClass, DrugRegimen, ImportSource, Mutation, Genome, GeneLocus,
     GeneDrugInteraction, TargetSet, TargetRegion, StrainResistance, Paper,
-    BioProject, StrainSource, StrainMutation
+    BioProject, StrainSource, StrainMutation, Lineage
 )
+
+@register(Lineage)
+class LineageAdmin(ModelAdmin):
+    list_display = ('slug', 'name', 'parent')
 
 @register(ImportSource)
 class ImportSourceAdmin(ModelAdmin):
