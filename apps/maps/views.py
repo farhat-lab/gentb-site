@@ -260,55 +260,6 @@ class Lineages(JsonView, DataSlicerMixin):
     def get_context_data(self, **_):
         return self.lineage_tree()
 
-
-class LocusRange(JsonView, DataSlicerMixin):
-    """Lookup locuses and return mutations blocked into buckets"""
-    model = Mutation
-    filters = {
-        'drug[]': 'strain_mutations__strain__drugs__drug__code__in',
-        'map[]': 'strain_mutations__strain__country__iso2__in',
-        'source[]': 'strain_mutations__strain__importer__in',
-    }
-    def get_context_data(self, **_):
-        """Returns the list of mutations blocked into ranges for this gene"""
-        return dict(self.get_gene_range(**self.request.GET))
-
-    def get_gene_range(self, locus, synonymous=False, **_):
-        """Returns a list of segments in a gene, as a dict-generator"""
-        yield 'filters', self.applied_filters()
-        genome = Genome.objects.get(code='H37Rv')
-        mutations = self.get_queryset().filter(
-            nucleotide_position__isnull=False,
-            strain_mutations__isnull=False)
-        try:
-            locus = GeneLocus.objects.get(Q(name=locus[0]) | Q(gene_symbol=locus[0]))
-            mutations = mutations.filter(gene_locus=locus)
-            count = mutations.count()
-            start = locus.start
-            end = locus.stop
-            yield 'title', "{0} / {0.previous_id} ({1} mutations)".format(locus, count)
-        except GeneLocus.DoesNotExist:
-            # All mutations in the whole genome
-            count = mutations.count()
-            start = 0
-            end = int(genome.length)
-            yield 'title', "{0.code} ({1} mutations)".format(genome, count)
-
-        yield 'start', start
-        yield 'end', end
-        if synonymous in (False, 0, 'false'):
-            mutations = mutations.exclude(syn='S')
-
-        yield 'count', count
-        values = defaultdict(list)
-        girth = (end - start) / 50
-        for name, pos in self.get_list(mutations, 'name', 'nucleotide_position'):
-            bucket = int((pos - start) / (girth or 1))
-            values[bucket].append(name)
-        yield 'values', values
-        yield 'max', max([len(i) for i in values.values()] + [0])
-
-
 class LocusList(DataTableMixin, ListView):
     """Get a list of locuses that somewhat match the given locus string"""
     model = GeneLocus
