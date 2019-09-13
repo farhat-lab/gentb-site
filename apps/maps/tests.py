@@ -98,48 +98,35 @@ class BaseCase(ExtraTestCase):
         """
         return json.loads(self.assertGet(*args, **kwargs).content)
 
+
 class SourcesData(BaseCase):
-    """
-    Test sources data output.
-
-     * No specific slicing, full list only.
-
-    """
+    """Test sources data output (tab)."""
     def test_general_output(self):
-        """
-        Test output contains sources and papers only.
-        """
+        """Test output contains sources and papers only."""
         val = self.assertJson('maps:map.sources')['values']
         uni = Counter(["{kind}-{name}".format(**row) for row in val])
         self.assertEqual(len(uni), len(val), f"Sources aren't unique: {uni}")
 
 
-class PlacesData(TestCase):
-    """
-    Test places data output.
-
-     * Slice by source
-     * Slice by paper
-     * Slice by drugs
-
-    """
+class PlacesData(BaseCase):
+    """Test places data output (tab)."""
     def test_all_output(self):
-        """
-        Test entire map output.
-        """
-        pass
+        """Test entire map output."""
+        all_maps = self.assertJson('maps:map.places')
+        self.assertEqual(all_maps, '')
 
     def test_source_output(self):
-        """
-        Test source sliced map output.
-        """
+        """Test source sliced map output."""
         pass
 
     def test_paper_output(self):
-        """
-        Test paper sliced map output.
-        """
+        """Test paper sliced map output."""
         pass
+
+    def test_drug_output(self):
+        """Test drug sliced map output."""
+        pass
+
 
 class DrugListData(TestCase):
     """

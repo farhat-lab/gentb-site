@@ -21,7 +21,7 @@ Maps urls
 
 from django.urls import path
 
-from .views import MapPage, Places, DrugList, Lineages, LineageBreakdown, \
+from .views import MapPage, Places, DrugList, Lineages, \
     MutationView, LocusRange, LocusList, Mutations, Sources
 
 app_name = 'maps'
@@ -30,7 +30,6 @@ urlpatterns = [
     path('data/places/', Places.as_view(), name="map.places"),
     path('data/drugs/', DrugList.as_view(), name="map.drugs"),
     path('data/lineages/', Lineages.as_view(), name="map.lineages"),
-    path('data/lineages/breakdown/', LineageBreakdown.as_view(), name="map.lineage_breakdown"),
     path('data/locrange/', LocusRange.as_view(), name="map.locus.range"),
     path('data/locuses/', LocusList.as_view(), name="map.locuses"),
     path('data/mutation/', MutationView.as_view(), name="map.mutation"),

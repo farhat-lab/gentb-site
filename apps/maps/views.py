@@ -38,9 +38,6 @@ from .mixins import JsonView, DataSlicerMixin, DataTableMixin
 from .utils import GraphData
 from .models import Country, CountryHealth
 
-LINEAGE_COLS = ['spoligotype_family', 'rflp_family', 'principle_group', 'wgs_group']
-LINEAGE_NAMES = ['Spoligo', 'RFLP', 'PGG', 'WGS']
-
 class MapPage(TemplateView):
     """The html map page everything is provided by javascript"""
     title = "Mutations Map"
@@ -88,7 +85,7 @@ class Places(JsonView, DataSlicerMixin):
             ('source[]', 'importer__in'),
             ('paper', 'source_paper'),
             ('drug[]', 'drugs__drug__code__in'),
-        ] + list(zip(LINEAGE_NAMES, LINEAGE_COLS))
+        ]
     )
 
     def get_context_data(self, **_):
@@ -133,7 +130,7 @@ class DrugList(JsonView, DataSlicerMixin):
             ('map[]', 'country__iso2__in'),
             ('source[]', 'importer__in'),
             ('paper', 'source_paper'),
-        ] + list(zip(LINEAGE_NAMES, LINEAGE_COLS))
+        ]
     )
 
     def get_context_data(self, **_):
@@ -195,7 +192,7 @@ class DrugList(JsonView, DataSlicerMixin):
             return 0
         return max([int((resistant / expected) - total), 0])
 
-class LineageBreakdown(JsonView, DataSlicerMixin):
+class Lineages(JsonView, DataSlicerMixin):
     """
     Breakdown lineages with strain data added on.
     """
@@ -263,33 +260,6 @@ class LineageBreakdown(JsonView, DataSlicerMixin):
 
     def get_context_data(self, **_):
         return self.lineage_tree()
-
-
-class Lineages(JsonView, DataSlicerMixin):
-    """Provide a json data slice into the Lineages data"""
-    model = StrainSource
-    order = ['spoligotype_family']
-    values = LINEAGE_COLS
-    filters = {
-        'map[]': 'country__iso2__in',
-        'drug[]': 'drugs__drug__code__in',
-    }
-
-    def get_queryset(self, without=None):
-        _qs = super(Lineages, self).get_queryset()
-        return _qs.filter(spoligotype_family__isnull=False)
-
-    def get_context_data(self, **_):
-        """Return a dictionary of template variables"""
-        return {
-            'filters': self.applied_filters(),
-            'data': GraphData(
-                self.get_data().annotate(count=Count('pk')),
-                self.values, 'count', None, trim=True)
-                    .set_axis('z', list(zip(self.values, LINEAGE_NAMES)))
-                    .set_axis('x', [(None, "Not Available")])
-                    .to_graph()
-        }
 
 
 class LocusRange(JsonView, DataSlicerMixin):
