@@ -163,7 +163,7 @@ function getTabColumn(key) {
 function setUsedFilters(filters) {
   if(filters) {
     for(var x in filters) {
-        $('#'+filters[x]+'-store').addClass("used");
+        $('.filter-'+filters[x]).addClass("used");
     }
   }
 }

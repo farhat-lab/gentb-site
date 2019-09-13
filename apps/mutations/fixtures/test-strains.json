@@ -1,5 +1,6 @@
 [
-  {"model": "mutations.paper", "pk": 1, "fields": {"name": "TestStudy", "doi": "h:ppt", "url": "https://google.com", "notes": "Some random notes."}},
+  {"model": "mutations.paper", "pk": 1, "fields": {"name": "TestStudy1", "doi": "h:ppt", "url": "https://google.com", "notes": "Some random notes."}},
+  {"model": "mutations.paper", "pk": 2, "fields": {"name": "TestStudy2", "doi": "h:ppf", "url": "https://google.com", "notes": "Some random notes."}},
 
   {"model": "mutations.importsource", "fields": {"name": "Import Z", "complete": true, "created": "2018-10-05T14:30:22.693Z", "updated": "2018-10-05T19:41:29.289Z"}},
   {"model": "mutations.importsource", "fields": {"name": "Import Y", "complete": true, "created": "2018-09-05T14:30:22.693Z", "updated": "2018-10-05T19:41:29.289Z"}},
@@ -8,7 +9,7 @@
   {"model": "mutations.bioproject", "pk": 14, "fields": {"name": "BP1"}},
   {"model": "mutations.bioproject", "pk": 15, "fields": {"name": "BP3"}},
 
-  {"model": "mutations.strainsource", "fields": {"name": "BOB1", "date": "1978-01-01", "country": ["RU"], "city": null, "importer": ["Import Z"], "source_paper": 1, "bioproject": 14, "lineage": "a"}},
+  {"model": "mutations.strainsource", "fields": {"name": "BOB1", "date": "1978-01-01", "country": ["RU"], "city": null, "importer": ["Import Z"], "source_paper": 2, "bioproject": 14, "lineage": "a", "resistance_group": "s"}},
   {"model": "mutations.strainmutation", "fields": {"strain": ["BOB1"], "mutation": ["K9Rv", "Woof0", "Mutation_001"], "quality": 200, "mutation_reads": 874, "reference_reads": 435, "mapping_quality": 37}},
   {"model": "mutations.strainmutation", "fields": {"strain": ["BOB1"], "mutation": ["K9Rv", "Woof1", "Mutation_003"], "quality": 200, "mutation_reads": 874, "reference_reads": 435, "mapping_quality": 37}},
   {"model": "mutations.strainmutation", "fields": {"strain": ["BOB1"], "mutation": ["K9Rv", "Woof1", "Mutation_004"], "quality": 200, "mutation_reads": 874, "reference_reads": 435, "mapping_quality": 37}},
@@ -20,7 +21,7 @@
   {"model": "mutations.strainresistance", "fields": {"strain": ["BOB1"], "drug": ["PIN"], "resistance": "r"}},
   {"model": "mutations.strainresistance", "fields": {"strain": ["BOB1"], "drug": ["BUMP"], "resistance": "r"}},
 
-  {"model": "mutations.strainsource", "fields": {"name": "BOB2", "date": "1978-02-01", "country": ["FR"], "city": null, "importer": ["Import Z"], "source_paper": 1, "bioproject": 14, "lineage": "b"}},
+  {"model": "mutations.strainsource", "fields": {"name": "BOB2", "date": "1978-02-01", "country": ["FR"], "city": null, "importer": ["Import Z"], "source_paper": 2, "bioproject": 14, "lineage": "b", "resistance_group": "MDR"}},
   {"model": "mutations.strainmutation", "fields": {"strain": ["BOB2"], "mutation": ["K9Rv", "Woof9", "Mutation_017"], "quality": 200, "mutation_reads": 874, "reference_reads": 435, "mapping_quality": 37}},
   {"model": "mutations.strainmutation", "fields": {"strain": ["BOB2"], "mutation": ["K9Rv", "Woof6", "Mutation_013"], "quality": 200, "mutation_reads": 874, "reference_reads": 435, "mapping_quality": 37}},
   {"model": "mutations.strainmutation", "fields": {"strain": ["BOB2"], "mutation": ["K9Rv", "Woof5", "Mutation_009"], "quality": 200, "mutation_reads": 874, "reference_reads": 435, "mapping_quality": 37}},
@@ -32,7 +33,7 @@
   {"model": "mutations.strainresistance", "fields": {"strain": ["BOB2"], "drug": ["PIN"], "resistance": "s"}},
   {"model": "mutations.strainresistance", "fields": {"strain": ["BOB2"], "drug": ["BUMP"], "resistance": "s"}},
 
-  {"model": "mutations.strainsource", "fields": {"name": "BOB3", "date": "1978-03-01", "country": ["DE"], "city": null, "importer": ["Import Z"], "source_paper": 1, "bioproject": 14, "lineage": "c"}},
+  {"model": "mutations.strainsource", "fields": {"name": "BOB3", "date": "1978-03-01", "country": ["DE"], "city": null, "importer": ["Import Z"], "source_paper": 2, "bioproject": 14, "lineage": "c", "resistance_group": "MDR"}},
   {"model": "mutations.strainmutation", "fields": {"strain": ["BOB3"], "mutation": ["K9Rv", "Woof1", "Mutation_005"], "quality": 200, "mutation_reads": 874, "reference_reads": 435, "mapping_quality": 37}},
   {"model": "mutations.strainmutation", "fields": {"strain": ["BOB3"], "mutation": ["K9Rv", "Woof5", "Mutation_011"], "quality": 200, "mutation_reads": 874, "reference_reads": 435, "mapping_quality": 37}},
   {"model": "mutations.strainmutation", "fields": {"strain": ["BOB3"], "mutation": ["K9Rv", "Woof5", "Mutation_009"], "quality": 200, "mutation_reads": 874, "reference_reads": 435, "mapping_quality": 37}},
@@ -44,7 +45,7 @@
   {"model": "mutations.strainresistance", "fields": {"strain": ["BOB3"], "drug": ["PIN"], "resistance": "r"}},
   {"model": "mutations.strainresistance", "fields": {"strain": ["BOB3"], "drug": ["BUMP"], "resistance": "s"}},
 
-  {"model": "mutations.strainsource", "fields": {"name": "BOB4", "date": "1978-04-01", "country": ["RU"], "city": null, "importer": ["Import Z"], "source_paper": 1, "bioproject": 14, "lineage": "b"}},
+  {"model": "mutations.strainsource", "fields": {"name": "BOB4", "date": "1978-04-01", "country": ["RU"], "city": null, "importer": ["Import Z"], "source_paper": 2, "bioproject": 14, "lineage": "b", "resistance_group": "MDR"}},
   {"model": "mutations.strainmutation", "fields": {"strain": ["BOB4"], "mutation": ["K9Rv", "Woof0", "Mutation_002"], "quality": 200, "mutation_reads": 874, "reference_reads": 435, "mapping_quality": 37}},
   {"model": "mutations.strainmutation", "fields": {"strain": ["BOB4"], "mutation": ["K9Rv", "Woof1", "Mutation_004"], "quality": 200, "mutation_reads": 874, "reference_reads": 435, "mapping_quality": 37}},
   {"model": "mutations.strainmutation", "fields": {"strain": ["BOB4"], "mutation": ["K9Rv", "Woof0", "Mutation_001"], "quality": 200, "mutation_reads": 874, "reference_reads": 435, "mapping_quality": 37}},
@@ -56,7 +57,7 @@
   {"model": "mutations.strainresistance", "fields": {"strain": ["BOB4"], "drug": ["PIN"], "resistance": "r"}},
   {"model": "mutations.strainresistance", "fields": {"strain": ["BOB4"], "drug": ["BUMP"], "resistance": "r"}},
 
-  {"model": "mutations.strainsource", "fields": {"name": "BOB5", "date": "1978-05-01", "country": ["RU"], "city": null, "importer": ["Import Z"], "source_paper": 1, "bioproject": 14, "lineage": "c"}},
+  {"model": "mutations.strainsource", "fields": {"name": "BOB5", "date": "1978-05-01", "country": ["RU"], "city": null, "importer": ["Import Z"], "source_paper": 2, "bioproject": 14, "lineage": "c", "resistance_group": "MDR"}},
   {"model": "mutations.strainmutation", "fields": {"strain": ["BOB5"], "mutation": ["K9Rv", "Woof6", "Mutation_014"], "quality": 200, "mutation_reads": 874, "reference_reads": 435, "mapping_quality": 37}},
   {"model": "mutations.strainmutation", "fields": {"strain": ["BOB5"], "mutation": ["K9Rv", "Woof0", "Mutation_002"], "quality": 200, "mutation_reads": 874, "reference_reads": 435, "mapping_quality": 37}},
   {"model": "mutations.strainmutation", "fields": {"strain": ["BOB5"], "mutation": ["K9Rv", "Woof1", "Mutation_005"], "quality": 200, "mutation_reads": 874, "reference_reads": 435, "mapping_quality": 37}},
@@ -68,7 +69,7 @@
   {"model": "mutations.strainresistance", "fields": {"strain": ["BOB5"], "drug": ["PIN"], "resistance": "r"}},
   {"model": "mutations.strainresistance", "fields": {"strain": ["BOB5"], "drug": ["BUMP"], "resistance": "r"}},
 
-  {"model": "mutations.strainsource", "fields": {"name": "BOB6", "date": "1978-06-01", "country": ["RU"], "city": null, "importer": ["Import Z"], "source_paper": 1, "bioproject": 15, "lineage": "c"}},
+  {"model": "mutations.strainsource", "fields": {"name": "BOB6", "date": "1978-06-01", "country": ["RU"], "city": null, "importer": ["Import Z"], "source_paper": 2, "bioproject": 15, "lineage": "c", "resistance_group": "MDR"}},
   {"model": "mutations.strainmutation", "fields": {"strain": ["BOB6"], "mutation": ["K9Rv", "Woof1", "Mutation_004"], "quality": 200, "mutation_reads": 874, "reference_reads": 435, "mapping_quality": 37}},
   {"model": "mutations.strainmutation", "fields": {"strain": ["BOB6"], "mutation": ["K9Rv", "Woof3", "Mutation_006"], "quality": 200, "mutation_reads": 874, "reference_reads": 435, "mapping_quality": 37}},
   {"model": "mutations.strainmutation", "fields": {"strain": ["BOB6"], "mutation": ["K9Rv", "Woof0", "Mutation_002"], "quality": 200, "mutation_reads": 874, "reference_reads": 435, "mapping_quality": 37}},
@@ -80,7 +81,7 @@
   {"model": "mutations.strainresistance", "fields": {"strain": ["BOB6"], "drug": ["PIN"], "resistance": "s"}},
   {"model": "mutations.strainresistance", "fields": {"strain": ["BOB6"], "drug": ["BUMP"], "resistance": "s"}},
 
-  {"model": "mutations.strainsource", "fields": {"name": "BOB7", "date": "1978-07-01", "country": ["DE"], "city": null, "importer": ["Import Y"], "source_paper": 1, "bioproject": 15, "lineage": "b"}},
+  {"model": "mutations.strainsource", "fields": {"name": "BOB7", "date": "1978-07-01", "country": ["DE"], "city": null, "importer": ["Import Y"], "source_paper": 2, "bioproject": 15, "lineage": "b", "resistance_group": "s"}},
   {"model": "mutations.strainmutation", "fields": {"strain": ["BOB7"], "mutation": ["K9Rv", "Woof4", "Mutation_008"], "quality": 200, "mutation_reads": 874, "reference_reads": 435, "mapping_quality": 37}},
   {"model": "mutations.strainmutation", "fields": {"strain": ["BOB7"], "mutation": ["K9Rv", "Woof6", "Mutation_013"], "quality": 200, "mutation_reads": 874, "reference_reads": 435, "mapping_quality": 37}},
   {"model": "mutations.strainmutation", "fields": {"strain": ["BOB7"], "mutation": ["K9Rv", "Woof6", "Mutation_014"], "quality": 200, "mutation_reads": 874, "reference_reads": 435, "mapping_quality": 37}},
@@ -89,7 +90,7 @@
   {"model": "mutations.strainresistance", "fields": {"strain": ["BOB7"], "drug": ["H2O"], "resistance": "r"}},
   {"model": "mutations.strainresistance", "fields": {"strain": ["BOB7"], "drug": ["BUMP"], "resistance": "r"}},
 
-  {"model": "mutations.strainsource", "fields": {"name": "BOB8", "date": "1978-08-01", "country": ["DE"], "city": null, "importer": ["Import Y"], "source_paper": 1, "bioproject": 15, "lineage": "b"}},
+  {"model": "mutations.strainsource", "fields": {"name": "BOB8", "date": "1978-08-01", "country": ["DE"], "city": null, "importer": ["Import Y"], "source_paper": 2, "bioproject": 15, "lineage": "b", "resistance_group": "MDR"}},
   {"model": "mutations.strainmutation", "fields": {"strain": ["BOB8"], "mutation": ["K9Rv", "Woof1", "Mutation_003"], "quality": 200, "mutation_reads": 874, "reference_reads": 435, "mapping_quality": 37}},
   {"model": "mutations.strainmutation", "fields": {"strain": ["BOB8"], "mutation": ["K9Rv", "Woof5", "Mutation_010"], "quality": 200, "mutation_reads": 874, "reference_reads": 435, "mapping_quality": 37}},
   {"model": "mutations.strainmutation", "fields": {"strain": ["BOB8"], "mutation": ["K9Rv", "Woof5", "Mutation_011"], "quality": 200, "mutation_reads": 874, "reference_reads": 435, "mapping_quality": 37}},
@@ -101,7 +102,7 @@
   {"model": "mutations.strainresistance", "fields": {"strain": ["BOB8"], "drug": ["PIN"], "resistance": "r"}},
   {"model": "mutations.strainresistance", "fields": {"strain": ["BOB8"], "drug": ["BUMP"], "resistance": "r"}},
 
-  {"model": "mutations.strainsource", "fields": {"name": "BOB9", "date": "1978-09-01", "country": ["DE"], "city": null, "importer": ["Import Y"], "source_paper": 1, "bioproject": 14, "lineage": "b1"}},
+  {"model": "mutations.strainsource", "fields": {"name": "BOB9", "date": "1978-09-01", "country": ["DE"], "city": null, "importer": ["Import Y"], "source_paper": 2, "bioproject": 14, "lineage": "b1", "resistance_group": "MDR"}},
   {"model": "mutations.strainmutation", "fields": {"strain": ["BOB9"], "mutation": ["K9Rv", "Woof5", "Mutation_009"], "quality": 200, "mutation_reads": 874, "reference_reads": 435, "mapping_quality": 37}},
   {"model": "mutations.strainmutation", "fields": {"strain": ["BOB9"], "mutation": ["K9Rv", "Woof0", "Mutation_002"], "quality": 200, "mutation_reads": 874, "reference_reads": 435, "mapping_quality": 37}},
   {"model": "mutations.strainmutation", "fields": {"strain": ["BOB9"], "mutation": ["K9Rv", "Woof5", "Mutation_010"], "quality": 200, "mutation_reads": 874, "reference_reads": 435, "mapping_quality": 37}},
@@ -113,7 +114,7 @@
   {"model": "mutations.strainresistance", "fields": {"strain": ["BOB9"], "drug": ["PIN"], "resistance": "s"}},
   {"model": "mutations.strainresistance", "fields": {"strain": ["BOB9"], "drug": ["BUMP"], "resistance": "s"}},
 
-  {"model": "mutations.strainsource", "fields": {"name": "BAB1", "date": "1979-01-01", "country": ["RU"], "city": null, "importer": ["Import Y"], "source_paper": 1, "bioproject": 14, "lineage": "b1"}},
+  {"model": "mutations.strainsource", "fields": {"name": "BAB1", "date": "1979-01-01", "country": ["RU"], "city": null, "importer": ["Import Y"], "source_paper": 2, "bioproject": 14, "lineage": "b1", "resistance_group": "MDR"}},
   {"model": "mutations.strainmutation", "fields": {"strain": ["BAB1"], "mutation": ["K9Rv", "Woof9", "Mutation_016"], "quality": 200, "mutation_reads": 874, "reference_reads": 435, "mapping_quality": 37}},
   {"model": "mutations.strainmutation", "fields": {"strain": ["BAB1"], "mutation": ["K9Rv", "Woof9", "Mutation_017"], "quality": 200, "mutation_reads": 874, "reference_reads": 435, "mapping_quality": 37}},
   {"model": "mutations.strainmutation", "fields": {"strain": ["BAB1"], "mutation": ["K9Rv", "Woof1", "Mutation_005"], "quality": 200, "mutation_reads": 874, "reference_reads": 435, "mapping_quality": 37}},
@@ -125,7 +126,7 @@
   {"model": "mutations.strainresistance", "fields": {"strain": ["BAB1"], "drug": ["PIN"], "resistance": "r"}},
   {"model": "mutations.strainresistance", "fields": {"strain": ["BAB1"], "drug": ["BUMP"], "resistance": "r"}},
 
-  {"model": "mutations.strainsource", "fields": {"name": "BAB2", "date": "1979-01-02", "country": ["DE"], "city": null, "importer": ["Import Y"], "source_paper": 1, "bioproject": 14, "lineage": "b1"}},
+  {"model": "mutations.strainsource", "fields": {"name": "BAB2", "date": "1979-01-02", "country": ["DE"], "city": null, "importer": ["Import Y"], "source_paper": 1, "bioproject": 14, "lineage": "b1", "resistance_group": "MDR"}},
   {"model": "mutations.strainmutation", "fields": {"strain": ["BAB2"], "mutation": ["K9Rv", "Woof6", "Mutation_014"], "quality": 200, "mutation_reads": 874, "reference_reads": 435, "mapping_quality": 37}},
   {"model": "mutations.strainmutation", "fields": {"strain": ["BAB2"], "mutation": ["K9Rv", "Woof0", "Mutation_001"], "quality": 200, "mutation_reads": 874, "reference_reads": 435, "mapping_quality": 37}},
   {"model": "mutations.strainmutation", "fields": {"strain": ["BAB2"], "mutation": ["K9Rv", "Woof6", "Mutation_012"], "quality": 200, "mutation_reads": 874, "reference_reads": 435, "mapping_quality": 37}},
@@ -137,7 +138,7 @@
   {"model": "mutations.strainresistance", "fields": {"strain": ["BAB2"], "drug": ["PIN"], "resistance": "s"}},
   {"model": "mutations.strainresistance", "fields": {"strain": ["BAB2"], "drug": ["BUMP"], "resistance": "r"}},
 
-  {"model": "mutations.strainsource", "fields": {"name": "BAB3", "date": "1979-01-03", "country": ["RU"], "city": null, "importer": ["Import Y"], "source_paper": 1, "bioproject": 15, "lineage": "c"}},
+  {"model": "mutations.strainsource", "fields": {"name": "BAB3", "date": "1979-01-03", "country": ["RU"], "city": null, "importer": ["Import Y"], "source_paper": 1, "bioproject": 15, "lineage": "c", "resistance_group": "MDR"}},
   {"model": "mutations.strainmutation", "fields": {"strain": ["BAB3"], "mutation": ["K9Rv", "Woof1", "Mutation_005"], "quality": 200, "mutation_reads": 874, "reference_reads": 435, "mapping_quality": 37}},
   {"model": "mutations.strainmutation", "fields": {"strain": ["BAB3"], "mutation": ["K9Rv", "Woof4", "Mutation_008"], "quality": 200, "mutation_reads": 874, "reference_reads": 435, "mapping_quality": 37}},
   {"model": "mutations.strainmutation", "fields": {"strain": ["BAB3"], "mutation": ["K9Rv", "Woof0", "Mutation_001"], "quality": 200, "mutation_reads": 874, "reference_reads": 435, "mapping_quality": 37}},
@@ -149,7 +150,7 @@
   {"model": "mutations.strainresistance", "fields": {"strain": ["BAB3"], "drug": ["PIN"], "resistance": "s"}},
   {"model": "mutations.strainresistance", "fields": {"strain": ["BAB3"], "drug": ["BUMP"], "resistance": "r"}},
 
-  {"model": "mutations.strainsource", "fields": {"name": "BAB4", "date": "1979-01-04", "country": ["RU"], "city": null, "importer": ["Import X"], "source_paper": 1, "bioproject": 15, "lineage": "c"}},
+  {"model": "mutations.strainsource", "fields": {"name": "BAB4", "date": "1979-01-04", "country": ["RU"], "city": null, "importer": ["Import X"], "source_paper": 1, "bioproject": 15, "lineage": "c", "resistance_group": "MDR"}},
   {"model": "mutations.strainmutation", "fields": {"strain": ["BAB4"], "mutation": ["K9Rv", "Woof0", "Mutation_001"], "quality": 200, "mutation_reads": 874, "reference_reads": 435, "mapping_quality": 37}},
   {"model": "mutations.strainmutation", "fields": {"strain": ["BAB4"], "mutation": ["K9Rv", "Woof0", "Mutation_002"], "quality": 200, "mutation_reads": 874, "reference_reads": 435, "mapping_quality": 37}},
   {"model": "mutations.strainmutation", "fields": {"strain": ["BAB4"], "mutation": ["K9Rv", "Woof9", "Mutation_020"], "quality": 200, "mutation_reads": 874, "reference_reads": 435, "mapping_quality": 37}},
@@ -161,7 +162,7 @@
   {"model": "mutations.strainresistance", "fields": {"strain": ["BAB4"], "drug": ["PIN"], "resistance": "s"}},
   {"model": "mutations.strainresistance", "fields": {"strain": ["BAB4"], "drug": ["BUMP"], "resistance": "r"}},
 
-  {"model": "mutations.strainsource", "fields": {"name": "BAB5", "date": "1979-01-05", "country": ["FR"], "city": null, "importer": ["Import X"], "source_paper": 1, "bioproject": 15, "lineage": "c"}},
+  {"model": "mutations.strainsource", "fields": {"name": "BAB5", "date": "1979-01-05", "country": ["FR"], "city": null, "importer": ["Import X"], "source_paper": 1, "bioproject": 15, "lineage": "c", "resistance_group": "MDR"}},
   {"model": "mutations.strainmutation", "fields": {"strain": ["BAB5"], "mutation": ["K9Rv", "Woof3", "Mutation_006"], "quality": 200, "mutation_reads": 874, "reference_reads": 435, "mapping_quality": 37}},
   {"model": "mutations.strainmutation", "fields": {"strain": ["BAB5"], "mutation": ["K9Rv", "Woof4", "Mutation_008"], "quality": 200, "mutation_reads": 874, "reference_reads": 435, "mapping_quality": 37}},
   {"model": "mutations.strainmutation", "fields": {"strain": ["BAB5"], "mutation": ["K9Rv", "Woof5", "Mutation_011"], "quality": 200, "mutation_reads": 874, "reference_reads": 435, "mapping_quality": 37}},
@@ -173,7 +174,7 @@
   {"model": "mutations.strainresistance", "fields": {"strain": ["BAB5"], "drug": ["PIN"], "resistance": "r"}},
   {"model": "mutations.strainresistance", "fields": {"strain": ["BAB5"], "drug": ["BUMP"], "resistance": "r"}},
 
-  {"model": "mutations.strainsource", "fields": {"name": "BAB6", "date": "1979-01-06", "country": ["FR"], "city": null, "importer": ["Import X"], "source_paper": 1, "bioproject": 14, "lineage": "b"}},
+  {"model": "mutations.strainsource", "fields": {"name": "BAB6", "date": "1979-01-06", "country": ["FR"], "city": null, "importer": ["Import X"], "source_paper": 1, "bioproject": 14, "lineage": "b", "resistance_group": "MDR"}},
   {"model": "mutations.strainmutation", "fields": {"strain": ["BAB6"], "mutation": ["K9Rv", "Woof0", "Mutation_002"], "quality": 200, "mutation_reads": 874, "reference_reads": 435, "mapping_quality": 37}},
   {"model": "mutations.strainmutation", "fields": {"strain": ["BAB6"], "mutation": ["K9Rv", "Woof3", "Mutation_007"], "quality": 200, "mutation_reads": 874, "reference_reads": 435, "mapping_quality": 37}},
   {"model": "mutations.strainmutation", "fields": {"strain": ["BAB6"], "mutation": ["K9Rv", "Woof1", "Mutation_005"], "quality": 200, "mutation_reads": 874, "reference_reads": 435, "mapping_quality": 37}},
@@ -185,7 +186,7 @@
   {"model": "mutations.strainresistance", "fields": {"strain": ["BAB6"], "drug": ["PIN"], "resistance": "r"}},
   {"model": "mutations.strainresistance", "fields": {"strain": ["BAB6"], "drug": ["BUMP"], "resistance": "s"}},
 
-  {"model": "mutations.strainsource", "fields": {"name": "BAB7", "date": "1979-01-07", "country": ["RU"], "city": null, "importer": ["Import X"], "source_paper": 1, "bioproject": 14, "lineage": "b"}},
+  {"model": "mutations.strainsource", "fields": {"name": "BAB7", "date": "1979-01-07", "country": ["RU"], "city": null, "importer": ["Import X"], "source_paper": 1, "bioproject": 14, "lineage": "b", "resistance_group": "XDR"}},
   {"model": "mutations.strainmutation", "fields": {"strain": ["BAB7"], "mutation": ["K9Rv", "Woof1", "Mutation_005"], "quality": 200, "mutation_reads": 874, "reference_reads": 435, "mapping_quality": 37}},
   {"model": "mutations.strainmutation", "fields": {"strain": ["BAB7"], "mutation": ["K9Rv", "Woof5", "Mutation_011"], "quality": 200, "mutation_reads": 874, "reference_reads": 435, "mapping_quality": 37}},
   {"model": "mutations.strainmutation", "fields": {"strain": ["BAB7"], "mutation": ["K9Rv", "Woof9", "Mutation_016"], "quality": 200, "mutation_reads": 874, "reference_reads": 435, "mapping_quality": 37}},
@@ -197,7 +198,7 @@
   {"model": "mutations.strainresistance", "fields": {"strain": ["BAB7"], "drug": ["PIN"], "resistance": "s"}},
   {"model": "mutations.strainresistance", "fields": {"strain": ["BAB7"], "drug": ["BUMP"], "resistance": "s"}},
 
-  {"model": "mutations.strainsource", "fields": {"name": "BAB8", "date": "1979-01-08", "country": ["RU"], "city": null, "importer": ["Import X"], "source_paper": 1, "bioproject": 14, "lineage": "b1"}},
+  {"model": "mutations.strainsource", "fields": {"name": "BAB8", "date": "1979-01-08", "country": ["RU"], "city": null, "importer": ["Import X"], "source_paper": 1, "bioproject": 14, "lineage": "b1", "resistance_group": "XDR"}},
   {"model": "mutations.strainmutation", "fields": {"strain": ["BAB8"], "mutation": ["K9Rv", "Woof6", "Mutation_012"], "quality": 200, "mutation_reads": 874, "reference_reads": 435, "mapping_quality": 37}},
   {"model": "mutations.strainmutation", "fields": {"strain": ["BAB8"], "mutation": ["K9Rv", "Woof1", "Mutation_005"], "quality": 200, "mutation_reads": 874, "reference_reads": 435, "mapping_quality": 37}},
   {"model": "mutations.strainmutation", "fields": {"strain": ["BAB8"], "mutation": ["K9Rv", "Woof5", "Mutation_011"], "quality": 200, "mutation_reads": 874, "reference_reads": 435, "mapping_quality": 37}},
@@ -209,14 +210,14 @@
   {"model": "mutations.strainresistance", "fields": {"strain": ["BAB8"], "drug": ["PIN"], "resistance": "s"}},
   {"model": "mutations.strainresistance", "fields": {"strain": ["BAB8"], "drug": ["BUMP"], "resistance": "r"}},
 
-  {"model": "mutations.strainsource", "fields": {"name": "BAB9", "date": "1979-01-09", "country": ["DE"], "city": null, "importer": ["Import Z"], "source_paper": 1, "bioproject": 15, "lineage": "a"}},
+  {"model": "mutations.strainsource", "fields": {"name": "BAB9", "date": "1979-01-09", "country": ["DE"], "city": null, "importer": ["Import Z"], "source_paper": 1, "bioproject": 15, "lineage": "a", "resistance_group": "XDR"}},
   {"model": "mutations.strainmutation", "fields": {"strain": ["BAB9"], "mutation": ["K9Rv", "Woof0", "Mutation_001"], "quality": 200, "mutation_reads": 874, "reference_reads": 435, "mapping_quality": 37}},
   {"model": "mutations.strainmutation", "fields": {"strain": ["BAB9"], "mutation": ["K9Rv", "Woof1", "Mutation_005"], "quality": 200, "mutation_reads": 874, "reference_reads": 435, "mapping_quality": 37}},
   {"model": "mutations.strainmutation", "fields": {"strain": ["BAB9"], "mutation": ["K9Rv", "Woof9", "Mutation_020"], "quality": 200, "mutation_reads": 874, "reference_reads": 435, "mapping_quality": 37}},
   {"model": "mutations.strainmutation", "fields": {"strain": ["BAB9"], "mutation": ["K9Rv", "Woof3", "Mutation_007"], "quality": 200, "mutation_reads": 874, "reference_reads": 435, "mapping_quality": 37}},
   {"model": "mutations.strainmutation", "fields": {"strain": ["BAB9"], "mutation": ["K9Rv", "Woof9", "Mutation_016"], "quality": 200, "mutation_reads": 874, "reference_reads": 435, "mapping_quality": 37}},
 
-  {"model": "mutations.strainsource", "fields": {"name": "BBB1", "date": "1988-01-01", "country": ["RU"], "city": null, "importer": ["Import Y"], "source_paper": 1, "bioproject": 15, "lineage": "a"}},
+  {"model": "mutations.strainsource", "fields": {"name": "BBB1", "date": "1988-01-01", "country": ["RU"], "city": null, "importer": ["Import Y"], "source_paper": 1, "bioproject": 15, "lineage": "a", "resistance_group": "XDR"}},
   {"model": "mutations.strainmutation", "fields": {"strain": ["BBB1"], "mutation": ["K9Rv", "Woof9", "Mutation_017"], "quality": 200, "mutation_reads": 874, "reference_reads": 435, "mapping_quality": 37}},
   {"model": "mutations.strainmutation", "fields": {"strain": ["BBB1"], "mutation": ["K9Rv", "Woof6", "Mutation_012"], "quality": 200, "mutation_reads": 874, "reference_reads": 435, "mapping_quality": 37}},
   {"model": "mutations.strainmutation", "fields": {"strain": ["BBB1"], "mutation": ["K9Rv", "Woof1", "Mutation_004"], "quality": 200, "mutation_reads": 874, "reference_reads": 435, "mapping_quality": 37}},
@@ -228,7 +229,7 @@
   {"model": "mutations.strainresistance", "fields": {"strain": ["BBB1"], "drug": ["PIN"], "resistance": "r"}},
   {"model": "mutations.strainresistance", "fields": {"strain": ["BBB1"], "drug": ["BUMP"], "resistance": "r"}},
 
-  {"model": "mutations.strainsource", "fields": {"name": "BBB2", "date": "1988-01-01", "country": ["RU"], "city": null, "importer": ["Import X"], "source_paper": 1, "bioproject": 15, "lineage": "a"}},
+  {"model": "mutations.strainsource", "fields": {"name": "BBB2", "date": "1988-01-01", "country": ["RU"], "city": null, "importer": ["Import X"], "source_paper": 1, "bioproject": 15, "lineage": "a", "resistance_group": "XDR"}},
   {"model": "mutations.strainmutation", "fields": {"strain": ["BBB2"], "mutation": ["K9Rv", "Woof9", "Mutation_017"], "quality": 200, "mutation_reads": 874, "reference_reads": 435, "mapping_quality": 37}},
   {"model": "mutations.strainmutation", "fields": {"strain": ["BBB2"], "mutation": ["K9Rv", "Woof0", "Mutation_002"], "quality": 200, "mutation_reads": 874, "reference_reads": 435, "mapping_quality": 37}},
   {"model": "mutations.strainmutation", "fields": {"strain": ["BBB2"], "mutation": ["K9Rv", "Woof1", "Mutation_005"], "quality": 200, "mutation_reads": 874, "reference_reads": 435, "mapping_quality": 37}},

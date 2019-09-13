@@ -24,6 +24,7 @@ from collections import Counter
 from django.test import TestCase
 from extratest.base import ExtraTestCase
 
+from ..mutations.models import ImportSource
 from .utils import OrderlyDict, OrderedDict, GraphData
 
 class UtilsTest(TestCase):
@@ -96,7 +97,11 @@ class BaseCase(ExtraTestCase):
         """
         Process a GET request back into context data from the JsonResponse
         """
-        return json.loads(self.assertGet(*args, **kwargs).content)
+        filters = kwargs.pop('filters', None)
+        content = json.loads(self.assertGet(*args, **kwargs).content)
+        if filters is not None:
+            self.assertEqual(tuple(content['filters']), tuple(filters))
+        return content
 
 
 class SourcesData(BaseCase):
@@ -110,18 +115,76 @@ class SourcesData(BaseCase):
 
 class PlacesData(BaseCase):
     """Test places data output (tab)."""
+    maxDiff = 60000
+
+    def assertPlaces(self, features, *tests): # pylint: disable=invalid-name
+        """Check place data"""
+        self.assertEqual(len(features), len(tests))
+        for feature, (name, value, values) in zip(features, tests):
+            self.assertEqual(feature['popupContent'], name)
+            self.assertEqual(feature['properties']['name'], name)
+            self.assertEqual(feature['properties']['value'], value)
+            self.assertEqual(feature['properties']['values'], values)
+
     def test_all_output(self):
         """Test entire map output."""
-        all_maps = self.assertJson('maps:map.places')
-        self.assertEqual(all_maps, '')
+        all_maps = self.assertJson('maps:map.places', filters=())
+
+        feature = all_maps['features'][0]
+        self.assertTrue(feature['geometry']['coordinates'])
+        self.assertEqual(feature['geometry']['type'], 'MultiPolygon')
+
+        self.assertPlaces(
+            all_maps['features'],
+            ['France', 'FR', {'MDR': 3, 'Total': 3}],
+            ['Germany', 'DE', {'MDR': 4, 'Total': 6, 'XDR': 1, 's': 1}],
+            ['Russia', 'RU', {'MDR': 6, 'Total': 11, 'XDR': 4, 's': 1}],
+        )
 
     def test_source_output(self):
         """Test source sliced map output."""
-        pass
+        source = ImportSource.objects.get(name='Import Z')
+        maps = self.assertJson('maps:map.places', filters=('source',),
+                               data={'source[]': [source.pk]})
+        self.assertPlaces(
+            maps['features'],
+            ['France', 'FR', {'MDR': 1, 'Total': 1}],
+            ['Germany', 'DE', {'MDR': 1, 'Total': 2, 'XDR': 1}],
+            ['Russia', 'RU', {'MDR': 3, 'Total': 4, 's': 1}],
+        )
+        source = ImportSource.objects.get(name='Import Y')
+        maps = self.assertJson('maps:map.places', filters=('source',),
+                               data={'source[]': [source.pk]})
+        self.assertPlaces(
+            maps['features'],
+            ['Germany', 'DE', {'MDR': 3, 'Total': 4, 's': 1}],
+            ['Russia', 'RU', {'MDR': 2, 'Total': 3, 'XDR': 1}],
+        )
+        source = ImportSource.objects.get(name='Import X')
+        maps = self.assertJson('maps:map.places', filters=('source',),
+                               data={'source[]': [source.pk]})
+        self.assertPlaces(
+            maps['features'],
+            ['France', 'FR', {'MDR': 2, 'Total': 2}],
+            ['Russia', 'RU', {'MDR': 1, 'Total': 4, 'XDR': 3}],
+        )
 
     def test_paper_output(self):
         """Test paper sliced map output."""
-        pass
+        maps = self.assertJson('maps:map.places', filters=('paper',), data={'paper[]': [1]})
+        self.assertPlaces(
+            maps['features'],
+            ['France', 'FR', {'MDR': 2, 'Total': 2}],
+            ['Germany', 'DE', {'MDR': 1, 'Total': 2, 'XDR': 1}],
+            ['Russia', 'RU', {'MDR': 2, 'Total': 6, 'XDR': 4}],
+        )
+        maps = self.assertJson('maps:map.places', filters=('paper',), data={'paper[]': [2]})
+        self.assertPlaces(
+            maps['features'],
+            ['France', 'FR', {'MDR': 1, 'Total': 1}],
+            ['Germany', 'DE', {'MDR': 3, 'Total': 4, 's': 1}],
+            ['Russia', 'RU', {'MDR': 4, 'Total': 5, 's': 1}],
+        )
 
     def test_drug_output(self):
         """Test drug sliced map output."""

@@ -29,9 +29,8 @@ from django.utils.decorators import method_decorator
 from django.db.models import Count, Q
 
 from apps.mutations.models import (
-    ImportSource, StrainMutation, StrainSource, Mutation, GeneLocus, Genome,
-    RESISTANCE, RESISTANCE_GROUP,
-    Paper, BioProject, Lineage
+    ImportSource, StrainSource, Mutation, GeneLocus, Genome,
+    Paper, BioProject, Lineage, RESISTANCE, RESISTANCE_GROUP,
 )
 
 from .mixins import JsonView, DataSlicerMixin, DataTableMixin
@@ -83,7 +82,7 @@ class Places(JsonView, DataSlicerMixin):
     filters = dict(
         [
             ('source[]', 'importer__in'),
-            ('paper', 'source_paper'),
+            ('paper[]', 'source_paper__in'),
             ('drug[]', 'drugs__drug__code__in'),
         ]
     )
@@ -140,7 +139,7 @@ class DrugList(JsonView, DataSlicerMixin):
             self.get_data().annotate(count=Count('pk')),
             'drugs__drug__code', 'count', 'drugs__resistance'
         ).set_axis('z', RESISTANCE).to_graph())
-        
+
         # Sorting alphabetically by drug codename to prevent floating-bar errors in D3
         colors = ('#969696', '#3182bd', '#6baed6', '#fc8740')
         for x, section in enumerate(drug_dict):
