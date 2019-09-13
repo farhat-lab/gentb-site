@@ -79,13 +79,11 @@ class Places(JsonView, DataSlicerMixin):
     model = StrainSource
     order = ['country__name', 'country__region']
     values = ['country__iso2', 'resistance_group']
-    filters = dict(
-        [
-            ('source[]', 'importer__in'),
-            ('paper[]', 'source_paper__in'),
-            ('drug[]', many_lookup(StrainResistance, 'drug__code', 'strain_id')),
-        ]
-    )
+    filters = {
+        'source[]': 'importer__in',
+        'paper[]': 'source_paper__in',
+        'drug[]': many_lookup(StrainResistance, 'drug__code', 'strain_id'),
+    }
 
     def get_context_data(self, **_):
         """Return a dictionary of template variables"""
@@ -124,13 +122,11 @@ class DrugList(JsonView, DataSlicerMixin):
     model = StrainSource
     order = ['drugs__drug__regimen', '-drugs__drug__priority',]
     values = ['drugs__drug__name', 'drugs__drug__code', 'drugs__resistance']
-    filters = dict(
-        [
-            ('map[]', 'country__iso2__in'),
-            ('source[]', 'importer__in'),
-            ('paper[]', 'source_paper__in'),
-        ]
-    )
+    filters = {
+        'map[]': 'country__iso2__in',
+        'source[]': 'importer__in',
+        'paper[]': 'source_paper__in',
+    }
 
     def get_context_data(self, **_):
         """Return a dictionary of template variables"""
@@ -191,18 +187,20 @@ class DrugList(JsonView, DataSlicerMixin):
             return 0
         return max([int((resistant / expected) - total), 0])
 
+
 class Lineages(JsonView, DataSlicerMixin):
     """
     Breakdown lineages with strain data added on.
     """
-    model = Lineage
-    order = ['slug']
+    model = StrainSource
+    order = ['lineage__slug']
+    values = ['lineage__name']
     filters = {
-        'map[]': 'strains__country__iso2__in',
-        'drug[]': 'strains__drugs__drug__code__in',
-        'source[]': 'strains__importer__in',
+        'map[]': 'country__iso2__in',
+        'source[]': 'importer__in',
+        'paper[]': 'source_paper__in',
+        'drug[]': many_lookup(StrainResistance, 'drug__code', 'strain_id'),
     }
-
 
     def get_sublineages(self, lin):
         """Returns list of all ancestors of `lin`, including `lin` (e.g. '3.6.4' -> ['3', '3.6', '3.6.4'])"""
@@ -221,7 +219,8 @@ class Lineages(JsonView, DataSlicerMixin):
            Arcs follow a blue->green gradient clockwise, with lower opacity at higher levels"""
         if depth == 0:
             return 'rgb(48,129,189)'
-        blue_green = ['48,129,189', '49,147,185', '49,163,182', '49,178,179', '49,175,158', '49,172,138', '49,169,119', '49,166,101', '48,163,84']
+        blue_green = ['48,129,189', '49,147,185', '49,163,182', '49,178,179',
+                      '49,175,158', '49,172,138', '49,169,119', '49,166,101', '48,163,84']
         return 'rgba({},{})'.format(blue_green[idx % 9], 1-depth/5.0)
 
     def lineage_tree(self):
@@ -231,9 +230,10 @@ class Lineages(JsonView, DataSlicerMixin):
 
         # Contains frequency of each lineage (e.g. '4.3': 7)
         lin_counts = defaultdict(int)
-        for lin in self.get_data():
-            if re.compile(r'[0-9.]').match(lin.name):
-                lin_counts[lin.name] += 1
+        for strain in self.get_data():
+            name = strain['lineage__name']
+            if re.compile(r'[[A-Z0-9.]').match(name):
+                lin_counts[name] += 1
         lin_counts = sorted(lin_counts.items())
 
         # Stores all lineages added to `lin_tree`

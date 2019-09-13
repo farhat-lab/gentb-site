@@ -268,26 +268,67 @@ class DrugListData(BaseCase):
 
 
 class LineageData(BaseCase):
-    """
-    Test lineage data output.
+    """Test lineage data output."""
+    def test_all_output(self):
+        """Test not sliced lineage output"""
+        lineages = self.assertJson('maps:map.lineages', field='children')
+        self.assertEqual(lineages, [
+            {'name': 'LA', 'color': 'rgb(48,129,189)', 'children': [], 'size': 4},
+            {'name': 'LB', 'color': 'rgb(48,129,189)', 'children': [
+                {'name': 'LB.1', 'color': 'rgba(48,129,189,0.8)', 'children': [], 'size': 4}
+            ], 'size': 6},
+            {'name': 'LC', 'color': 'rgb(48,129,189)', 'children': [], 'size': 6}
+        ])
 
-     * Slice by source
-     * Slice by paper
-     * Slice by map country
-     * Slice by drug
-    """
-    pass
+    def test_source_output(self):
+        """Test source sliced lineage output"""
+        source = ImportSource.objects.get(name='Import X')
+        lineages = self.assertJson('maps:map.lineages', field='children',
+                                   filters=('source',), data={'source[]': source.pk})
+        self.assertEqual(lineages, [
+            {'children': [], 'color': 'rgb(48,129,189)', 'name': 'LA', 'size': 1},
+            {'children': [
+                {'children': [], 'color': 'rgba(48,129,189,0.8)', 'name': 'LB.1', 'size': 1}
+            ], 'color': 'rgb(48,129,189)', 'name': 'LB', 'size': 2},
+            {'children': [], 'color': 'rgb(48,129,189)', 'name': 'LC', 'size': 2},
+        ])
 
-class LocusRangeData(BaseCase):
-    """
-    Test locus range data output, should only show gene locuses with resistance data.
+    def test_paper_output(self):
+        """Test paper sliced lineage output"""
+        lineages = self.assertJson('maps:map.lineages', field='children',
+                                   filters=('paper',), data={'paper[]': 1})
+        self.assertEqual(lineages, [
+            {'children': [], 'color': 'rgb(48,129,189)', 'name': 'LA', 'size': 3},
+            {'children': [
+                {'children': [], 'color': 'rgba(48,129,189,0.8)', 'name': 'LB.1', 'size': 2}
+            ], 'color': 'rgb(48,129,189)', 'name': 'LB', 'size': 2},
+            {'children': [], 'color': 'rgb(48,129,189)', 'name': 'LC', 'size': 3},
+        ])
 
-     * Slice by source
-     * Slice by paper
-     * Slice by map country
-     * Slice by drug
-    """
-    pass
+    def test_map_output(self):
+        """Test map sliced lineage output"""
+        lineages = self.assertJson('maps:map.lineages', field='children',
+                                   filters=('map',), data={'map[]': ['DE', 'RU']})
+        self.assertEqual(lineages, [
+            {'children': [], 'color': 'rgb(48,129,189)', 'name': 'LA', 'size': 4},
+            {'children': [
+                {'children': [], 'color': 'rgba(48,129,189,0.8)', 'name': 'LB.1', 'size': 4}
+            ], 'color': 'rgb(48,129,189)', 'name': 'LB', 'size': 4},
+            {'children': [], 'color': 'rgb(48,129,189)', 'name': 'LC', 'size': 5},
+        ])
+
+    def test_drug_output(self):
+        """Test drug sliced lineage output"""
+        lineages = self.assertJson('maps:map.lineages', field='children',
+                                   filters=('drug',), data={'drug[]': ['WAVE', 'BUMP', 'PIN']})
+        self.assertEqual(lineages, [
+            {'children': [], 'color': 'rgb(48,129,189)', 'name': 'LA', 'size': 3},
+            {'children': [
+                {'children': [], 'color': 'rgba(48,129,189,0.8)', 'name': 'LB.1', 'size': 4}
+            ], 'color': 'rgb(48,129,189)', 'name': 'LB', 'size': 6},
+            {'children': [], 'color': 'rgb(48,129,189)', 'name': 'LC', 'size': 6},
+        ])
+
 
 class LocusListData(BaseCase):
     """

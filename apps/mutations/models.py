@@ -541,9 +541,9 @@ class StrainSource(Model):
     patient_sex = CharField(max_length=3, choices=SEXES, null=True, blank=True)
     patient_hiv = CharField(max_length=10, choices=HIVS, null=True, blank=True)
 
-    spoligotype_type   = IntegerField(null=True, blank=True)
+    spoligotype_type = IntegerField(null=True, blank=True)
     spoligotype_family = CharField("Spoligotype Family Parent Strain", max_length=255, null=True, blank=True)
-    spoligotype_octal  = CharField(validators=[is_octal], max_length=15, null=True, blank=True)
+    spoligotype_octal = CharField(validators=[is_octal], max_length=15, null=True, blank=True)
 
     lineage = ForeignKey(Lineage, related_name='strains', null=True, blank=True, on_delete=SET_NULL)
     rflp_type = CharField("Restriction fragment length polymorphism type", max_length=10, null=True, blank=True)
