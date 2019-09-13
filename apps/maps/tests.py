@@ -105,6 +105,24 @@ class BaseCase(ExtraTestCase):
             self.assertEqual(tuple(content['filters']), tuple(filters))
         return content.get(field)
 
+    def assertDataTable(self, url, names=('pk', 'str'), data=None, start=0, length=5, order=0):
+        """Test data table output"""
+        if not data:
+            data = {}
+
+        data.update({
+            'draw': 1,
+            'search[value]': '',
+            'order[0][column]': 0,
+            'order[0][dir]': 'asc',
+            'start': start,
+            'length': length,
+
+        })
+        for x, name in enumerate(names):
+            data[f'columns[{x}][data]'] = name
+
+        return self.assertJson(url, data=data)
 
 class SourcesData(BaseCase):
     """Test sources data output (tab)."""
@@ -329,29 +347,15 @@ class LineageData(BaseCase):
             {'children': [], 'color': 'rgb(48,129,189)', 'name': 'LC', 'size': 6},
         ])
 
-
 class LocusListData(BaseCase):
     """Test list of locus names."""
     def test_all_output(self):
         """Test locus list is unsliced"""
-        # http://localhost:8000/maps/data/locuses/?draw=1&
-
         locus = GeneLocus.objects.get(gene_symbol='WA8')
-        names = ('pk', 'str', 'start', 'length', 'mcount', 'gene_type')
-        data = {
-            'draw': 1,
-            'genelocus[]': [locus.pk],
-            'search[value]': '',
-            'order[0][column]': 2,
-            'order[0][dir]': 'asc',
-            'start': 0,
-            'length': 5,
-
-        }
-        for x, name in enumerate(names):
-            data[f'columns[{x}][data]'] = name
-
-        val = self.assertJson('maps:map.locuses', data=data)
+        val = self.assertDataTable(
+            'maps:map.locuses', names=('pk', 'str', 'start'), order=2,
+            data={'genelocus[]': [locus.pk]},
+        )
         vals = [unit['str'] for unit in val]
         self.assertEqual(vals, ['WA8', 'W1', 'W2', 'W3', 'W4', 'W5'])
 
