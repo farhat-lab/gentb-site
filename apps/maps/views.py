@@ -282,7 +282,6 @@ class Mutations(DataTableMixin, ListView):
         'paper[]': 'strain_mutations__strain__source_paper__in',
         'map[]': 'strain_mutations__strain__country__iso2__in',
         'drug[]': many_lookup(StrainResistance, 'drug__code', 'strain_id', 'strain_mutations__strain_id__in'),
-        #'drug[]': 'strain_mutations__strain__drugs__drug__code__in',
         'genelocus[]': (int, 'gene_locus_id__in'),
     }
     selected = ['mutation[]', 'name', str]
@@ -325,6 +324,7 @@ class MutationView(JsonView, DataSlicerMixin):
     required = ['mutation[]',]
     filters = {
         'source[]': 'importer__in',
+        'paper[]': 'source_paper__in',
         'map[]': 'country__iso2__in',
         'drug[]': many_lookup(StrainResistance, 'drug__code', 'strain_id'),
         'mutation[]': 'mutations__mutation__name__in',
@@ -345,7 +345,7 @@ class MutationView(JsonView, DataSlicerMixin):
 
     def get_context_data(self, **_):
         """Return a dictionary of template variables"""
-        mutations = self.request.GET.getlist(self.required[0])
+        mutations = sorted(self.request.GET.getlist(self.required[0]))
         totals = self.get_data(without=self.values[0]).annotate(count=Count('pk'))
         totals = [(row[self.values[1]].upper(), row['count']) for row in totals]
         _qs = self.get_data().annotate(count=Count('pk'))
