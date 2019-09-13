@@ -256,7 +256,16 @@ class DrugListData(BaseCase):
 
     def test_map_output(self):
         """Test map sliced drug output"""
-        pass
+        drugs = self.assertJson('maps:map.drugs', filters=('map',), data={'map[]': ['DE', 'FR']})
+        self.assertGraph(
+            drugs,
+            [None, 'BUMP', 'H2O', 'MEM', 'PIN', 'WAVE'], {
+                'Unknown': [1, 0, 0, 0, 0, 0],
+                'Sensitive to Drug': [0, 4, 4, 3, 3, 3],
+                'Intermediate': [0, 0, 0, 0, 0, 0],
+                'Resistant to Drug': [0, 4, 4, 4, 4, 4],
+            })
+
 
 class LineageData(BaseCase):
     """
