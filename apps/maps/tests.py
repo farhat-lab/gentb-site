@@ -186,9 +186,26 @@ class PlacesData(BaseCase):
             ['Russia', 'RU', {'MDR': 4, 'Total': 5, 's': 1}],
         )
 
-    def test_drug_output(self):
+    def test_drug_output_one(self):
         """Test drug sliced map output."""
-        pass
+        maps = self.assertJson('maps:map.places', filters=('drug',), data={'drug[]': ['H2O']})
+        self.assertPlaces(
+            maps['features'],
+            ['France', 'FR', {'MDR': 3, 'Total': 3}],
+            ['Germany', 'DE', {'MDR': 4, 'Total': 5, 's': 1}],
+            ['Russia', 'RU', {'MDR': 6, 'Total': 11, 'XDR': 4, 's': 1}],
+        )
+
+    def test_drug_output_many(self):
+        """Test drug sliced map output."""
+        maps = self.assertJson('maps:map.places', filters=('drug',),
+                               data={'drug[]': ['MEM', 'WAVE', 'PIN', 'BUMP']})
+        self.assertPlaces(
+            maps['features'],
+            ['France', 'FR', {'MDR': 3, 'Total': 3}],
+            ['Germany', 'DE', {'MDR': 4, 'Total': 5, 's': 1}],
+            ['Russia', 'RU', {'MDR': 6, 'Total': 11, 'XDR': 4, 's': 1}],
+        )
 
 
 class DrugListData(TestCase):

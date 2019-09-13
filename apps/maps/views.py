@@ -29,7 +29,7 @@ from django.utils.decorators import method_decorator
 from django.db.models import Count, Q
 
 from apps.mutations.models import (
-    ImportSource, StrainSource, Mutation, GeneLocus, Genome,
+    ImportSource, StrainSource, Mutation, GeneLocus, Genome, StrainResistance,
     Paper, BioProject, Lineage, RESISTANCE, RESISTANCE_GROUP,
 )
 
@@ -83,9 +83,16 @@ class Places(JsonView, DataSlicerMixin):
         [
             ('source[]', 'importer__in'),
             ('paper[]', 'source_paper__in'),
-            ('drug[]', 'drugs__drug__code__in'),
+            ('drug[]', 'pk__in'),
         ]
     )
+
+    def filter_drug(self, values):
+        """Replace drug names with primary keys"""
+        if values:
+            return StrainResistance.objects.filter(drug__code__in=values)\
+                                           .values_list('strain_id', flat=True)
+        return []
 
     def get_context_data(self, **_):
         """Return a dictionary of template variables"""
