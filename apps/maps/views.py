@@ -128,7 +128,7 @@ class DrugList(JsonView, DataSlicerMixin):
         [
             ('map[]', 'country__iso2__in'),
             ('source[]', 'importer__in'),
-            ('paper', 'source_paper'),
+            ('paper[]', 'source_paper__in'),
         ]
     )
 
