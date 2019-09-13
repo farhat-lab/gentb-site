@@ -232,7 +232,7 @@ class Lineages(JsonView, DataSlicerMixin):
         lin_counts = defaultdict(int)
         for strain in self.get_data():
             name = strain['lineage__name']
-            if re.compile(r'[[A-Z0-9.]').match(name):
+            if name and re.compile(r'[[A-Z0-9.]').match(name):
                 lin_counts[name] += 1
         lin_counts = sorted(lin_counts.items())
 
