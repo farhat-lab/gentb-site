@@ -110,7 +110,7 @@ class SourcesData(BaseCase):
     """Test sources data output (tab)."""
     def test_general_output(self):
         """Test output contains sources and papers only."""
-        val = self.assertJson('maps:map.sources')['values']
+        val = self.assertJson('maps:map.sources', field='values')
         uni = Counter(["{kind}-{name}".format(**row) for row in val])
         self.assertEqual(len(uni), len(val), f"Sources aren't unique: {uni}")
 
