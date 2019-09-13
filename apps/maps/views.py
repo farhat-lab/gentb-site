@@ -278,17 +278,20 @@ class Mutations(DataTableMixin, ListView):
     model = Mutation
     search_fields = ['name', 'old_id', 'gene_locus__name']
     filters = {
-        'genelocus[]': (int, 'gene_locus_id__in'),
-        'drug[]': 'strain_mutations__strain__drugs__drug__code__in',
-        'map[]': 'strain_mutations__strain__country__iso2__in',
         'source[]': 'strain_mutations__strain__importer__in',
+        'paper[]': 'strain_mutations__strain__source_paper__in',
+        'map[]': 'strain_mutations__strain__country__iso2__in',
+        'drug[]': many_lookup(StrainResistance, 'drug__code', 'strain_id', 'strain_mutations__strain_id__in'),
+        #'drug[]': 'strain_mutations__strain__drugs__drug__code__in',
+        'genelocus[]': (int, 'gene_locus_id__in'),
     }
     selected = ['mutation[]', 'name', str]
 
     strain_filters = {
-        'drug[]': 'strain__drugs__drug__code__in',
-        'map[]': 'strain__country__iso2__in',
         'source[]': 'strain__importer__in',
+        'paper[]': 'strain__source_paper__in',
+        'drug[]': many_lookup(StrainResistance, 'drug__code', 'strain_id', 'strain_id__in'),
+        'map[]': 'strain__country__iso2__in',
     }
 
     def prep_data(self, qset, columns, **kwargs):
@@ -321,10 +324,10 @@ class MutationView(JsonView, DataSlicerMixin):
     model = StrainSource
     required = ['mutation[]',]
     filters = {
-        'mutation[]': 'mutations__mutation__name__in',
-        'drug[]': 'drugs__drug__code__in',
-        'map[]': 'country__iso2__in',
         'source[]': 'importer__in',
+        'map[]': 'country__iso2__in',
+        'drug[]': many_lookup(StrainResistance, 'drug__code', 'strain_id'),
+        'mutation[]': 'mutations__mutation__name__in',
     }
     @property
     def values(self):

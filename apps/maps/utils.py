@@ -249,14 +249,14 @@ class Jdict(Sdict):
     def _filter_key(key):
         return key.replace('][', '__').replace('[', '__').replace(']', '')
 
-def many_lookup(model, local_filter, id_field):
+def many_lookup(model, local_filter, id_field, ret_field='pk__in'):
     """
     When looking up many-to-many values, we need to not duplicate rows
     in the output when it comes to counts. This provides us with a way
     of joining things up.
     """
     def _inner(values):
-        return 'pk__in',\
+        return ret_field,\
             model.objects.filter(**{local_filter+'__in': values})\
                          .values_list(id_field, flat=True)
     return _inner

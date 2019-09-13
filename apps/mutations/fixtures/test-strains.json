@@ -203,7 +203,7 @@
   {"model": "mutations.strainmutation", "fields": {"strain": ["BAB8"], "mutation": ["K9Rv", "Woof1", "Mutation_005"], "quality": 200, "mutation_reads": 874, "reference_reads": 435, "mapping_quality": 37}},
   {"model": "mutations.strainmutation", "fields": {"strain": ["BAB8"], "mutation": ["K9Rv", "Woof5", "Mutation_011"], "quality": 200, "mutation_reads": 874, "reference_reads": 435, "mapping_quality": 37}},
   {"model": "mutations.strainmutation", "fields": {"strain": ["BAB8"], "mutation": ["K9Rv", "Woof4", "Mutation_008"], "quality": 200, "mutation_reads": 874, "reference_reads": 435, "mapping_quality": 37}},
-  {"model": "mutations.strainmutation", "fields": {"strain": ["BAB8"], "mutation": ["K9Rv", "Woof1", "Mutation_005"], "quality": 200, "mutation_reads": 874, "reference_reads": 435, "mapping_quality": 37}},
+  {"model": "mutations.strainmutation", "fields": {"strain": ["BAB8"], "mutation": ["K9Rv", "Woof3", "Mutation_007"], "quality": 200, "mutation_reads": 874, "reference_reads": 435, "mapping_quality": 37}},
   {"model": "mutations.strainresistance", "fields": {"strain": ["BAB8"], "drug": ["H2O"], "resistance": "s"}},
   {"model": "mutations.strainresistance", "fields": {"strain": ["BAB8"], "drug": ["MEM"], "resistance": "r"}},
   {"model": "mutations.strainresistance", "fields": {"strain": ["BAB8"], "drug": ["WAVE"], "resistance": "r"}},

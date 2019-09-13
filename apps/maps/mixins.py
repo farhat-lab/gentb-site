@@ -245,6 +245,9 @@ class DataTableMixin(object):
         for key, col in filters.items():
             val = self.get_filter_value(key)
 
+            if callable(col):
+                col, val = col(val)
+
             if isinstance(col, (list, tuple)) and len(col) == 2:
                 mtype, col = col
                 if isinstance(val, (list, tuple)):
@@ -253,7 +256,10 @@ class DataTableMixin(object):
                     val = mtype(val)
 
             if val:
-                query &= Q(**{col: val})
+                try:
+                    query &= Q(**{col: val})
+                except TypeError:
+                    raise IOError(f"TYPE ERROR: {col}: {val}")
         return query
 
     def process_datatable(self, qset, columns=(), order=(), search=None, start=0, length=-1, **_):

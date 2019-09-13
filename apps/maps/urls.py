@@ -27,11 +27,11 @@ from .views import MapPage, Places, DrugList, Lineages, \
 app_name = 'maps'
 urlpatterns = [
     path('', MapPage.as_view(), name="map"),
+    path('data/sources/', Sources.as_view(), name="map.sources"),
     path('data/places/', Places.as_view(), name="map.places"),
     path('data/drugs/', DrugList.as_view(), name="map.drugs"),
     path('data/lineages/', Lineages.as_view(), name="map.lineages"),
     path('data/locuses/', LocusList.as_view(), name="map.locuses"),
-    path('data/mutation/', MutationView.as_view(), name="map.mutation"),
     path('data/mutations/', Mutations.as_view(), name="map.mutations"),
-    path('data/sources/', Sources.as_view(), name="map.sources"),
+    path('data/mutation/', MutationView.as_view(), name="map.mutation"),
 ]

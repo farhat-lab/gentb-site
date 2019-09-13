@@ -105,15 +105,13 @@ class BaseCase(ExtraTestCase):
             self.assertEqual(tuple(content['filters']), tuple(filters))
         return content.get(field)
 
-    def assertDataTable(self, url, names=('pk', 'str'), data=None, start=0, length=5, order=0):
+    def assertDataTable(self, url, names=('pk', 'str'), start=0, length=5, **kwargs): # pylint: disable=invalid-name
         """Test data table output"""
-        if not data:
-            data = {}
-
+        data = kwargs.pop('data', {})
         data.update({
             'draw': 1,
             'search[value]': '',
-            'order[0][column]': 0,
+            'order[0][column]': kwargs.pop('order', 0),
             'order[0][dir]': 'asc',
             'start': start,
             'length': length,
@@ -122,7 +120,7 @@ class BaseCase(ExtraTestCase):
         for x, name in enumerate(names):
             data[f'columns[{x}][data]'] = name
 
-        return self.assertJson(url, data=data)
+        return self.assertJson(url, data=data, **kwargs)
 
 class SourcesData(BaseCase):
     """Test sources data output (tab)."""
@@ -355,22 +353,91 @@ class LocusListData(BaseCase):
         val = self.assertDataTable(
             'maps:map.locuses', names=('pk', 'str', 'start'), order=2,
             data={'genelocus[]': [locus.pk]},
+            filters=()
         )
         vals = [unit['str'] for unit in val]
         self.assertEqual(vals, ['WA8', 'W1', 'W2', 'W3', 'W4', 'W5'])
 
 class MutationsData(BaseCase):
-    """
-    Test mutations output, should only show mutations with resistances.
+    """Test mutations output, should only show mutations with resistances."""
+    def test_all_output(self):
+        """Test mutation list"""
+        val = self.assertDataTable(
+            'maps:map.mutations', order=0,
+            names=('name', 'mode', 'gene_locus', 'nucleotide_position', 'strain_count'),
+            data={'mutation[]': 'Mutation_020'},
+            filters=()
+        )
+        vals = [unit['name'] for unit in val]
+        self.assertEqual([unit['name'] for unit in val],\
+            ['Mutation_020', 'Mutation_001', 'Mutation_002',
+             'Mutation_003', 'Mutation_004', 'Mutation_005'])
+        self.assertEqual([int(unit['strain_count']) for unit in val], [5, 10, 7, 3, 6, 11])
 
-     * Slice by source
-     * Slice by paper
-     * Slice by map country
-     * Slice by drug
-     * Slice by gene locus
-     * Slice by nucleotide position (range)
-    """
-    pass
+
+    def test_source_output(self):
+        """Test mutations sliced by source"""
+        sources = ImportSource.objects.filter(name__in=['Import Z', 'Import Y'])
+
+        val = self.assertDataTable(
+            'maps:map.mutations', order=0,
+            names=('name', 'mode', 'gene_locus', 'nucleotide_position', 'strain_count'),
+            data={'source[]': sources.values_list('pk', flat=True)},
+            filters=('source',)
+        )
+        self.assertEqual([unit['name'] for unit in val],\
+            ['Mutation_001', 'Mutation_002', 'Mutation_003', 'Mutation_004', 'Mutation_005'])
+        self.assertEqual([int(unit['strain_count']) for unit in val], [8, 4, 2, 5, 6])
+
+    def test_paper_output(self):
+        """Test mutations sliced by paper"""
+        val = self.assertDataTable(
+            'maps:map.mutations', order=0,
+            names=('name', 'mode', 'gene_locus', 'nucleotide_position', 'strain_count'),
+            data={'paper[]': 1},
+            filters=('paper',)
+        )
+        self.assertEqual([unit['name'] for unit in val],\
+            ['Mutation_001', 'Mutation_002', 'Mutation_003', 'Mutation_004', 'Mutation_005'])
+        self.assertEqual([int(unit['strain_count']) for unit in val], [5, 3, 1, 2, 7])
+
+    def test_map_output(self):
+        """Test mutations sliced by map"""
+        val = self.assertDataTable(
+            'maps:map.mutations', order=0,
+            names=('name', 'mode', 'gene_locus', 'nucleotide_position', 'strain_count'),
+            data={'map[]': ['DE', 'FR']},
+            filters=('map',)
+        )
+        self.assertEqual([unit['name'] for unit in val],\
+            ['Mutation_001', 'Mutation_002', 'Mutation_003', 'Mutation_005', 'Mutation_006'])
+        self.assertEqual([int(unit['strain_count']) for unit in val], [4, 2, 1, 5, 3])
+
+    def test_locus_output(self):
+        """Test mutations sliced by locus"""
+        loci = GeneLocus.objects.filter(gene_symbol__in=['W9', 'WA8', 'W4'])
+        val = self.assertDataTable(
+            'maps:map.mutations', order=0,
+            names=('name', 'mode', 'gene_locus', 'nucleotide_position', 'strain_count'),
+            data={'genelocus[]': loci.values_list('pk', flat=True)},
+            filters=('genelocus',)
+        )
+        self.assertEqual([unit['name'] for unit in val],\
+            ['Mutation_006', 'Mutation_007', 'Mutation_016', 'Mutation_017', 'Mutation_018'])
+        self.assertEqual([int(unit['strain_count']) for unit in val], [6, 6, 4, 5, 1])
+
+    def test_drug_output(self):
+        """Test mutations sliced by drug"""
+        val = self.assertDataTable(
+            'maps:map.mutations', order=0,
+            names=('name', 'mode', 'gene_locus', 'nucleotide_position', 'strain_count'),
+            data={'drug[]': ['WAVE', 'PIN', 'MEM']},
+            filters=('drug',)
+        )
+        self.assertEqual([unit['name'] for unit in val],\
+            ['Mutation_001', 'Mutation_002', 'Mutation_003', 'Mutation_004', 'Mutation_005'])
+        self.assertEqual([int(unit['strain_count']) for unit in val], [9, 7, 3, 6, 10])
+
 
 class MutationResistanceData(BaseCase):
     """
