@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2017 Maha Farhat
+# Copyright (C) 2017-2019 Maha Farhat
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as published by
@@ -17,6 +17,9 @@
 """
 Test for maps
 """
+
+import json
+from collections import Counter
 
 from django.test import TestCase
 from extratest.base import ExtraTestCase
@@ -85,8 +88,17 @@ class UtilsTest(TestCase):
         self.assertEqual(values[0], {'y': 20, 'x': 'b-berry', 'total': -1, 'col': 'b', 'value': 20})
 
 
+class BaseCase(ExtraTestCase):
+    """Basic functions for Json dats testing"""
+    fixtures = ['test-genetics', 'test-maps', 'test-strains']
 
-class SourcesData(TestCase):
+    def assertJson(self, *args, **kwargs): # pylint: disable=invalid-name
+        """
+        Process a GET request back into context data from the JsonResponse
+        """
+        return json.loads(self.assertGet(*args, **kwargs).content)
+
+class SourcesData(BaseCase):
     """
     Test sources data output.
 
@@ -97,13 +109,10 @@ class SourcesData(TestCase):
         """
         Test output contains sources and papers only.
         """
-        pass
+        val = self.assertJson('maps:map.sources')['values']
+        uni = Counter(["{kind}-{name}".format(**row) for row in val])
+        self.assertEqual(len(uni), len(val), f"Sources aren't unique: {uni}")
 
-    def test_bioproject_output(self):
-        """
-        Test listing BioProject sources
-        """
-        pass
 
 class PlacesData(TestCase):
     """

@@ -64,14 +64,14 @@ class Sources(JsonView, DataSlicerMixin):
     def get_sources(self):
         """Return a list of data sources"""
         if self.request.GET.get('fields', '') == 'bio':
-            for bioproject in BioProject.objects.filter(strains__isnull=False):
+            for bioproject in BioProject.objects.filter(strains__isnull=False).distinct():
                 yield dict(kind='bioproject', pk=bioproject.pk, name=bioproject.name,
                            count=bioproject.strains.count())
         else:
             for source in self.get_data():
                 yield dict(kind='source', pk=source.pk, name=source.name,
                            uploader=str(source.uploader), count=source.strainsource_set.count())
-            for paper in Paper.objects.filter(strains__isnull=False):
+            for paper in Paper.objects.filter(strains__isnull=False).distinct():
                 yield dict(kind='paper', pk=paper.pk, name=paper.name,
                            url=paper.url, count=paper.strains.count())
 
