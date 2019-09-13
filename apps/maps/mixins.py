@@ -115,14 +115,14 @@ class DataSlicerMixin(object):
 
     def get_filter_value(self, key, filtr):
         """Get the specific value, either a list or a single value"""
-        name = key.replace('[]', '')
-        value = self.request.GET.get(key, '')
-        if filtr.endswith('__in'):
-            value = self.request.GET.getlist(key, [])
-            c_method = f"filter_{name}"
-            if hasattr(self, c_method):
-                value = getattr(self, c_method)(value)
-        return Q(**{filtr: value})
+        value = self.request.GET.getlist(key, None)
+        if value is not None:
+            if callable(filtr):
+                filtr, value = filtr(value)
+            if not filtr.endswith('__in'):
+                value = value[0]
+            return Q(**{filtr: value})
+        return Q()
 
     def get_queryset(self, without=None):
         """Applies any filters from the request query to the given model"""

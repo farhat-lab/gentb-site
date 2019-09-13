@@ -34,7 +34,7 @@ from apps.mutations.models import (
 )
 
 from .mixins import JsonView, DataSlicerMixin, DataTableMixin
-from .utils import GraphData
+from .utils import GraphData, many_lookup
 from .models import Country, CountryHealth
 
 class MapPage(TemplateView):
@@ -83,16 +83,9 @@ class Places(JsonView, DataSlicerMixin):
         [
             ('source[]', 'importer__in'),
             ('paper[]', 'source_paper__in'),
-            ('drug[]', 'pk__in'),
+            ('drug[]', many_lookup(StrainResistance, 'drug__code', 'strain_id')),
         ]
     )
-
-    def filter_drug(self, values):
-        """Replace drug names with primary keys"""
-        if values:
-            return StrainResistance.objects.filter(drug__code__in=values)\
-                                           .values_list('strain_id', flat=True)
-        return []
 
     def get_context_data(self, **_):
         """Return a dictionary of template variables"""
