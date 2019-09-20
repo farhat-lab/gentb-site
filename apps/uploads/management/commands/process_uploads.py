@@ -19,10 +19,10 @@ class Command(BaseCommand):
         """Handle script call"""
         for cls in (DropboxUploadFile, ManualUploadFile):
             for d_file in cls.objects.filter(retrieval_start__isnull=True):
-                print " + Downloading: %s" % d_file.url
+                print(" + Downloading: %s" % d_file.url)
                 d_file.download_now()
                 if d_file.retrieval_error:
-                    print " ! Error downloading"
+                    print(" ! Error downloading")
         count = ResumableUploadFile.objects.filter(retrieval_start__isnull=True).update(
             retrieval_error='Retry resumable upload, can not happen in server.',
             retrieval_start=now(),
