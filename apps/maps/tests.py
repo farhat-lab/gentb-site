@@ -105,6 +105,13 @@ class BaseCase(ExtraTestCase):
             self.assertEqual(tuple(content['filters']), tuple(filters))
         return content.get(field)
 
+    def assertGraph(self, drugs, cols, rows): # pylint: disable=invalid-name
+        """Test graph data"""
+        for drug in drugs:
+            self.assertEqual(rows[drug['key']],
+                             [col['value'] for col in drug['values']])
+            self.assertEqual(set(cols), set([col['x'] for col in drug['values']]))
+
     def assertDataTable(self, url, names=('pk', 'str'), start=0, length=5, **kwargs): # pylint: disable=invalid-name
         """Test data table output"""
         data = kwargs.pop('data', {})
@@ -225,13 +232,6 @@ class PlacesData(BaseCase):
 
 class DrugListData(BaseCase):
     """Test drug data output."""
-    def assertGraph(self, drugs, cols, rows): # pylint: disable=invalid-name
-        """Test graph data"""
-        for drug in drugs:
-            self.assertEqual(rows[drug['key']],
-                             [col['value'] for col in drug['values']])
-            self.assertEqual(cols, [col['x'] for col in drug['values']])
-
     def test_everything(self):
         """Test unsliced drug output"""
         drugs = self.assertJson('maps:map.drugs', filters=())
@@ -440,13 +440,73 @@ class MutationsData(BaseCase):
 
 
 class MutationResistanceData(BaseCase):
-    """
-    Test mutation resistance data.
+    """Test mutation resistance data."""
+    def test_all_output(self):
+        """Test mutation list"""
+        mut = self.assertJson('maps:map.mutation', filters=('mutation',),\
+            data={'mutation[]': ['Mutation_020', 'Mutation_001', 'Mutation_002', 'Mutation_003']})
+        self.assertGraph(mut,
+            ['Mutation_001', 'Mutation_002', 'Mutation_003', 'Mutation_020'], {
+                'Sensitive': [1, 1, 1, 0],
+                'Other Drug Resistant': [0, 0, 0, 0],
+                'Multi Drug Resistant': [7, 6, 2, 2],
+                'Extensively Drug Resistant': [2, 1, 2, 0],
+            })
 
-     * Slice by source
-     * Slice by paper
-     * Slice by map country
-     * Slice by drug
-     * Slice by nucleotide position (range)
-    """
-    pass
+    def test_source_output(self):
+        """Test mutations sliced by source"""
+        sources = ImportSource.objects.filter(name__in=['Import Z', 'Import Y'])
+
+        mut = self.assertJson('maps:map.mutation', filters=('source', 'mutation'), data={
+            'source[]': sources.values_list('pk', flat=True),
+            'mutation[]': ['Mutation_020', 'Mutation_001', 'Mutation_002', 'Mutation_003'],
+        })
+        self.assertGraph(mut,
+            ['Mutation_001', 'Mutation_002', 'Mutation_003', 'Mutation_020'], {
+                'Sensitive': [1, 1, 1, 0],
+                'Other Drug Resistant': [0, 0, 0, 0],
+                'Multi Drug Resistant': [6, 4, 1, 1],
+                'Extensively Drug Resistant': [1, 2, 0, 0],
+            })
+
+    def test_paper_output(self):
+        """Test mutations sliced by paper"""
+        mut = self.assertJson('maps:map.mutation', filters=('paper', 'mutation'), data={
+            'paper[]': 1,
+            'mutation[]': ['Mutation_020', 'Mutation_001', 'Mutation_002', 'Mutation_003'],
+        })
+        self.assertGraph(mut,
+            ['Mutation_001', 'Mutation_002', 'Mutation_003', 'Mutation_020'], {
+                'Sensitive': [0, 0, 0, 0],
+                'Other Drug Resistant': [0, 0, 0, 0],
+                'Multi Drug Resistant': [3, 2, 1, 1],
+                'Extensively Drug Resistant': [2, 1, 2, 0],
+            })
+
+    def test_map_output(self):
+        """Test mutations sliced by map"""
+        mut = self.assertJson('maps:map.mutation', filters=('map', 'mutation'), data={
+            'map[]': ['DE', 'FR'],
+            'mutation[]': ['Mutation_001', 'Mutation_002', 'Mutation_003', 'Mutation_005'],
+        })
+        self.assertGraph(mut,
+            ['Mutation_001', 'Mutation_002', 'Mutation_003', 'Mutation_005'], {
+                'Sensitive': [0, 0, 0, 0],
+                'Other Drug Resistant': [0, 0, 0, 0],
+                'Multi Drug Resistant': [3, 2, 1, 4],
+                'Extensively Drug Resistant': [1, 1, 0, 0],
+            })
+
+    def test_drug_output(self):
+        """Test mutations sliced by drug"""
+        mut = self.assertJson('maps:map.mutation', filters=('drug', 'mutation'), data={
+            'drug[]': ['WAVE', 'PIN', 'MEM'],
+            'mutation[]': ['Mutation_001', 'Mutation_002', 'Mutation_003', 'Mutation_004'],
+        })
+        self.assertGraph(mut,
+            ['Mutation_001', 'Mutation_002', 'Mutation_003', 'Mutation_004'], {
+                'Sensitive': [1, 1, 1, 0],
+                'Other Drug Resistant': [0, 0, 0, 0],
+                'Multi Drug Resistant': [7, 6, 2, 3],
+                'Extensively Drug Resistant': [1, 1, 2, 0],
+            })
