@@ -339,7 +339,7 @@ class MutationView(JsonView, DataSlicerMixin):
     @property
     def categories(self):
         """Return the categories available depending on the GET mode"""
-        if 'drug' in self.request.GET:
+        if 'drug[]' in self.request.GET:
             return OrderedDict(RESISTANCE)
         return OrderedDict(RESISTANCE_GROUP)
 
@@ -349,7 +349,6 @@ class MutationView(JsonView, DataSlicerMixin):
         totals = self.get_data(without=self.values[0]).annotate(count=Count('pk'))
         totals = [(str(row[self.values[1]]).upper(), row['count']) for row in totals]
         # Apply mutation selection POST totals calculation
-        mutations = self.request.GET.getlist('mutation[]')
         _qs = self.get_data().filter(mutations__mutation__name__in=mutations).annotate(count=Count('pk'))
         return {
             'filters': self.applied_filters(),
