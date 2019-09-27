@@ -327,12 +327,12 @@ class MutationView(JsonView, DataSlicerMixin):
         'paper[]': 'source_paper__in',
         'map[]': 'country__iso2__in',
         'drug[]': many_lookup(StrainResistance, 'drug__code', 'strain_id'),
-        'mutation[]': 'mutations__mutation__name__in',
+        #'mutation[]': 'mutations__mutation__name__in',
     }
     @property
     def values(self):
         """Return drug or resistance values depending on the GET mode"""
-        if 'drug' in self.request.GET:
+        if 'drug[]' in self.request.GET:
             return ['mutations__mutation__name', 'drugs__resistance']
         return ['mutations__mutation__name', 'resistance_group']
 
@@ -347,8 +347,10 @@ class MutationView(JsonView, DataSlicerMixin):
         """Return a dictionary of template variables"""
         mutations = sorted(self.request.GET.getlist(self.required[0]))
         totals = self.get_data(without=self.values[0]).annotate(count=Count('pk'))
-        totals = [(row[self.values[1]].upper(), row['count']) for row in totals]
-        _qs = self.get_data().annotate(count=Count('pk'))
+        totals = [(str(row[self.values[1]]).upper(), row['count']) for row in totals]
+        # Apply mutation selection POST totals calculation
+        mutations = self.request.GET.getlist('mutation[]')
+        _qs = self.get_data().filter(mutations__mutation__name__in=mutations).annotate(count=Count('pk'))
         return {
             'filters': self.applied_filters(),
             'data': GraphData(_qs, self.values[0], 'count', self.values[-1], filter_label=self.filter_label)
