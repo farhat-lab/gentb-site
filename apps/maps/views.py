@@ -29,8 +29,8 @@ from django.utils.decorators import method_decorator
 from django.db.models import Count, Q
 
 from apps.mutations.models import (
-    ImportSource, StrainSource, Mutation, GeneLocus, Genome, StrainResistance,
-    Paper, BioProject, Lineage, RESISTANCE, RESISTANCE_GROUP,
+    ImportSource, StrainSource, StrainMutation, GeneLocus, Genome, StrainResistance,
+    Mutation, Paper, BioProject, Lineage, RESISTANCE, RESISTANCE_GROUP,
 )
 
 from .mixins import JsonView, DataSlicerMixin, DataTableMixin
@@ -318,23 +318,16 @@ class Mutations(DataTableMixin, ListView):
         self.request.GET = self.request.POST
         return self.get(request, *args, **kwargs)
 
+
 class MutationView(JsonView, DataSlicerMixin):
     """Provide a way to look at the resistance data via selected mutations"""
     model = StrainSource
-    required = ['mutation[]',]
+    required = ['mutation[]']
     filters = {
         'source[]': 'importer__in',
         'paper[]': 'source_paper__in',
         'map[]': 'country__iso2__in',
-        'drug[]': many_lookup(StrainResistance, 'drug__code', 'strain_id'),
-        'mutation[]': 'mutations__mutation__name__in',
     }
-    @property
-    def values(self):
-        """Return drug or resistance values depending on the GET mode"""
-        if 'drug[]' in self.request.GET:
-            return ['mutations__mutation__name', 'drugs__resistance']
-        return ['mutations__mutation__name', 'resistance_group']
 
     @property
     def categories(self):
@@ -345,20 +338,60 @@ class MutationView(JsonView, DataSlicerMixin):
 
     def get_context_data(self, **_):
         """Return a dictionary of template variables"""
+        categories = dict([(str(key).upper(), value) for key, value in self.categories.items() if key])
         mutations = sorted(self.request.GET.getlist(self.required[0]))
-        totals = self.get_data(without=self.values[0]).annotate(count=Count('pk'))
-        totals = [(str(row[self.values[1]]).upper(), row['count']) for row in totals]
-        _qs = self.get_data().annotate(count=Count('pk'))
+        strains = self.get_data()
+
+        (field, values) = many_lookup(StrainMutation, 'mutation__name', 'strain_id')(mutations)
+
+        if 'drug[]' in self.request.GET:
+            drugs = sorted(self.request.GET.getlist('drug[]'))
+            filters = self.applied_filters() + ['drug', 'mutation']
+            columns = ['drugs__resistance', 'drugs__drug__code', 'mutations__mutation__name']
+
+            totals = strains.values_list(*columns[:-1])\
+                            .annotate(count=Count(columns[0]))
+
+            counts = strains.filter(**{field: values})\
+                            .values_list(*columns)\
+                            .annotate(count=Count(columns[0]))
+
+            totals = [(str(row[0]).upper(), row[-1]) for row in totals]
+            if len(drugs) == 1:
+                counts = [{'name': row[-2], 'count': row[-1], 'cat': str(row[0]).upper()}
+                          for row in counts if row[-2] in mutations and row[1] == drugs[0]]
+            else:
+                # Multiple drugs get laid out
+                counts = [{'name': f'{row[-2]} ({row[1]})', 'count': row[-1], 'cat': str(row[0]).upper()}
+                          for row in counts if row[-2] in mutations and row[1] in drugs]
+                mutations = sorted(list(set([row['name'] for row in counts])))
+        else:
+            filters = self.applied_filters() + ['mutation']
+            columns = ['resistance_group', 'mutations__mutation__name']
+
+            totals = strains.values_list(*columns[:-1])\
+                            .annotate(count=Count(columns[0]))
+
+            counts = strains.filter(**{field: values})\
+                            .values_list(*columns)\
+                            .annotate(count=Count(columns[0]))
+
+            totals = [(str(row[0]).upper(), row[1]) for row in totals]
+            counts = [{'name': row[1], 'count': row[2], 'cat': str(row[0]).upper()}
+                      for row in counts if row[1] in mutations]
+
         return {
-            'filters': self.applied_filters(),
-            'data': GraphData(_qs, self.values[0], 'count', self.values[-1], filter_label=self.filter_label)
-                    .set_axis('z', self.categories, trim=True)
+            'filters': filters,
+            'data': GraphData(counts, 'name', 'count', 'cat', filter_label=self.filter_label)
+                    .set_axis('z', categories, trim=True)
                     .set_axis('x', mutations)
                     .set_axis('y', totals, trim=[None])
                     .to_graph()
             }
 
-    def filter_label(self, axis, label):
+    @staticmethod
+    def filter_label(axis, label):
+        """Make sure filter labels are upper case"""
         if axis == 'z':
             return label.upper()
         return label

@@ -241,7 +241,7 @@ class DrugListData(BaseCase):
                 'Unknown': [1, 0, 0, 0, 0, 0],
                 'Sensitive to Drug': [0, 6, 9, 9, 8, 7],
                 'Intermediate': [0, 0, 0, 0, 0, 0],
-                'Resistant to Drug': [0, 13, 10, 9, 10, 11],
+                'Resistant to Drug': [0, 13, 10, 9, 8, 11],
             })
 
     def test_source_output(self):
@@ -255,7 +255,7 @@ class DrugListData(BaseCase):
                 'Unknown': [1, 0, 0, 0, 0, 0],
                 'Sensitive to Drug': [0, 3, 4, 5, 2, 3],
                 'Intermediate': [0, 0, 0, 0, 0, 0],
-                'Resistant to Drug': [0, 3, 2, 1, 4, 3],
+                'Resistant to Drug': [0, 3, 2, 1, 3, 3],
             })
 
     def test_paper_output(self):
@@ -267,7 +267,7 @@ class DrugListData(BaseCase):
                 'Unknown': [1, 0, 0, 0, 0, 0],
                 'Sensitive to Drug': [0, 2, 4, 3, 5, 2],
                 'Intermediate': [0, 0, 0, 0, 0, 0],
-                'Resistant to Drug': [0, 7, 5, 6, 4, 7],
+                'Resistant to Drug': [0, 7, 5, 6, 3, 7],
             })
 
     def test_map_output(self):
@@ -500,12 +500,26 @@ class MutationResistanceData(BaseCase):
     def test_drug_output(self):
         """Test mutations sliced by drug"""
         mut = self.assertJson('maps:map.mutation', filters=('drug', 'mutation'), data={
-            'drug[]': ['WAVE', 'PIN', 'MEM'],
+            'drug[]': ['PIN'],
             'mutation[]': ['Mutation_001', 'Mutation_002', 'Mutation_003', 'Mutation_004'],
         })
         self.assertGraph(mut,
             ['Mutation_001', 'Mutation_002', 'Mutation_003', 'Mutation_004'], {
-                'Sensitive to Drug': [0, 0, 0, 0],
+                'Sensitive to Drug': [6, 3, 1, 2],
                 'Intermediate': [0, 0, 0, 0],
-                'Resistant to Drug': [0, 0, 0, 0],
+                'Resistant to Drug': [2, 3, 1, 3],
             })
+
+    def test_multi_drug_output(self):
+        """Test multiple drugs selected"""
+        mut = self.assertJson('maps:map.mutation', filters=('drug', 'mutation'), data={
+            'drug[]': ['PIN', 'WAVE'],
+            'mutation[]': ['Mutation_001', 'Mutation_002',],
+        })
+        self.assertGraph(mut,
+            ['Mutation_001 (PIN)', 'Mutation_001 (WAVE)', 'Mutation_002 (PIN)', 'Mutation_002 (WAVE)'], {
+                'Sensitive to Drug': [6, 3, 3, 4],
+                'Intermediate': [0, 0, 0, 0],
+                'Resistant to Drug': [2, 3, 6, 3],
+            })
+

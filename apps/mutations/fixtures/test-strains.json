@@ -18,7 +18,6 @@
   {"model": "mutations.strainresistance", "fields": {"strain": ["BOB1"], "drug": ["H2O"], "resistance": "r"}},
   {"model": "mutations.strainresistance", "fields": {"strain": ["BOB1"], "drug": ["MEM"], "resistance": "r"}},
   {"model": "mutations.strainresistance", "fields": {"strain": ["BOB1"], "drug": ["WAVE"], "resistance": "r"}},
-  {"model": "mutations.strainresistance", "fields": {"strain": ["BOB1"], "drug": ["PIN"], "resistance": "r"}},
   {"model": "mutations.strainresistance", "fields": {"strain": ["BOB1"], "drug": ["BUMP"], "resistance": "r"}},
 
   {"model": "mutations.strainsource", "fields": {"name": "BOB2", "date": "1978-02-01", "country": ["FR"], "city": null, "importer": ["Import Z"], "source_paper": 2, "bioproject": 14, "lineage": "b", "resistance_group": "MDR"}},
@@ -238,7 +237,6 @@
   {"model": "mutations.strainresistance", "fields": {"strain": ["BBB2"], "drug": ["H2O"], "resistance": "r"}},
   {"model": "mutations.strainresistance", "fields": {"strain": ["BBB2"], "drug": ["MEM"], "resistance": "r"}},
   {"model": "mutations.strainresistance", "fields": {"strain": ["BBB2"], "drug": ["WAVE"], "resistance": "r"}},
-  {"model": "mutations.strainresistance", "fields": {"strain": ["BBB2"], "drug": ["PIN"], "resistance": "r"}},
   {"model": "mutations.strainresistance", "fields": {"strain": ["BBB2"], "drug": ["BUMP"], "resistance": "r"}}
 
 ]
