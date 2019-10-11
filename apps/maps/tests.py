@@ -505,8 +505,7 @@ class MutationResistanceData(BaseCase):
         })
         self.assertGraph(mut,
             ['Mutation_001', 'Mutation_002', 'Mutation_003', 'Mutation_004'], {
-                'Sensitive': [1, 1, 1, 0],
-                'Other Drug Resistant': [0, 0, 0, 0],
-                'Multi Drug Resistant': [7, 6, 2, 3],
-                'Extensively Drug Resistant': [1, 1, 2, 0],
+                'Sensitive to Drug': [0, 0, 0, 0],
+                'Intermediate': [0, 0, 0, 0],
+                'Resistant to Drug': [0, 0, 0, 0],
             })

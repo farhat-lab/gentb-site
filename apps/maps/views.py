@@ -327,7 +327,7 @@ class MutationView(JsonView, DataSlicerMixin):
         'paper[]': 'source_paper__in',
         'map[]': 'country__iso2__in',
         'drug[]': many_lookup(StrainResistance, 'drug__code', 'strain_id'),
-        #'mutation[]': 'mutations__mutation__name__in',
+        'mutation[]': 'mutations__mutation__name__in',
     }
     @property
     def values(self):
@@ -348,8 +348,7 @@ class MutationView(JsonView, DataSlicerMixin):
         mutations = sorted(self.request.GET.getlist(self.required[0]))
         totals = self.get_data(without=self.values[0]).annotate(count=Count('pk'))
         totals = [(str(row[self.values[1]]).upper(), row['count']) for row in totals]
-        # Apply mutation selection POST totals calculation
-        _qs = self.get_data().filter(mutations__mutation__name__in=mutations).annotate(count=Count('pk'))
+        _qs = self.get_data().annotate(count=Count('pk'))
         return {
             'filters': self.applied_filters(),
             'data': GraphData(_qs, self.values[0], 'count', self.values[-1], filter_label=self.filter_label)
