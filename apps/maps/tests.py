@@ -454,14 +454,15 @@ class MutationResistanceData(BaseCase):
     """Test mutation resistance data."""
     def test_all_output(self):
         """Test mutation list"""
-        mut = self.assertJson('maps:map.mutation', filters=('mutation',),\
+        mutations = self.assertJson('maps:map.mutation', filters=('mutation',),\
             data={'mutation[]': ['Mutation_020', 'Mutation_001', 'Mutation_002', 'Mutation_003']})
-        self.assertGraph(mut,
+        self.assertGraphTotals(
+            mutations,
             ['Mutation_001', 'Mutation_002', 'Mutation_003', 'Mutation_020'], {
-                'Sensitive': [1, 1, 1, 0],
-                'Other Drug Resistant': [0, 0, 0, 0],
-                'Multi Drug Resistant': [7, 6, 2, 2],
-                'Extensively Drug Resistant': [2, 1, 2, 0],
+                'Sensitive': ([1, 1, 1, 0], [2, 2, 2, 2]),
+                'Other Drug Resistant': ([0, 0, 0, 0], [-1, -1, -1, -1]),
+                'Multi Drug Resistant': ([7, 6, 2, 2], [13, 13, 13, 13]),
+                'Extensively Drug Resistant': ([2, 1, 2, 0], [5, 5, 5, 5]),
             })
 
     def test_source_output(self):
