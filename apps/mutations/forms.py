@@ -109,7 +109,7 @@ class DataUploaderForm(Form):
         if not os.path.isdir(path):
             os.makedirs(path)
 
-        files = list(self.cleaned_data['vcf_files'].values()[0])
+        files = list(list(self.cleaned_data['vcf_files'].values())[0])
         for upload_file in files:
             upload_file.conclude_upload(path, user)
             ImportStrain.objects.create(import_source=source, upload_file=upload_file)
