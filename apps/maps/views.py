@@ -345,26 +345,35 @@ class MutationView(JsonView, DataSlicerMixin):
         (field, values) = many_lookup(StrainMutation, 'mutation__name', 'strain_id')(mutations)
 
         if 'drug[]' in self.request.GET:
-            drugs = sorted(self.request.GET.getlist('drug[]'))
             filters = self.applied_filters() + ['drug', 'mutation']
             columns = ['drugs__resistance', 'drugs__drug__code', 'mutations__mutation__name']
 
-            totals = strains.values_list(*columns[:-1])\
-                            .annotate(count=Count(columns[0]))
+            drugs = sorted(self.request.GET.getlist('drug[]'))
+            totals = []
+            counts = []
+            for drug in drugs:
+                qs_totals = strains.filter(drugs__drug__code=drug)\
+                                   .values_list(*columns[:-1])\
+                                   .annotate(count=Count(columns[0]))
 
-            counts = strains.filter(**{field: values})\
-                            .values_list(*columns)\
-                            .annotate(count=Count(columns[0]))
+                qs_counts = strains.filter(drugs__drug__code=drug, **{field: values})\
+                                   .values_list(*columns)\
+                                   .annotate(count=Count(columns[0]))
 
-            totals = [(str(row[0]).upper(), row[-1]) for row in totals]
-            if len(drugs) == 1:
-                counts = [{'name': row[-2], 'count': row[-1], 'cat': str(row[0]).upper()}
-                          for row in counts if row[-2] in mutations and row[1] == drugs[0]]
-            else:
-                # Multiple drugs get laid out
-                counts = [{'name': f'{row[-2]} ({row[1]})', 'count': row[-1], 'cat': str(row[0]).upper()}
-                          for row in counts if row[-2] in mutations and row[1] in drugs]
-                mutations = sorted(list(set([row['name'] for row in counts])))
+                totals += [(str(row[0]).upper(), row[-1]) for row in qs_totals]
+                # Multiple drugs get laid out (this is currently broken because
+                # totals contains two of each category and so can't total up this
+                # extra dimention correctly (fix in GraphData later)
+                f_name = "{2} ({1})" if len(drugs) > 1 else "{2}"
+                print(f"TOTALS for drug: {drug} is {totals}")
+
+                counts += [{
+                    'name': f_name.format(*row),
+                    'count': row[-1],
+                    'cat': str(row[0]).upper()
+                } for row in qs_counts if row[-2] in mutations and row[1] == drug]
+
+            mutations = sorted(list(set([row['name'] for row in counts])))
         else:
             filters = self.applied_filters() + ['mutation']
             columns = ['resistance_group', 'mutations__mutation__name']
@@ -376,6 +385,7 @@ class MutationView(JsonView, DataSlicerMixin):
                             .values_list(*columns)\
                             .annotate(count=Count(columns[0]))
 
+            #orig = totals
             totals = [(str(row[0]).upper(), row[1]) for row in totals]
             counts = [{'name': row[1], 'count': row[2], 'cat': str(row[0]).upper()}
                       for row in counts if row[1] in mutations]
@@ -384,7 +394,7 @@ class MutationView(JsonView, DataSlicerMixin):
             'filters': filters,
             'data': GraphData(counts, 'name', 'count', 'cat', filter_label=self.filter_label)
                     .set_axis('z', categories, trim=True)
-                    .set_axis('x', mutations)
+                    .set_axis('x', mutations, trim=False)
                     .set_axis('y', totals, trim=[None])
                     .to_graph()
             }

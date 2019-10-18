@@ -108,20 +108,22 @@ class BaseCase(ExtraTestCase):
     def assertGraph(self, got_rows, cols, rows): # pylint: disable=invalid-name
         """Test graph data"""
         for x, got_row in enumerate(got_rows):
-            with self.subTest(row=x):
+            with self.subTest(row=x, key=got_row['key']):
                 self.assertEqual(set(cols), set([col['x'] for col in got_row['values']]))
+                by_col = dict([(row['col'], row) for row in got_row['values']])
                 self.assertEqual(rows[got_row['key']],
-                                 [col['value'] for col in got_row['values']])
+                                 [by_col[col]['value'] for col in cols])
 
     def assertGraphTotals(self, got_rows, cols, rows): # pylint: disable=invalid-name
         """Test graph data with totals"""
         for x, got_row in enumerate(got_rows):
-            with self.subTest(row=x):
+            with self.subTest(row=x, key=got_row['key']):
                 self.assertEqual(set(cols), set([col['x'] for col in got_row['values']]))
+                by_col = dict([(row['col'], row) for row in got_row['values']])
                 self.assertEqual(rows[got_row['key']][0],
-                                 [col['value'] for col in got_row['values']])
+                                 [by_col[col]['value'] for col in cols])
                 self.assertEqual(rows[got_row['key']][1],
-                                 [col['total'] for col in got_row['values']])
+                                 [by_col[col]['total'] for col in cols])
 
     def assertDataTable(self, url, names=('pk', 'str'), start=0, length=5, **kwargs): # pylint: disable=invalid-name
         """Test data table output"""
@@ -459,10 +461,12 @@ class MutationResistanceData(BaseCase):
         self.assertGraphTotals(
             mutations,
             ['Mutation_001', 'Mutation_002', 'Mutation_003', 'Mutation_020'], {
-                'Sensitive': ([1, 1, 1, 0], [2, 2, 2, 2]),
+                # KeyName:  (Numerators, Denominators),
+                # CONFIRMED DATA
+                'Sensitive': ([1, 0, 1, 1], [2, 2, 2, 2]),
                 'Other Drug Resistant': ([0, 0, 0, 0], [-1, -1, -1, -1]),
                 'Multi Drug Resistant': ([7, 6, 2, 2], [13, 13, 13, 13]),
-                'Extensively Drug Resistant': ([2, 1, 2, 0], [5, 5, 5, 5]),
+                'Extensively Drug Resistant': ([2, 1, 0, 2], [5, 5, 5, 5]),
             })
 
     def test_source_output(self):
@@ -476,11 +480,11 @@ class MutationResistanceData(BaseCase):
         self.assertGraphTotals(
             mutations,
             ['Mutation_001', 'Mutation_002', 'Mutation_003', 'Mutation_020'], {
-                # KeyName:  (Numerators, Denominators),
-                'Sensitive': ([1, 1, 1, 0], [2, 2, 2, 2]),
+                # CONFIRMED DATA
+                'Sensitive': ([1, 0, 1, 1], [2, 2, 2, 2]),
                 'Other Drug Resistant': ([0, 0, 0, 0], [-1, -1, -1, -1]),
                 'Multi Drug Resistant': ([6, 4, 1, 1], [10, 10, 10, 10]),
-                'Extensively Drug Resistant': ([1, 2, 0, 0], [2, 2, 2, 2]),
+                'Extensively Drug Resistant': ([1, 0, 0, 2], [2, 2, 2, 2]),
             })
 
     def test_paper_output(self):
@@ -492,10 +496,11 @@ class MutationResistanceData(BaseCase):
         self.assertGraphTotals(
             mutations,
             ['Mutation_001', 'Mutation_002', 'Mutation_003', 'Mutation_020'], {
+                # CONFIRMED DATA
                 'Sensitive': ([0, 0, 0, 0], [-1, -1, -1, -1]),
                 'Other Drug Resistant': ([0, 0, 0, 0], [-1, -1, -1, -1]),
                 'Multi Drug Resistant': ([3, 2, 1, 1], [5, 5, 5, 5]),
-                'Extensively Drug Resistant': ([2, 1, 2, 0], [5, 5, 5, 5]),
+                'Extensively Drug Resistant': ([2, 1, 0, 2], [5, 5, 5, 5]),
             })
 
     def test_map_output(self):
@@ -507,10 +512,11 @@ class MutationResistanceData(BaseCase):
         self.assertGraphTotals(
             mutations,
             ['Mutation_001', 'Mutation_002', 'Mutation_003', 'Mutation_005'], {
+                # CONFIRMED DATA
                 'Sensitive': ([0, 0, 0, 0], [1, 1, 1, 1]),
                 'Other Drug Resistant': ([0, 0, 0, 0], [-1, -1, -1, -1]),
                 'Multi Drug Resistant': ([3, 2, 1, 4], [7, 7, 7, 7]),
-                'Extensively Drug Resistant': ([1, 1, 0, 0], [1, 1, 1, 1]),
+                'Extensively Drug Resistant': ([1, 0, 0, 1], [1, 1, 1, 1]),
             })
 
     def test_drug_output(self):
@@ -522,9 +528,12 @@ class MutationResistanceData(BaseCase):
         self.assertGraphTotals(
             mutations,
             ['Mutation_001', 'Mutation_002', 'Mutation_003', 'Mutation_004'], {
-                'Sensitive to Drug': ([6, 3, 1, 2], [7, 7, 7, 7]),
+                # CONFIRMED DATA
+                # s: BOB2,BOB6,BOB9,BAB2,BAB3,BAB4,BAB7,BAB8
+                'Sensitive to Drug': ([6, 3, 1, 2], [8, 8, 8, 8]),
                 'Intermediate': ([0, 0, 0, 0], [-1, -1, -1, -1]),
-                'Resistant to Drug': ([2, 3, 1, 3], [11, 11, 11, 11]),
+                # r: BOB3,BOB4,BOB5,BOB8,BAB1,BAB5,BAB6,BBB1
+                'Resistant to Drug': ([2, 3, 1, 3], [8, 8, 8, 8]),
             })
 
     def test_multi_drug_output(self):
@@ -533,10 +542,15 @@ class MutationResistanceData(BaseCase):
             'drug[]': ['PIN', 'WAVE'],
             'mutation[]': ['Mutation_001', 'Mutation_002',],
         })
+        print(mutations)
         self.assertGraphTotals(
             mutations,
             ['Mutation_001 (PIN)', 'Mutation_001 (WAVE)', 'Mutation_002 (PIN)', 'Mutation_002 (WAVE)'], {
-                'Sensitive to Drug': ([6, 3, 3, 4], [7, 7, 7, 7]),
+                # PIN/r: BOB3,BOB4,BOB5,BOB8,BAB1,BAB5,BAB6,BBB1
+                # WAVE/r: BOB1,BOB2,BOB6,BOB8,BAB2,BAB3,BAB4,BAB5,BAB8,BBB1,BBB2
+                'Sensitive to Drug': ([6, 3, 3, 4], [8, 7, 8, 7]),
                 'Intermediate': ([0, 0, 0, 0], [-1, -1, -1, -1]),
-                'Resistant to Drug': ([2, 3, 6, 3], [11, 11, 11, 11]),
+                # PIN/s: BOB2,BOB6,BOB9,BAB2,BAB3,BAB4,BAB7,BAB8
+                # WAVE/s: BOB3,BOB4,BOB5,BOB9,BAB1,BAB6,BAB7
+                'Resistant to Drug': ([2, 6, 3, 3], [8, 11, 8, 11]),
             })
