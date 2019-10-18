@@ -114,7 +114,7 @@ class ManualUploadView(View):
 
         if '://' in url:
             try:
-                if not self.request.user.is_authenticated():
+                if not self.request.user.is_authenticated:
                     raise PermissionDenied("Not logged in")
                 return JsonResponse({
                   'files': list(self.get_files(*url.split('://', 1))),
