@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """Process all available"""
 
 import os
@@ -7,7 +7,7 @@ import fnmatch
 import atexit
 
 from datetime import datetime
-from subprocess import Popen
+from subprocess import Popen, PIPE
 
 DIR = os.path.abspath(os.path.dirname(__file__))
 ANNO = os.path.join(DIR, 'flatAnnotatorVAR_2.0.pl')
@@ -16,21 +16,34 @@ FASTA = os.path.join(DATA, 'h37rv.fasta')
 CODING = os.path.join(DATA, 'h37rv_genome_summary.txt')
 NONCODING = os.path.join(DATA, 'h37rv_noncoding_summary.txt')
 
-def module(*_):
-    """This is a cover for the module below"""
-    raise IOError("Failed to load lmod's python environment file.")
+# Taken over responsibility from `env_modules_python.py` because this is python3
+MODULES = os.environ.get('MODULESHOME')
+if 'MODULEPATH' not in os.environ:
+    # Inject variable at a known good state, god this is terrible.
+    os.environ['MODULEPATH'] = "/n/app/lmod/lmod/modulefiles/Linux:/n/app/lmod/lmod/modulefiles/Core"
+
+def module(command, *arguments):
+    if not MODULES or not 'MODULEPATH' in os.environ:
+        raise IOError("Failed to submit jobs: $MODULESHOME or $MODULEPATH not set.")
+    prog = os.path.join(MODULES, "libexec", "lmod")
+    run = Popen([prog, "python", command] + list(arguments), stdout=PIPE, stderr=PIPE)
+    stdout, stderr = run.communicate()
+    if b'error' in stderr:
+        sys.stderr.write(stderr.decode('utf8'))
+        sys.exit(2)
+    if command == 'load':
+        exec(stdout)
+    else:
+        sys.stderr.write(stderr.decode('utf8'))
+        sys.stderr.write(stdout.decode('utf8'))
+        sys.exit(2)
 
 def prepare_lmod():
     """Is there's an lmod, set it up"""
-    if 'MODULESHOME' in os.environ:
-        for ifile in ('python.py', 'env_modules_python.py'):
-            ifile = os.path.join(os.environ['MODULESHOME'], 'init', ifile)
-            if os.path.isfile(ifile):
-                with open(ifile, 'r') as fhl:
-                    exec(fhl.read()) # pylint: disable=exec-used
-                break
-        module('load', 'gcc')
-        module('load', 'perl')
+    #module('spider', 'perl')
+    #module('load', 'gcc')
+    #module('load', 'perl/5.30.0')
+    pass
 
 def lock_dir(path):
     """Prevent this command from running more than once"""
