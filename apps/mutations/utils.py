@@ -219,6 +219,9 @@ def unpack_mutation_format(name):
             index = int(index)
         except:
             raise ValueError("Optional sort index should be a number.")
+    if index is None:
+        index = 0
+
     snp = match_snp_name(name)
     orig = snp.get('gene', None)
     if orig is None:
