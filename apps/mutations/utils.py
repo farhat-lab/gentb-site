@@ -24,12 +24,12 @@ import csv
 import json
 import sys
 
+from functools import reduce
 from collections import defaultdict, OrderedDict
 from operator import or_
 from datetime import date
 
 from django.db.models import Q
-
 
 MONTHS = ['', 'jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec']
 DATE_FORMATS = [
