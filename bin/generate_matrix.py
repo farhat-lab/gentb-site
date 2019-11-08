@@ -54,8 +54,9 @@ def generate_matrix(variants, filename):
                 if re.search(r"'$", parts[5]): #for oxyR'
                     parts[5] = parts[5][0:(len(parts[5])-1)] + "."
                 pattern = parts[4] + "_" + parts[5]
-                pattern = r"\s?([\w\.]+%s[\w\.]*)\s?" % pattern
-                ita = tuple(re.finditer(pattern, ",".join(variants), re.IGNORECASE))
+                pattern = r"\s?([\w\.]+%s[\w\.]*)\s?" % pattern.replace('*', r'\*')
+                #print(pattern)
+                ita = tuple(re.finditer(pattern, ",".join(variants))) #, re.IGNORECASE))
                 if len(ita) > 1:
                     out[ita[0].group()] = "1"
                     #plan to add more matching to the right mutation here in a future version
@@ -68,8 +69,8 @@ def generate_matrix(variants, filename):
             elif parts[1] in ['CF']:
                 #coding frameshifts pool all that occur at the same nucleotide start
                 pattern = parts[1] + '_' + parts[2] + r'_[^\s\,]+_' + parts[5]
-                pattern = r"\s?([\w\.]+%s[\w\.]*)\s?" % pattern
-                itb = tuple(re.finditer(pattern, ",".join(variants), re.IGNORECASE))
+                pattern = r"\s?([\w\.]+%s[\w\.]*)\s?" % pattern.replace('*', r'\*')
+                itb = tuple(re.finditer(pattern, ",".join(variants))) #, re.IGNORECASE))
                 if len(itb) > 1:
                     out[itb[0].group()] = "1"
                     #plan to add more matching to the right mutation here in a future version
@@ -91,8 +92,8 @@ def generate_matrix(variants, filename):
 
                 #sys.stderr.write(str(pattern))
                 #sys.stderr.write("\n")
-                pattern = r"\s?([\w\.]+%s[\w\.]*)\s?" % pattern
-                itc = tuple(re.finditer(pattern, ",".join(variants), re.IGNORECASE))
+                pattern = r"\s?([\w\.]+%s[\w\.]*)\s?" % pattern.replace('*', r'\*')
+                itc = tuple(re.finditer(pattern, ",".join(variants))) #, re.IGNORECASE))
                 if len(itc) > 1:
                     out[itc[0].group()] = "1"
                     #plan to add more matching to the right mutation here in a future version

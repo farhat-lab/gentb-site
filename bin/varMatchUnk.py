@@ -480,12 +480,14 @@ for d in drs:
         # sys.stderr.write(i+'\t')
         pattern = i
         pattern = r"\s?([\w_\.]+%s[\w_\.]*)\s?" % pattern
-        m = tuple(re.finditer(pattern, ",".join(all), re.IGNORECASE))
-        if len(m) >= 1:
-            for j in range(0, len(m)):
-                var = m[j].group()
-                #sys.stderr.write("found "+str(var)+"\t")
+        muts = tuple(re.finditer(pattern, ",".join(all))) #, re.IGNORECASE)) #respect lowercase
+        if len(muts) >= 1:
+            #sys.stderr.write("with pattern "+i+" found "+str(len(muts))+" variant(s) for drug "+d+"\n")
+            for j in range(0, len(muts)):
+                var = muts[j].group()
+                #sys.stderr.write(str(var)+"\n")
                 type_change_info = var.split("_")
+                sys.stderr.write("variant is "+type_change_info[0]+"\n")
                 if type_change_info[1] != "CS":
                     if type_change_info[0] == "SNP" and type_change_info[1] in [
                         "CN",
