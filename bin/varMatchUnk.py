@@ -21,6 +21,10 @@ parser.add_argument(
     "json_file",
     help="file that contains R prediction and list of important and other mutations",
 )
+parser.add_argument(
+    "-o", default=None,
+    help="Output filename for the new json (overwrites if not specified)",
+)
 
 args = parser.parse_args()
 name = args.var_file
@@ -277,26 +281,26 @@ for d in drs:
                     else:
                         gene_name = "promoter-" + gene_name
                     type_change, codon_position = (
-                       	codonAA[0] + codonAA[len(codonAA) - 1],
+                               codonAA[0] + codonAA[len(codonAA) - 1],
                         codonAA[1 : len(codonAA) - 1],
                     )
                 elif type_change_info[1] == "N":
                     gene_name, codonAA = type_change_info[4], type_change_info[3]
                     type_change, codon_position = (
-                       	codonAA[0] + codonAA[len(codonAA) - 1],
+                               codonAA[0] + codonAA[len(codonAA) - 1],
                         codonAA[1 : len(codonAA) - 1],
                     )
                 elif type_change_info[1] == "I":
                     gene_name = (
-                       	"inter-" + type_change_info[5] + "-" + type_change_info[6]
+                               "inter-" + type_change_info[5] + "-" + type_change_info[6]
                     )
                     codonAA = type_change_info[3]
                     type_change, codon_position = (
-                       	codonAA[0] + codonAA[len(codonAA) - 1],
+                               codonAA[0] + codonAA[len(codonAA) - 1],
                         codonAA[1 : len(codonAA) - 1],
                     )
                     if type_change_info[5] == "gyrB":
-                       	gene_name = "promoter-gyrB-gyrA"
+                               gene_name = "promoter-gyrB-gyrA"
             elif type_change_info[0] in ["INS", "DEL"] and type_change_info[1] == "CF":
                 gene_name, codon_position = type_change_info[5], type_change_info[4]
                 codonAA = type_change_info[3]
@@ -305,7 +309,7 @@ for d in drs:
                     indel_seq = m.group()
                 type_change = (
                     codonAA[0] + type_change_info[1][1] + indel_seq.replace("\n", "")
-               	)  # e.g dFG or iFGA
+                       )  # e.g dFG or iFGA
             elif type_change_info[0] in ["INS", "DEL"] and type_change_info[1] in [
                 "CD",
                 "CI",
@@ -319,7 +323,7 @@ for d in drs:
                     codonAA[0] + type_change_info[1][1] + indel_seq.replace("\n", "")
                 )  # e.g dIG or iDGA
             elif type_change_info[0] in [
-               	"INS",
+                       "INS",
                 "DEL",
             ]:  # must be indel in promoter or intergenic region
                 if type_change_info[1] == "P":
@@ -334,13 +338,13 @@ for d in drs:
                     )
                     codonAA = type_change_info[3]
                     type_change, codon_position = (
-                       	codonAA[0] + codonAA[len(codonAA) - 1],
-                       	codonAA[1 : len(codonAA) - 1],
+                               codonAA[0] + codonAA[len(codonAA) - 1],
+                               codonAA[1 : len(codonAA) - 1],
                     )
                     if type_change_info[5] == "gyrB":
                         gene_name = "promoter-gyrB-gyrA"
             elif type_change_info[0] in ["INS", "DEL"] and type_change_info[1] == "CF":
-               	gene_name, codon_position = type_change_info[5], type_change_info[4]
+                       gene_name, codon_position = type_change_info[5], type_change_info[4]
                 codonAA = type_change_info[3]
                 m = re.search(r"[ACGT]+", codonAA)
                 if m:
@@ -352,7 +356,7 @@ for d in drs:
                 "CD",
                 "CI",
             ]:
-              	gene_name, codon_position = type_change_info[5], type_change_info[4]
+                      gene_name, codon_position = type_change_info[5], type_change_info[4]
                 codonAA = type_change_info[3]
                 m = re.search(r"[ACGT]+", codonAA)
                 if m:
@@ -378,7 +382,7 @@ for d in drs:
                     m = re.search(r"(\d+)([ACGT]+)", codonAA)
                     if m:
                         codon_position = m.group(1)
-                       	indel_seq = m.group(2)
+                               indel_seq = m.group(2)
                     type_change = codonAA[0] + indel_seq.replace("\n", "")
             test = Variant(gene_name, codon_position, type_change)
             oth_variants_identified.append(test)
@@ -590,7 +594,7 @@ else:
         results1[i] = []
         results1[i] = ["Null"] * len(drs)
         j = -1
-	# sys.stderr.write(d+' out\n')
+        # sys.stderr.write(d+' out\n')
         for d in range(0, len(drs)):
             j = j + 1
             if v1[d] > i:
@@ -605,7 +609,7 @@ else:
         results2[i] = []
         results2[i] = ["Null"] * len(drs)
         j = -1
-	# sys.stderr.write(d+' out\n')
+        # sys.stderr.write(d+' out\n')
         for d in range(0, len(drs)):
             j = j + 1
             if v2[d] > i:
@@ -622,15 +626,16 @@ for i in range(0, 5):
             else:
                     other.items()[0][1][i][j] = None
 
-def append_results(filename, *results):
+def append_results(in_name, out_name, *results):
     """Write the resulting structures to the output filename"""
-    with open(filename, "r") as infile:
+    with open(in_name, "r") as infile:
         structure = json.loads(infile.read())
         structure.pop()
         structure.extend(results)
 
-    with open(filename, "w") as outfile:
+    with open((out_name or in_name), "w") as outfile:
         outfile.write(json.dumps(structure, indent=2))
 
 
-append_results(args.json_file, other, results1, results2)
+if __name__ == '__main__':
+    append_results(args.json_file, args.json_file, other, results1, results2)
