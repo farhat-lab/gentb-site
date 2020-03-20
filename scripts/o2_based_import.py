@@ -99,7 +99,7 @@ class Command(object):
             else:
                 sys.stderr.write(f" ! Data Pair: {json_file} (NO VAR! Ignored)\n")
 
-    def annotate_vcf(self, var_fhl, vcf_file):
+    def annotate_vcf(self, var_fhl, vcf_path):
         """
         Call the flat annotator and block until we're finished.
         """
@@ -109,7 +109,7 @@ class Command(object):
                 '/www/gentb.hms.harvard.edu/data/media/pipeline/files/h37rv.fasta',
                 '/www/gentb.hms.harvard.edu/data/media/pipeline/files/h37rv_genome_summary.txt',
                 '/www/gentb.hms.harvard.edu/data/media/pipeline/files/h37rv_noncoding_summary.txt',
-                vcf_file, '10', '0.4', 'PASS', 'AMB',
+                vcf_path, '10', '0.4', 'PASS', 'AMB',
             ],
             shell=False, # Never have shell=True
             stdout=PIPE,
