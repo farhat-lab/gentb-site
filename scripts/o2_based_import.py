@@ -65,6 +65,14 @@ class Command(object):
         else:
             sys.stderr.write(f"\n == Updating existing importer: {self.args.name} ==\n\n")
 
+    def move_json(self, json_path, reason='unknown', act='reject'):
+        """Reject this json, move it so it's out of the way"""
+        path = os.path.join(self.args.json, f'.{act}.{reason}')
+        if not os.path.isdir(path):
+            os.makedirs(path)
+        new_name = os.path.join(path, os.path.basename(json_path))
+        os.rename(json_path, new_name)
+
     def add_arguments(self, pars):
         """Add extra command arguments"""
         pars.add_argument("-n", "--name", type=str, required=True,\
@@ -82,22 +90,31 @@ class Command(object):
         for json_file in os.listdir(self.args.json):
             if not json_file.endswith('.json'):
                 continue
+            name = json_file.rsplit('.', 1)[0]
+            var_path = os.path.join(self.args.var, name + '.var')
 
-            var_file = json_file.rsplit('.', 1)[0] + '.var'
-            var_path = os.path.join(self.args.var, var_file)
-            vcf_file = json_file.rsplit('.', 1)[0] + '.vcf'
-            vcf_path = os.path.join(self.args.vcf, vcf_file)
-            json_path = os.path.join(self.args.json, json_file)
-            if not os.path.isfile(var_path) and os.path.isfile(vcf_path):
-                sys.stderr.write(f" + Generating var {vcf_file} > {var_file}\n")
-                with open(var_path, 'wb') as fhl:
-                    self.annotate_vcf(fhl, vcf_path)
-
-            if os.path.isfile(var_path):
-                sys.stderr.write(f" > Data Pair: {json_file} {var_file}\n")
-                self.import_json(json_path, var_path)
+            if 'ID' in self.args.vcf:
+                vcf_path = self.args.vcf.replace('ID', name)
             else:
-                sys.stderr.write(f" ! Data Pair: {json_file} (NO VAR! Ignored)\n")
+                vcf_path = os.path.join(self.args.vcf, name + '.vcf')
+
+            json_path = os.path.join(self.args.json, json_file)
+
+            if os.path.isfile(var_path) or os.path.isfile(vcf_path):
+                sys.stderr.write(f" > Importing {name}\n")
+
+                with open(json_path, 'r') as fhl:
+                    json_data = json.loads(fhl.read())
+
+                try:
+                    self.import_vcf(json_data, var_path, vcf_path)
+                    self.move_json(json_path, 'done', 'ok')
+                except DataError as err:
+                    self.move_json(json_path, 'bad-data')
+                except Country.DoesNotExist as err:
+                    self.move_json(json_path, 'bad-country')
+            else:
+                self.move_json(json_path, 'no-vcf-or-var')
 
     def annotate_vcf(self, var_fhl, vcf_path):
         """
@@ -123,25 +140,8 @@ class Command(object):
         else:
             var_fhl.write(stdout)
 
-    def import_json(self, json_path, var_file):
-        """
-        Import json and vcf file together.
-        """
-        with open(json_path, 'r') as fhl:
-            json_data = json.loads(fhl.read())
-
-        #vcf = VCFReader(filename=vcf_file.fullpath)
-        var = CsvLookup(filename=var_file, key='varname')
-        try:
-            self.import_vcf(json_data, var)
-        except DataError as err:
-            sys.stderr.write(f"Error: {err}\n")
-        except Country.DoesNotExist as err:
-            sys.stderr.write(f"COUNTRY_ERROR: {err}\n")
-        return True
-
     @transaction.atomic
-    def import_vcf(self, metadata, var):
+    def import_vcf(self, metadata, var_path, vcf_path):
         """Import the VCF file and list of mutations into database"""
         loc = metadata.get('location', {})
         con = loc.get('country', None)
@@ -189,11 +189,8 @@ class Command(object):
             name, other_name = other_name, None
         datum['old_id'] = other_name
 
-        if 'lineage' in metadata:
-            datum['lineage'] = Lineage.objects.get_or_create(
-                name=metadata['lineage'],
-                slug=metadata['lineage'],
-            )[0]
+        if 'lineage' in metadata and metadata['lineage']:
+            datum['lineage'] = self.get_lineage(metadata['lineage'])
 
         study = None
         meta_study = metadata.get('study', {})
@@ -211,6 +208,12 @@ class Command(object):
         if 'project_id' in metadata:
             datum['bioproject'] = BioProject.objects.get_or_create(
                 name=metadata['project_id'])[0]
+
+        if not os.path.isfile(var_path) and os.path.isfile(vcf_path):
+            sys.stderr.write(f" + Generating var {vcf_path} > {var_path}\n")
+            with open(var_path, 'wb') as fhl:
+                self.annotate_vcf(fhl, vcf_path)
+        var = CsvLookup(filename=var_path, key='varname')
 
         strain, _ = StrainSource.objects.update_or_create(name=name, defaults=datum)
 
@@ -245,13 +248,19 @@ class Command(object):
                 sys.stderr.write("Mutation name is too large, can not add to database.\n")
                 continue
 
-            locus = GeneLocus.objects.for_mutation_name(mutation)
+            try:
+                locus = GeneLocus.objects.for_mutation_name(mutation)
+            except ValueError:
+                continue # flatannotator outputs some whacky snp naes sometimes, ignore them.
             if locus is None:
                 sys.stderr.write("Failed to unpack {varname}\n".format(**snp))
                 continue
 
             # Correct any issues with the mutation name
-            mutation = unpack_mutation_format(mutation)[2]
+            try:
+                mutation = unpack_mutation_format(mutation)[2]
+            except ValueError:
+                continue
 
             try:
                 (mutation, _) = locus.mutations.get_or_create(name=mutation, defaults=dict(
@@ -274,6 +283,18 @@ class Command(object):
             except (ValueError, IndexError, KeyError) as err:
                 sys.stderr.write("Failed to add mutation: {} ({}) {}\n".format(mutation, err, snp))
                 continue
+
+    def get_lineage(self, name):
+        parent = None
+        if '.' in name:
+            parent = self.get_lineage(name.rsplit('.', 1)[0])
+        lineage, created = Lineage.objects.get_or_create(
+            slug=name,
+            defaults={'name': name, 'parent': parent})
+        if not created and lineage.parent is None and parent is not None:
+            lineage.parent = parent
+            lineage.save()
+        return lineage
 
 def to_num(num):
     """Force a value to be a number"""
