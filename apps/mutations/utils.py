@@ -401,12 +401,15 @@ def tr(data, **kw): # pylint: disable=invalid-name
 
 def long_match(MAP, d, value, model=None, default='NOP', *cols, **filt):
     """Match in a model with case-insensitive multi-column matching."""
+    queryset = filt.pop('queryset', None)
+    if queryset is None and model is not None:
+        queryset = model.objects
     match = filt.pop('_match', 'iexact')
     value = MAP.get(value, value)
-    if value not in d and model and cols:
+    if value not in d and queryset is not None and cols:
         query = reduce(or_, [Q(**{'{}__{}'.format(col, match): value}) for col in cols])
         try:
-            d[value] = model.objects.filter(**filt).get(query)
+            d[value] = queryset.filter(**filt).get(query)
         except model.DoesNotExist:
             if default != 'NOP':
                 return default
