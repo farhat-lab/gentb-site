@@ -410,7 +410,7 @@ def long_match(MAP, d, value, model=None, default='NOP', *cols, **filt):
         query = reduce(or_, [Q(**{'{}__{}'.format(col, match): value}) for col in cols])
         try:
             d[value] = queryset.filter(**filt).get(query)
-        except model.DoesNotExist:
+        except queryset.model.DoesNotExist:
             if default != 'NOP':
                 return default
             raise
