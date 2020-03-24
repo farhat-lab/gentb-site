@@ -2,15 +2,15 @@
 Load the country and city data
 """
 
-import requests
 import sys
 import os
 
 from zipfile import ZipFile
-from StringIO import StringIO
+
+import requests
+
 from django.conf import settings
 from django.utils import six
-
 from django.core.management.base import BaseCommand, CommandError
 from django.contrib.gis.utils import LayerMapping
 
@@ -19,8 +19,8 @@ from apps.mutations.utils import StatusBar
 
 class FilteredMapping(LayerMapping):
     def feature_kwargs(self, feat):
-	def filter_value(value):
-	    return None if value in (-99, -99.0, '-99') else value
+        def filter_value(value):
+            return None if value in (-99, -99.0, '-99') else value
 
         def get_first_value(*keys, **kw):
             for key in keys:
@@ -30,19 +30,19 @@ class FilteredMapping(LayerMapping):
             if 'default' in kw:
                 return kw['default']
             if kw.get('required', True):
-		raise ValueError("No non-null value available")
+                raise ValueError("No non-null value available")
 
         kwargs = super(FilteredMapping, self).feature_kwargs(feat)
 
         # Some of the values are reported as -99, which is wrong
         for key, value in kwargs.items():
-	    kwargs[key] = filter_value(value)
+            kwargs[key] = filter_value(value)
 
-	if 'iso2' in kwargs:
+        if 'iso2' in kwargs:
             if kwargs['iso3'] is None:
                 kwargs['iso3'] = get_first_value('WB_A3', 'ADM0_A3_US', 'BRK_A3')
             if kwargs['iso2'] is None:
-		kwargs['iso2'] = get_first_value('WB_A2', default=kwargs['iso3'][2:])
+                kwargs['iso2'] = get_first_value('WB_A2', default=kwargs['iso3'][2:])
 
         # The gis mapping module doesn't update the map, it adds points to it.
         # which leads to a VERY large map full of duplicate points. Clean the
