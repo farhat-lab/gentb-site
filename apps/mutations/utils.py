@@ -25,11 +25,73 @@ import json
 import sys
 
 from functools import reduce
-from collections import defaultdict, OrderedDict
+from collections import defaultdict, namedtuple, OrderedDict
 from operator import or_
 from datetime import date
 
 from django.db.models import Q
+
+# Nucleotides, 0,1,2,3 -> T,C,A,G (No need for values)
+# WARNING! It is VERY VERY important that the following code not
+# be changed at all, it contains database ids which if changed will
+# invalidate the meaning of the data in the database
+NUCLEO_LOOKUP = OrderedDict(enumerate('TCAG'))
+NUCLEO_CHOICES = list(NUCLEO_LOOKUP.items())
+
+# Aminoacids, CODON -> AMINO
+AMINO_MATRIX = [('FFLL', 'SSSS', 'YY**', 'CC*W'),
+                ('LLLL', 'PPPP', 'HHQQ', 'RRRR'),
+                ('IIIM', 'TTTT', 'NNKK', 'SSRR'),
+                ('VVVV', 'AAAA', 'DDEE', 'GGGG')]
+
+AMINO_LOOKUP = OrderedDict([(a + b + c, AMINO_MATRIX[x][y][z])
+                            for x, a in NUCLEO_CHOICES
+                            for y, b in NUCLEO_CHOICES
+                            for z, c in NUCLEO_CHOICES])
+AMINO_CHOICES = list(AMINO_LOOKUP.items())
+
+# Codons, 0,1,2... -> TTT,TTC,TTA...
+CODON_LOOKUP = OrderedDict(enumerate(AMINO_LOOKUP))
+CODON_CHOICES = list(CODON_LOOKUP.items())
+
+class CodonMutation(namedtuple('CodonMutation',\
+    ['ref', 'alt', 'aaref', 'aaalt', 'start', 'length'])):
+    """Represent a mutation in a three nucleotide segment"""
+    __slots__ = ()
+    part_ref = property(lambda self: self.ref[self.start:self.start + self.length])
+    part_alt = property(lambda self: self.alt[self.start:self.start + self.length])
+    __str__ = lambda self: f"{self.ref} -> {self.alt}"
+    __repr__ = lambda self: str(self)
+
+def get_mutation_stamp(ref, alt):
+    """Create a table of all possible mutations (4032)"""
+    tab = tuple(refnuc != altnuc for refnuc, altnuc in zip(ref, alt))
+    start = tab.index(1)
+    end = 2 - tuple(reversed(tab)).index(1)
+    length = end - start + 1
+    return CodonMutation(ref, alt, AMINO_LOOKUP[ref], AMINO_LOOKUP[alt], start, length)
+
+MUTATION_LOOKUP = OrderedDict(enumerate([get_mutation_stamp(ref, alt)\
+    for ref in AMINO_LOOKUP for alt in AMINO_LOOKUP if ref != alt]))
+MUTATION_CHOICES = [(mut_id, str(dat)) for mut_id, dat in MUTATION_LOOKUP.items()]
+LOOKUP_MUTATION = dict((dat[:2], mut_id) for mut_id, dat in MUTATION_LOOKUP.items())
+
+M_LOOKUP = defaultdict(list)
+A_LOOKUP = defaultdict(list)
+for mut_id, dat in MUTATION_LOOKUP.items():
+    if dat.length == 1:
+        M_LOOKUP[(dat.part_ref, dat.part_alt)].append(dat)
+        A_LOOKUP[(dat.aaref, dat.aaalt)].append(dat)
+M_LOOKUP = dict(M_LOOKUP)
+A_LOOKUP = dict(A_LOOKUP)
+
+def match_mutations(ref, alt, aaref, aaalt):
+    """Give the mutation (at any position in the codon) and known aminoacids,
+       return the set of possible codons that could be responsible.
+
+       This is useful for tracking errors in debugging, off by one etc
+    """
+    return set(M_LOOKUP[(ref, alt)]) & set(A_LOOKUP[aaref, aaalt])
 
 MONTHS = ['', 'jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec']
 DATE_FORMATS = [

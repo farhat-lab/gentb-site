@@ -13,3 +13,4 @@ pytz==2015.4
 jsonfield>=1
 GitPython==2.1.7
 PyVCF==0.6.8
+pyfaidx==0.5.8

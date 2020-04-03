@@ -22,17 +22,25 @@ Drug resistance and strain source for gene mutations django app.
 
 import os
 
+from pyfaidx import Fasta, complement
+
 from django.conf import settings
-from django.db.models import Model, Manager, Q, QuerySet, \
+from django.utils.functional import cached_property
+from django.db.models import Model, Manager, Q, QuerySet, FileField,\
     CharField, PositiveIntegerField, ForeignKey, ManyToManyField, URLField, \
-    SlugField, IntegerField, SmallIntegerField, BooleanField, DateField, DateTimeField, \
-    TextField, DecimalField, CASCADE, SET_NULL
+    SlugField, IntegerField, SmallIntegerField as Small, BooleanField,\
+    DateField, DateTimeField, TextField, DecimalField, CASCADE, SET_NULL
 from django.urls import reverse
 
 from apps.maps.models import Country, Place
 from apps.uploads.models import UploadFile
+
 from .validators import is_octal
-from .utils import match_snp_name, match_snp_half
+from .utils import (
+    match_snp_name, match_snp_name_raw, match_snp_half,
+    MUTATION_CHOICES, MUTATION_LOOKUP, LOOKUP_MUTATION,
+    match_mutations,
+)
 
 class DrugClassManager(Manager):
     """Allow exporting of drug classes with natural keys"""
@@ -108,6 +116,7 @@ class Genome(Model):
     code = SlugField(max_length=32, unique=True)
     name = CharField(max_length=255)
     length = DecimalField(default=0, max_digits=20, decimal_places=0)
+    fasta = FileField('FASTA Reference File', upload_to='genomes', null=True)
 
     objects = GenomeManager()
 
@@ -117,6 +126,85 @@ class Genome(Model):
 
     def __str__(self):
         return "[%s] %s" % (self.code, self.name)
+
+    @cached_property
+    def ref(self):
+        """Return the reference genome if needed"""
+        assert self.fasta, f"Genome {self.name} does not have an associated fasta"
+        return Fasta(self.fasta.path)[0]
+
+    def mutation_from_name(self, name):
+        """
+        get_or_create a new mutation based on the things found in the name.
+        """
+        # Slice the snp name into it's parts
+        bits = match_snp_name_raw(name)[1].groupdict()
+        ntpos = int(bits['ntpos'])
+
+        # Get the genetic locus based on it's symbol name
+        #locus = self.gene_locuses.get(gene_symbol=bits['gene'] or bits['rgene'])
+        locus = self.gene_locuses._for_mutation(ntpos, bits['gene'] or bits['rgene'])
+
+        cpos = int(bits['cpos'])
+        cref = bits['cref']
+        cver = bits['cver']
+        apos = int(bits['apos']) if bits['apos'] is not None else None
+
+        cpos -= 1
+        aapos = int(cpos / 3) + 1
+        nucpos = cpos % 3
+
+        refpos = cpos - nucpos
+        if locus.strand == '-':
+            cref = complement(cref)
+            cver = complement(cver)
+            refpos += 1
+
+        ref = locus.coding_ref[refpos:refpos+3]
+        alt = ref[:nucpos] + cver + ref[nucpos+1:]
+        mut_id = LOOKUP_MUTATION[(ref, alt)]
+        mut = MUTATION_LOOKUP[mut_id]
+
+        if apos is not None: # Coding only
+            if apos != aapos:
+                print(f"{name} -> {nucpos} ({cref} -> {cver}) ({ref} -> {alt}) ({mut.aaref} -> {mut.aaalt}) ({apos} != {aapos}) ({locus.strand})")
+                return
+
+            possibles = match_mutations(cref, cver, bits['aref'], bits['aver'])
+
+            #seq_range = locus.coding_ref[cpos-2:cpos+3]
+
+            #print(f"POS:{possibles} in {seq_range}")
+            if not possibles:
+                # This coding mutation is impossible?
+                return
+
+            #for x in range(3):
+            #    test_ref = seq_range[x:x+3]
+            #    test_alt = test_ref[:2-x] + cver + test_ref[3-x:]
+            #    test_mut = MUTATION_LOOKUP[LOOKUP_MUTATION[(test_ref, test_alt)]]
+            #    if test_mut in possibles:
+            #        print(f"TEST POSSIBLE: {test_mut}")
+            #    else:
+            #        print(f"IGNORING: {test_mut}")
+
+        snp, created = locus.snps.get_or_create(
+            amino_pos=aapos,
+            mutation_id=mut_id
+        )
+        cref = bits['cref']
+        cver = bits['cver']
+        #if created:
+        #    print(f"CREATED!")
+        if name != snp.name:
+            if snp.genome_pos != ntpos:
+                offset = ntpos - snp.genome_pos
+                print(f"{name} -> {nucpos} ({offset}) ({ntpos} != {snp.genome_pos}) ({locus.strand})")
+            else:
+                print(f" < {name}\n > {snp}")
+        else:
+            print(f"OK: {name}")
+
 
 
 class GeneLocusManager(Manager):
@@ -224,10 +312,24 @@ class GeneLocus(Model):
     class Meta:
         ordering = ('start',)
         unique_together = ('genome', 'name')
+        verbose_name = 'Genome Locus'
+        verbose_name_plural = 'Genome Loci'
 
     def natural_key(self):
         """The genome's short code is a useful key to lookup this table"""
         return (self.genome.code, self.name)
+
+    @property
+    def ref(self):
+        """Returns the reference sequence from the genome ref for this locus"""
+        return self.genome.ref[self.start:self.stop+1].seq
+
+    @property
+    def coding_ref(self):
+        """Like ref, but reverses the requence if strand is negatively encoded"""
+        if self.strand == '-':
+            return complement(self.ref)[::-1]
+        return self.ref
 
     def __str__(self):
         if self.gene_symbol:
@@ -360,6 +462,66 @@ class Mutation(Model):
 
     def __str__(self):
         return self.name
+
+
+class MutationSnp(Model):
+    """
+    A single nucleotide polymorphism. This table is expected to be large.
+    """
+    locus = ForeignKey(GeneLocus, related_name='snps', on_delete=CASCADE)
+    amino_pos = Small(help_text="Local aminoacid position. For non-coding regions, "
+                                "this is the psuedo-position.")
+    mutation_id = Small(choices=MUTATION_CHOICES, help_text="The codon mutation")
+
+    info = cached_property(lambda self: MUTATION_LOOKUP[self.mutation_id])
+    @property
+    def ref_info(self):
+        """Like info, but reversed (negative) mutations are reversed back to the reference"""
+        if self.locus.strand != '-':
+            return self.info
+        return MUTATION_LOOKUP[LOOKUP_MUTATION[
+            (complement(self.info.ref)[::-1], complement(self.info.alt)[::-1])
+        ]]
+
+    # Codon positions
+    codon_locus_pos = property(lambda self: (self.amino_pos - 1) * 3 + 1)
+    # Mutation positions
+    locus_pos = property(lambda self: self.codon_locus_pos + self.info.start)
+    @property
+    def genome_pos(self):
+        if self.locus.strand == '-':
+            return self.locus.stop + 1 - self.codon_locus_pos - self.info.start
+        return self.locus.start + self.codon_locus_pos + self.info.start
+
+    is_coding = property(lambda self: self.locus.gene_type == 'C')
+    gene_type = property(lambda self: self.locus.gene_type)
+
+    def get_synonymous(self):
+        """Return N, S or Z"""
+        if '*' in self.info.aaref + self.info.aaalt:
+            return 'Z'
+        return 'NS'[self.info.aaref == self.info.aaalt]
+
+    class Meta:
+        unique_together = [('locus', 'amino_pos', 'mutation_id')]
+
+    @property
+    def name(self):
+        """Generate a name based on the data available"""
+        parts = ['SNP', self.gene_type, str(self.genome_pos),
+                 self.m_name, self.a_name, self.locus.gene_symbol or self.locus.name]
+        if not self.is_coding:
+            parts.pop(-2) # Remove animoacid part
+        else:
+            parts[1] += self.get_synonymous() # Add synonymous
+        return "_".join(parts)
+
+    m_name = property(lambda self: f"{self.ref_info.part_ref}{self.locus_pos}{self.ref_info.part_alt}")
+    a_name = property(lambda self: f"{self.info.aaref}{self.amino_pos}{self.info.aaalt}")
+
+    def __str__(self):
+        return self.name
+
 
 SEXES = (
     (None, 'Unknown'),

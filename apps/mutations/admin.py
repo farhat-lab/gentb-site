@@ -80,7 +80,9 @@ class GeneLocusAdmin(ModelAdmin):
     def mutation_count(obj):
         return obj.mutations.count()
 
-site.register(Genome)
+@register(Genome)
+class GenomeAdmin(ModelAdmin):
+    list_display = ('code', 'name', 'length', 'fasta')
 
 @register(Mutation)
 class MutationAdmin(ModelAdmin):
