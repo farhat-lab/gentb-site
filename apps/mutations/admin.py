@@ -85,7 +85,7 @@ site.register(Genome)
 @register(Mutation)
 class MutationAdmin(ModelAdmin):
     list_display = ('name', 'old_id', 'gene_locus', 'drugs_list')
-    list_filter = ('predictor', 'drugs')
+    list_filter = ('drugs',)
     search_fields = ('name', 'old_id')
 
     def drugs_list(self, obj):
