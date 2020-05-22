@@ -32,7 +32,7 @@ from django.urls import reverse
 from apps.maps.models import Country, Place
 from apps.uploads.models import UploadFile
 from .validators import is_octal
-from .utils import match_snp_name, match_snp_half
+from .utils import match_snp_name, match_snp_half, match_snp_name_raw
 
 class DrugClassManager(Manager):
     """Allow exporting of drug classes with natural keys"""
@@ -351,6 +351,59 @@ class Mutation(Model):
 
     def __str__(self):
         return self.name
+
+    def save(self, **kwargs): # pylint: disable=arguments-differ
+        if not self.pk and self.name:
+            self.name_to_data()
+        return super().save(**kwargs)
+
+    def name_to_data(self):
+        """Unpack the name and set all the fields, return True if any of the fields changed"""
+        changed = []
+
+        _, match = match_snp_name_raw(self.name)
+        data = match.groupdict()
+
+        if 'cpos' in data and data['cpos']:
+            if '-' in data['cpos']:
+                data['cpos'] = data['cpos'].split('-')[-1]
+            try:
+                data['codpos'] = int(data['cpos']) % 3
+            except ValueError:
+                data['cpos'] = None
+
+        for m_field, d_field, default in [
+                ('mode', 'mode', 'SNP'),
+                ('nucleotide_position', 'ntpos', None),
+                ('nucleotide_reference', 'cref', None),
+                ('nucleotide_varient', 'cver', None),
+                ('aminoacid_position', 'apos', None),
+                ('aminoacid_reference', 'aver', None),
+                ('codon_position', 'codpos', None),
+            ]:
+            change = self._update_mutation_field(m_field, data.get(d_field, default))
+            if change:
+                changed.append(change)
+        return changed
+
+    def _update_mutation_field(self, m_field, data):
+        """Update a sepcific field"""
+        field = self._meta.get_field(m_field)
+        if data:
+            original = getattr(self, m_field)
+            if original and not isinstance(data, type(original)):
+                data = type(original)(data)
+
+            if hasattr(field, 'max_length'):
+                if field.max_length and len(data) > field.max_length:
+                    raise KeyError(f"  ! {m_field} is too big len('{data}') > {field.max_length}")
+
+            if original != data:
+                setattr(self, m_field, data)
+                return (m_field, original, data)
+        return False
+
+
 
 SEXES = (
     (None, 'Unknown'),
