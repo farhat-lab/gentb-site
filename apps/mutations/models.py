@@ -354,7 +354,10 @@ class Mutation(Model):
 
     def save(self, **kwargs): # pylint: disable=arguments-differ
         if not self.pk and self.name:
-            self.name_to_data()
+            try:
+                self.name_to_data()
+            except (ValueError, KeyError):
+                pass # We failed to parse the mutation
         return super().save(**kwargs)
 
     def name_to_data(self):
