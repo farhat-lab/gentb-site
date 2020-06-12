@@ -5,7 +5,7 @@ Load the country and city data
 import sys
 import os
 
-from zipfile import ZipFile
+from zipfile import ZipFile, BadZipFile
 
 import requests
 
@@ -58,11 +58,11 @@ class Command(BaseCommand):
     help = __doc__
     DATA_DIR = os.path.join(settings.DATA_ROOT, 'maps')
 
-    def download(self, url):
-        filename = os.path.basename(url)
-        save_as = os.path.join(self.DATA_DIR, filename)
+    def download(self, url, force=False):
+        """Download the given url"""
+        save_as, filename = self.url_to_filename(url)
 
-        if os.path.isfile(save_as):
+        if os.path.isfile(save_as) and not force:
             list(StatusBar(filename, 0, []))
             return save_as
 
@@ -75,6 +75,11 @@ class Command(BaseCommand):
 
         return save_as
 
+    def url_to_filename(self, url):
+        """Where would I save the data?"""
+        filename = os.path.basename(url)
+        return os.path.join(self.DATA_DIR, filename), filename
+
     def handle(self, verbose=True, **options):
         if not os.path.isdir(self.DATA_DIR):
             os.makedirs(self.DATA_DIR)
@@ -83,7 +88,17 @@ class Command(BaseCommand):
             if not hasattr(model, 'online_zip'):
                 continue
 
-            zfile = ZipFile(self.download(model.online_zip))
+            try:
+                zfile = ZipFile(self.download(model.online_zip))
+            except BadZipFile:
+                try:
+                    fileout = self.download(model.online_zip, force=True)
+                    zfile = ZipFile(fileout)
+                except BadZipFile:
+                    sys.stderr.write(f"Could not download: {model.online_zip}\n")
+                    sys.stderr.write(f"Please manually download, confirm it's a"\
+                                     f"zip file and save to {fileout}")
+                    break
 
             shp = None
             for filename in zfile.namelist():
