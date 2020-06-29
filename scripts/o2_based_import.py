@@ -18,6 +18,7 @@ except ImportError as err:
 
 
 import logging
+from collections import defaultdict
 
 from argparse import ArgumentParser
 from subprocess import Popen, PIPE
@@ -37,6 +38,7 @@ from apps.mutations.utils import long_match, unpack_mutation_format
 
 LOGGER = logging.getLogger('apps.mutations')
 EMPTY = {None: None, 'None': None, '': None,}
+PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 
 class NotEnrichedError(ValueError):
     """The VCF File isn't enriched, so can't be imported"""
@@ -54,6 +56,7 @@ class Command(object):
         self.arg_parser = ArgumentParser(description=self.__doc__)
         self.add_arguments(self.arg_parser)
         self.args = self.arg_parser.parse_args(sys.argv[1:])
+        self.log = defaultdict(lambda: defaultdict(int))
 
         self.genome = Genome.objects.get(code='H37Rv')
         self.importer, created = ImportSource.objects.get_or_create(
@@ -72,6 +75,7 @@ class Command(object):
             os.makedirs(path)
         new_name = os.path.join(path, os.path.basename(json_path))
         os.rename(json_path, new_name)
+        self.log[act][reason] += 1
 
     def add_arguments(self, pars):
         """Add extra command arguments"""
@@ -116,16 +120,27 @@ class Command(object):
             else:
                 self.move_json(json_path, 'no-vcf-or-var')
 
+        if not self.log:
+            print("== Nothing processed, no json files found ==")
+        if self.log['reject']:
+            print("== Rejected from Import ==")
+            for reason, count in self.log['reject'].items():
+                print(f" * {reason}: {count}")
+        if self.log['ok']:
+            print("== Imported or Ignored ==")
+            for reason, count in self.log['ok'].items():
+                print(f" * {reason}: {count}")
+
     def annotate_vcf(self, var_fhl, vcf_path):
         """
         Call the flat annotator and block until we're finished.
         """
         process = Popen(
             [
-                '/www/gentb.hms.harvard.edu/bin/flatAnnotatorVAR_2.0.pl',
-                '/www/gentb.hms.harvard.edu/data/media/pipeline/files/h37rv.fasta',
-                '/www/gentb.hms.harvard.edu/data/media/pipeline/files/h37rv_genome_summary.txt',
-                '/www/gentb.hms.harvard.edu/data/media/pipeline/files/h37rv_noncoding_summary.txt',
+                os.path.join(PATH, 'bin', 'flatAnnotatorVAR_2.0.pl'),
+                os.path.join(PATH, 'data', 'media', 'pipeline', 'files', 'h37rv.fasta'),
+                os.path.join(PATH, 'data', 'media', 'pipeline', 'files', 'h37rv_genome_summary.txt'),
+                os.path.join(PATH, 'data', 'media', 'pipeline', 'files', 'h37rv_noncoding_summary.txt'),
                 vcf_path, '10', '0.4', 'PASS', 'AMB',
             ],
             shell=False, # Never have shell=True
