@@ -23,6 +23,7 @@ from collections import defaultdict, OrderedDict
 COUNTRY_MAP = {
     'unknown': None,
     'UK': 'United Kingdom',
+    'United Kingdom of Great Britain and Northern Ireland': 'United Kingdom',
     'South Afica': 'South Africa',
     'Ivory Coast': 'CIV',
     'Netherland': 'Netherlands',
@@ -41,7 +42,7 @@ COUNTRY_MAP = {
     'Guinea-Conakry': 'Guinea',
     'China /Tibet': 'Tibet',
     'Carribean': 'Aruba',
-
+    'Russian Federation': 'Russia',
     'Philipines': 'Philippines',
     'Comoro Islands': 'Comoros',
     'South Korea N': 'Korea, Republic of',

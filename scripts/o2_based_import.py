@@ -5,6 +5,8 @@ import os
 import sys
 import json
 
+
+
 sys.path.insert(0, '.')
 sys.path.insert(0, '..')
 
@@ -161,6 +163,7 @@ class Command(object):
         loc = metadata.get('location', {})
         con = loc.get('country', None)
 
+
         if not con:
             raise DataError('Location is missing from metadata')
 
@@ -169,7 +172,7 @@ class Command(object):
             queryset=Country.objects.defer('geom'))
 
         if country is None:
-            raise DataError(f"Country not found: {con}")
+            raise Country.DoesNotExist(f"Country not found: {con}")
 
         city = long_match(CITY_MAP, self.places, loc.get('CITY', None),\
             None, None, 'name', country=country,
@@ -231,7 +234,6 @@ class Command(object):
         var = CsvLookup(filename=var_path, key='varname')
 
         strain, _ = StrainSource.objects.update_or_create(name=name, defaults=datum)
-
         for _drug in metadata.get('drug', []):
             drug_name = _drug['name']
             try:
