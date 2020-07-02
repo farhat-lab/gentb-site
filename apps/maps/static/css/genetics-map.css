@@ -31,10 +31,11 @@
   color: #43464C;
 }
 .leaflet-popup-content {
-  
+
 }
 .countrySelect {
-  fill: red !important;
+  stroke-width:2px;
+  stroke:red;
 }
 .nv-legend-symbol {
   cursor: pointer;

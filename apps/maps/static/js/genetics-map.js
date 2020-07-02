@@ -112,6 +112,7 @@ function mapStrainData(map, color, data) {
   }
 
   function get_style(feature) {
+    console.log(feature.properties)
     return {
       fillColor: color(feature.properties.values.Total),
       weight: 1,
@@ -128,11 +129,11 @@ function mapStrainData(map, color, data) {
     ret.append($('<h4>' + feature.properties.name + '</h4>'));
     $.each(['Sensitive', 'MDR', 'XDR', 'TDR'], function(key, value) {
       if (feature.properties.values[value]) {
-        ret.append($('<div>Number of <span>' + value + ' cases: </span><span>' + feature.properties.values[value] + "</span></div>"));
+        ret.append($('<div>Number of <span>' + value + ' isolates: </span><span>' + feature.properties.values[value] + "</span></div>"));
       }
     });
     if(Object.keys(feature.properties.values).length > 2) {
-      ret.append($("<hr/><div class='total'><span>Total cases: </span><span>" + feature.properties.values.Total + "</span></div>"));
+      ret.append($("<hr/><div class='total'><span>Total isolates: </span><span>" + feature.properties.values.Total + "</span></div>"));
     }
     var button1 = $("<button class='btn btn-primary btn-xs'>Select Country</button>").click(function() {
         // WARNING: jquery class selectors and addClass/removeClass DO NOT work here
