@@ -1,7 +1,7 @@
 /*
  * Copyright 2017, Maha Farhat
  *
- * This file is part of the software gentb, consisting of custom 
+ * This file is part of the software gentb, consisting of custom
  * code for the GenTB's django-based website.
  *
  * gentb is free software: you can redistribute it and/or modify
@@ -36,6 +36,7 @@ function initialiseDrugChart(svg) {
 
     //So we first make the chart
     var chart = nv.models.multiBarChart()
+      .showControls(true)
       .stacked(true)
       .reduceXTicks(false);
 
@@ -50,6 +51,7 @@ function initialiseDrugChart(svg) {
     chart.yAxis.scale(100).orient("left")
         .axisLabel('Number of strains')
         .tickFormat(d3.format("d"));
+
 
     chart.xAxis
         .axisLabel("Drug Codename")
@@ -72,7 +74,14 @@ function initialiseDrugChart(svg) {
         var label = d3.selectAll('.tick.zero').filter(function() { return d3.select(this).text() == e.data.x });
         label.classed('selected-drug', !label.classed('selected-drug'));
         toggleTabData('drug', e.data.x, e.data.x, 'map-marker');
+    //trying to highlight bars when selected:
+    //    bars = d3.selectAll("rect")
+    //    console.log(bars)
+
     });
+
+
+    // bars.classed('selected-drug', !bars.classed('selected-drug'));
 
     // Deselects all drugs
     $('#drugs').parent().click(function(e) {
