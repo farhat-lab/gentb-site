@@ -60,8 +60,16 @@ function chartLineageData(data) {
           // Selects/deselects the clicked drug
     chart.sunburst.dispatch.on("elementClick", function(e) {
         console.log("here")
-         // toggleTabData('drug', e.data.x, e.data.x, 'map-marker');
+        console.log(e.data)
+        toggleTabData('lineage', e.data.name, e.data.name, 'map-marker');
 
+          });
+
+//TODO: deselect all lineages
+     // Deselects all drugs
+     $('#lineage-store').parent().click(function(e) {
+        //d3.selectAll('.tick.zero').classed('selected-drug', false);
+        unsetTabData('lineage');
           });
 
   }
