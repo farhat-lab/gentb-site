@@ -53,22 +53,18 @@ function chartLineageData(data) {
           .attr('class', 'lineages')
           .call(chart);
     svg.append('text')
-          .text(data.children[idx].name + " " + data.children[idx].value )
+          .text(data.children[idx].name + ' ' + data.children[idx].value)
           .attr('x', '50%')
           .attr('y', '50%')
           .attr('class', 'lineage_text');
           // Selects/deselects the clicked drug
     chart.sunburst.dispatch.on("elementClick", function(e) {
-        console.log("here")
-        console.log(e.data)
-        toggleTabData('lineage', e.data.name, e.data.name, 'map-marker');
-
+        toggleTabData('lineage', e.data.name.slice(1), e.data.name.slice(1), 'map-marker');
           });
 
-//TODO: deselect all lineages
-     // Deselects all drugs
-     $('#lineage-store').parent().click(function(e) {
-        //d3.selectAll('.tick.zero').classed('selected-drug', false);
+     // Deselects all lineages
+     $('#clear').click(function(e) {
+
         unsetTabData('lineage');
           });
 
