@@ -59,7 +59,7 @@ function chartLineageData(data) {
           .attr('class', 'lineage_text');
           // Selects/deselects the clicked drug
     chart.sunburst.dispatch.on("elementClick", function(e) {
-        toggleTabData('lineage', e.data.name.slice(1), e.data.name.slice(1), 'map-marker');
+        toggleTabData('lineage', e.data.name.slice(1), e.data.name, 'map-marker');
           });
 
      // Deselects all lineages
