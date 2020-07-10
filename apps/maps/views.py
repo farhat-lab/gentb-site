@@ -80,6 +80,7 @@ class Places(JsonView, DataSlicerMixin):
     order = ['country__name', 'country__region']
     values = ['country__iso2', 'resistance_group']
     filters = {
+        'lineage[]': 'lineage__name__in',
         'source[]': 'importer__in',
         'paper[]': 'source_paper__in',
         'drug[]': many_lookup(StrainResistance, 'drug__code', 'strain_id'),
@@ -123,6 +124,7 @@ class DrugList(JsonView, DataSlicerMixin):
     order = ['drugs__drug__regimen', '-drugs__drug__priority',]
     values = ['drugs__drug__name', 'drugs__drug__code', 'drugs__resistance']
     filters = {
+        'lineage[]': 'lineage__name__in',
         'map[]': 'country__iso2__in',
         'source[]': 'importer__in',
         'paper[]': 'source_paper__in',

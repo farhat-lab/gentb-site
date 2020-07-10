@@ -1,7 +1,7 @@
 /*
  * Copyright 2017, Maha Farhat
  *
- * This file is part of the software gentb, consisting of custom 
+ * This file is part of the software gentb, consisting of custom
  * code for the GenTB's django-based website.
  *
  * gentb is free software: you can redistribute it and/or modify
@@ -71,7 +71,7 @@ $(document).ready(function() {
             "description": "Locus Primary Key",
           },
           {
-            "data": "str",
+            "data": "name",
             "title": "Name",
             "description": "Name of the Gene Locus",
             // "render": $.fn.dataTable.render.number(',', '.', 3, ''),
@@ -88,14 +88,15 @@ $(document).ready(function() {
             "data": "mcount",
             "title": "Mutations Count",
           },
-          {
-            "data": "gene_type",
-            "title": "Gene Type",
-          },
-          {
-            "data": "strand",
-            "title": "strand",
-          },
+        // commenting this out instead of deleting for now for easy reversal
+        //   {
+        //     "data": "gene_type",
+        //     "title": "Gene Type",
+        //   },
+        //   {
+        //     "data": "strand",
+        //     "title": "strand",
+        //   },
         ],
         'order': [[2, 'asc']],
       });

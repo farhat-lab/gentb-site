@@ -1,7 +1,7 @@
 /*
  * Copyright 2017, Maha Farhat
  *
- * This file is part of the software gentb, consisting of custom 
+ * This file is part of the software gentb, consisting of custom
  * code for the GenTB's django-based website.
  *
  * gentb is free software: you can redistribute it and/or modify
@@ -23,7 +23,7 @@ $(document).ready(function() {
   $('#lineage-store').data('json-signal', function(data) {
     $("#row1").empty(); $("#row2").empty();
     chartLineageData(data);
-  }); 
+  });
 });
 
 function chartLineageData(data) {
@@ -53,10 +53,20 @@ function chartLineageData(data) {
           .attr('class', 'lineages')
           .call(chart);
     svg.append('text')
-          .text(data.children[idx].name)
+          .text(data.children[idx].name + ' ' + data.children[idx].value)
           .attr('x', '50%')
           .attr('y', '50%')
           .attr('class', 'lineage_text');
+          // Selects/deselects the clicked drug
+    chart.sunburst.dispatch.on("elementClick", function(e) {
+        toggleTabData('lineage', e.data.name.slice(1), e.data.name, 'map-marker');
+          });
+
+     // Deselects all lineages
+     $('#clear').click(function(e) {
+
+        unsetTabData('lineage');
+          });
+
   }
 }
-

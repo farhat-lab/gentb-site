@@ -123,5 +123,5 @@ text.lineage_text {
 }
 
 g.selected-drug {
-  fill: green;
+  fill: red;
 }
