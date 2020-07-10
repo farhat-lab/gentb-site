@@ -18,6 +18,9 @@
  * along with gentb.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+ //TODO: change legend to say isolates instead of cases
+ //TODO: change legend label dynamically???
+
 $(document).ready(function() {
   $('div.maps').each(function() {
     var map = L.map(this.id).setView([12, 25], 2);
@@ -101,7 +104,6 @@ function initialiseStrainMap(map, color) {
     .attr("y", 21)
     .text('Cases');
 }
-
 var map_layer = null;
 function mapStrainData(map, color, data) {
   var existing = getTabData('map');
@@ -112,8 +114,18 @@ function mapStrainData(map, color, data) {
   }
 
   function get_style(feature) {
+
+
+      var color_by;
+      //TODO: figure out how to not have to do these if statements
+      if ($(".form-check-input:checked").val() == "feature.properties[1][0].gdp") {
+          var color_by = feature.properties[1][0].gdp;
+      }
+      else {
+          var color_by = feature.properties[0][0].values.Total;
+      }
     return {
-      fillColor: color(feature.properties[0][0].values.Total),
+     fillColor: color(color_by),
       weight: 1,
       opacity: 0.5,
       color: 'black',
@@ -121,10 +133,26 @@ function mapStrainData(map, color, data) {
     };
   }
 
+  //toggle mapping color
+  $('.form-check-input').on('click',function(e){
+      //somehow pass the color by variable in to the get_style function so it re-colors
+      if(map_layer) {
+        // Remove previous layer
+        map.removeLayer(map_layer);
+      }
+      map_layer = L.geoJson(data,  {
+        style: get_style,
+        onEachFeature: onEachFeature
+      }
+    ).addTo(map)
+
+});
+
   function onEachFeature(feature, layer) {
     var country_code = feature.properties[0][0].value;
     ret = $('<div></div>');
     ret.append($('<h4>' + feature.properties[0][0].name + '</h4>'));
+    ret.append($('<h4>' + 'Social Determinants of Health' + '</h4>'));
     ret.append($("<hr/><div class='total'><span>GDP: </span><span>" + feature.properties[1][0].gdp + "</span></div>"));
     $.each(['Sensitive', 'MDR', 'XDR', 'TDR'], function(key, value) {
       if (feature.properties[0][0].values[value]) {
@@ -178,8 +206,20 @@ function mapStrainData(map, color, data) {
 
   }
 
-  map_layer = L.geoJson(data, {
+  // function get_map_layer(data) {
+  //     return map_layer = L.geoJson(data, {
+  //         style: get_style,
+  //         onEachFeature: onEachFeature
+  //       }).addTo(map)
+  // }
+
+  map_layer = L.geoJson(data,  {
     style: get_style,
     onEachFeature: onEachFeature
-  }).addTo(map)
+  }
+).addTo(map)
+
+
+
+
 }
