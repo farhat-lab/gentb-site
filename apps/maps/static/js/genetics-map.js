@@ -112,9 +112,8 @@ function mapStrainData(map, color, data) {
   }
 
   function get_style(feature) {
-    console.log(feature.properties)
     return {
-      fillColor: color(feature.properties.values.Total),
+      fillColor: color(feature.properties[0][0].values.Total),
       weight: 1,
       opacity: 0.5,
       color: 'black',
@@ -123,17 +122,17 @@ function mapStrainData(map, color, data) {
   }
 
   function onEachFeature(feature, layer) {
-    var country_code = feature.properties.value;
-
+    var country_code = feature.properties[0][0].value;
     ret = $('<div></div>');
-    ret.append($('<h4>' + feature.properties.name + '</h4>'));
+    ret.append($('<h4>' + feature.properties[0][0].name + '</h4>'));
+    ret.append($("<hr/><div class='total'><span>GDP: </span><span>" + feature.properties[1][0].gdp + "</span></div>"));
     $.each(['Sensitive', 'MDR', 'XDR', 'TDR'], function(key, value) {
-      if (feature.properties.values[value]) {
-        ret.append($('<div>Number of <span>' + value + ' isolates: </span><span>' + feature.properties.values[value] + "</span></div>"));
+      if (feature.properties[0][0].values[value]) {
+        ret.append($('<div>Number of <span>' + value + ' isolates: </span><span>' + feature.properties[0][0].values[value] + "</span></div>"));
       }
     });
-    if(Object.keys(feature.properties.values).length > 2) {
-      ret.append($("<hr/><div class='total'><span>Total isolates: </span><span>" + feature.properties.values.Total + "</span></div>"));
+    if(Object.keys(feature.properties[0][0].values).length > 2) {
+      ret.append($("<hr/><div class='total'><span>Total isolates: </span><span>" + feature.properties[0][0].values.Total + "</span></div>"));
     }
     var button1 = $("<button class='btn btn-primary btn-xs'>Select Country</button>").click(function() {
         // WARNING: jquery class selectors and addClass/removeClass DO NOT work here
@@ -147,7 +146,7 @@ function mapStrainData(map, color, data) {
         next.data('deselect', function() { button2.click(); });
 
         // Set the usable data for other charts
-        addTabData('map', country_code, feature.properties.name, 'flag');
+        addTabData('map', country_code, feature.properties[0][0].name, 'flag');
 
         button1.hide();
         button2.show();
