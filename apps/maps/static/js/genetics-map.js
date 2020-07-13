@@ -102,7 +102,7 @@ function initialiseStrainMap(map, color) {
   g.call(xAxis).append("text")
     .attr("class", "caption")
     .attr("y", 21)
-    .text('Cases');
+    .text('Number of isolates');
 }
 var map_layer = null;
 function mapStrainData(map, color, data) {
@@ -135,7 +135,6 @@ function mapStrainData(map, color, data) {
 
   //toggle mapping color
   $('.form-check-input').on('click',function(e){
-      //somehow pass the color by variable in to the get_style function so it re-colors
       if(map_layer) {
         // Remove previous layer
         map.removeLayer(map_layer);
@@ -146,14 +145,22 @@ function mapStrainData(map, color, data) {
       }
     ).addTo(map)
 
+    if ($(".form-check-input:checked").val() == "feature.properties[1][0].gdp") {
+        var legend_label = "GDP"
+    }
+    else {
+        var legend_label = "Number of isolates"
+    }
+
+    d3.select('.caption')
+      .text(legend_label);
+
 });
 
   function onEachFeature(feature, layer) {
     var country_code = feature.properties[0][0].value;
     ret = $('<div></div>');
     ret.append($('<h4>' + feature.properties[0][0].name + '</h4>'));
-    ret.append($('<h4>' + 'Social Determinants of Health' + '</h4>'));
-    ret.append($("<hr/><div class='total'><span>GDP: </span><span>" + feature.properties[1][0].gdp + "</span></div>"));
     $.each(['Sensitive', 'MDR', 'XDR', 'TDR'], function(key, value) {
       if (feature.properties[0][0].values[value]) {
         ret.append($('<div>Number of <span>' + value + ' isolates: </span><span>' + feature.properties[0][0].values[value] + "</span></div>"));
@@ -162,6 +169,8 @@ function mapStrainData(map, color, data) {
     if(Object.keys(feature.properties[0][0].values).length > 2) {
       ret.append($("<hr/><div class='total'><span>Total isolates: </span><span>" + feature.properties[0][0].values.Total + "</span></div>"));
     }
+    ret.append($('<h6>' + 'Social Determinants of Health:' + '</h6>'));
+    ret.append($("<hr/><div> GDP: <span>" + feature.properties[1][0].gdp + "</span></div>"));
     var button1 = $("<button class='btn btn-primary btn-xs'>Select Country</button>").click(function() {
         // WARNING: jquery class selectors and addClass/removeClass DO NOT work here
 
@@ -205,13 +214,6 @@ function mapStrainData(map, color, data) {
     layer.setStyle({className: id_cls});
 
   }
-
-  // function get_map_layer(data) {
-  //     return map_layer = L.geoJson(data, {
-  //         style: get_style,
-  //         onEachFeature: onEachFeature
-  //       }).addTo(map)
-  // }
 
   map_layer = L.geoJson(data,  {
     style: get_style,
