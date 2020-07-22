@@ -261,3 +261,21 @@ def many_lookup(model, local_filter, id_field, ret_field='pk__in'):
             model.objects.filter(**{local_filter+'__in': values})\
                          .values_list(id_field, flat=True)
     return _inner
+
+def adjust_coords(geom):
+    """
+    Attempt to adjust the generate coordinates to fit leaflet map projection.
+    """
+    for item in geom['coordinates']:
+        _adjust(item)
+    return geom
+
+def _adjust(lst):
+    if not isinstance(lst, list):
+        raise ValueError("Can't adjust non-list")
+    if lst and isinstance(lst[0], list):
+        for item in lst:
+            _adjust(item)
+    elif len(lst) == 2 and isinstance(lst[0], (float, int)):
+        lst[0], lst[1] = lst[1], lst[0]
+

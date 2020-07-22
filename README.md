@@ -32,11 +32,24 @@ If this is sucessfull, everything from here is just a normal django website, to 
 
 The database will be empty, so be sure to populate it with a user account and other information you need.
 
+# Maps Testing
+
+To test the projection, maps and other visualisations you can quickly bring a blank database up with the following commands::
+
+    ./manage migrate
+    ./manage load_map_data
+    ./manage loaddata drugs genelocus
+    ./manage test-genetics test-strains
+    ./manage runserver
+
+These data will be wrong (not real), but should allow basic testing.
 
 # macOS:
+
 Comment out the spatialite_library_path in your local.py file
 
-You will likely need to install the gdal library. If using homebrew, follow these steps:
-brew install gdal
-pip3 install --upgrade pip
-pip3 install gdal
+You will likely need to install the gdal library. If using homebrew, follow these steps::
+
+    brew install gdal
+    pip3 install --upgrade pip
+    pip3 install gdal

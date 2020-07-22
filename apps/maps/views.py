@@ -34,8 +34,13 @@ from apps.mutations.models import (
 )
 
 from .mixins import JsonView, DataSlicerMixin, DataTableMixin
+<<<<<<< HEAD
 from .utils import GraphData, many_lookup
 from .models import Country, CountryHealth, CountryDetail
+=======
+from .utils import GraphData, many_lookup, adjust_coords
+from .models import Country, CountryHealth
+>>>>>>> d3328a1997a683c82948ea7ac2896615244b982c
 
 class MapPage(TemplateView):
     """The html map page everything is provided by javascript"""
@@ -106,7 +111,7 @@ class Places(JsonView, DataSlicerMixin):
                 {
                     # Turning this to json and then back to python just to feed
                     # to JsonView, seems a little wasteful and redundent.
-                    "geometry": json.loads(country.geom.geojson),
+                    "geometry": adjust_coords(json.loads(country.geom.geojson)),
                     "popupContent": country.name,
                     "type": "Feature",
                     "id": country.id,
