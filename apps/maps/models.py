@@ -95,11 +95,12 @@ class Country(Model):
 class CountryHealth(Model):
     """Extra WHO data about a country"""
     country = OneToOneField(Country, related_name='health', on_delete=CASCADE)
+    total_funding = CharField(null=True, blank=True, max_length=36)
     est_mdr = FloatField(null=True, blank=True,\
         help_text="Estimated % Drug Resistance for the country")
 
     def __str__(self):
-        return "WHO Data for {}".format(self.country)
+        return "WHO TB Data for {}".format(self.country)
 
 class CountryDetail(Model):
     """Provides a much more detailed country outline and more fields"""
