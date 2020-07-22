@@ -34,13 +34,8 @@ from apps.mutations.models import (
 )
 
 from .mixins import JsonView, DataSlicerMixin, DataTableMixin
-<<<<<<< HEAD
-from .utils import GraphData, many_lookup
-from .models import Country, CountryHealth, CountryDetail
-=======
 from .utils import GraphData, many_lookup, adjust_coords
 from .models import Country, CountryHealth
->>>>>>> d3328a1997a683c82948ea7ac2896615244b982c
 
 class MapPage(TemplateView):
     """The html map page everything is provided by javascript"""
