@@ -95,7 +95,14 @@ class Country(Model):
 class CountryHealth(Model):
     """Extra WHO data about a country"""
     country = OneToOneField(Country, related_name='health', on_delete=CASCADE)
-    total_funding = CharField(null=True, blank=True, max_length=36)
+    total_funding = CharField(null=True, blank=True, max_length=36, \
+        help_text="Total expected funding from all sources (US Dollars)")
+    hiv_incidence2018 = CharField(null=True, blank=True, max_length=36,\
+        help_text="Estimated incidence of TB cases who are HIV-positive")
+    household = CharField(null=True, blank=True, max_length=36,\
+        help_text="Estimated average household size")
+    all_tb_incidence2018 = CharField(null=True, blank=True, max_length=36,\
+        help_text="Estimated incidence (all forms) per 100 000 population")
     est_mdr = FloatField(null=True, blank=True,\
         help_text="Estimated % Drug Resistance for the country")
 
