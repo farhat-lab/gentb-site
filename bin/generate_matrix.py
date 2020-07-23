@@ -80,6 +80,12 @@ def generate_matrix(variants, filename):
                     out[itb[0].group()] = "1"
                     #sys.stderr.write(itb[0].group())
                     #sys.stderr.write("match!!!!!!!\n")
+                #if any other frameshift mutation is found that is not in the variant list
+                #write a 1 in the respective field of another variant that is part of the variant list
+                elif len(itb) == 0:
+                    if parts[5] in ['pncA']:
+                        out['INS_CF_2288725_i517C_173_pncA'] = "1"
+                    
             elif parts[1] == 'P':
                 # promoter (to maintain compatibility with old naming used in
                 # randomforest built from MIP data
@@ -101,7 +107,35 @@ def generate_matrix(variants, filename):
                     out[itc[0].group()] = "1"
                     #sys.stderr.write(itc[0].group())
                     #sys.stderr.write("match!!!!!!!\n")
-    
+
+            #include all variants 40 basepairs up or downstream of the rifampicin resistance determining region
+            elif ( parts[1] in ['CF', 'CI', 'CD', 'CN', 'CZ'] ) and ( '761041' <= parts[2] <= '761202' ) and ( parts[5] in ['rpoB'] ):
+                out['SNP_CN_761155_C1349T_S450L_rpoB'] = "1"
+
+            #match non-synonymous SNPs in pncA to a variant that the model has seen 
+            elif ( parts[1] in ['CN'] ) and ( parts[5] in ['pncA'] ):
+                out['SNP_CN_2289090_T152C_H51R_pncA'] = "1"
+
+            #match all deletions and stopcodon mutations to a stopcodon mutation that the model has seen
+            elif ( parts[1] in ['CD, CZ'] ) and ( parts[5] in ['pncA'] ):
+                out['SNP_CZ_2288933_G309C_Y103._pncA'] = "1" 
+
+            #match all stopcodons variants in katG to a katG stopcodon that the model has seen
+            elif ( parts[1] in ['CZ', 'CF'] )  and ( parts[5] in ['katG'] ):
+                out['SNP_CZ_2155101_G1011C_Y337._katG'] = "1"
+
+            #match all stopcodon and frameshift variants in ethA to a stopcodon variant the model has seen
+            elif ( parts[1] in ['CF', 'CZ'] ) and ( parts[5] in ['ethA'] ):
+                out['SNP_CZ_4326714_G760A_Q254._ethA'] = "1"
+
+            #match all frameshifts in tlyA 
+            elif ( parts[1] in ['CF'] ) and ( parts[5] in ['tlyA'] ):
+                out['SNP_CN_1918160_T221A_L74Q_tlyA'] = "1"
+
+            #match all frameshift mutations in gid
+            elif ( parts[1] in ['CF'] ) and ( parts[5] in ['gid'] ):
+                out['SNP_CN_4407927_T276G_E92D_gid'] = "1"
+
     for variant in variants:
         output2.write("," + str(int(variant in out)))
     output2.write("\n")
