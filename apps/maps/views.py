@@ -38,11 +38,19 @@ from .utils import GraphData, many_lookup, adjust_coords
 from .models import Country, CountryHealth, CountryDetail
 
 def get_gdp(self, **_):
-    """ Getter for country detail"""
+    """ Getter for country detail gdp"""
     try:
         return self.detail.gdp
     except CountryDetail.DoesNotExist:
         return None
+
+def get_health(self, **_):
+    """ Getter for country health"""
+    try:
+        return self.health
+    except CountryHealth.DoesNotExist:
+        return None
+
 
 class MapPage(TemplateView):
     """The html map page everything is provided by javascript"""
@@ -117,17 +125,18 @@ class Places(JsonView, DataSlicerMixin):
                     "popupContent": country.name,
                     "type": "Feature",
                     "id": country.id,
-                    "properties": [[{
+                    "properties": {
                         "name": country.name,
                         "value": country.iso2,
                         "values": ret[country.iso2],
-                        "gdp": get_gdp(country)
-                    }],
-                    [{
-                        "gdps": countryDetail.gdp
-                    } for countryDetail in CountryDetail.objects.filter(country=country)
+                        "gdp": get_gdp(country),
+                        "total_funding": get_health(country).total_funding,
+                        "hiv_incidence2018": get_health(country).hiv_incidence2018,
+                        "household": get_health(country).household,
+                        "who_est_mdr": get_health(country).est_mdr,
+                        "all_tb_incidence2018": get_health(country).all_tb_incidence2018
+                    }
 
-                    ]]
                 } for country in Country.objects.filter(iso2__in=list(ret))
                 ]
 
