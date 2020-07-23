@@ -35,7 +35,14 @@ from apps.mutations.models import (
 
 from .mixins import JsonView, DataSlicerMixin, DataTableMixin
 from .utils import GraphData, many_lookup, adjust_coords
-from .models import Country, CountryHealth
+from .models import Country, CountryHealth, CountryDetail
+
+def get_gdp(self, **_):
+    """ Getter for country detail"""
+    try:
+        return self.detail.gdp
+    except CountryDetail.DoesNotExist:
+        return None
 
 class MapPage(TemplateView):
     """The html map page everything is provided by javascript"""
@@ -106,17 +113,18 @@ class Places(JsonView, DataSlicerMixin):
                 {
                     # Turning this to json and then back to python just to feed
                     # to JsonView, seems a little wasteful and redundent.
-                    "geometry": adjust_coords(json.loads(country.geom.geojson)),
+                    "geometry": json.loads(country.geom.geojson),
                     "popupContent": country.name,
                     "type": "Feature",
                     "id": country.id,
                     "properties": [[{
                         "name": country.name,
                         "value": country.iso2,
-                        "values": ret[country.iso2]
+                        "values": ret[country.iso2],
+                        "gdp": get_gdp(country)
                     }],
                     [{
-                        "gdp": countryDetail.gdp
+                        "gdps": countryDetail.gdp
                     } for countryDetail in CountryDetail.objects.filter(country=country)
 
                     ]]
