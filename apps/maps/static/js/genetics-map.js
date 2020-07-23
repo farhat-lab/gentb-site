@@ -83,17 +83,18 @@ $(document).ready(function() {
     let maxTotal;
     initialiseStrainMap(map);
     $('#map-store').data('json-signal', function(data) {
+      console.log(data)
       var getMaxAttribute = function (data, attribute) {
           var max = -10000000;
           for (var i=0 ; i<data.length ; i++) {
               if (attribute === "total_strains"){
-                  max = Math.max(data[i]["properties"][0][0].values.Total, max);
+                  max = Math.max(data[i]["properties"].values.Total, max);
               }
               else{
-                  max = Math.max(data[i]["properties"][0][0][attribute], max);
+                  max = Math.max(data[i]["properties"][attribute], max);
               }
           }
-          return max;
+          return Math.ceil(max);
       }
       var maxGDP = getMaxAttribute(data.features, "gdp");
       maxTotal = getMaxAttribute(data.features, "total_strains");
@@ -137,11 +138,11 @@ function mapStrainData(map, data, newLegend, maxGDP, maxTotal) {
 
       var color_by;
       if ($(".form-check-input:checked").val() == "feature.properties[0][0].gdp") {
-          color_by = feature.properties[0][0].gdp;
+          color_by = feature.properties.gdp;
           color_max = maxGDP;
       }
       else {
-          color_by = feature.properties[0][0].values.Total;
+          color_by = feature.properties.values.Total;
           color_max = maxTotal;
       }
     best_color = d3.scale.threshold()
@@ -198,16 +199,16 @@ function mapStrainData(map, data, newLegend, maxGDP, maxTotal) {
 
   function onEachFeature(feature, layer) {
     let gdp;
-    var country_code = feature.properties[0][0].value;
+    var country_code = feature.properties.value;
     ret = $('<div></div>');
-    ret.append($('<h4>' + feature.properties[0][0].name + '</h4>'));
+    ret.append($('<h4>' + feature.properties.name + '</h4>'));
     $.each(['Sensitive', 'MDR', 'XDR', 'TDR'], function(key, value) {
-      if (feature.properties[0][0].values[value]) {
-        ret.append($('<div>Number of <span>' + value + ' isolates: </span><span>' + feature.properties[0][0].values[value] + "</span></div>"));
+      if (feature.properties.values[value]) {
+        ret.append($('<div>Number of <span>' + value + ' isolates: </span><span>' + feature.properties.values[value] + "</span></div>"));
       }
     });
-    if(Object.keys(feature.properties[0][0].values).length > 2) {
-      ret.append($("<hr/><div class='total'><span>Total isolates: </span><span>" + feature.properties[0][0].values.Total + "</span></div>"));
+    if(Object.keys(feature.properties.values).length > 2) {
+      ret.append($("<hr/><div class='total'><span>Total isolates: </span><span>" + feature.properties.values.Total + "</span></div>"));
     }
     ret.append($('<h6>' + 'Social Determinants of Health:' + '</h6>'));
     // if (feature.properties[1].length == 0) {
@@ -216,7 +217,7 @@ function mapStrainData(map, data, newLegend, maxGDP, maxTotal) {
     // else{
     //     gdp = feature.properties[0][0].gdp
     // }
-    ret.append($("<hr/><div> GDP: <span>" + (feature.properties[0][0].gdp) + "</span></div>"));
+    ret.append($("<hr/><div> GDP: <span>" + (feature.properties.gdp) + "</span></div>"));
     var button1 = $("<button class='btn btn-primary btn-xs'>Select Country</button>").click(function() {
         // WARNING: jquery class selectors and addClass/removeClass DO NOT work here
 
@@ -229,7 +230,7 @@ function mapStrainData(map, data, newLegend, maxGDP, maxTotal) {
         next.data('deselect', function() { button2.click(); });
 
         // Set the usable data for other charts
-        addTabData('map', country_code, feature.properties[0][0].name, 'flag');
+        addTabData('map', country_code, feature.properties.name, 'flag');
 
         button1.hide();
         button2.show();
