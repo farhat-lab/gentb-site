@@ -23,9 +23,6 @@ $(document).ready(function() {
   $('div.maps').each(function(map) {
 //this needs to get the data somehow so we can initialize the legend and scale it dynamically
     var map = L.map(this.id).setView([12, 25], 2);
-    var color = d3.scale.threshold()
-        .domain([250, 500, 750, 1000])
-        .range(['#FFFFCC', '#C7E9B4', '#7FCDBB', '#41B6C4', '#1D91C0']);
     var newLegend = function(map, max, color) {
 
             legend = L.control({
@@ -83,10 +80,24 @@ $(document).ready(function() {
               .text('Number of isolates');
 
         }
-
-    initialiseStrainMap(map, color, newLegend);
+    let maxTotal;
+    initialiseStrainMap(map);
     $('#map-store').data('json-signal', function(data) {
-      mapStrainData(map, color, data, newLegend);
+      var getMaxAttribute = function (data, attribute) {
+          var max = -10000000;
+          for (var i=0 ; i<data.length ; i++) {
+              if (attribute === "total_strains"){
+                  max = Math.max(data[i]["properties"][0][0].values.Total, max);
+              }
+              else{
+                  max = Math.max(data[i]["properties"][0][0][attribute], max);
+              }
+          }
+          return max;
+      }
+      var maxGDP = getMaxAttribute(data.features, "gdp");
+      maxTotal = getMaxAttribute(data.features, "total_strains");
+      mapStrainData(map, data, newLegend, maxGDP, maxTotal);
       map.invalidateSize();
     });
   });
@@ -100,18 +111,19 @@ function matchKey(datapoint, key_variable) {
 }
 
 var legend = null;
-function initialiseStrainMap(map, color, newLegend) {
+function initialiseStrainMap(map) {
 
   L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 18,
     attribution: '' //Map tiles (c) <a href="http://openstreetmap.org">OpenStreetMap</a>, Map data (c) genTB'
   }).addTo(map);
 
- newLegend(map, 1000, color)
-
 }
 var map_layer = null;
-function mapStrainData(map, color, data, newLegend) {
+function mapStrainData(map, data, newLegend, maxGDP, maxTotal) {
+  let color_max;
+  let best_color;
+
   var existing = getTabData('map');
 
   if(map_layer) {
@@ -119,21 +131,27 @@ function mapStrainData(map, color, data, newLegend) {
     map.removeLayer(map_layer);
   }
 
+
   function get_style(feature) {
 
-      var color_max;
+
       var color_by;
-      if ($(".form-check-input:checked").val() == "feature.properties[1][0].gdp") {
-          color_by = feature.properties[1][0].gdp;
-          color_max = 6000000;
+      if ($(".form-check-input:checked").val() == "feature.properties[0][0].gdp") {
+          color_by = feature.properties[0][0].gdp;
+          color_max = maxGDP;
       }
       else {
           color_by = feature.properties[0][0].values.Total;
-          color_max = 1000;
+          color_max = maxTotal;
       }
-  var best_color = d3.scale.threshold()
+    best_color = d3.scale.threshold()
         .domain([color_max/4, color_max/2, color_max*3/4, color_max])
         .range(['#FFFFCC', '#C7E9B4', '#7FCDBB', '#41B6C4', '#1D91C0']);
+    if (!legend) {
+        newLegend(map, maxTotal, best_color)
+    }
+
+
     return {
      fillColor: best_color(color_by),
       weight: 1,
@@ -161,20 +179,16 @@ function mapStrainData(map, color, data, newLegend) {
       map.removeControl(legend);
     }
 
-    if ($(".form-check-input:checked").val() == "feature.properties[1][0].gdp") {
+    if ($(".form-check-input:checked").val() == "feature.properties[0][0].gdp") {
         var legend_label = "GDP"
-        max = 400000;
+        color_max = maxGDP;
     }
     else {
         var legend_label = "Number of isolates"
-        max = 1000;
+        color_max = maxTotal;
     }
 
-    var color = d3.scale.threshold()
-        .domain([max/4, max/2, max*.75, max])
-        .range(['#FFFFCC', '#C7E9B4', '#7FCDBB', '#41B6C4', '#1D91C0']);
-
-    newLegend(map, max, color);
+    newLegend(map, color_max, best_color);
 
     d3.select('.caption')
       .text(legend_label);
@@ -183,6 +197,7 @@ function mapStrainData(map, color, data, newLegend) {
 });
 
   function onEachFeature(feature, layer) {
+    let gdp;
     var country_code = feature.properties[0][0].value;
     ret = $('<div></div>');
     ret.append($('<h4>' + feature.properties[0][0].name + '</h4>'));
@@ -195,7 +210,13 @@ function mapStrainData(map, color, data, newLegend) {
       ret.append($("<hr/><div class='total'><span>Total isolates: </span><span>" + feature.properties[0][0].values.Total + "</span></div>"));
     }
     ret.append($('<h6>' + 'Social Determinants of Health:' + '</h6>'));
-    ret.append($("<hr/><div> GDP: <span>" + (feature.properties[1][0].gdp) + "</span></div>"));
+    // if (feature.properties[1].length == 0) {
+    //     gdp == null;
+    // }
+    // else{
+    //     gdp = feature.properties[0][0].gdp
+    // }
+    ret.append($("<hr/><div> GDP: <span>" + (feature.properties[0][0].gdp) + "</span></div>"));
     var button1 = $("<button class='btn btn-primary btn-xs'>Select Country</button>").click(function() {
         // WARNING: jquery class selectors and addClass/removeClass DO NOT work here
 
