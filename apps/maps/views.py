@@ -134,7 +134,10 @@ class Places(JsonView, DataSlicerMixin):
                         "hiv_incidence2018": get_health(country).hiv_incidence2018,
                         "household": get_health(country).household,
                         "who_est_mdr": get_health(country).est_mdr,
-                        "all_tb_incidence2018": get_health(country).all_tb_incidence2018
+                        "all_tb_incidence2018": get_health(country).all_tb_incidence2018,
+                        "pop_dens": get_health(country).pop_dens,
+                        "world_bank_gdp": get_health(country).world_bank_gdp,
+                        "total_wealth": get_health(country).total_wealth
                     }
 
                 } for country in Country.objects.filter(iso2__in=list(ret))
