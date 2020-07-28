@@ -136,7 +136,7 @@ class Places(JsonView, DataSlicerMixin):
                         "who_est_mdr": get_health(country).est_mdr,
                         "all_tb_incidence2018": get_health(country).all_tb_incidence2018,
                         "pop_dens": get_health(country).pop_dens,
-                        "world_bank_gdp": get_health(country).world_bank_gdp,
+                        "world_bank_gdp": float(get_health(country).world_bank_gdp)/1000000000000,
                         "total_wealth": get_health(country).total_wealth
                     }
 
