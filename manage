@@ -6,19 +6,17 @@
 # Move us to the script directory (should be the root)
 cd "$( dirname "$0" )"
 
-for filename in */bin/python3; do
-  if [ -f "$filename" ]; then
-    # Set the settings to a special management PY file.
-    export DJANGO_SETTINGS_MODULE=tb_website.settings.manage
+venv_python=$(find */bin/python3 -name python3)
+if [ -n "$venv_python" ]; then
+  # Set the settings to a special management PY file.
+  export DJANGO_SETTINGS_MODULE=tb_website.settings.manage
 
-    # Run the manage.py in the current directry
-    $filename ./manage.py $@
+  # Run the manage.py in the current directry
+  $venv_python ./manage.py $@
 
-    # Exit with the same exit status
-    exit $?
-  fi
-done
-
-echo "No virtualenv (python virtual environment) found in $PWD."
-exit 2
-
+  # Exit using commands exit status
+  exit $?
+else
+  echo "No virtualenv (python virtual environment) found in $PWD."
+  exit 2
+fi
