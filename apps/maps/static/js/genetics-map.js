@@ -83,6 +83,8 @@ $(document).ready(function() {
     $('#map-store').data('json-signal', function(data) {
       var getMaxAttribute = function (data, attribute) {
           var max = -10000000;
+          var maxPlace;
+          var roundPlace;
           for (var i=0 ; i<data.length ; i++) {
               if (attribute === "total_strains"){
                   max = Math.max(data[i]["properties"].values.Total, max);
@@ -91,7 +93,12 @@ $(document).ready(function() {
                   max = Math.max(data[i]["properties"][attribute], max);
               }
           }
-          return Math.ceil(max);
+        //   maxPlace = Math.ceil(Math.log10(max))
+        //   roundPlace = Math.pow(10, maxPlace)
+        //   console.log(attribute)
+        //   console.log(Math.ceil(max / roundPlace)*roundPlace)
+        //   return Math.ceil(max / roundPlace)*roundPlace
+        return Math.ceil(max)
       }
       var maxGDP = getMaxAttribute(data.features, "world_bank_gdp")
       var maxTotal = getMaxAttribute(data.features, "total_strains");
