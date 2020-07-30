@@ -81,6 +81,7 @@ $(document).ready(function() {
         }
     initialiseStrainMap(map);
     $('#map-store').data('json-signal', function(data) {
+    console.log(data)
       var getMaxAttribute = function (data, attribute) {
           var max = -10000000;
           var maxPlace;
@@ -88,6 +89,9 @@ $(document).ready(function() {
           for (var i=0 ; i<data.length ; i++) {
               if (attribute === "total_strains"){
                   max = Math.max(data[i]["properties"].values.Total, max);
+              }
+              else if (attribute === "MDR") {
+                  max = Math.max(data[i]["properties"].values.MDR, max);
               }
               else{
                   max = Math.max(data[i]["properties"][attribute], max);
@@ -106,13 +110,17 @@ $(document).ready(function() {
       var maxFunding = getMaxAttribute(data.features, "total_funding");
       var maxPop = getMaxAttribute(data.features, "pop_dens");
       var maxTB = getMaxAttribute(data.features, "all_tb_incidence2018");
+      var maxMDR = getMaxAttribute(data.features, "MDR");
+      var maxWHOMDR = getMaxAttribute(data.features, "who_est_mdr");
       var color_by_dict = {
           "feature.properties.world_bank_gdp": ["GDP (Trillions)", maxGDP, "world_bank_gdp"],
           "feature.properties.values.Total": ["Total isolates", maxTotal, "Total"],
           "feature.properties.total_wealth": ["Total Wealth per Capita", maxWealth, "total_wealth"],
           "feature.properties.total_funding": ["Total TB Funding", maxFunding, "total_funding"],
           "feature.properties.pop_dens": ["Total TB Funding", maxPop, "pop_dens"],
-          "feature.properties.all_tb_incidence2018": ["TB Incidence (all types)", maxTB, "all_tb_incidence2018"]
+          "feature.properties.all_tb_incidence2018": ["TB Incidence (all types)", maxTB, "all_tb_incidence2018"],
+          "feature.properties.values.MDR": ["MDR isolates", maxMDR, "MDR"],
+          "feature.properties.who_est_mdr": ["WHO Estimated MDR (% of new cases)", maxWHOMDR, "who_est_mdr"]
       }
 
       mapStrainData(map, data, newLegend, maxGDP, maxTotal, maxWealth, color_by_dict);
@@ -154,6 +162,9 @@ function mapStrainData(map, data, newLegend, maxGDP, maxTotal, maxWealth, color_
     var color_by;
     if ($(".form-check-input:checked").val() == "feature.properties.values.Total"){
         color_by = feature.properties.values.Total
+    }
+    else if ($(".form-check-input:checked").val() == "feature.properties.values.MDR"){
+        color_by = feature.properties.values.MDR
     }
     else {
         color_by = feature.properties[color_by_dict[$(".form-check-input:checked").val()][2]]
