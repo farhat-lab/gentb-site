@@ -40,6 +40,7 @@ To test the projection, maps and other visualisations you can quickly bring a bl
     ./manage load_map_data
     ./manage loaddata drugs genelocus
     ./manage loaddata test-genetics test-strains
+    ./manage load_social_data
     ./manage runserver
 
 These data will be wrong (not real), but should allow basic testing.
