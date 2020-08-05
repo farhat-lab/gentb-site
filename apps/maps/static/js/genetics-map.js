@@ -91,18 +91,18 @@ $(document).ready(function() {
                   max = Math.max(data[i]["properties"].values.Total, max);
               }
               else if (attribute === "MDR") {
-                  max = Math.max(data[i]["properties"].values.MDR, max);
+                  if (!(isNaN(data[i]["properties"].values.MDR))){
+                      max = Math.max(data[i]["properties"].values.MDR, max);
+                  }
+
+
               }
               else{
                   max = Math.max(data[i]["properties"][attribute], max);
               }
           }
-        //   maxPlace = Math.ceil(Math.log10(max))
-        //   roundPlace = Math.pow(10, maxPlace)
-        //   console.log(attribute)
-        //   console.log(Math.ceil(max / roundPlace)*roundPlace)
-        //   return Math.ceil(max / roundPlace)*roundPlace
-        return Math.ceil(max)
+          maxPlace = Math.ceil(Math.log10(max))
+          return max.toPrecision(maxPlace)
       }
       var maxGDP = getMaxAttribute(data.features, "world_bank_gdp")
       var maxTotal = getMaxAttribute(data.features, "total_strains");
@@ -115,10 +115,10 @@ $(document).ready(function() {
       var color_by_dict = {
           "feature.properties.world_bank_gdp": ["GDP (Trillions)", maxGDP, "world_bank_gdp"],
           "feature.properties.values.Total": ["Total isolates", maxTotal, "Total"],
-          "feature.properties.total_wealth": ["Total Wealth per Capita", maxWealth, "total_wealth"],
-          "feature.properties.total_funding": ["Total TB Funding", maxFunding, "total_funding"],
-          "feature.properties.pop_dens": ["Total TB Funding", maxPop, "pop_dens"],
-          "feature.properties.all_tb_incidence2018": ["TB Incidence (all types)", maxTB, "all_tb_incidence2018"],
+          "feature.properties.total_wealth": ["Total Wealth per Capita ($)", maxWealth, "total_wealth"],
+          "feature.properties.total_funding": ["Total TB Funding ($)", maxFunding, "total_funding"],
+          "feature.properties.pop_dens": ["Population density (people per sq. km of land area)", maxPop, "pop_dens"],
+          "feature.properties.all_tb_incidence2018": ["TB Incidence (all types, cases per 100,000)", maxTB, "all_tb_incidence2018"],
           "feature.properties.values.MDR": ["MDR isolates", maxMDR, "MDR"],
           "feature.properties.who_est_mdr": ["WHO Estimated MDR (% of new cases)", maxWHOMDR, "who_est_mdr"]
       }
@@ -216,24 +216,31 @@ function mapStrainData(map, data, newLegend, maxGDP, maxTotal, maxWealth, color_
   function onEachFeature(feature, layer) {
     var country_code = feature.properties.value;
     ret = $('<div></div>');
-    ret.append($('<h4>' + feature.properties.name + '</h4>'));
+    ret.append($('<h4 style = "font-weight:bold">' + feature.properties.name + '</h4>'));
     $.each(['Sensitive', 'MDR', 'XDR', 'TDR'], function(key, value) {
       if (feature.properties.values[value]) {
-        ret.append($('<div>Number of <span>' + value + ' isolates: </span><span>' + feature.properties.values[value] + "</span></div>"));
+        ret.append($('<div style="color:black">Number of <span>' + value + ' isolates: </span><span>' + feature.properties.values[value] + "</span></div>"));
       }
     });
-    ret.append($("<hr/><div> WHO Estimated MDR (Percentage of new TB cases with rifampicin resistant TB): <span>" + (feature.properties.who_est_mdr) + "</span></div>"));
-    ret.append($("<hr/><div> HIV Coincidence (Estimated incidence of TB cases who are HIV-positive): <span>" + (feature.properties.hiv_incidence2018) + "</span></div>"));
-    ret.append($("<hr/><div> TB Incidence (all types): <span>" + (feature.properties.all_tb_incidence2018) + "</span></div>"));
     if(Object.keys(feature.properties.values).length > 2) {
-      ret.append($("<hr/><div class='total'><span>Total isolates: </span><span>" + feature.properties.values.Total + "</span></div>"));
+      ret.append($("<hr/><div class='total' style='color:black'><span>Total isolates: </span><span>" + feature.properties.values.Total + "</span></div>"));
     }
-    ret.append($('<h6>' + 'Social Determinants of Health:' + '</h6>'));
-    ret.append($("<hr/><div> GDP (Trillions): $<span>" + (Math.round(feature.properties.world_bank_gdp* 100)/100) + "</span></div>"));
-    ret.append($("<hr/><div> Total Wealth per Capita: $<span>" + (feature.properties.total_wealth) + "</span></div>"));
-    ret.append($("<hr/><div> Total TB Funding: $<span>" + (feature.properties.total_funding) + "</span></div>"));
-    ret.append($("<hr/><div> Estimated average household size: <span>" + (Math.round(feature.properties.household*10)/10) + "</span></div>"));
-    ret.append($("<hr/><div> Population Density (people per sq. km of land area): <span>" + (feature.properties.pop_dens) + "</span></div>"));
+    ret.append($('<h6 style = "font-weight:bold"= >' + 'World Health Organization Related Data (per 100,000):' + '</h6>'));
+    ret.append($("<hr/><div style='color:#000080'> WHO Estimated MDR (New TB cases with rifampicin resistant TB): <span>" + (feature.properties.who_est_mdr*100000) + "</span></div>"));
+    ret.append($("<hr/><div style='color:#000080'> HIV Coincidence (TB cases who are HIV-positive): <span>" + (feature.properties.hiv_incidence2018) + "</span></div>"));
+    ret.append($("<hr/><div style='color:#000080'> TB Incidence (all types): <span>" + (feature.properties.all_tb_incidence2018) + "</span></div>"));
+
+    ret.append($('<h6 style = "font-weight:bold"= >' + 'World Health Organization and World Bank Related Social Determinants of Health Data:' + '</h6>'));
+    ret.append($("<hr/><div style = 'color:#505050'> Population Density (people per sq. km of land area): <span>" + (Math.round(feature.properties.pop_dens*10)/10) + "</span></div>"));
+    ret.append($("<hr/><div style = 'color:#505050'> Estimated average household size: <span>" + (Math.round(feature.properties.household*10)/10) + "</span></div>"));
+    if(feature.properties.total_funding.length != 0) {
+    ret.append($("<hr/><div style = 'color:#505050'> Total TB Funding (billions): $<span>" + (Math.round(feature.properties.total_funding/10000000)*10000000)/1000000000 + "</span></div>"));
+    }
+    else {
+        ret.append($("<hr/><div style = 'color:#505050'> Total TB Funding (billions): N/A<span>"  + "</span></div>"));
+    }
+    ret.append($("<hr/><div style = 'color:#505050'> GDP (Trillions): $<span>" + (Math.round(feature.properties.world_bank_gdp* 100)/100) + "</span></div>"));
+    ret.append($("<hr/><div style = 'color:#505050'> Total Wealth per Capita: $<span>" + (Math.round(feature.properties.total_wealth)) + "</span></div>"));
     var button1 = $("<button class='btn btn-primary btn-xs'>Select Country</button>").click(function() {
         // WARNING: jquery class selectors and addClass/removeClass DO NOT work here
 
