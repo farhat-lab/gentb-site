@@ -2,6 +2,7 @@
 # pylint: disable=wrong-import-position
 # dataset from WHO: TB_burden_countries_2020-07-23.csv
 
+import requests
 import sys
 
 sys.path.insert(0, '.')
@@ -32,7 +33,7 @@ if __name__ == '__main__':
                 except Country.DoesNotExist:
                     print("Can't find country {}".format(row['iso3']))
                     continue
-                health.hiv_incidence2018 = row['e_inc_tbhiv_num']
-                health.all_tb_incidence2018 = row["e_inc_num"]
+                health.hiv_incidence2018 = row['e_inc_tbhiv_100k']
+                health.all_tb_incidence2018 = row["e_inc_100k"]
                 health.save()
                 print("Saved WHO TB data for {}".format(country))
