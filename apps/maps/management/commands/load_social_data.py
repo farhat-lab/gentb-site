@@ -1,4 +1,6 @@
-
+"""
+Load the social determinant of health data from the World Health Organization and the World Bank
+""""
 import csv
 import requests
 import sys
