@@ -4,11 +4,11 @@ Basic django site to facilitate the contribution and analysis of fastQ and VCF f
 
 # Installation
 
-This website requires python 2.7 plus a database with GIS functions.
+This website requires python 3.x plus a database with GIS functions.
 
 Create a virtualenv and install deps:
 
-    virtualenv -p python2.7 pythonenv
+    virtualenv -p python3 pythonenv
     ./pythonenv/bin/activate
     pip install -r requirements.txt
 
