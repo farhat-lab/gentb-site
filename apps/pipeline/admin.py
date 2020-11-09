@@ -53,7 +53,7 @@ class PipelineAdmin(admin.ModelAdmin):
 admin.site.register(Pipeline, PipelineAdmin)
 
 class ProgramAdmin(admin.ModelAdmin):
-    list_display = ('name', 'description', 'pipeline', 'keep',)
+    list_display = ('name', 'description', 'pipeline', 'keep_for',)
     filter_horizontal = ('files', 'test_files')
 
     @staticmethod

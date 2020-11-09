@@ -55,3 +55,10 @@ class Command(BaseCommand):
             if run.error_text:
                 log(run.error_text)
             run.save()
+
+        # Loop through previously saved outputs and clean them
+        for prog in ProgramRun.objects.filter(completed__isnull=False,
+                                              program__keep_for__gt=0
+                                             ).exclude(output_size=0):
+            prog.delete_output_files()
+            prog.save()

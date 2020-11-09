@@ -41,7 +41,7 @@ import random
 import logging
 
 from django.db.models import (
-    Model, Q, PositiveIntegerField, FileField, SlugField, DateTimeField,
+    Model, Q, PositiveIntegerField, IntegerField, FileField, SlugField, DateTimeField,
     BooleanField, CharField, ForeignKey, TextField, ManyToManyField,
     CASCADE, SET_NULL
 )
@@ -132,8 +132,16 @@ class Program(Model):
     command_line = TextField(
         help_text='Write the command line using replacement syntax '
         'for inputs and outputs')
-    keep = BooleanField(default=True,\
-        help_text="Should the output files be kept or deleted.")
+    keep_for = IntegerField(default=-1,
+        choices=[
+            (-1, "Keep Forever"),
+            (0, "Do not Keep"),
+            (1, "Keep for One Hour"),
+            (24, "Keep for One Day"),
+            (168, "Keep for One Week"),
+            (744, "Keep for One Month"),
+            (8760, "Keep for One Year"),
+        ])
     wait_for_files = BooleanField(default=False,\
         help_text="Wait for files, use this if the cluster is not syncing files before"\
         "running the job and causing errors.")
@@ -454,8 +462,7 @@ class PipelineRun(TimeStampedModel):
         if all([program.update_status() for program in qset]):
             if qset.count():
                 # Clean up step for all programs
-                for program in self.programs.filter(program__keep=False):
-                    program.delete_output_files()
+                program.delete_output_files()
                 self.clean_the_files()
             return True
         return False
@@ -582,7 +589,7 @@ class ProgramRun(TimeStampedModel):
         self.output_files = '\n'.join([fsi[k] for k in fsi if k[0] == '@'])
 
         # Remove any output files previously used.
-        self.delete_output_files()
+        self.delete_output_files(0)
 
         cmd = self.program.prepare_command(dict(fsi))
         self.debug_text = cmd
@@ -694,17 +701,26 @@ class ProgramRun(TimeStampedModel):
 
     def update_size(self, *files):
         """Takes a list of files as a string and returns the size in Kb"""
-        return 1024 + sum([os.path.getsize(fn) for fn in files])
+        return 0 + sum([os.path.getsize(fn) for fn in files])
 
     def update_sizes(self):
         """Update input and output sizes"""
         self.input_size = self.update_size(*self.input_fn) / 1024.0
         self.output_size = self.update_size(*self.output_fn) / 1024.0
 
-    def delete_output_files(self):
+    def delete_output_files(self, keep_for=None):
         """Deletes any of the output files"""
-        for fname in self.output_fn:
-            try:
-                os.unlink(fname)
-            except (OSError, IOError):
-                pass
+        if keep_for is None:
+            keep_for = self.program.keep_for
+        if keep_for == -1: # Forever
+            return # No delete today!
+        age = now() - (self.completed or now())
+        hours = int(age.total_seconds() / 60 / 60)
+        if keep_for == 0 or keep_for <= hours:
+            for fname in self.output_fn:
+                try:
+                    os.unlink(fname)
+                except (OSError, IOError) as err:
+                    print(f"ERROR Delete! {err}")
+                    pass
+            self.update_sizes()
