@@ -26,14 +26,14 @@
     <![endif]-->
     <!-- Use this to quickly test CSS changes in a template,
         then move to tb_website.css -->
-    {% block extra_css %}
-    {% endblock %}
+    {% block extra_css %}{% endblock %}
+    {% block "css" %}{% endblock %}
 
     <script src="{% static 'js/jquery-3.3.1.min.js' %}"></script>
     <script src="{% static 'js/basic.js' %}"></script>
     <script src="{% static 'js/bootstrap.min.js' %}"></script>
-    {% block extra_js %}
-    {% endblock %}
+    {% block extra_js %}{% endblock %}
+    {% block "js" %}{% endblock %}
 
     {{ form.media }}
   </head>

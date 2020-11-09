@@ -22,13 +22,15 @@ from django.views.generic import ListView, DetailView, TemplateView, RedirectVie
 from django.views.generic.detail import SingleObjectMixin
 from django.contrib import messages
 from django.urls import reverse
+from django.db.models import Sum
 
 from chore.fake import FakeJobManager
 from chore import get_job_manager
 
 from apps.tb_users.mixins import ProtectedMixin
+from apps.uploads.models import UploadFile
 
-from .models import Pipeline, PipelineRun, ProgramRun
+from .models import Pipeline, PipelineRun, ProgramRun, Program
 
 class PipelineDetail(ProtectedMixin, DetailView): # pylint: disable=too-many-ancestors
     """Test the pipeline in the front end to test the connectivity"""
@@ -46,6 +48,39 @@ class PipelineDetail(ProtectedMixin, DetailView): # pylint: disable=too-many-anc
     def get_parent(self):
         return (reverse('pipeline:pipelines'), "Pipelines")
 
+class DiskUsage(ProtectedMixin, ListView):
+    """Show the amount of disk being used"""
+    model = UploadFile
+
+    def get_queryset(self):
+        qset = super().get_queryset()
+        qset = qset.filter(retrieval_end__isnull=False)
+        return qset
+
+    def get_context_data(self, **kwargs):
+        data = super().get_context_data(**kwargs)
+        file_types = ['fastq', 'fastq.gz', 'vcf', 'vcf.gz']
+        qset = self.get_queryset()
+
+        data['uploads'] = dict([(file_type,
+            qset.filter(filename__endswith=file_type))
+            for file_type in file_types])
+
+        data['pipelines'] = []
+        for program in Program.objects.all():
+            for run in program.runs.filter(output_size__isnull=True):
+                run.update_sizes()
+                run.save()
+
+            qset = program.runs.all().filter(output_size__isnull=False)
+            size = qset.aggregate(Sum('output_size'))['output_size__sum'] or 0
+            data['pipelines'].append({
+                "name": program.name,
+                "size": size * 1024.0,
+                "count": program.runs.count(),
+            });
+
+        return data
 
 class PipelineList(ProtectedMixin, ListView): # pylint: disable=too-many-ancestors
     """Create a list of pipeline types"""

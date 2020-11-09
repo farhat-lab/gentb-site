@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% load plumber static %}
+
+{% block "title" %}System Disk Usage{% endblock %}
+{% block "js" %}{{ block.super }}
+    <script src="{% static "js/d3.js" %}"></script>
+    <script src="{% static "js/nv.d3.js" %}"></script>
+    <script>
+function fileSize(bytes) {
+  var thresh = 1024;
+  if (Math.abs(bytes) < thresh) {
+    return bytes + ' B';
+  }
+  var units = ['KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB'];
+  var u = -1;
+  do {
+    bytes /= thresh;
+    ++u;
+  } while (Math.abs(bytes) >= thresh && u < units.length - 1);
+  return bytes.toFixed(1) + ' ' + units[u];
+}
+function formatSize(val, d) {
+    return fileSize(val);
+}
+
+$(document).ready(function() {
+    var None = 0;
+    var data = {
+        "name": "Disk Usage",
+        "children": [
+            {
+                "name": "Uploads",
+                "children": [
+                    {% for key, items in uploads.items %}
+                    {
+                        "name": "{{ key }}",
+                        "size": {{ items.usage }},
+                        "count": {{ items.count }},
+                    },
+                    {% endfor %}
+                ],
+            },
+            {
+                "name": "Pipelines",
+                "children": [
+                    {% for item in pipelines %}
+                    {
+                        "name": "{{ item.name }}",
+                        "size": {{ item.size }},
+                        "count": {{ item.count }},
+                    },
+                    {% endfor %}
+                ],
+            }
+        ],
+    };
+    var chart = nv.models.sunburstChart().mode('size');
+    chart.tooltip.valueFormatter(formatSize);
+    var svg = d3.select("#chart")
+          .append('svg');
+          svg.datum([data])
+          .attr('width', "1200")
+          .attr('height', "1200")
+          .attr('viewBox', "0 0 1200 1200")
+          .attr('class', "lineages")
+          .call(chart);
+});
+
+    </script>
+{% endblock %}
+{% block "css" %}
+  <link rel="stylesheet" href="{% static "css/nv.d3.css" %}"/>
+{% endblock %}
+
+{% block content %}
+  <div class="row">
+    <div class="col-lg-12">
+      <h1 class="page-header">System Disk Usage<br/><small>A rundown of how the disk is being used.</small></h1>
+
+      <div id="chart" style="height: 100%; margin: 10%;">
+      </div>
+
+    </div>
+  </div>
+{% endblock %}
+

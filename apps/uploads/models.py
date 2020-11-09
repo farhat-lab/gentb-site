@@ -24,8 +24,8 @@ import logging
 
 from django.conf import settings
 from django.db.models import (
-    Model, SlugField, CharField, PositiveIntegerField, URLField,
-    DateTimeField, TextField, ForeignKey, CASCADE, SET_NULL
+    Model, Manager, QuerySet, SlugField, CharField, PositiveIntegerField, URLField,
+    DateTimeField, TextField, ForeignKey, CASCADE, SET_NULL, Sum
 )
 from django.utils.timezone import now
 
@@ -33,6 +33,17 @@ from .utils import Download, get_uuid
 from .files import ResumableFile
 
 LOGGER = logging.getLogger('apps.uploads.models')
+
+class UploadQuerySet(QuerySet):
+    def usage(self):
+        for item in self.filter(size__isnull=True):
+            if not item.is_file:
+                print(f"Item doesn't exist for file {filename}")
+                continue
+            item.size = item.size_done()
+            item.save()
+        return self.filter(size__isnull=False)\
+                   .aggregate(Sum('size'))['size__sum']
 
 class UploadFile(Model):
     """Base upload file, when a user uploads a genetic file."""
@@ -52,6 +63,7 @@ class UploadFile(Model):
 
     # Customisable flag for apps that use this uploader
     flag = CharField(max_length=4, null=True, blank=True)
+    objects = UploadQuerySet.as_manager()
 
     class Meta:
         """Order by created date"""
