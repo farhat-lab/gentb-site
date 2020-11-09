@@ -699,6 +699,18 @@ class ProgramRun(TimeStampedModel):
             return self.output_files.replace('\r', '').split("\n")
         return []
 
+    def output_age(self):
+        """Returns the number of hours until the outputs are deleted"""
+        age = now() - (self.completed or now())
+        return int(age.total_seconds() / 60 / 60)
+
+    def output_life(self, keep_for=None):
+        if keep_for is None:
+            keep_for = self.program.keep_for
+        if keep_for == -1:
+            return -1
+        return max([keep_for - self.output_age(), 0])
+
     def update_size(self, *files):
         """Takes a list of files as a string and returns the size in Kb"""
         return 0 + sum([os.path.getsize(fn) for fn in files])
@@ -710,13 +722,7 @@ class ProgramRun(TimeStampedModel):
 
     def delete_output_files(self, keep_for=None):
         """Deletes any of the output files"""
-        if keep_for is None:
-            keep_for = self.program.keep_for
-        if keep_for == -1: # Forever
-            return # No delete today!
-        age = now() - (self.completed or now())
-        hours = int(age.total_seconds() / 60 / 60)
-        if keep_for == 0 or keep_for <= hours:
+        if not self.output_life(keep_for):
             for fname in self.output_fn:
                 try:
                     os.unlink(fname)

@@ -386,7 +386,7 @@ class PredictStrain(Model):
     @property
     def prediction_file(self):
         """Return a detected prediction file for this strain"""
-        for (url, fn, name) in self.output_files:
+        for (url, fn, name, life) in self.output_files:
             if fn.endswith('matrix.json'):
                 return fn
         return None
@@ -399,7 +399,7 @@ class PredictStrain(Model):
     @property
     def lineage_file(self):
         """Return a detected lineage file for this strain"""
-        for (_, filename, _) in self.output_files:
+        for (_, filename, _, life) in self.output_files:
             if filename.endswith('lineage.txt'):
                 return filename
         return None
@@ -441,13 +441,14 @@ class PredictStrain(Model):
         root_url = join(settings.MEDIA_URL, 'data')
         if self.piperun:
             for run in self.piperun.programs.all():
+                life = run.output_life()
                 for fn in run.output_fn:
                     if os.path.isfile(fn):
                         url = None
                         if root_path in fn:
                             root_path = root_path.rstrip('/')
                             url = fn.replace(root_path, root_url)
-                        yield (url, fn, basename(fn))
+                        yield (url, fn, basename(fn), life)
 
     def get_raw_prediction(self):
         """Get the raw data slightly bound better"""

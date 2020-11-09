@@ -4,11 +4,13 @@
   <h3 class="well-label"><span class="label label-success">{{ strain.name }}</span></h3>
   <div class="well files">
     <div class="row">
-      {% for url, fn, name in strain.output_files %}
+      {% for url, fn, name, life in strain.output_files %}
         <a href="{{ url }}" class="btn btn-default">
           {% with fn|fileicon as ft %}
             <img src="{% static ft %}">
             <p href="{{ url }}">{{ name }}</p>
+            {% if life == 0 %}<span class="deleting glyphicon glyphicon-exclamation-sign" data-toggle="tooltip" title="Deleting Now!"></span>{% endif %}
+            {% if life > 0 %}<span class="deleting glyphicon glyphicon-info-sign" data-toggle="tooltip" title="Deleting in {{ life }} hours"></span>{% endif %}
           {% endwith %}
         </a>
       {% endfor %}

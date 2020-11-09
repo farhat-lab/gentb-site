@@ -163,3 +163,11 @@ td.field input[type="checkbox"] {
   height: 90px;
   padding: 5px 10px;
 }
+.well.files span.deleting {
+  color: #d03434;
+  position: relative;
+  float: right;
+  top: -112px;
+  right: 8px;
+}
+
