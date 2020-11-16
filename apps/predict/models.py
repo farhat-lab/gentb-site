@@ -433,7 +433,7 @@ class PredictStrain(Model):
         """The name of the lineage if possible"""
         filename = self.lineage_file
         if not filename:
-            return 'File Not Found'
+            return []
 
         with open(filename, 'r') as fhl:
             data = fhl.read().strip('\n\r')
@@ -445,6 +445,7 @@ class PredictStrain(Model):
                 return list(lineage_fast_caller(data))
             else:
                 return list(lineage_other_caller(data))
+        return []
 
     @property
     def output_files(self):
