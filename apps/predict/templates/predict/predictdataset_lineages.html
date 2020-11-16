@@ -1,42 +1,22 @@
+{% with lin=object.lineages %}
 <table class="table table-hover">
   <thead>
     <tr>
       <th></th>
-      {% with lineage_type=object.strains.first.lineage.type %}
-        {% if lineage_type == 'spoligo' %}
-          <th><em>in silico</em> spoligotype</th>
-          <th>Best match family</th>
-        {% elif lineage_type == 'lineage' or lineage_type == 'mixed' %}
-          <th>Major Lineage</th>
-          <th>Sub Lineage(s)</th>
-        {% endif %}
-      {% endwith %}
+      {% for type in lin.header %}
+        <th>{{ type }}</th>
+      {% endfor %}
     </tr>
   </thead>
   <tbody>
-    {% for strain in object.strains.all %}
-      {% with lineage=strain.lineage %}
-        <tr>
-          <td>{{ strain }}</td>
-          {% if lineage.type == 'spoligo' %}
-            <td>{{ lineage.spoligotype }}</td>
-            <td>{{ lineage.match }}</td>
-          {% elif lineage.type == 'lineage' %}
-            <td>{{ lineage.first }}</td>
-            <td>{{ lineage.lineage }}</td>
-          {% elif lineage.type == 'mixed' %}
-            <td>Mixed</td>
-            <td>
-                {% for lin in lineage.all %}
-                  {% if not forloop.first %}, {% endif %}<em>{{ lin }}</em> 
-                {% endfor %}
-            </td>
-          {% else %}
-            <td>Unknown Lineage Format!</td>
-            <td>{{ lineage.type }}</td>
-          {% endif %}
-        </tr>
-      {% endwith %}
+    {% for row in lin.rows %}
+      <tr>
+        <td>{{ row.strain }}</td>
+        {% for col in row.cols %}
+          <td>{{ col }}</td>
+        {% endfor %}
+      </tr>
     {% endfor %}
   </tbody>
 </table>
+{% endwith %}

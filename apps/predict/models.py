@@ -28,7 +28,7 @@ from hashlib import md5
 import os
 from os.path import join, isdir, basename
 
-from collections import defaultdict
+from collections import defaultdict, OrderedDict
 from datetime import timedelta
 
 from model_utils.models import TimeStampedModel
@@ -47,6 +47,8 @@ from django.utils.translation import ugettext_lazy as _
 from apps.uploads.models import UploadFile
 from apps.pipeline.models import Pipeline, PipelineRun, ProgramRun
 from apps.mutations.models import Drug, GeneLocus
+
+from .utils import lineage_spoligo, lineage_fast_caller, lineage_other_caller
 
 LOGGER = logging.getLogger('apps.predict')
 
@@ -254,6 +256,29 @@ class PredictDataset(TimeStampedModel):
         """Returns the dataset as a serialised json"""
         return serializers.serialize('json', PredictDataset.objects.filter(id=self.id))
 
+    def lineages(self):
+        """Get a table of lineages"""
+        header = []
+        results = []
+        for strain in self.strains.all():
+            columns = [''] * len(header)
+            for name, lineage in strain.lineages():
+                if name in header:
+                    columns[header.index(name)] = lineage
+                else:
+                    header.append(name)
+                    columns.append(lineage)
+            results.append({
+                'strain': str(strain),
+                'cols': columns,
+            })
+        for row in results:
+            row['cols'] += [''] * (len(header) - len(row['cols']))
+        return {
+            'header': header,
+            'rows': results,
+        }
+
 
 class PredictPipeline(Model):
     """Each file type can have possible pipelines, this provides a selection"""
@@ -404,35 +429,22 @@ class PredictStrain(Model):
                 return filename
         return None
 
-    @property
-    def lineage(self):
+    def lineages(self):
         """The name of the lineage if possible"""
         filename = self.lineage_file
-        if filename and os.path.isfile(filename):
-            with open(filename, 'r') as fhl:
-                data = fhl.read().strip('\n\r')
-                if '\t' in data:
-                    data = data.split('\t')
-                    return {
-                        'type': 'spoligo',
-                        'spoligotype': data[1],
-                        'match': data[-1],
-                    }
+        if not filename:
+            return 'File Not Found'
 
-                data = [lin.replace('lineage', '') for lin in data.split(',')]
-                for x, lin in enumerate(data):
-                    if x and not lin.startswith(data[x-1]):
-                        return {
-                            'type': 'mixed',
-                            'all': data,
-                        }
+        with open(filename, 'r') as fhl:
+            data = fhl.read().strip('\n\r')
 
-                return {
-                    'type': 'lineage',
-                    'first': data[0],
-                    'lineage': data[-1],
-                }
-        return 'Not Found'
+            # Very old format lineages
+            if data and data[0] == '\t':
+                return list(lineage_spoligo(data.split('\t')))
+            elif '\t' in data:
+                return list(lineage_fast_caller(data))
+            else:
+                return list(lineage_other_caller(data))
 
     @property
     def output_files(self):
