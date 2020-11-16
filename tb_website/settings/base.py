@@ -131,7 +131,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     # App based middleware
-    #'tb_website.middleware.AutoBreadcrumbMiddleware',
+    'tb_website.middleware.AutoBreadcrumbMiddleware',
     # Support Middleware
     'apps.versioner.middleware.VersionInformation',
 ]

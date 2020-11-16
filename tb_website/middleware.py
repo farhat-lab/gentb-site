@@ -53,6 +53,13 @@ class AutoBreadcrumbMiddleware(object):
     """
     keys = ('breadcrumbs', 'title')
 
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        response = self.get_response(request)
+        return response
+
     def get(self, data, key, default=None, then=None):
         """Returns a data key from the context_data, the view, a get
         method on the view or a get method on the middleware in that order.
@@ -85,12 +92,11 @@ class AutoBreadcrumbMiddleware(object):
         obj = data.get('object', None)
         if obj is not None and user is not None:
             ct = ContentType.objects.get_for_model(type(obj))
-            bits = (ct.app_label, ct.model, 'change')
             args = (obj.pk,) if obj else ()
-            if user.has_perm('%s.%s_%s' % (ct.app_label, 'change', ct.model)):
+            if user.has_perm(f'{ct.app_label}.change_{ct.model}'):
                 return {
-                    'name': 'Edit "%s"' % str(obj, errors='ignore'),
-                    'url': reverse('admin:%s_%s_%s' % bits, args=args),
+                    'name': f'Edit "{obj}"',
+                    'url': reverse(f'admin:{ct.app_label}_{ct.model}_change', args=args),
                 }
 
     def get_title(self, data):
