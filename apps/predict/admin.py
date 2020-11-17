@@ -23,12 +23,26 @@ class StrainInline(admin.StackedInline):
 
 class PredictDatasetAdmin(admin.ModelAdmin):
     #inlines = (StrainInline, PredictDatasetNoteInline)
+    actions = ['retry_processes']
     save_on_top = True
     search_fields = ('title', 'user__first_name', 'user__last_name',)
     list_display = ('title', 'user', 'get_status', 'has_prediction', 'file_directory', 'created', 'modified')
     list_filter = []
     readonly_fields = [ 'created', 'modified', 'md5', 'file_directory',
                         'user_name', 'user_email', 'user_affiliation',]
+
+    def retry_processes(modeladmin, request, queryset):
+        for predict in queryset.all():
+            for strain in predict.strains.all():
+                if not strain.piperun:
+                    continue
+                for run in strain.piperun.all_programs():
+                    if run.is_submitted and run.is_error and run.has_input:
+                        run.is_submitted = False
+                        run.error_text = ''
+                        run.save()
+    retry_processes.short_description = "Atempt to Retry Jobs"
+
 
 admin.site.register(PredictDataset, PredictDatasetAdmin)
 
