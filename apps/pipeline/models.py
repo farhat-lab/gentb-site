@@ -462,10 +462,14 @@ class PipelineRun(TimeStampedModel):
         if all([program.update_status() for program in qset]):
             if qset.count():
                 # Clean up step for all programs
-                program.delete_output_files()
+                self.delete_output_files()
                 self.clean_the_files()
             return True
         return False
+
+    def delete_output_files(self, keep_for=None):
+        for run in self.programs.all():
+            run.delete_output_files(keep_for=keep_for)
 
     def get_errors(self):
         """Return true if programs in the pipeline have errors"""

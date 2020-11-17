@@ -24,16 +24,20 @@ Signals for pipeline
 from django.db.models import signals
 from django.apps import AppConfig
 
-class PipelineApp(AppConfig):
-    """Pipeline Application with signals"""
-    name = 'apps.pipeline'
+class PredictApp(AppConfig):
+    """Predict Application with signals"""
+    name = 'apps.predict'
 
     @staticmethod
-    def clean_run(instance, **_):
-        """Remove any files in an program run instance when deleting (make sure!)"""
-        instance.delete_output_files(0)
+    def delete_piperun(instance, **_):
+        """Remove any pipelines associated with this predict strain"""
+        # Pipeline runs should be deleted with the predict dataset.
+        if instance.piperun:
+            instance.piperun.delete()
+        for upload in instance.files:
+            upload.delete()
 
     def ready(self):
         """Called when the app is ready"""
-        from .models import ProgramRun
-        signals.pre_delete.connect(self.clean_run, sender=ProgramRun)
+        from .models import PredictStrain
+        signals.pre_delete.connect(self.delete_piperun, sender=PredictStrain)

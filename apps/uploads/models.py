@@ -125,7 +125,22 @@ class UploadFile(Model):
     def delete_now(self):
         """Remove the saved file from the disk if possible"""
         if self.filename and self.is_file:
-            os.unlink(self.fullpath)
+            self.delete_original()
+            if os.path.isfile(self.fullpath):
+                os.unlink(self.fullpath)
+
+    def delete_original(self):
+        """Attempt to delete the original uploaded file, if the last upload standing"""
+        for obj in UploadFile.objects.filter(filename=self.filename).exclude(pk=self.pk):
+            if obj.original_file() == self.original_file():
+                return # Do not delete, it's being used elsewhere!
+        if os.path.isfile(self.original_file()):
+            os.unlink(self.original_file())
+
+    def original_file(self):
+        if os.path.islink(self.fullpath):
+            return os.readlink(self.fullpath)
+        return self.fullpath
 
     def save_now(self, data):
         """Save the data as if this external download was done"""
