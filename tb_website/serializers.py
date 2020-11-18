@@ -61,17 +61,31 @@ def Deserializer(fhl, **options):
         raise IOError("String or bytes not accepted, only file handles")
 
     try:
+        count = 0
         last_pos = 0
         size = os.path.getsize(fhl.name)
-        for obj in PythonDeserializer(ProgressiveLoader(fhl), **options):
+        descer = PythonDeserializer(ProgressiveLoader(fhl), **options)
+        while True:
+            count += 1
+            try:
+                obj = next(descer)
+            except StopIteration:
+                print(f"Complete {count}")
+                break
+            except Exception as err:
+                print(f"\no:{count} ! Exception: {err}")
+                continue
             pos = fhl.tell()
             if pos != last_pos:
-                sys.stdout.write("Loading: {}/{} ({:.2f}%)\r".format(sizeof_fmt(pos), sizeof_fmt(size), pos / size * 100))
+                sys.stdout.write("Loading: {}/{} ({:.2f}%) {} objects\r".format(
+                    sizeof_fmt(pos), sizeof_fmt(size), pos / size * 100, count))
                 last_pos = pos
             yield obj
     except GeneratorExit:
+        print("\n\n")
         raise
     except Exception as e:
+        print("\n\n")
         raise DeserializationError(str(e))
 
 def json_deserializer():
