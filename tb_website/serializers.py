@@ -18,14 +18,16 @@ class Serializer(JsonSerializer):
     pass
 
 class ProgressiveLoader(object):
-    def __init__(self, fhl):
+    def __init__(self, fhl, pos=1):
         self.disk = fhl
+        self.pos = pos
 
     def __iter__(self):
         """Loop through disk data"""
-        self.disk.seek(1) # Skip '['
+        self.disk.seek(self.pos) # Skip '[' == 1
         buf = b''
         while True:
+            self.pos = self.disk.tell()
             chunk = self.disk.read(200000)
             buf += chunk
 
@@ -34,6 +36,7 @@ class ProgressiveLoader(object):
                 (segment, buf) = buf.split(b"\n}", 1)
                 buf = buf.lstrip(b",")
                 yield json.loads("{\n" + segment.decode('utf8') + "\n}")
+                self.pos = self.disk.tell() - len(buf)
 
             if not chunk:
                 break
@@ -64,7 +67,8 @@ def Deserializer(fhl, **options):
         count = 0
         last_pos = 0
         size = os.path.getsize(fhl.name)
-        descer = PythonDeserializer(ProgressiveLoader(fhl), **options)
+        loader = ProgressiveLoader(fhl)
+        descer = PythonDeserializer(loader, **options)
         while True:
             count += 1
             try:
@@ -74,12 +78,12 @@ def Deserializer(fhl, **options):
                 break
             except Exception as err:
                 print(f"\no:{count} ! Exception: {err}")
+                descer = PythonDeserializer(loader, **options)
                 continue
-            pos = fhl.tell()
-            if pos != last_pos:
+            if fhl.tell() != last_pos:
                 sys.stdout.write("Loading: {}/{} ({:.2f}%) {} objects\r".format(
-                    sizeof_fmt(pos), sizeof_fmt(size), pos / size * 100, count))
-                last_pos = pos
+                    sizeof_fmt(loader.pos), sizeof_fmt(size), loader.pos / size * 100, count))
+                last_pos = fhl.tell()
             yield obj
     except GeneratorExit:
         print("\n\n")
