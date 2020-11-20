@@ -9,7 +9,7 @@ import atexit
 
 from collections import defaultdict
 
-from django.db import models
+from django.db import models, transaction
 from django.core.serializers import base, get_serializer_formats, register_serializer
 from django.core.serializers.python import _get_model
 from django.core.serializers.json import Serializer as BaseSerializer
@@ -118,8 +118,17 @@ class BigDeserializer(object):
 
             obj = self.load_block(m_name, pk, fields)
             if obj is not None:
-                yield obj
+                try:
+                    obj.save()
+                except Exception:
+                    # Anything that can go wrong.
+                    obj = None
+
+            if obj is not None:
+                #yield obj
                 success += 1
+                if success % 1000 == 0:
+                     transaction.commit()
             else:
                 if not self.has_ranges:
                     loader.reject_current_block()
@@ -153,14 +162,16 @@ class BigDeserializer(object):
 
         try:
             data = self.build_data(model, fields, pk, data)
+            m2m_fields = data.pop('m2m', {})
         except (base.M2MDeserializationError, base.DeserializationError, ObjectDoesNotExist):
             return None
 
         obj = base.build_instance(model, data, None)
-        return base.DeserializedObject(obj, {}, {})
+        return base.DeserializedObject(obj, m2m_fields, {})
 
     @to(dict)
     def build_data(self, model, field_names, pk, data, using=None):
+        m2m = {}
         if pk is not None:
             try:
                 yield (model._meta.pk.attname, model._meta.pk.to_python(pk))
@@ -175,7 +186,7 @@ class BigDeserializer(object):
 
             if field.remote_field and isinstance(field.remote_field, models.ManyToManyRel):
                 values = base.deserialize_m2m_values(field, field_value, using, False)
-                yield (field.name, values)
+                m2m[field.name] = values
 
             # Handle FK fields
             elif field.remote_field and isinstance(field.remote_field, models.ManyToOneRel):
@@ -185,6 +196,8 @@ class BigDeserializer(object):
             else:
                 # Everything else
                 yield (field.name, field.to_python(field_value))
+        # Not great
+        yield ('m2m', m2m)
 
     def get_model(self, name):
         """Gets the model name and fields"""
