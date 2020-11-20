@@ -166,8 +166,11 @@ class BigDeserializer(object):
         except (base.M2MDeserializationError, base.DeserializationError, ObjectDoesNotExist):
             return None
 
-        obj = base.build_instance(model, data, None)
-        return base.DeserializedObject(obj, m2m_fields, {})
+        try:
+            obj = base.build_instance(model, data, None)
+            return base.DeserializedObject(obj, m2m_fields, {})
+        except Exception:
+            return None # Any error, defer the object.
 
     @to(dict)
     def build_data(self, model, field_names, pk, data, using=None):
