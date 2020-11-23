@@ -56,8 +56,7 @@ def get_world_bank_gdp(self, **_):
     try:
         if not self.health.world_bank_gdp:
             return None
-        elif :
-            return float(self.health.world_bank_gdp) / (10 ** 12)
+        return float(self.health.world_bank_gdp) / (10 ** 12)
     except CountryHealth.DoesNotExist:
         return None
 
