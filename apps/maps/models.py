@@ -95,11 +95,25 @@ class Country(Model):
 class CountryHealth(Model):
     """Extra WHO data about a country"""
     country = OneToOneField(Country, related_name='health', on_delete=CASCADE)
+    total_funding = CharField(null=True, blank=True, max_length=36, \
+        help_text="Total expected funding from all sources (US Dollars)")
+    hiv_incidence2018 = CharField(null=True, blank=True, max_length=36,\
+        help_text="Estimated incidence of TB cases who are HIV-positive")
+    household = CharField(null=True, blank=True, max_length=36,\
+        help_text="Estimated average household size")
+    all_tb_incidence2018 = CharField(null=True, blank=True, max_length=36,\
+        help_text="Estimated incidence (all forms) per 100 000 population")
+    pop_dens = CharField(null=True, blank=True, max_length=36,\
+        help_text="Population density (people per sq. km of land area")
     est_mdr = FloatField(null=True, blank=True,\
         help_text="Estimated % Drug Resistance for the country")
+    world_bank_gdp = CharField(null=True, blank=True, max_length=36,\
+        help_text="GDP (current US$)")
+    total_wealth = CharField(null=True, blank=True, max_length=36,\
+        help_text="Total wealth per capita (constant 2014 US$)")
 
     def __str__(self):
-        return "WHO Data for {}".format(self.country)
+        return "WHO TB Data for {}".format(self.country)
 
 class CountryDetail(Model):
     """Provides a much more detailed country outline and more fields"""

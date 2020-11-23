@@ -35,7 +35,32 @@ from apps.mutations.models import (
 
 from .mixins import JsonView, DataSlicerMixin, DataTableMixin
 from .utils import GraphData, many_lookup, adjust_coords
-from .models import Country, CountryHealth
+from .models import Country, CountryHealth, CountryDetail
+
+def get_gdp(self, **_):
+    """ Getter for country detail gdp"""
+    try:
+        return self.detail.gdp
+    except CountryDetail.DoesNotExist:
+        return None
+
+def get_health(self, **_):
+    """ Getter for country health"""
+    try:
+        return self.health
+    except CountryHealth.DoesNotExist:
+        return None
+
+def get_world_bank_gdp(self, **_):
+    """ Getter for world bank gdp"""
+    try:
+        if (self.health.world_bank_gdp==""):
+            return None
+        else:
+            return float(self.health.world_bank_gdp)/1000000000000
+    except CountryHealth.DoesNotExist:
+        return None
+
 
 class MapPage(TemplateView):
     """The html map page everything is provided by javascript"""
@@ -100,11 +125,13 @@ class Places(JsonView, DataSlicerMixin):
         return {
             "type": "FeatureCollection",
             'filters': self.applied_filters(),
-            'features': [
+            'features':
+
+            [
                 {
                     # Turning this to json and then back to python just to feed
                     # to JsonView, seems a little wasteful and redundent.
-                    "geometry": adjust_coords(json.loads(country.geom.geojson)),
+                    "geometry": json.loads(country.geom.geojson),
                     "popupContent": country.name,
                     "type": "Feature",
                     "id": country.id,
@@ -112,9 +139,20 @@ class Places(JsonView, DataSlicerMixin):
                         "name": country.name,
                         "value": country.iso2,
                         "values": ret[country.iso2],
-                    },
+                        "gdp": get_gdp(country),
+                        "total_funding": get_health(country).total_funding,
+                        "hiv_incidence2018": get_health(country).hiv_incidence2018,
+                        "household": get_health(country).household,
+                        "who_est_mdr": get_health(country).est_mdr,
+                        "all_tb_incidence2018": get_health(country).all_tb_incidence2018,
+                        "pop_dens": get_health(country).pop_dens,
+                        "world_bank_gdp": get_world_bank_gdp(country),
+                        "total_wealth": get_health(country).total_wealth
+                    }
+
                 } for country in Country.objects.filter(iso2__in=list(ret))
-            ],
+                ]
+
         }
 
 

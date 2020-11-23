@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 # pylint: disable=wrong-import-position
-# dataset from WHO: MDR_RR_TB_burden_estimates_2020-07-23.csv
+# dataset from WHO: API_NY.GDP.MKTP.CD_DS2_en_csv_v2_1217511.csv
 
 import sys
+import csv
 
 sys.path.insert(0, '.')
 sys.path.insert(0, '..')
@@ -20,17 +21,22 @@ from apps.maps.models import Country, CountryHealth
 
 if __name__ == '__main__':
     with open(sys.argv[1]) as fhl:
-        rows = csv_merge(fhl)
+        rows = csv.reader(fhl)
         next(rows)
+        next(rows)
+        next(rows)
+        next(rows)
+        header = next(rows)
+        country_index = header.index("Country Code")
+        year_index = header.index("2019")
         for row in rows:
             try:
-                country = Country.objects.get(iso3=row['iso3'])
+                country = Country.objects.get(iso3=row[country_index])
                 health = country.health
             except CountryHealth.DoesNotExist:
                 health = CountryHealth(country=country)
             except Country.DoesNotExist:
-                print("Can't find country {}".format(row['iso3']))
-                continue
-            health.est_mdr = row['e_rr_pct_new']
+                print("Can't find country {}".format(row[country_index]))
+            health.world_bank_gdp = row[year_index]
             health.save()
-            print("Saved WHO data for {}".format(country))
+            print("Saved World Bank data for {}".format(country))

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # pylint: disable=wrong-import-position
-# dataset from WHO: MDR_RR_TB_burden_estimates_2020-07-23.csv
+#dataset from WHO: TB_budget_2020-07-16.csv
 
 import sys
 
@@ -31,6 +31,6 @@ if __name__ == '__main__':
             except Country.DoesNotExist:
                 print("Can't find country {}".format(row['iso3']))
                 continue
-            health.est_mdr = row['e_rr_pct_new']
+            health.total_funding = row['cf_tot_sources']
             health.save()
-            print("Saved WHO data for {}".format(country))
+            print("Saved WHO TB data for {}".format(country))
