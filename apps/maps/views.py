@@ -49,7 +49,7 @@ def get_health(self, **_):
     try:
         return self.health
     except CountryHealth.DoesNotExist:
-        return None
+        return CountryHealth()
 
 def get_world_bank_gdp(self, **_):
     """ Getter for world bank gdp"""
