@@ -54,10 +54,10 @@ def get_health(self, **_):
 def get_world_bank_gdp(self, **_):
     """ Getter for world bank gdp"""
     try:
-        if (self.health.world_bank_gdp==""):
+        if not self.health.world_bank_gdp:
             return None
-        else:
-            return float(self.health.world_bank_gdp)/1000000000000
+        elif :
+            return float(self.health.world_bank_gdp) / (10 ** 12)
     except CountryHealth.DoesNotExist:
         return None
 
