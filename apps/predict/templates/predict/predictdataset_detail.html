@@ -54,15 +54,21 @@
 	</div>
 	<div class="panel-body" style="overflow-x: auto;">
 	  <div class="tab-content">
-	    <div class="tab-pane fade" id="processing-tab" style="width: min-content;">
-              {% include "predict/predictdataset_processing.html" %}
+	    <div class="tab-pane fade" id="processing-tab">
+              <div class="page-loader" data-loader-url="{% url "predict:dataset_proc" object.md5 %}">
+                {% include "spinner.svg" %}
+              </div>
             </div>
 	    <div class="tab-pane fade" id="output-tab">
-              {% include "predict/predictdataset_outputdata.html" %}
+              <div class="page-loader" data-loader-url="{% url "predict:dataset_out" object.md5 %}">
+                {% include "spinner.svg" %}
+              </div>
             </div>
 	    <div class="tab-pane fade" id="prediction-tab">
               {% if object.has_prediction %}
-                {% include "predict/predictdataset_prediction.html" %}
+                <div class="page-loader" data-loader-url="{% url "predict:dataset_pred" object.md5 %}">
+                  {% include "spinner.svg" %}
+                </div>
               {% else %}
                 <div class="vertical-tab-content pannel-danger">
                     <center>
@@ -74,7 +80,9 @@
               {% endif %}
             </div>
 	    <div class="tab-pane fade" id="lineage-tab">
-              {% include "predict/predictdataset_lineages.html" %}
+              <div class="page-loader" data-loader-url="{% url "predict:dataset_lin" object.md5 %}">
+                {% include "spinner.svg" %}
+              </div>
             </div>
           </div>
         </div>

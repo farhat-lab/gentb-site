@@ -171,3 +171,27 @@ td.field input[type="checkbox"] {
   right: 8px;
 }
 
+.page-loader,
+.page-loading {
+  width: 100%;
+  text-align: center;
+}
+.page-loader svg,
+.page-loading svg {
+  width: 100px;
+}
+.page-loader svg rect.bk,
+.page-loading svg rect.bk {
+  fill: none;
+}
+.page-loader svg rect {
+  fill: #a40000;
+}
+.page-loading svg rect {
+  fill: #4e9a06;
+}
+.tab-pain#processing-tab {
+  width: min-content;
+  margin-left: auto;
+  margin-right: auto;
+}

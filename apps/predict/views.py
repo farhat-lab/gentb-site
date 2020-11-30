@@ -31,6 +31,19 @@ class Datasets(PredictMixin, ListView):
 class DatasetView(PredictMixin, DetailView):
     parent = Datasets
 
+class DatasetViewProcessing(DatasetView):
+    template_name = 'predict/predictdataset_processing.html'
+
+class DatasetViewOutput(DatasetView):
+    template_name = 'predict/predictdataset_outputdata.html'
+
+class DatasetViewPredict(DatasetView):
+    template_name = 'predict/predictdataset_prediction.html'
+
+class DatasetViewLineages(DatasetView):
+    template_name = 'predict/predictdataset_lineages.html'
+
+
 class Heatmap(PredictMixin, DetailView):
     queryset = PredictDataset.objects.all()
     template_name = 'predict/heatmap.html'

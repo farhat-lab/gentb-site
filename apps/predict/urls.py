@@ -22,7 +22,10 @@ Predict app's urls
 from django.urls import path
 from django.conf.urls import include, url
 
-from .views import Datasets, UploadChoices, UploadView, DatasetView, AddNote
+from .views import (
+    Datasets, UploadChoices, UploadView, DatasetView, AddNote,
+    DatasetViewProcessing, DatasetViewOutput, DatasetViewPredict, DatasetViewLineages
+)
 
 def url_tree(regex, *urls):
     class UrlTwig(object):
@@ -40,6 +43,13 @@ urlpatterns = [
     url_tree(
         r'^(?P<slug>\w{32})/',
         url(r'^$', DatasetView.as_view(), name="view_single_dataset"),
+        url_tree(
+            r'^page/',
+            url(r'^process/$', DatasetViewProcessing.as_view(), name="dataset_proc"),
+            url(r'^output/$', DatasetViewOutput.as_view(), name="dataset_out"),
+            url(r'^predict/$', DatasetViewPredict.as_view(), name="dataset_pred"),
+            url(r'^lineages/$', DatasetViewLineages.as_view(), name="dataset_lin"),
+        ),
         url(r'^note/$', AddNote.as_view(), name="add_note"),
     ),
 ]
