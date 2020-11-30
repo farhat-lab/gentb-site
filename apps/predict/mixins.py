@@ -18,9 +18,9 @@ class PredictMixin(object):
 
     def get_queryset(self):
         """Limit queryset to the user's own predictions only"""
-        qs = PredictDataset.objects.all()
+        qset = PredictDataset.objects.all()
         if 'slug' not in self.kwargs:
             # Limit to my own predictions unless I have the md5
-            qs = qs.filter(user_id=self.request.user.pk)
-        return qs
+            qset = qset.filter(user_id=self.request.user.pk)
+        return qset.prefetch_related('strains', 'strains__piperun', 'strains__piperun__programs')
 
