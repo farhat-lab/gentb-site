@@ -1,7 +1,5 @@
 
 $(document).ready(function() {
-  $("[data-toggle=tooldesc]").data('container', 'body').tooltip({placement: 'bottom', trigger: 'manual'});
-  $("[data-toggle=tooltip], [data-toggle=tooltips] *").data('container', 'body').tooltip();
   setInterval(function () {
       $('.page-loader:visible').each(function() {
           var elem = this.parentElement;
@@ -15,7 +13,14 @@ $(document).ready(function() {
           $.get(url, function(data) {
               $(elem).html(data);
               $(this).remove(); // Maybe not required
+              setup_hover();
           });
       });
   }, 500);
+    setup_hover();
 });
+
+function setup_hover() {
+    $("[data-toggle=tooldesc]").data('container', 'body').tooltip({placement: 'bottom', trigger: 'manual'});
+    $("[data-toggle=tooltip], [data-toggle=tooltips] *").data('container', 'body').tooltip();
+}
