@@ -72,12 +72,12 @@ admin.site.register(Program, ProgramAdmin)
 admin.site.register(ProgramFile)
 
 class ProgramRunInline(admin.TabularInline):
-    fields = ('program', 'job_id', 'is_submitted', 'is_started', 'is_complete', 'is_error', 'debug_text', 'error_text', 'input_files', 'output_files')
+    fields = ('program', 'job_id', 'job_state', 'is_submitted', 'is_started', 'is_complete', 'is_error', 'debug_text', 'error_text', 'input_files', 'output_files')
     model = ProgramRun
     extra = 0
 
 class PipelineRunAdmin(admin.ModelAdmin):
-    actions = ['all_stop']
+    actions = ['all_stop', 'force_update']
     list_display = ('name', 'created', 'pipeline', 'status', 'age')
     search_fields = ['name', 'pipeline__name']
     list_filter = ['pipeline']
@@ -104,5 +104,11 @@ class PipelineRunAdmin(admin.ModelAdmin):
         for run in queryset.all():
             run.stop_all(msg='Admin Stopped this Program')
     all_stop.short_description = "Emergency All Stop"
+
+    def force_update(modeladmin, request, queryset):
+        for run in queryset.all():
+            for program in run.programs.all():
+                program.update_status(force=True)
+    all_stop.short_description = "Force Update Status"
 
 admin.site.register(PipelineRun, PipelineRunAdmin)
