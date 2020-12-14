@@ -511,6 +511,16 @@ class ProgramRun(TimeStampedModel):
     output_files = TextField(null=True, blank=True)
     debug_text = TextField("Command and Debug", null=True, blank=True)
     error_text = TextField("Error", null=True, blank=True)
+    job_state = CharField(max_length=16, db_index=True, null=True, blank=True,\
+        choices=(
+            (None, 'Status not requested'),
+            ('', 'Unknown State (non returned)'),
+            ('OUT_OF_MEMORY', 'Out of Memory'),
+            ('TIMEOUT', 'Timeout'),
+            ('CANCELLED', 'Cancelled'),
+            ('FAILED', 'Failed'),
+            ('COMPLETED', 'Completed'),
+        ))
 
     class Meta:
         ordering = ['created']
@@ -610,24 +620,29 @@ class ProgramRun(TimeStampedModel):
         job_manager.job_clean_fn(self.job_id, 'out')
         job_manager.job_clean_fn(self.job_id, 'err')
 
-    def update_status(self, commit=True):
-        """Take data from the job manager and populate the database"""
-        job_manager = get_job_manager()
-        if self.is_submitted and not self.is_complete:
-            dur = None
-            # This fixed to batch mode FALSE, change to `status` if you need batch mode
-            data = job_manager.job_status(self.job_id,
+    def _raw_status(self):
+        # This fixed to batch mode FALSE, change to `status` if you need batch mode
+        return job_manager.job_status(self.job_id,
                 start=(self.submitted - timedelta(days=1)),
                 end=(self.submitted + timedelta(days=7)))
+
+    def update_status(self, commit=True, force=False):
+        """Take data from the job manager and populate the database"""
+        job_manager = get_job_manager()
+        if self.is_submitted and (not self.is_complete or force):
+            dur = None
+            data = self._raw_status()
 
             if not data or 'status' not in data:
                 # This usually means the job is so old that it's gone from
                 # the job manager queue and we have no further information about it
                 self.is_complete = True
                 self.is_error = True
-                self.error_text = "Job Disapeared from Job Queue"
+                self.error_text = "Job Stopped"
                 self.save()
                 return
+
+            self.job_state = data.get('state', '')
 
             if data.get('status', 'notfound') in ('finished',):
                 if data['finished'] and data['started']:
@@ -636,8 +651,9 @@ class ProgramRun(TimeStampedModel):
                 self.completed = data['finished']
                 self.is_complete = True
                 self.is_error = data['return'] != 0
+                self.error_text = ""
                 if data['error']:
-                    self.error_text = data['error'][:10240] # Limit errors to 10k
+                    self.error_text += data['error'][:10240] # Limit errors to 10k
                 self.update_sizes()
 
             if data.get('started', None) is not None:
