@@ -617,11 +617,10 @@ class ProgramRun(TimeStampedModel):
             dur = None
             # This fixed to batch mode FALSE, change to `status` if you need batch mode
             data = job_manager.job_status(self.job_id,
-                start=(self.submitted - timedelta(days=1),
-                end=(self.submitted + timedelta(days=7))
-            age = now() - self.submitted
+                start=(self.submitted - timedelta(days=1)),
+                end=(self.submitted + timedelta(days=7)))
 
-            if (not data or 'status' not in data) and age > timedelta(hours=1):
+            if not data or 'status' not in data:
                 # This usually means the job is so old that it's gone from
                 # the job manager queue and we have no further information about it
                 self.is_complete = True
