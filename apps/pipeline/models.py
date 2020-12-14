@@ -615,7 +615,10 @@ class ProgramRun(TimeStampedModel):
         job_manager = get_job_manager()
         if self.is_submitted and not self.is_complete:
             dur = None
-            data = job_manager.status(self.job_id, clean=False)
+            # This fixed to batch mode FALSE, change to `status` if you need batch mode
+            data = job_manager.job_status(self.job_id,
+                start=(self.submitted - timedelta(days=1),
+                end=(self.submitted + timedelta(days=7))
             age = now() - self.submitted
 
             if (not data or 'status' not in data) and age > timedelta(hours=1):
