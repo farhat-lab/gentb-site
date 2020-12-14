@@ -109,6 +109,6 @@ class PipelineRunAdmin(admin.ModelAdmin):
         for run in queryset.all():
             for program in run.programs.all():
                 program.update_status(force=True)
-    all_stop.short_description = "Force Update Status"
+    force_update.short_description = "Force Update Status"
 
 admin.site.register(PipelineRun, PipelineRunAdmin)
