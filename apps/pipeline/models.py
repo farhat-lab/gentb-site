@@ -622,7 +622,7 @@ class ProgramRun(TimeStampedModel):
 
     def _raw_status(self):
         # This fixed to batch mode FALSE, change to `status` if you need batch mode
-        return job_manager.job_status(self.job_id,
+        return get_job_manager().job_status(self.job_id,
                 start=(self.submitted - timedelta(days=1)),
                 end=(self.submitted + timedelta(days=7)))
 
