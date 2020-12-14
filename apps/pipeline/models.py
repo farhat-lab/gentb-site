@@ -622,9 +622,16 @@ class ProgramRun(TimeStampedModel):
 
     def _raw_status(self):
         # This fixed to batch mode FALSE, change to `status` if you need batch mode
-        return get_job_manager().job_status(self.job_id,
-                start=(self.submitted - timedelta(days=1)),
-                end=(self.submitted + timedelta(days=7)))
+        kw = {}
+        if self.submitted:
+            kw['start'] = self.submitted - timedelta(days=1)
+            kw['end'] = self.submitted + timedelta(days=7)
+        else:
+            # This is really weird
+            kw['start'] = '2016-01-01'
+            kw['end'] = '2040-01-01'
+
+        return get_job_manager().job_status(self.job_id, **kw)
 
     def update_status(self, commit=True, force=False):
         """Take data from the job manager and populate the database"""
@@ -643,6 +650,8 @@ class ProgramRun(TimeStampedModel):
                 return
 
             self.job_state = data.get('state', '')
+            if not self.submitted and 'submit' in data:
+                self.submitted = data['submit']
 
             if data.get('status', 'notfound') in ('finished',):
                 if data['finished'] and data['started']:
