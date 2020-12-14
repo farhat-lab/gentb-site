@@ -3,6 +3,13 @@
 
 {% block extra_css %}
   <!--link href="{% static 'css/pipeline.css' %}" rel="stylesheet"-->
+<style>
+.dropdown .dropdown-item {
+  padding-left: 10px;
+  padding-right: 10px;
+  white-space: nowrap;
+}
+</style>
 {% endblock %}
 
 {% block content %}
@@ -20,11 +27,29 @@
   </div>
   <div class="form-group">
     <label for="user">User</label>
-    <input type="text" class="form-control" name="user" value="{{ pipeline.user }}"/>
+    <input type="text" class="form-control" name="user" value="{{ kw.user }}"/>
   </div>
+  {% if extra_cols %}
+  <div class="form-group">
+    <div class="dropdown">
+      <button class="btn btn-info dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+        Extra Columns
+      </button>
+      <div class="dropdown-menu">
+        {% for col,label in extra_cols %}
+          <label class="dropdown-item" for="col-{{ col }}">
+            <input type="checkbox" class="form-control" id="col-{{ col }}" name="col" value="{{ col }}" {% if col in cols %}CHECKED{% endif %}/>
+            {{ label }}
+          </label>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+  {% endif %}
   <button type="submit" class="btn btn-primary"><span class="glyphicon glyphicon-search"></span></button>
 </form>
 
+{% with cols|length as collen %}
       <div class="col-lg-12 col-sm-12">
         <table class="table table-striped">
             <tr>
@@ -55,11 +80,13 @@
             </tr>
             {% if job.error and job.error != 'None' %}
               <tr class="danger">
-                <td colspan="6"><span class="glyphicon glyphicon-question-sign" aria-hidden="true" title="Error Message"></span> {{ job.error }}</td>
+                <td colspan="{{ 6|add:collen }}"><span class="glyphicon glyphicon-question-sign" aria-hidden="true" title="Error Message"></span> {{ job.error }}</td>
               </tr>
             {% endif %}
         {% endfor %}
         </table>
     </div>
+{% endwith %}
+
   </div>
 {% endblock %}

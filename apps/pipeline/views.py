@@ -134,7 +134,7 @@ class JobViewer(ProtectedMixin, TemplateView):
     """Lets users view a list of jobs and how they are running"""
     template_name = 'pipeline/jobs_status_list.html'
     staff_only = True
-
+ 
     def get_context_data(self, **kw):
         data = super(JobViewer, self).get_context_data(**kw)
         data['pipeline'] = get_job_manager()
@@ -157,14 +157,35 @@ class JobViewer(ProtectedMixin, TemplateView):
         else:
             kw['end'] = (date.today() + timedelta(days=1)).isoformat()
 
-        cols = [c for c in self.request.GET.get('cols', '').split(',') if c]
+        if 'col' in self.request.GET:
+            cols = [c for c in self.request.GET.getlist('col')]
+        else:
+            cols = [c for c in self.request.GET.get('cols', '').split(',') if c]
 
         data['object_list'] = [self.get_item(item, cols)\
-            for item in data['pipeline'].jobs_status(*cols, **kw)]
+            for item in data['pipeline'].jobs_status(*cols, **kw)
+            if self.filter_item(item, str(item['pid'])) ]
         data['pipeline_name'] = type(data['pipeline']).__name__
         data['cols'] = cols
         data['kw'] = kw
+        data['extra_cols'] = [
+            ('User', 'Job Running User'),
+            ('Account', 'O2 Account Name'),
+            ('Partition', 'Server Partition'),
+            ('AveRSS', 'Average resident set size'),
+            ('TotalCPU', 'Total CPU'),
+            ('ReqMem', 'Requested Memory'),
+            ('MaxVMSize', 'Maximum Used Memory'),
+            ('AveDiskRead', 'Average Disk Read'),
+            ('AveDiskWrite', 'Average Disk Write'),
+        ]
         return data
+
+    @staticmethod
+    def filter_item(item, pid):
+        if pid.endswith('.0') or pid.endswith('.extern'):
+            return False
+        return True
 
     @staticmethod
     def get_item(item, cols):
