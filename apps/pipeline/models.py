@@ -618,12 +618,13 @@ class ProgramRun(TimeStampedModel):
             data = job_manager.status(self.job_id, clean=False)
             age = now() - self.submitted
 
-            if not data and age > timedelta(hours=1):
+            if (not data or 'status' not in data) and age > timedelta(hours=1):
                 # This usually means the job is so old that it's gone from
                 # the job manager queue and we have no further information about it
                 self.is_complete = True
                 self.is_error = True
                 self.error_text = "Job Disapeared from Job Queue"
+                self.save()
                 return
 
             if data.get('status', 'notfound') in ('finished',):

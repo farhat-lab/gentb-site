@@ -17,6 +17,7 @@
 """
 Provides the views for testing and reviewing pipelines.
 """
+from datetime import date, timedelta
 
 from django.views.generic import ListView, DetailView, TemplateView, RedirectView
 from django.views.generic.detail import SingleObjectMixin
@@ -146,12 +147,23 @@ class JobViewer(ProtectedMixin, TemplateView):
             kw['wckeys'] = [k for k in
                 self.request.GET.get('wckeys', '').split(',') if k]
 
+        if 'start' in self.request.GET:
+            kw['start'] = self.request.GET['start']
+        else:
+            kw['start'] = (date.today() - timedelta(days=7)).isoformat()
+
+        if 'end' in self.request.GET:
+            kw['end'] = self.request.GET['end']
+        else:
+            kw['end'] = (date.today() + timedelta(days=1)).isoformat()
+
         cols = [c for c in self.request.GET.get('cols', '').split(',') if c]
 
         data['object_list'] = [self.get_item(item, cols)\
             for item in data['pipeline'].jobs_status(*cols, **kw)]
         data['pipeline_name'] = type(data['pipeline']).__name__
         data['cols'] = cols
+        data['kw'] = kw
         return data
 
     @staticmethod
