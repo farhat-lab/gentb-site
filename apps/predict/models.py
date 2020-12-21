@@ -132,6 +132,21 @@ class PredictDataset(TimeStampedModel):
         return min([strain.status for strain in self.strains.all()] + [STATUS_NONE])
 
     @property
+    def statuses(self):
+        """Return a count of statuses"""
+        ret = defaultdict(int)
+        for strain in self.strains.all():
+            ret[strain.status] += 1
+        if not ret:
+            ret[STATUS_NONE] = 1
+        return [{
+            'code': status,
+            'count': count,
+            'level': STATUS_LEVELS[status],
+            'label': STATUS_LABELS[status],
+        } for (status, count) in ret.items()]
+
+    @property
     def directory_exists(self):
         """Returns true if the file_directory exists"""
         return os.path.isdir(self.file_directory)

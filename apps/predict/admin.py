@@ -10,6 +10,8 @@ class PredictDatasetNoteAdmin(admin.ModelAdmin):
 
 admin.site.register(PredictDatasetNote, PredictDatasetNoteAdmin)
 
+admin.site.register(PredictStrain)
+
 class PredictDatasetNoteInline(admin.StackedInline):
     model = PredictDatasetNote
     can_delete = True
