@@ -32,3 +32,11 @@ def lineage_other_caller(data):
             return [('lineage', data)]
     return [('lineage', data[-1])]
 
+def filter_none(vals):
+    """Remove none values"""
+    ret = []
+    for x in vals:
+        if x in (u'None', u'Null'):
+            x = None
+        ret.append(x)
+    return ret

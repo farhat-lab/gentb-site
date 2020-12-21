@@ -48,7 +48,7 @@ from apps.uploads.models import UploadFile
 from apps.pipeline.models import Pipeline, PipelineRun, ProgramRun
 from apps.mutations.models import Drug, GeneLocus
 
-from .utils import lineage_spoligo, lineage_fast_caller, lineage_other_caller
+from .utils import lineage_spoligo, lineage_fast_caller, lineage_other_caller, filter_none
 
 LOGGER = logging.getLogger('apps.predict')
 
@@ -197,7 +197,6 @@ class PredictDataset(TimeStampedModel):
 
         for strain in self.strains.all():
             row = {'name': strain.name, 'cols': []}
-            output['rows'].append(row)
 
             for drug, (drprob, fneg, fpos, graph) in strain.get_prediction(loci):
                 if drug not in output['cols']:
@@ -212,6 +211,8 @@ class PredictDataset(TimeStampedModel):
                     'false_negative': fneg,
                     'dr_probability': drprob,
                 }
+            if row['cols']:
+                output['rows'].append(row)
 
         return output
 
@@ -465,46 +466,40 @@ class PredictStrain(Model):
 
     def get_raw_prediction(self):
         """Get the raw data slightly bound better"""
-        def filter_none(vals):
-            """Remove none values"""
-            ret = []
-            for x in vals:
-                if x in (u'None', u'Null'):
-                    x = None
-                ret.append(x)
-            return ret
-
         matrix_fn = self.prediction_file
         if matrix_fn and os.path.isfile(matrix_fn):
-            m_A, m_B, m_C, m_D = {}, {}, {}, {}
-            with open(matrix_fn, 'r') as fhl:
-                try:
-                    parts = json.loads(fhl.read())
-                    (pr, m_A, m_B) = parts[:3]
+            try:
+                yield from self._prediction_from_file(matrix_fn)
+            except Exception:
+                logging.error(f"Can't load prediction file: {matrix_fn}")
+                pass
 
-                    # this is different because it assumes that there's only one strain.
-                    name = list(m_A)[0]
-                    m_C[name] = [([None] * len(m_A[name][0]))] * len(m_A[name])
-                    m_D[name] = [([None] * len(m_A[name][0]))] * len(m_A[name])
+    def _prediction_from_file(self, matrix_fn):
+        m_A, m_B, m_C, m_D = {}, {}, {}, {}
+        with open(matrix_fn, 'r') as fhl:
+            parts = json.loads(fhl.read())
+            (pr, m_A, m_B) = parts[:3]
 
-                    ex_1, ex_2 = parts[-2:] if len(parts) == 5 else ({}, {})
-                    for index, value in ex_1.items():
-                        m_C[name][int(index)] = filter_none(value)
-                    for index, value in ex_2.items():
-                        m_D[name][int(index)] = filter_none(value)
+            # this is different because it assumes that there's only one strain.
+            name = list(m_A)[0]
+            m_C[name] = [([None] * len(m_A[name][0]))] * len(m_A[name])
+            m_D[name] = [([None] * len(m_A[name][0]))] * len(m_A[name])
 
-                except ValueError:
-                    logging.error("Can't load prediction file: %s", matrix_fn)
+            ex_1, ex_2 = parts[-2:] if len(parts) == 5 else ({}, {})
+            for index, value in ex_1.items():
+                m_C[name][int(index)] = filter_none(value)
+            for index, value in ex_2.items():
+                m_D[name][int(index)] = filter_none(value)
 
-                # Rotate mutation matrix 90 degrees
-                for name in m_A:
-                    yield (name, zip(
-                        [(b,c,d,e) for (a,b,c,d,e) in pr if a == name],
-                        zip(*m_A[name]),
-                        zip(*m_B[name]),
-                        zip(*m_C[name]),
-                        zip(*m_D[name]),
-                    ))
+        # Rotate mutation matrix 90 degrees
+        for name in m_A:
+            yield (name, zip(
+                [(b,c,d,e) for (a,b,c,d,e) in pr if a == name],
+                zip(*m_A[name]),
+                zip(*m_B[name]),
+                zip(*m_C[name]),
+                zip(*m_D[name]),
+            ))
 
     def get_prediction(self, loci=None):
         """Get the prediction data formatted for heatmap and scatter plots"""
