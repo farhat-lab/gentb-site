@@ -10,7 +10,10 @@ class PredictDatasetNoteAdmin(admin.ModelAdmin):
 
 admin.site.register(PredictDatasetNote, PredictDatasetNoteAdmin)
 
-admin.site.register(PredictStrain)
+class PredictStrainAdmin(admin.ModelAdmin):
+    raw_id_fields = ('piperun', 'pipeline', 'dataset', 'file_one', 'file_two')
+
+admin.site.register(PredictStrain, PredictStrainAdmin)
 
 class PredictDatasetNoteInline(admin.StackedInline):
     model = PredictDatasetNote
@@ -19,12 +22,13 @@ class PredictDatasetNoteInline(admin.StackedInline):
     extra = 0
 
 class StrainInline(admin.StackedInline):
+    raw_id_fields = ('piperun', 'pipeline', 'dataset', 'file_one', 'file_two')
     model = PredictStrain
     can_delete = False
     extra = 0
 
 class PredictDatasetAdmin(admin.ModelAdmin):
-    #inlines = (StrainInline, PredictDatasetNoteInline)
+    inlines = (StrainInline, PredictDatasetNoteInline)
     actions = ['retry_processes']
     save_on_top = True
     search_fields = ('title', 'user__first_name', 'user__last_name',)
