@@ -135,8 +135,10 @@ class PredictDataset(TimeStampedModel):
     def statuses(self):
         """Return a count of statuses"""
         ret = defaultdict(int)
+        total = 0
         for strain in self.strains.all():
             ret[strain.status] += 1
+            total += 1
         if not ret:
             ret[STATUS_NONE] = 1
         return [{
@@ -144,6 +146,7 @@ class PredictDataset(TimeStampedModel):
             'count': count,
             'level': STATUS_LEVELS[status],
             'label': STATUS_LABELS[status],
+            'pc': "{:.2f}".format(count / total * 100),
         } for (status, count) in ret.items()]
 
     @property
