@@ -23,7 +23,7 @@ from django.urls import path
 from django.conf.urls import include, url
 
 from .views import (
-    Datasets, UploadChoices, UploadView, DatasetView, AddNote,
+    Datasets, UploadChoices, UploadView, DatasetView, AddNote, ScatterPlot,
     DatasetViewProcessing, DatasetViewOutput, DatasetViewPredict, DatasetViewLineages
 )
 
@@ -52,4 +52,5 @@ urlpatterns = [
         ),
         url(r'^note/$', AddNote.as_view(), name="add_note"),
     ),
+    url(r'^results/(?P<pk>\d+)/plot/', ScatterPlot.as_view(), name="scatter_plot"),
 ]

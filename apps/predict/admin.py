@@ -10,8 +10,18 @@ class PredictDatasetNoteAdmin(admin.ModelAdmin):
 
 admin.site.register(PredictDatasetNote, PredictDatasetNoteAdmin)
 
+class ResultsInline(admin.TabularInline):
+    raw_id_fields = ('drug',)
+    model = PredictResult
+    can_delete = False
+    extra = 0
+
 class PredictStrainAdmin(admin.ModelAdmin):
+    inlines = (ResultsInline,)
     raw_id_fields = ('piperun', 'pipeline', 'dataset', 'file_one', 'file_two')
+    search_fields = ("name", "dataset__name")
+    list_display = ("name", "dataset", "file_one", "file_two")
+    list_filter = ("pipeline",)
 
 admin.site.register(PredictStrain, PredictStrainAdmin)
 

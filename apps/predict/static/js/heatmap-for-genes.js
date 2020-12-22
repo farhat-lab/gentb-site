@@ -4,6 +4,14 @@ function scatter_plot(data) {
    */
   var svg = d3.select('svg#scatter_plot');
 
+  if (!data) {
+      data = [{
+        "key" : "No data",
+        "values" : [[]],
+        "cols": [],
+      }];
+  }
+
   svg[0][0].__data__ = data;
   var nvChart = svg[0][0].__chart__;
 
@@ -14,7 +22,10 @@ function scatter_plot(data) {
          if (typeof this != 'undefined') {
            var el = d3.select(this);
            // Total width - yaxis_width / number of cols;
-           var width = (1000 - 150) / data[0].cols.length;
+           var width = 1000;
+           if (data[0].cols.length > 0) {
+               width = (1000 - 150) / data[0].cols.length;
+           }
            var parentNode = d3.select(this.parentNode);
 
            var p = this.replacement;
@@ -42,8 +53,7 @@ function scatter_plot(data) {
   nv.utils.windowResize(nvChart.update);
 }
 
-$(document).ready(function() {
-
+function heatmap_ready(plot_url) {
   nv.addGraph(function() {
     var data = Array();
     var chart = nv.models.multiBarChart()
@@ -86,11 +96,32 @@ $(document).ready(function() {
   });
 
   $('table.heatmap td div.cell').click(function() {
-      $('table.heatmap .selected').removeClass('selected');
-      $(this).addClass('selected');
-      $('#scatter_title').text('Mutation plot for drug='+$(this).data('col')+', strain=' + $(this).data('row'));
-      var data = $(this).data('scatter');
-      scatter_plot(data);
+      if ($(this).data('resultid')) {
+        $('table.heatmap .selected').removeClass('selected');
+        $(this).addClass('selected');
+        $('#scatter_title').text('Mutation plot for drug='+$(this).data('col')+', strain=' + $(this).data('row'));
+        $('#scatter').show();
+        var data = $(this).data('scatter');
+        $.ajax({
+          type: 'get',
+          url: plot_url.replace('1', $(this).data('resultid')),
+          success: function (json) {
+            scatter_plot(json.data);
+          },
+          error: function (result) {
+            scatter_plot();
+            console.error("Error getting plot!");
+          },
+        });
+      } else {
+        scatter_plot();
+      }
   });
-
-});
+  $('#scatter').click(function() {
+      $(this).hide();
+  }).children().click(function(e) {
+      if (!$(this).hasClass('close')) {
+        return false;
+      }
+  });
+}

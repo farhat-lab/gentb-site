@@ -35,7 +35,6 @@ $(document).ready(function() {
   });
 
   $('#addnote').on('submit', function (event) {
-    console.log("Adding note!");
     event.preventDefault();
 
     console.log($(this).attr('action'));

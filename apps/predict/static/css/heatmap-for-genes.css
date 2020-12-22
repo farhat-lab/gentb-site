@@ -47,4 +47,27 @@ table.heatmap > tbody > tr > td > div.selected > div {
 #scatter_title {
   margin-left: 20px;
   font-weight: bold;
+  font-size: 200%;
+  background-color: #fffc;
+}
+
+#scatter {
+  position: fixed;
+  top: 0px;
+  left: 0px;
+  background-color: #fff;
+  display: none;
+  margin: 60px;
+  border: 3px solid blue;
+  border-radius: 16px;
+}
+
+#scatter .close {
+  top: -10px;
+  right: -10px;
+  width: 23px;
+  height: 23px;
+  opacity: 1.0;
+  background-color: white;
+  border-radius: 100%;
 }

@@ -35,7 +35,7 @@ from model_utils.models import TimeStampedModel
 
 from django.db.models import (
     Model, CASCADE, SET_NULL,
-    ForeignKey, CharField, TextField, BooleanField,
+    ForeignKey, CharField, TextField, BooleanField, DecimalField, IntegerField, DateTimeField,
 )
 from django.conf import settings
 from django.utils.text import slugify
@@ -207,31 +207,30 @@ class PredictDataset(TimeStampedModel):
             'rows': [],
             'cols': [],
         }
-        # Track all locusts for all strains, Mutable variable populated by make_scatter!
-        loci = {}
-        for strain in self.strains.all():
-            for _ in strain.get_prediction(loci):
-                pass # Populates loci for square plots
+        for strain in self.strains.filter(results__isnull=True):
+            strain.generate_results()
 
-        for strain in self.strains.all():
-            row = {'name': strain.name, 'cols': []}
+        strains = defaultdict(list)
+        qset = PredictResult.objects.filter(strain__dataset=self, drug__isnull=False)
+        vset = qset.values_list('id', 'strain__name', 'drug__code',\
+                                'false_positive', 'false_negative', 'probability')
 
-            for drug, (drprob, fneg, fpos, graph) in strain.get_prediction(loci):
-                if drug not in output['cols']:
-                    output['cols'].append(drug)
+        for pk, strain, drug, fpos, fneg, prob in vset:
+            cols = strains[strain]
+            if drug not in output['cols']:
+                output['cols'].append(drug)
+                for ocol in strains.values():
+                    if len(ocol) < len(output['cols']):
+                        ocol.append(None)
 
-                index = output['cols'].index(drug)
-                row['cols'].extend([None] * (index - len(row['cols']) + 1))
-                row['cols'][index] = {
-                    'name': drug,
-                    'scatter': graph,
-                    'false_positive': fpos,
-                    'false_negative': fneg,
-                    'dr_probability': drprob,
-                }
-            if row['cols']:
-                output['rows'].append(row)
-
+            index = output['cols'].index(drug)
+            cols.extend([None] * (index - len(cols) + 1))
+            cols[index] = {
+                'result_id': pk, 'name': drug,
+                'false_positive': fpos, 'false_negative': fneg, 'dr_probability': prob,
+            }
+        for strain, cols in strains.items():
+            output['rows'].append({'name': strain, 'cols': cols})
         return output
 
     def user_name(self):
@@ -361,11 +360,7 @@ class PredictStrain(Model):
             run_status = self.run_status
             if run_status == STATUS_DONE and self.has_prediction:
                 return STATUS_READY
-            if self.has_timedout():
-                return STATUS_TIMEOUT
             return run_status + files_status
-        if self.has_timedout():
-            return STATUS_TIMEOUT
         return files_status
 
     def has_timedout(self):
@@ -414,6 +409,8 @@ class PredictStrain(Model):
         if not qs:
             return STATUS_WAIT
         for program in qs:
+            if program.job_state == 'TIMEOUT':
+                return STATUS_TIMEOUT
             if program.is_error:
                 return STATUS_ERROR
             if not program.is_submitted:
@@ -489,8 +486,7 @@ class PredictStrain(Model):
             try:
                 yield from self._prediction_from_file(matrix_fn)
             except Exception:
-                logging.error(f"Can't load prediction file: {matrix_fn}")
-                pass
+                yield None, False
 
     def _prediction_from_file(self, matrix_fn):
         m_A, m_B, m_C, m_D = {}, {}, {}, {}
@@ -519,60 +515,69 @@ class PredictStrain(Model):
                 zip(*m_D[name]),
             ))
 
-    def get_prediction(self, loci=None):
-        """Get the prediction data formatted for heatmap and scatter plots"""
-        loci = {} if loci is None else loci
+    def generate_results(self):
+        """Populate the database from the matrix files"""
+        self.results.all().delete()
+
         for _, dat in self.get_raw_prediction():
-            for (drug_code, dr, fneg, fpos), A, B, C, D in dat:
+            if dat is False: # Error in raw prediction getting, prevent asking again
+                self.results.create(drug=None)
+                break
+
+            for (drug_code, dr, fneg, fpos), *data in dat:
                 try:
                     drug = Drug.objects.get(code__iexact=drug_code)
                 except Drug.DoesNotExist:
-                    sys.stderr.write("Can't find drug %s\n" % drug_code)
                     continue
-                if drug_code not in loci:
-                    loci[drug_code] = list(drug.loci.all())
-                yield (drug_code, (dr, fneg, fpos, self.get_graph(drug, A, B, C, D, loci[drug_code])))
+                res, _ = self.results.get_or_create(drug=drug, defaults={
+                    'probability':dr, 'false_positive':fpos, 'false_negative':fneg})
 
-    def get_graph(self, drug, A, B, C, D, loci=None):
-        loci = [] if loci is None else loci
-        return [{
-            "yAxis": "1",
-            "cols": [str(locus) for locus in loci],
-            "key": key,
-            "color": "rgba(%s)" % color,
-            "values": list(self.make_scatter(loci, datum)),
-        } for key, color, datum in (
-            ("Important", "255, 0, 0, 0.8", A),
-            ("Other", "0, 0, 255, 0.17", B),
-            ("New", "255, 255, 0, 0.5", C),
-            ("Lineage SNPs", "0, 255, 255, 0.5", D),
-        )]
-
-    def make_scatter(self, loci, data):
-        """Turn a mutations data in a by-gene plot"""
-        regions = defaultdict(list)
-        for gene in data:
-            if gene:
-                try:
-                    locus = GeneLocus.objects.for_mutation_name(gene, True)
-                except ValueError:
-                    continue
-
-                regions[str(locus)].append(gene)
-                if locus not in loci:
-                    loci.append(locus)
-
-        for x, locus in enumerate(loci):
-            ret = {"x": x, "y": 0, "size": 5, "tip": ["No mutations"]}
-            if str(locus) in regions:
-                ret["y"] = len(regions[str(locus)])
-                ret["size"] = 9
-                ret["tip"] = regions[str(locus)]
-            yield ret
+                for cat, datum in enumerate(data):
+                    for mutation in datum:
+                        if not mutation:
+                            continue
+                        try:
+                            locus = GeneLocus.objects.for_mutation_name(mutation, True)
+                        except ValueError:
+                            continue
+                        (obj, created) = res.loci.get_or_create(category=cat + 1, locus=locus,
+                                                                 defaults={'mutations': mutation})
+                        if not created:
+                            obj.mutations += "\n" + mutation
 
     def __str__(self):
         return str(self.name)
 
+
+class PredictResult(Model):
+    """A resulting prediction of a specific drug and strain"""
+    strain = ForeignKey(PredictStrain, related_name='results', on_delete=CASCADE)
+    drug = ForeignKey(Drug, related_name='strain_predictions', null=True, blank=True, on_delete=CASCADE)
+
+    updated = DateTimeField(auto_now=True)
+
+    false_negative = DecimalField("False Negative Rate", null=True, blank=True, decimal_places=5, max_digits=10)
+    false_positive = DecimalField("False Postive Rate", null=True, blank=True, decimal_places=5, max_digits=10)
+    probability = DecimalField("Drug Resistance Probability", null=True, blank=True, decimal_places=5, max_digits=10)
+
+    class Meta:
+        unique_together = [('strain', 'drug')]
+
+class PredictResultLocus(Model):
+    """A specific locus for the result"""
+    result = ForeignKey(PredictResult, related_name='loci', on_delete=CASCADE)
+    locus = ForeignKey(GeneLocus, related_name='prediction_results', on_delete=CASCADE)
+    category = IntegerField(choices=(
+        (0, 'Unknown'),
+        (1, 'Important'),
+        (2, 'Other'),
+        (3, 'New'),
+        (4, 'Lineage SNPs'),
+    ))
+    mutations = TextField(default='')
+
+    class Meta:
+        unique_together = ['result', 'locus', 'category']
 
 class PredictDatasetNote(TimeStampedModel):
     """Notes of background processes"""

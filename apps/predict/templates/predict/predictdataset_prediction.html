@@ -11,7 +11,7 @@
           <th scope="row">{{ row.name }}</th>
           {% for col in row.cols %}
             <td title="<table><tr><th>Strain</th><td>{{ row.name }}</td></tr><tr><th>Drug</th><td>{{ col.name }}</td></tr><tr><th>DR Probability</th><td>{{ col.dr_probability }}</td></tr><tr><th>FP Rate</th><td>{{ col.false_positive }}</td></tr><tr><th>FN Rate</th><td>{{ col.false_negative }}</td></tr></table>" data-toggle="tooltip" data-container="body" data-html="true">
-                <div class="cell" data-scatter='{{ col.scatter|jsonify }}' data-row="{{ row.name }}" data-col="{{ col.name }}"><div style="{% if col.dr_probability == None %}background-color: #ccc;{% else %}opacity: {{ col.dr_probability }};{% endif %}">&nbsp;</div></div>
+                <div class="cell" data-resultid='{{ col.result_id }}' data-row="{{ row.name }}" data-col="{{ col.name }}"><div style="{% if col.dr_probability == None %}background-color: #ccc;{% else %}opacity: {{ col.dr_probability }};{% endif %}">&nbsp;</div></div>
             </td>
           {% endfor %}
         </tr>
@@ -29,7 +29,10 @@
   </table>
 
   <div id="scatter" class="d3graph">
+    <span class="close glyphicon glyphicon-remove-sign"></span>
     <h4 id="scatter_title"></h4>
     <svg id="scatter_plot"></svg>
   </div>
+
+<script>heatmap_ready("{% url 'predict:scatter_plot' 1 %}");</script>
 
