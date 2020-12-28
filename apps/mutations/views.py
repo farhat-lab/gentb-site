@@ -76,7 +76,9 @@ class UploadList(ListView):
     def get_queryset(self):
         """Return all import sources owned by the logged in user"""
         qset = super(UploadList, self).get_queryset()
-        return qset.filter(uploader=self.request.user)
+        if not self.request.user.is_staff:
+            qset = qset.filter(uploader=self.request.user)
+        return qset
 
 class DropDownData(JsonView):
     """Drop and drag data response"""
