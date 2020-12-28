@@ -132,6 +132,9 @@ class Program(Model):
     command_line = TextField(
         help_text='Write the command line using replacement syntax '
         'for inputs and outputs')
+    quality_control = BooleanField(default=False,
+        help_text='If true, failure in this step is considered a failure of the '
+                  'data, and not failure of the pipeline program.')
     keep_for = IntegerField(default=-1,
         choices=[
             (-1, "Keep Forever"),
@@ -519,6 +522,7 @@ class ProgramRun(TimeStampedModel):
             ('TIMEOUT', 'Timeout'),
             ('CANCELLED', 'Cancelled'),
             ('FAILED', 'Failed'),
+            ('INVALID', 'Quality Control Failure'),
             ('COMPLETED', 'Completed'),
         ))
 
@@ -652,6 +656,10 @@ class ProgramRun(TimeStampedModel):
             self.job_state = data.get('state', '')
             if not self.submitted and 'submit' in data:
                 self.submitted = data['submit']
+
+            # Attempt to reclassify failures of quality control steps
+            if self.job_state == 'FAILED' and self.program.quality_control:
+                self.job_state = 'INVALID'
 
             if data.get('status', 'notfound') in ('finished',):
                 if data['finished'] and data['started']:

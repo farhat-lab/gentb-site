@@ -53,24 +53,20 @@ from .utils import lineage_spoligo, lineage_fast_caller, lineage_other_caller, f
 LOGGER = logging.getLogger('apps.predict')
 
 # Basic status matrix, file_status + processing_status
-STATUS_LABELS = [
-    _('Dataset Confirmed'),       # STATUS_WAIT
-    _('File Retrieval Started'),  # STATUS_START
-    _('File Retrieval Failed'),   # STATUS_ERROR
-    _('File Retrieval Success'),  # STATUS_DONE + STATUS_WAIT
-    _('Processing Started'),      # STATUS_DONE + STATUS_START
-    _('Processing Failed'),       # STATUS_DONE + STATUS_ERROR
-    _('Processing Success'),      # STATUS_DONE + STATUS_DONE
-    _('Prediction Ready'),        # STATUS_READY
-    _('No Strains to process'),   # STATUS_NONE
-    _('Processing Timed Out'),    # STATUS_TIMEOUT
-    _('No Files Uploaded'),       # STATUS_NOFILES
-]
-(STATUS_WAIT, STATUS_START, STATUS_ERROR, STATUS_DONE) = range(4)
-(STATUS_READY, STATUS_NONE) = (7, 8)
-(STATUS_TIMEOUT, STATUS_NOFILES) = (-2, -1)
-STATUS_LEVELS = (['default', 'primary', 'danger'] * 2) + \
-    ['default', 'success', 'danger', 'danger', 'danger']
+STATUS = dict([
+    ('FILE_NONE', (_('No Files Uploaded'), 'danger', 9)),
+    ('FILE_WAIT', (_('Dataset Confirmed'), 'default', 10)),
+    ('FILE_START', (_('File Retrieval Started'), 'primary', 8)),
+    ('FILE_ERROR', (_('File Retrieval Failed'), 'danger', 10)),
+    ('RUN_NONE', (_('No Strains to process'), 'danger', 10)),
+    ('RUN_WAIT', (_('File Retrieval Success'), 'default', 8)),
+    ('RUN_START', (_('Processing Started'), 'primary', 6)),
+    ('RUN_ERROR', (_('Processing Failed'), 'danger', 4)),
+    ('RUN_DONE', (_('Processing Success'), 'default', 10)),
+    ('READY', (_('Prediction Ready'), 'success', 0)),
+    ('INVALID', (_('Lacks Quality'),'warning', 8)),
+    ('TIMEOUT', (_('Processing Timed Out'), 'danger', 3)),
+])
 
 def get_timeout(timeout=14):
     """Returns the timedate when the prediction should time out"""
@@ -120,16 +116,22 @@ class PredictDataset(TimeStampedModel):
 
     def get_status(self):
         """Returns the status as a string"""
-        return STATUS_LABELS[self.status]
+        return STATUS[self.status][0]
 
     def get_status_level(self):
         """Returns the btn/bootstrap color level for this status"""
-        return STATUS_LEVELS[self.status]
+        return STATUS[self.status][1]
 
     @property
     def status(self):
         """Returns the numeric level which this status has"""
-        return min([strain.status for strain in self.strains.all()] + [STATUS_NONE])
+        status = 'RUN_NONE'
+        previous = 100
+        for strain in self.strains.all():
+            if STATUS[strain.status][2] < previous:
+                status = strain.status
+                previous = STATUS[status][2]
+        return status
 
     @property
     def statuses(self):
@@ -140,12 +142,12 @@ class PredictDataset(TimeStampedModel):
             ret[strain.status] += 1
             total += 1
         if not ret:
-            ret[STATUS_NONE] = 1
+            ret['RUN_NONE'] = 1
         return [{
             'code': status,
             'count': count,
-            'level': STATUS_LEVELS[status],
-            'label': STATUS_LABELS[status],
+            'label': STATUS[status][0],
+            'level': STATUS[status][1],
             'pc': "{:.2f}".format(count / total * 100),
         } for (status, count) in ret.items()]
 
@@ -356,12 +358,13 @@ class PredictStrain(Model):
         file is detected or if the internal time limit has been reached.
         """
         files_status = self.files_status
-        if files_status == STATUS_DONE:
-            run_status = self.run_status
-            if run_status == STATUS_DONE and self.has_prediction:
-                return STATUS_READY
-            return run_status + files_status
-        return files_status
+        if files_status != 'FILE_DONE':
+            return files_status
+
+        run_status = self.run_status
+        if run_status == 'RUN_DONE' and self.has_prediction:
+            return 'READY'
+        return run_status
 
     def has_timedout(self):
         """Returns True if this prediction run has timed out"""
@@ -369,11 +372,11 @@ class PredictStrain(Model):
 
     def get_status(self):
         """Return a string description of the status for this prediction strain"""
-        return STATUS_LABELS[self.status]
+        return STATUS[self.status][0]
 
     def get_status_level(self):
         """Return the bootstrap css color level for this status"""
-        return STATUS_LEVELS[self.status]
+        return STATUS[self.status][1]
 
     @property
     def files_status(self):
@@ -385,15 +388,15 @@ class PredictStrain(Model):
           - 3: The files are ready for this pipeline
         """
         if not self.files:
-            return STATUS_NOFILES
+            return 'FILE_NONE'
         for input_file in self.files:
             if input_file.retrieval_error:
-                return STATUS_ERROR
+                return 'FILE_ERROR'
             if not input_file.retrieval_start:
-                return STATUS_WAIT
+                return 'FILE_WAIT'
             if not input_file.retrieval_end:
-                return STATUS_START
-        return STATUS_DONE
+                return 'FILE_START'
+        return 'FILE_DONE'
 
     @property
     def run_status(self):
@@ -407,17 +410,19 @@ class PredictStrain(Model):
         """
         qs = self.piperun.programs.all() if self.piperun else []
         if not qs:
-            return STATUS_WAIT
+            return 'RUN_WAIT'
         for program in qs:
             if program.job_state == 'TIMEOUT':
-                return STATUS_TIMEOUT
-            if program.is_error:
-                return STATUS_ERROR
+                return 'TIMEOUT'
+            if program.is_error or program.job_state == 'INVALID':
+                if program.program.quality_control:
+                    return 'INVALID'
+                return 'RUN_ERROR'
             if not program.is_submitted:
-                return STATUS_WAIT
+                return 'RUN_WAIT'
             if not program.is_complete:
-                return STATUS_START
-        return STATUS_DONE
+                return 'RUN_START'
+        return 'RUN_DONE'
 
     @property
     def has_prediction(self):

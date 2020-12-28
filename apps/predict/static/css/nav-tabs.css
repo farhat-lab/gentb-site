@@ -98,6 +98,9 @@
   background-color: #d9534f;
   animation: flash-bg 0.5s alternate infinite;
 }
+.process > li.warning {
+  background-color: #f0ad4e;
+}
 .process a {
   color: white;
   text-decoration: none;

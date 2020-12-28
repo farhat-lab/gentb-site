@@ -37,7 +37,7 @@
               <td>{{ ds.file_type }}</td>
               {% if ds.has_prediction %}
                 <td class="success">
-                  {% for status in ds.statuses %}{% if status.code == 7 %}{{ status.pc }}% Completed{% endif %}{% endfor %}
+                  {% for status in ds.statuses %}{% if status.code == "READY" %}{{ status.pc }}% Completed{% endif %}{% endfor %}
                 </td>
               {% else %}
                 <td class="{% if ds.is_error %}danger{% elif ds.is_busy %}info{% endif %}">
