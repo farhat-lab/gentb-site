@@ -27,12 +27,12 @@
         <ul class="dropdown-menu" role="menu">
 
             <!-- my datasets page -->
-            {% if request.user.datasets.count %}
+            {% if request.user.datasets.count or request.user.is_staff %}
               <li{% if view_my_datasets %} class="active"{% endif %}>
                 <a href="{% url 'predict:view_my_datasets' %}">My Datasets ({{ request.user.datasets.count }})</a>
               </li>
             {% endif %}
-            {% if request.user.importsource_set.count %}
+            {% if request.user.importsource_set.count or request.user.is_staff %}
               <li>
                 <a href="{% url 'genes:upload.list' %}">My Imports ({{ request.user.importsource_set.count }})</a>
               </li>
