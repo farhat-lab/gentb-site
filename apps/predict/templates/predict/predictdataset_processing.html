@@ -32,8 +32,13 @@
         </li>
         {% if strain.piperun %}
           {% for run in strain.piperun.all_programs %}
-            {% if run.is_error and run.is_started %}
-              {% if not run.is_submitted and run.is_complete %}
+            {% if run.is_error %}
+              {% if not run.is_started %}
+                <li>
+                  <span class="glyphicon glyphicon-minus" data-container="body" data-toggle="tooltip" title="Program step canceled."></span>
+                  <h4>{{ link.program.name }}</h4>
+                </li>
+              {% elif not run.is_submitted and run.is_complete %}
                 <li data-toggle="collapse" data-target="#{{ run.job_id }}">
                   <span class="glyphicon glyphicon-refresh" data-container="body" data-toggle="tooltip" title="Scheduled for re-run (after error)."></span>
                   <h4>{{ run.program.name }}</h4>
