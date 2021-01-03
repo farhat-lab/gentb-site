@@ -46,7 +46,7 @@ class VersionInformation(BaseMiddleware):
         for label, remote in BRANCHES:
             branch = self.get_iter(local, remote)
             branches.append((label, branch))
-            if len(branch):
+            if branch:
                 response.context_data['branch_updates'] = True
     
         response.context_data['branches'] = branches
