@@ -8,12 +8,12 @@ FILENAME="$1"
 SPDB="$2"
 
 if [ ! -f "$SPOLIGO" ]; then
-  cd "$DIR/spoligotype"
+  cd "$DIR/spoligotype" || exit
   g++ -std=c++0x spoligotype_info.cpp -o spoligotype_info
 fi
 
-if [ ${FILENAME: -3} == ".gz" ]; then
-  gunzip -c "$FILENAME" | $SPOLIGO /dev/stdin | $LOOKUP $2
+if [ "${FILENAME: -3}" == ".gz" ]; then
+  gunzip -c "$FILENAME" | $SPOLIGO /dev/stdin | $LOOKUP "$SPDB"
 else
-  $SPOLIGO $FILENAME | $LOOKUP $2
+  $SPOLIGO "$FILENAME" | $LOOKUP "$SPDB"
 fi
