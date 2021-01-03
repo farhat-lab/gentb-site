@@ -1,56 +1,85 @@
 # genTB website
 
-Basic django site to facilitate the contribution and analysis of fastQ and VCF files.
+A Django site that facilitates the contribution and analysis of fastQ and VCF files.
 
-# Installation
+## Installation
 
 This website requires python 3.x plus a database with GIS functions.
 
 Create a virtualenv and install deps:
 
-    virtualenv -p python3 pythonenv
-    ./pythonenv/bin/activate
-    pip install -r requirements.txt
+```bash
+virtualenv -p python3 pythonenv
+./pythonenv/bin/activate
+python3 -m pip install --upgrade pip
+pip install -r requirements.txt
+```
 
-Next you must create a database if you are using postgresql or mysql, (if you are using the default sqlite, skip this)
+Next, you must create a database if you are using PostgreSQL or MySQL. If you are using the default SQLite, skip this.
 
-    vim ./tb-website/settings/local.py
+```bash
+vim ./tb-website/settings/local.py
+```
 
-Change settings relating to the database location, username and password.
+Change settings relating to the database `location`, `username`, and `password`.
 
-Finally you must make sure GIS libraries are installed (some are only required for sqlite and mysql), version of libgeos may differ depending on Ubuntu version.
+Finally, it would be best to make sure GIS libraries are installed (some are only required for SQLite and MySQL). The version of `libgeos` may differ depending on the Ubuntu version.
 
-    sudo apt install binutils libproj-dev gdal-bin libgeos-3.6.2 libsqlite3-mod-spatialite
+```bash
+sudo apt install binutils libproj-dev gdal-bin libgeos-3.6.2 libsqlite3-mod spatialite
+```
 
-Next you should be able to run the migration:
+Next, you should be able to run the migration:
 
-    python manage.py migrate
+```bash
+python manage.py migrate
+```
 
-If this is sucessfull, everything from here is just a normal django website, to run the server:
+If successful, everything from here is just a standard Django website.
 
-    python manage.py runserver
+Start the development server:
+
+```bash
+python manage.py runserver
+```
 
 The database will be empty, so be sure to populate it with a user account and other information you need.
 
-# Maps Testing
+## Maps Testing
 
 To test the projection, maps and other visualisations you can quickly bring a blank database up with the following commands::
 
-    ./manage migrate
-    ./manage load_map_data
-    ./manage loaddata drugs genelocus
-    ./manage loaddata test-genetics test-strains
-    ./manage load_social_data
-    ./manage runserver
+```bash
+./manage migrate
+./manage load_map_data
+./manage loaddata drugs genelocus
+./manage loaddata test-genetics test-strains
+./manage load_social_data
+./manage runserver
+```
 
-These data will be wrong (not real), but should allow basic testing.
+The populated data will be wrong (not real) but should allow necessary testing.
 
-# macOS:
+## MacOS:
 
 Comment out the spatialite_library_path in your local.py file
 
-You will likely need to install the gdal library. If using homebrew, follow these steps::
+You will likely need to install the `gdal` library. 
 
-    brew install gdal
-    pip3 install --upgrade pip
-    pip3 install gdal
+### homebrew
+
+```bash
+brew install gdal
+```
+
+### macports
+
+```bash
+macports install gdal
+```
+
+Finally, install the required python library.
+
+```bash
+pip install gdal
+```
