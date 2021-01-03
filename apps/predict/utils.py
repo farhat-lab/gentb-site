@@ -12,7 +12,7 @@ static_lazy = lazy(static, str)
 
 def get_absolute_url_for_site(url, site):
     url_tmpl = "{scheme}//{domain}{url}"
-    scheme = site.scheme and "{0}:".format(site.scheme) or ""
+    scheme = "{0}:".format(site.scheme) if site.scheme else ""
     return url_tmpl.format(scheme=scheme, domain=site.domain, url=url)
 
 def lineage_spoligo(data):
