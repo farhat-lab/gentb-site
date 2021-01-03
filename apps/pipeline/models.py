@@ -53,7 +53,6 @@ from django.urls import reverse
 from django.conf import settings
 from django.utils.timezone import now
 from django.utils.text import slugify
-from django.utils.timezone import now
 
 from .utils import file_as_inputs
 
