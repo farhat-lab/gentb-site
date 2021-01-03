@@ -12,7 +12,7 @@ if [ ! -f "$SPOLIGO" ]; then
   g++ -std=c++0x spoligotype_info.cpp -o spoligotype_info
 fi
 
-if [ "${FILENAME: -3}" == ".gz" ]; then
+if [ "${FILENAME##*.}" == "gz" ]; then
   gunzip -c "$FILENAME" | $SPOLIGO /dev/stdin | $LOOKUP "$SPDB"
 else
   $SPOLIGO "$FILENAME" | $LOOKUP "$SPDB"
