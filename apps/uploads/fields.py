@@ -31,7 +31,7 @@ class UploadField(Field):
 
     def __init__(self, **kw):
         self.directory = kw.pop('dir', None)
-        self.extensions = kw.get('extensions', None)
+        self.extensions = kw.get('extensions')
         if 'widget' not in kw:
             kw['widget'] = self.widget(
                 extensions=kw.pop('extensions', None),

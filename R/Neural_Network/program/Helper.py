@@ -4,7 +4,7 @@
 # jimmy.royer@analysisgroup.com
 # May 29, 2016
 
-from sknn.mlp import Classifier, Layer, Native
+from sknn.mlp import Classifier, Layer
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
 from sklearn.grid_search import GridSearchCV

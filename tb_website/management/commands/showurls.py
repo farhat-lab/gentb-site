@@ -4,11 +4,11 @@ Shows all the available urls for a django website, useful for debugging.
 
 import types
 
-from django.core.management.base import BaseCommand, CommandError
+from django.core.management.base import BaseCommand
 
 import tb_website.urls
 
-class Url(object):
+class Url():
     is_module = False
     is_view = False
 
@@ -33,7 +33,7 @@ class Url(object):
         namespace = self.namespace
         if name and namespace:
             return "%s:%s" % (namespace, name)
-        elif name:
+        if name:
             return name
         return None
 
@@ -97,7 +97,7 @@ class UrlModule(Url):
     def urls_name(self, uc):
         if isinstance(uc, list) and uc:
             return self.urls_name(uc[0])
-        elif hasattr(uc, '__name__'):
+        if hasattr(uc, '__name__'):
             return uc.__name__
         return None
 
@@ -107,7 +107,7 @@ class UrlFunction(Url):
         tag = super(UrlFunction, self).__str__()
         return "%s > %s()" % (tag, self.module.__name__)
 
-class WebsiteUrls(object):
+class WebsiteUrls():
     """A class that can loop through urls in a tree structure"""
     def __iter__(self):
         """

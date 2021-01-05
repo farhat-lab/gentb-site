@@ -42,6 +42,6 @@ class Migration(migrations.Migration):
         ),
         migrations.AlterUniqueTogether(
             name='genedruginteraction',
-            unique_together=set([('drug', 'gene', 'paper')]),
+            unique_together={('drug', 'gene', 'paper')},
         ),
     ]

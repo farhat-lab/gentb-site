@@ -46,7 +46,7 @@ class NotEnrichedError(ValueError):
     """The VCF File isn't enriched, so can't be imported"""
 
 
-class Command(object):
+class Command():
     """Import VCF and JSON based strain data"""
     # Caches
     countries = EMPTY.copy()
@@ -133,7 +133,8 @@ class Command(object):
             for reason, count in self.log['ok'].items():
                 print(f" * {reason}: {count}")
 
-    def annotate_vcf(self, var_fhl, vcf_path):
+    @staticmethod
+    def annotate_vcf(var_fhl, vcf_path):
         """
         Call the flat annotator and block until we're finished.
         """

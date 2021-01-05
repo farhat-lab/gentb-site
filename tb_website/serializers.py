@@ -20,7 +20,7 @@ from .utils import sizeof, to
 class Serializer(BaseSerializer):
     pass
 
-class ProgressiveLoader(object):
+class ProgressiveLoader():
     reject_fhl = None
 
     def __init__(self, fhl, pos=1):
@@ -74,7 +74,7 @@ class ProgressiveLoader(object):
             cls.reject_fhl.write("]")
             cls.reject_fhl.close()
 
-class BigDeserializer(object):
+class BigDeserializer():
     field_names_cache = {}
 
     def __init__(self, ranges=None, attempt=1):
@@ -173,7 +173,8 @@ class BigDeserializer(object):
             return None # Any error, defer the object.
 
     @to(dict)
-    def build_data(self, model, field_names, pk, data, using=None):
+    @staticmethod
+    def build_data(model, field_names, pk, data, using=None):
         m2m = {}
         if pk is not None:
             try:

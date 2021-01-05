@@ -24,8 +24,8 @@ import logging
 
 from django.conf import settings
 from django.db.models import (
-    Model, Manager, QuerySet, SlugField, CharField, PositiveIntegerField, URLField,
-    DateTimeField, TextField, ForeignKey, CASCADE, SET_NULL, Sum
+    Model, QuerySet, SlugField, CharField, PositiveIntegerField, URLField,
+    DateTimeField, TextField, ForeignKey, CASCADE, Sum
 )
 from django.utils.timezone import now
 

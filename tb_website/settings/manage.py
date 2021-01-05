@@ -2,7 +2,6 @@
 MANAGER_DB = None
 
 from .local import *
-import sys
 
 #sys.stderr.write("Manager Django Backend!\n")
 

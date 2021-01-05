@@ -446,14 +446,14 @@ class PipelineRun(TimeStampedModel):
     def all_programs(self):
         """Returns all the program runs with unrun pipelines appended"""
         ret = []
-        runs = dict((p.program_id, p) for p in self.programs.all())
+        runs = {p.program_id: p for p in self.programs.all()}
         for pipe in self.pipeline.programs.all():
             ret.append(runs.get(pipe.program_id, pipe))
         return ret
 
     def stop_all(self, msg='All Stopped'):
         """Forcefully stop all processes in this pipeline run"""
-        return all([program.stop(msg=msg) for program in self.programs.all()])
+        return all(program.stop(msg=msg) for program in self.programs.all())
 
     def update_all(self):
         """
@@ -461,7 +461,7 @@ class PipelineRun(TimeStampedModel):
         True if all programs are complete. False if any are still running.
         """
         qset = self.programs.filter(Q(is_submitted=False) | Q(is_complete=False))
-        if all([program.update_status() for program in qset]):
+        if all(program.update_status() for program in qset):
             if qset.count():
                 # Clean up step for all programs
                 self.delete_output_files()
@@ -750,7 +750,8 @@ class ProgramRun(TimeStampedModel):
             return -1
         return max([keep_for - self.output_age(), 0])
 
-    def update_size(self, *files):
+    @staticmethod
+    def update_size(*files):
         """Takes a list of files as a string and returns the size in Kb"""
         return 0 + sum([os.path.getsize(fn) for fn in files])
 

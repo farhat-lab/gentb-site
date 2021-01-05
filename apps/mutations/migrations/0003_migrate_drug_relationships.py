@@ -2,7 +2,7 @@
 from __future__ import unicode_literals
 
 from collections import defaultdict
-from django.db import models, migrations
+from django.db import migrations
 
 def to_drug_mutations(apps, schema_editor):
     """Move the drug<->mutation relationship to a ManyToMany field and remove duplicate mutations"""
@@ -18,7 +18,7 @@ def to_drug_mutations(apps, schema_editor):
     for pkg in Drug.objects.values('pk', 'gene_locuses__mutations__name'):
         drug_mutations[pkg['pk']].add(pkg['gene_locuses__mutations__name'])
 
-    unique_locus = dict()
+    unique_locus = {}
     for locus in GeneLocus.objects.all():
         if locus.name in unique_locus:
             # Add all of these mutations to the master locus
@@ -31,7 +31,7 @@ def to_drug_mutations(apps, schema_editor):
             locus.genome = genome
             locus.save()
 
-    unique_mutations = dict()
+    unique_mutations = {}
     for mutation in Mutation.objects.all():
         if mutation.name in unique_mutations:
             # Delete this duplicate mutation name

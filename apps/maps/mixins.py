@@ -46,7 +46,7 @@ class DjangoJSONEncoder2(DjangoJSONEncoder):
             return {'__type__': 'datetime.timedelta',
                     'args': [getattr(obj, arg) for arg in args]}
         if isinstance(obj, QuerySet):
-            return [item for item in obj]
+            return list(obj)
         return DjangoJSONEncoder.default(self, obj)
 
 #Inherit from the parent class View and add Caching
@@ -85,7 +85,7 @@ class JsonView(View):
         raise NotImplementedError("Please provide context data.")
 
 
-class DataSlicerMixin(object):
+class DataSlicerMixin():
     """
     Provide a way to slice up a given model based on inputs.
     """
@@ -139,7 +139,8 @@ class DataSlicerMixin(object):
             qset = qset.values(*vals)
         return qset
 
-    def get_list(self, qs, column, *cols):
+    @staticmethod
+    def get_list(qs, column, *cols):
         """Returns a flat list for this column"""
         if cols:
             qs = qs.values_list(column, *cols)
@@ -161,9 +162,9 @@ def as_set(val):
     """
     if val is None:
         return set()
-    return set(val) if isinstance(val, (tuple, list)) else set([val])
+    return set(val) if isinstance(val, (tuple, list)) else {val}
 
-class DataTableMixin(object):
+class DataTableMixin():
     """
     Return context rendered as a Json output for the DataTables plugin.
     """
@@ -210,7 +211,8 @@ class DataTableMixin(object):
         db_columns = [self.column_to_django(col) for col in columns]
         return [self.prep_item(item, db_columns, **extra) for item in qset] #.values(*db_columns)]
 
-    def prep_item(self, obj, columns, **extra):
+    @staticmethod
+    def prep_item(obj, columns, **extra):
         """
         Prepare this item for output using the requested columns.
         """
@@ -225,7 +227,8 @@ class DataTableMixin(object):
         ret.update(extra)
         return ret
 
-    def column_to_django(self, column, db=True):
+    @staticmethod
+    def column_to_django(column, db=True):
         """We calculate the column's django address,
 
         If db is True, then this must return the database field, if false

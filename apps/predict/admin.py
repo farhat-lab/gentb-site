@@ -47,6 +47,7 @@ class PredictDatasetAdmin(admin.ModelAdmin):
     readonly_fields = [ 'created', 'modified', 'md5', 'file_directory',
                         'user_name', 'user_email', 'user_affiliation',]
 
+    @staticmethod
     def retry_processes(modeladmin, request, queryset):
         for predict in queryset.all():
             for strain in predict.strains.all():

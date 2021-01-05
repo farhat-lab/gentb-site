@@ -2,7 +2,6 @@
 # pylint: disable=wrong-import-position
 # dataset from WHO: TB_burden_countries_2020-07-23.csv
 
-import requests
 import sys
 
 sys.path.insert(0, '.')

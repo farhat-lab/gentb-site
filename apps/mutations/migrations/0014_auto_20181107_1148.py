@@ -19,6 +19,6 @@ class Migration(migrations.Migration):
         ),
         migrations.AlterUniqueTogether(
             name='strainmutation',
-            unique_together=set([('strain', 'mutation')]),
+            unique_together={('strain', 'mutation')},
         ),
     ]

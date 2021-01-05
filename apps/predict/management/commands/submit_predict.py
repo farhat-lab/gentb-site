@@ -10,7 +10,6 @@ from datetime import datetime
 from django.core.management.base import BaseCommand
 from django.contrib.sites.models import Site
 from django.template.loader import get_template
-from django.template import Context
 from django.core.mail import send_mail
 from django.conf import settings
 

@@ -25,7 +25,6 @@ back to stdout for pipeline processing.
 
 import os
 import sys
-import atexit
 
 
 def test_quality(name, fhl, threshold=15):
@@ -48,9 +47,8 @@ def test_quality(name, fhl, threshold=15):
     if pc < 2:
         sys.stderr.write('PASS\n')
         return 0
-    else:
-        sys.stderr.write('FAIL : %d%% of the DR sites have coverage <%dx\n' % (pc, threshold))
-        return 1
+    sys.stderr.write('FAIL : %d%% of the DR sites have coverage <%dx\n' % (pc, threshold))
+    return 1
 
 
 def test_qc_file(filename, threshold=15):
@@ -69,7 +67,7 @@ if __name__ == '__main__':
         if arg.startswith('-Q='):
             threshold = int(arg.split('=')[-1])
             continue
-        elif os.path.isdir(arg):
+        if os.path.isdir(arg):
             for filename in os.listdir(arg):
                 if filename.endswith('.qc'):
                     failed += test_qc_file(filename, threshold)

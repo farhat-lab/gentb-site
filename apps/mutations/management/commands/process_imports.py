@@ -6,7 +6,7 @@ from vcf import VCFReader
 
 from django.db import transaction
 from django.db.utils import DataError
-from django.core.management.base import BaseCommand, CommandError
+from django.core.management.base import BaseCommand
 
 from apps.maps.models import Country, Place
 from apps.maps.utils import COUNTRY_MAP, CITY_MAP
@@ -15,9 +15,7 @@ from apps.uploads.models import UploadFile
 from apps.mutations.csv_lookups import Lookup as CsvLookup
 from apps.mutations.models import (
     ImportSource, Genome, Lineage, Paper, Drug,
-    StrainSource, BioProject, GeneLocus,
-    StrainMutation,
-)
+    StrainSource, BioProject, GeneLocus)
 from apps.mutations.utils import *
 
 LOGGER = logging.getLogger('apps.mutations')
@@ -182,7 +180,8 @@ class Command(BaseCommand):
         self.save_mutations(strain, var)
         return name
 
-    def save_mutations(self, strain, var):
+    @staticmethod
+    def save_mutations(strain, var):
         """Save all the mutations in the var file"""
         for snp in var.values():
             #gene = snp['regionid1']

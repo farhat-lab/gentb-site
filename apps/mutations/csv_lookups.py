@@ -22,8 +22,6 @@ used to look data up.
 
 Features data conversion, sub table support and column naming.
 """
-
-import sys
 import logging
 
 from collections import OrderedDict
@@ -81,7 +79,7 @@ class BaseLookup(dict):
                 try:
                     self.append(dict(zip(header, row)))
                 except ValueError as err:
-                    logging.warning("%s:%d %s" % (filename, line+2, str(err)))
+                    logging.warning("%s:%d %s", filename, line+2, str(err))
 
     def set_type(self, key, value):
         """Some of the data in the file isn't a string, parse it"""
@@ -164,7 +162,7 @@ class BaseLookup(dict):
         for name in row:
             if row[name] is None:
                 continue
-            elif self[key][name] is None:
+            if self[key][name] is None:
                 self[key][name] = row[name]
             elif row[name] != self[key][name]:
                 raise KeyError("Duplicate key with different data: %s=%s %s=(%s!=%s)" % (self.key, key, name, self[key][name], row[name]))
@@ -182,7 +180,7 @@ class Lookup(BaseLookup):
 
         if delimiter is None:
             ext = filename.rsplit('.', 1)[-1]
-            delimiter = self.auto_delim.get(ext, None)
+            delimiter = self.auto_delim.get(ext)
 
         if delimiter is not None:
             self.delimiter = delimiter

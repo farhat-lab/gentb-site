@@ -37,7 +37,7 @@ def get_uuid():
     """Return the hex from a new uuid4 uuid"""
     return uuid.uuid4().hex
 
-class ManagedUrl(object):
+class ManagedUrl():
     """
     Manages a URL so that it can be fed back to a user's session safely.
     It takes a url that has a password and caches the details to disk before
@@ -50,7 +50,8 @@ class ManagedUrl(object):
             with open(self._cache_file(self.url.netloc.encode('utf8'))) as fhl:
                 self.url = self.url._replace(**json.loads(fhl.read()))
 
-    def _cache_file(self, digest):
+    @staticmethod
+    def _cache_file(digest):
         """Return the location of the cached url"""
         return os.path.join(settings.UPLOAD_CACHE_ROOT, digest + '.json')
 
@@ -84,7 +85,7 @@ class ManagedUrl(object):
 
 
 
-class Download(object): 
+class Download(): 
     """Wrap the requests module for django's storage backend."""
     _requests = None
 

@@ -62,7 +62,7 @@ class UploadForm(ModelForm):
         pl.queryset = self.pipeline_queryset()
         if pl.queryset.count() == 0:
             raise ValueError("No pipeline for type '%s'" % self.my_file_type)
-        elif pl.queryset.count() == 1:
+        if pl.queryset.count() == 1:
             pl.widget = HiddenInput()
             pl.initial = pl.queryset.get().pk
         else:
@@ -210,10 +210,12 @@ class NotificationForm(Form):
     result_data = CharField(widget=Textarea, required=False)
 
     def was_run_successful(self):
-        assert hasattr(self, 'cleaned_data'), "Must have is_valid() == true.  cleaned_data not found"
+        if not hasattr(self, 'cleaned_data'):
+            raise AssertionError("Must have is_valid() == true.  cleaned_data not found")
         return self.cleaned_data['success']
 
     def get_result_data(self):
-        assert hasattr(self, 'cleaned_data'), "Must have is_valid() == true.  cleaned_data not found"
+        if not hasattr(self, 'cleaned_data'):
+            raise AssertionError("Must have is_valid() == true.  cleaned_data not found")
         return self.cleaned_data['result_data']
 

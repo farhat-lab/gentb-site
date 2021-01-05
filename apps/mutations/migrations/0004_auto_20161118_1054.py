@@ -13,11 +13,11 @@ class Migration(migrations.Migration):
     operations = [
         migrations.AlterUniqueTogether(
             name='genelocus',
-            unique_together=set([('genome', 'name')]),
+            unique_together={('genome', 'name')},
         ),
         migrations.AlterUniqueTogether(
             name='mutation',
-            unique_together=set([('gene_locus', 'name')]),
+            unique_together={('gene_locus', 'name')},
         ),
         migrations.RemoveField(
             model_name='genelocus',

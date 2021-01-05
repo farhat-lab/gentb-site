@@ -15,8 +15,6 @@ except ImportError as err:
         "working directory, or is the environment not configured?:\n"\
         "{}\n".format(err))
     sys.exit(1)
-
-from apps.mutations.utils import csv_merge
 from apps.maps.models import Country, CountryHealth
 
 if __name__ == '__main__':

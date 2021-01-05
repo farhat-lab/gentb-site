@@ -22,17 +22,14 @@ import os
 
 from django.conf import settings
 from django.db.models import Q
-from django.utils.html import escape
-from django.urls import reverse
-from django.contrib.admin.sites import site
-from django.contrib.admin.widgets import FilteredSelectMultiple, ForeignKeyRawIdWidget
+from django.contrib.admin.widgets import FilteredSelectMultiple
 from django.forms import (
     Form, ModelForm, CharField, Textarea, ModelMultipleChoiceField, ValidationError
 )
 
 from apps.uploads.fields import UploadField
 
-from .models import Drug, GeneLocus, Mutation, ImportSource, ImportStrain, GeneDrugInteraction
+from .models import Drug, GeneLocus, Mutation, ImportSource, ImportStrain
 from .utils import unpack_mutation_format
 
 class DrugForm(ModelForm):

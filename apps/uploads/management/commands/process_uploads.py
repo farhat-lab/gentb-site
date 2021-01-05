@@ -2,7 +2,7 @@
 import logging
 
 from django.utils.timezone import now
-from django.core.management.base import BaseCommand, CommandError
+from django.core.management.base import BaseCommand
 from apps.uploads.models import DropboxUploadFile, ManualUploadFile, ResumableUploadFile
 
 LOGGER = logging.getLogger('apps.uploads')

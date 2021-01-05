@@ -7,7 +7,7 @@ from django.contrib.auth.decorators import login_required
 
 from .models import PredictDataset
 
-class PredictMixin(object):
+class PredictMixin():
     """The baseline predict view"""
     slug_field = 'md5'
 

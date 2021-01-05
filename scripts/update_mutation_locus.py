@@ -79,7 +79,7 @@ def set_gene_locus(mut):
         merge_model_objects(mut, list(others), keep_old=True)
         total, counts = others.delete()
         counts.pop('mutations.Mutation', None)
-        if set(counts.values()) != set([0]):
+        if set(counts.values()) != {0}:
             print("Deleted some unexpected values when merging mutations: {}".format(counts))
             sys.exit(1)
 

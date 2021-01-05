@@ -218,11 +218,11 @@ class Migration(migrations.Migration):
         ),
         migrations.AlterUniqueTogether(
             name='genelocus',
-            unique_together=set([]),
+            unique_together=set(),
         ),
         migrations.AlterUniqueTogether(
             name='mutation',
-            unique_together=set([]),
+            unique_together=set(),
         ),
         migrations.AddField(
             model_name='targetregion',

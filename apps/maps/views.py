@@ -26,15 +26,14 @@ from collections import defaultdict, OrderedDict
 from django.views.generic import TemplateView, ListView
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
-from django.db.models import Count, Q
+from django.db.models import Count
 
 from apps.mutations.models import (
-    ImportSource, StrainSource, StrainMutation, GeneLocus, Genome, StrainResistance,
-    Mutation, Paper, BioProject, Lineage, RESISTANCE, RESISTANCE_GROUP,
-)
+    ImportSource, StrainSource, StrainMutation, GeneLocus, StrainResistance,
+    Mutation, Paper, BioProject, RESISTANCE, RESISTANCE_GROUP)
 
 from .mixins import JsonView, DataSlicerMixin, DataTableMixin
-from .utils import GraphData, many_lookup, adjust_coords
+from .utils import GraphData, many_lookup
 from .models import Country, CountryHealth, CountryDetail
 
 def get_gdp(self, **_):
@@ -217,7 +216,8 @@ class DrugList(JsonView, DataSlicerMixin):
             'expected': expected,
         })
 
-    def estimate_correction(self, expected, sensitive_to_drug=0, intermediate=0, resistant_to_drug=0, **kw):
+    @staticmethod
+    def estimate_correction(expected, sensitive_to_drug=0, intermediate=0, resistant_to_drug=0, **kw):
         """Estimate the corrects"""
         sensitive = sensitive_to_drug
         resistant = intermediate + resistant_to_drug
@@ -241,19 +241,22 @@ class Lineages(JsonView, DataSlicerMixin):
         'drug[]': many_lookup(StrainResistance, 'drug__code', 'strain_id'),
     }
 
-    def get_sublineages(self, lin):
+    @staticmethod
+    def get_sublineages(lin):
         """Returns list of all ancestors of `lin`, including `lin` (e.g. '3.6.4' -> ['3', '3.6', '3.6.4'])"""
         dot_indices = [idx for idx, ch in enumerate(lin) if ch == '.']
         return [lin[:idx] for idx in dot_indices] + [lin]
 
-    def child_index(self, lin, children):
+    @staticmethod
+    def child_index(lin, children):
         """Returns index of child in `children` whose lineage is `lin`"""
         for idx, child in enumerate(children):
             if child['name'][1:] == lin:
                 return idx
 
 
-    def get_color(self, depth, idx):
+    @staticmethod
+    def get_color(depth, idx):
         """Returns color of sunburst arc given depth and clockwise index.
            Arcs follow a blue->green gradient clockwise, with lower opacity at higher levels"""
         if depth == 0:

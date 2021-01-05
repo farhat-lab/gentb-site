@@ -241,11 +241,11 @@ def unpack_mutation_format(name):
         if snp.get('noncode', '') != 'promoter':
             _ = ValueError("Promoter doesn't specify 'promoter' part in %s" % name)
         return (index, 'promoter ' + gene, name)
-    elif snp['syn'] == 'I':
+    if snp['syn'] == 'I':
         if snp.get('noncode', '') != 'inter':
             _ = ValueError("Integenic doesn't specify 'inter' part")
         return (index, 'intergenic ' + gene, name)
-    elif snp['syn'] in ['CN', 'CD', 'CF', 'CI', 'CS', 'CZ', 'N', 'ND', 'NI', 'NF']:
+    if snp['syn'] in ['CN', 'CD', 'CF', 'CI', 'CS', 'CZ', 'N', 'ND', 'NI', 'NF']:
         return (index, gene, name)
     raise ValueError("Must be promoter, intergenic or CN, CD, CF, CI, CS, CZ or N, ND, NI, NF")
 
@@ -321,8 +321,8 @@ def file_generator(*required, **_):
                 raise FileNotFound("File '%s' Not Found" % filename)
 
             # Get the right content unpacker
-            _loader = LOADERS.get(kw.get('loader', None), None)\
-                   or LOADERS.get(filename.rsplit('.', 1)[-1], None)
+            _loader = LOADERS.get(kw.get('loader', None))\
+                   or LOADERS.get(filename.rsplit('.', 1)[-1])
             if _loader is None:
                 raise TypeError("Can't parse '%s' unknown type." % filename)
 
@@ -417,7 +417,7 @@ def long_match(MAP, d, value, model=None, default='NOP', *cols, **filt):
     return d[value]
 
 
-class StatusBar(object):
+class StatusBar():
     """A generic command line status bar, use like so:
 
     for item in StatusBar("Label:", 300, looper_function):

@@ -10,8 +10,6 @@
 import os
 import numpy as np
 import pickle
-import collections
-from sklearn.feature_selection import RFE
 
 
 # Change to Current Directory

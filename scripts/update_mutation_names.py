@@ -20,7 +20,7 @@ except ImportError as err:
 from argparse import ArgumentParser
 from apps.mutations.models import Mutation
 
-class Command(object):
+class Command():
     """Check all mutation names and format the data as needed."""
     def __init__(self):
         self.arg_parser = ArgumentParser(description=self.__doc__)

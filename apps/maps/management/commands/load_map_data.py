@@ -10,8 +10,7 @@ from zipfile import ZipFile, BadZipFile
 import requests
 
 from django.conf import settings
-from django.utils import six
-from django.core.management.base import BaseCommand, CommandError
+from django.core.management.base import BaseCommand
 from django.contrib.gis.utils import LayerMapping
 
 from apps.maps.models import Country, CountryDetail, Place

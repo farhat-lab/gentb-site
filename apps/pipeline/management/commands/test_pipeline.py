@@ -7,7 +7,7 @@ import time
 import datetime
 
 from django.core.management.base import BaseCommand
-from apps.pipeline.models import Pipeline, PipelineRun
+from apps.pipeline.models import Pipeline
 
 
 class PipelineDoesNotExist(Exception):
@@ -28,7 +28,7 @@ class Command(BaseCommand):
         rows = []
 
         # longest string in each column
-        cmax = dict()
+        cmax = {}
 
         for l in labels:
             cmax[l] = len(l)

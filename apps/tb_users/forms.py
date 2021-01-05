@@ -1,9 +1,8 @@
 from django.utils.translation import ugettext as _
-import re
 
 from django import forms
 from django.contrib.auth.models import User
-from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
+from django.contrib.auth.forms import UserCreationForm
 
 from apps.tb_users.models import TBUser
 

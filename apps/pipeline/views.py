@@ -46,7 +46,8 @@ class PipelineDetail(ProtectedMixin, DetailView): # pylint: disable=too-many-anc
             for_test=True, commit=False, file='file')
         return data
 
-    def get_parent(self):
+    @staticmethod
+    def get_parent():
         return (reverse('pipeline:pipelines'), "Pipelines")
 
 class DiskUsage(ProtectedMixin, ListView):
@@ -158,7 +159,7 @@ class JobViewer(ProtectedMixin, TemplateView):
             kw['end'] = (date.today() + timedelta(days=1)).isoformat()
 
         if 'col' in self.request.GET:
-            cols = [c for c in self.request.GET.getlist('col')]
+            cols = list(self.request.GET.getlist('col'))
         else:
             cols = [c for c in self.request.GET.get('cols', '').split(',') if c]
 

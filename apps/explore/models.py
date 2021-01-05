@@ -1,6 +1,5 @@
 from django.db import models
 from model_utils.models import TimeStampedModel
-from django.utils.text import slugify
 
 
 class ExploreDataFileInfo(TimeStampedModel):

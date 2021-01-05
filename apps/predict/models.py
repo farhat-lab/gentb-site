@@ -18,8 +18,6 @@
 Provide prediction app using the pipeline for building predictions and the
 uploads app to download large data files from the users.
 """
-
-import sys
 import json
 import logging
 
@@ -28,7 +26,7 @@ from hashlib import md5
 import os
 from os.path import join, isdir, basename
 
-from collections import defaultdict, OrderedDict
+from collections import defaultdict
 from datetime import timedelta
 
 from model_utils.models import TimeStampedModel
@@ -159,17 +157,17 @@ class PredictDataset(TimeStampedModel):
     @property
     def has_prediction(self):
         """Returns true if any strain has a predict file"""
-        return any([strain.has_prediction for strain in self.strains.all()])
+        return any(strain.has_prediction for strain in self.strains.all())
 
     @property
     def has_lineages(self):
         """Return true if any strain has a lineage file"""
-        return any([strain.has_lineage for strain in self.strains.all()])
+        return any(strain.has_lineage for strain in self.strains.all())
 
     @property
     def has_output_files(self):
         """Return true if any strain has output files"""
-        return any([list(strain.output_files) for strain in self.strains.all()])
+        return any(list(strain.output_files) for strain in self.strains.all())
 
     @property
     def time_taken(self):
@@ -462,10 +460,9 @@ class PredictStrain(Model):
             # Very old format lineages
             if data and data[0] == '\t':
                 return list(lineage_spoligo(data.split('\t')))
-            elif '\t' in data:
+            if '\t' in data:
                 return list(lineage_fast_caller(data))
-            else:
-                return list(lineage_other_caller(data))
+            return list(lineage_other_caller(data))
         return []
 
     @property
@@ -493,7 +490,8 @@ class PredictStrain(Model):
             except Exception:
                 yield None, False
 
-    def _prediction_from_file(self, matrix_fn):
+    @staticmethod
+    def _prediction_from_file(matrix_fn):
         m_A, m_B, m_C, m_D = {}, {}, {}, {}
         with open(matrix_fn, 'r') as fhl:
             parts = json.loads(fhl.read())

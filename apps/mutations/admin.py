@@ -88,7 +88,8 @@ class MutationAdmin(ModelAdmin):
     list_filter = ('drugs',)
     search_fields = ('name', 'old_id')
 
-    def drugs_list(self, obj):
+    @staticmethod
+    def drugs_list(obj):
         return ", ".join(obj.drugs.values_list('code', flat=True))
 
 site.register(TargetSet)

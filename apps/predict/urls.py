@@ -28,7 +28,7 @@ from .views import (
 )
 
 def url_tree(regex, *urls):
-    class UrlTwig(object):
+    class UrlTwig():
         urlpatterns = urls
     return url(regex, include(UrlTwig))
 

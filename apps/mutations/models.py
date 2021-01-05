@@ -25,7 +25,7 @@ import os
 from django.conf import settings
 from django.db.models import Model, Manager, Q, QuerySet, \
     CharField, PositiveIntegerField, ForeignKey, ManyToManyField, URLField, \
-    SlugField, IntegerField, SmallIntegerField, BooleanField, DateField, DateTimeField, \
+    SlugField, IntegerField, BooleanField, DateField, DateTimeField, \
     TextField, DecimalField, CASCADE, SET_NULL
 from django.urls import reverse
 
@@ -150,7 +150,7 @@ class GeneLocusManager(Manager):
         loci = self.filter(start__lte=pos, stop__gte=pos)
         if loci.count() == 1:
             return loci.get()
-        elif loci.count() == 0:
+        if loci.count() == 0:
             return None
 
         # Overlapping loci, try and detect what we have
@@ -164,7 +164,7 @@ class GeneLocusManager(Manager):
         lk_b = second.name.lower() in symbol or str(second.gene_symbol).lower() in symbol
         if (is_a and not is_b) or (lk_a and not lk_b):
             return first
-        elif (is_b and not is_a) or (lk_b and not lk_a):
+        if (is_b and not is_a) or (lk_b and not lk_a):
             return second
 
         return None
@@ -258,7 +258,8 @@ class GeneDrugInteraction(Model):
 
 
 class MutationQuerySet(QuerySet):
-    def variant_names(self):
+    @staticmethod
+    def variant_names():
         """Returns a list of mutations involved in predictions"""
         # Disabled while the database and RandomForest are incongruent
         #names = self.values_list('name', flat=True)

@@ -31,7 +31,7 @@ from django.core.exceptions import ImproperlyConfigured
 from django.core.files.storage import FileSystemStorage
 from django.conf import settings
 
-class ResumableFile(object):
+class ResumableFile():
     """A resumable file controls getting pieces of a file"""
     upload_root = getattr(settings, 'UPLOAD_ROOT', None)
     name_template = "part_%(resumableChunkNumber)04d.tmp"

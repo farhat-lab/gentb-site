@@ -46,10 +46,10 @@ class Migration(migrations.Migration):
         ),
         migrations.AlterUniqueTogether(
             name='mutation',
-            unique_together=set([('gene_locus', 'name')]),
+            unique_together={('gene_locus', 'name')},
         ),
         migrations.AlterUniqueTogether(
             name='genelocus',
-            unique_together=set([('drug', 'name')]),
+            unique_together={('drug', 'name')},
         ),
     ]

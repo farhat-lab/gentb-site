@@ -34,7 +34,7 @@ def context_items(context):
         for (key, value) in d.items():
             yield (key, value)
 
-class BaseMiddleware(object):
+class BaseMiddleware():
     """ 
     When used by a middleware class, provides a predictable get()
     function which will provide the first available variable from
@@ -46,7 +46,8 @@ class BaseMiddleware(object):
     def __call__(self, request):
         return self.get_response(request)
 
-    def get(self, data, key, default=None, then=None):
+    @staticmethod
+    def get(data, key, default=None, then=None):
         """Returns a data key from the context_data, the view, a get
         method on the view or a get method on the middleware in that order.
         
