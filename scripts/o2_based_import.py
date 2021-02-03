@@ -15,7 +15,7 @@ try:
 except ImportError as err:
     sys.stderr.write("Could not run script! Is manage.py not in the current"\
         "working directory, or is the environment not configured?:\n"\
-        "{:s}\n".format(err))
+        f"{err}\n")
     sys.exit(1)
 
 

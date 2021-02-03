@@ -3,7 +3,7 @@ bpython==0.13
 django-braces==1.11.0
 django-model-utils==3.1.1
 #django-spaghetti-and-meatballs==0.2.2
--e git+https://github.com/LegoStormtroopr/django-spaghetti-and-meatballs.git#egg=django-spaghetti-and-meatballs
+#-e git+https://github.com/LegoStormtroopr/django-spaghetti-and-meatballs.git#egg=django-spaghetti-and-meatballs
 django-admin-sortable2==0.6.19
 requests-file==1.1
 requests-ftp==0.3.1
