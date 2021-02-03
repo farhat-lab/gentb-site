@@ -119,7 +119,10 @@ class ResumableFile(object):
 
         # Delete all the chunks after use
         self.delete_chunks()
-        os.rmdir(self.upload_dir)
+
+        # Sometimes there's arace condition if people double-click
+        if os.path.isdir(self.upload_dir) and not os.listdir(self.upload_dir):
+            os.rmdir(self.upload_dir)
 
         # Create a symlink for tracking and re-user
         if os.path.isfile(filename):
