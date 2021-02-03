@@ -17,13 +17,13 @@ from django.conf import settings
 from chore import JobSubmissionError
 
 from apps.pipeline.models import PrepareError
-from apps.predict.models import (
-    PredictDataset, PredictStrain, get_timeout, STATUS_WAIT, STATUS_START, STATUS_ERROR
-)
+from apps.predict.models import PredictDataset, PredictStrain, get_timeout
 from apps.tb_users.models import TBAdminContact
 
 # Which predict statuses should notify the user and admins?
-STATUS_NOTIFY = (0, 0, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1)
+STATUS_NOTIFY = (
+    'FILE_ERROR', 'RUN_ERROR', 'RUN_DONE', 'READY', 'INVALID', 'TIMEOUT',
+)
 
 def bitset(*args):
     """Turn a set of booleans into a bit array and then into an integer"""
@@ -43,10 +43,10 @@ class Command(BaseCommand):
     def submit_strain_pipeline(strain):
         """Submit a strain pipleine to the job queue"""
         status = strain.files_status
-        if status in (STATUS_WAIT, STATUS_START):
+        if status in ('FILE_START', 'FILE_WAIT', 'FILE_NONE'):
             # Waiting or busy doing file upload
             return False
-        if status is STATUS_ERROR:
+        if status is 'FILE_ERROR':
             raise IOError("Download Error")
 
         try:
@@ -57,7 +57,7 @@ class Command(BaseCommand):
     def notify_users(self):
         """Send emails to users if needed"""
         for predict in PredictDataset.objects.filter(has_notified=False):
-            if STATUS_NOTIFY[predict.status]:
+            if predict.status in STATUS_NOTIFY:
                 self.send_email(predict.user, predict, 'predict/user_email.txt')
                 for user in TBAdminContact.objects.filter(is_active=True):
                     if user != predict.user:
