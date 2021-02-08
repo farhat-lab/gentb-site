@@ -49,8 +49,14 @@ class Command(BaseCommand):
         if status is 'FILE_ERROR':
             raise IOError("Download Error")
 
+        if strain.file_one and strain.file_one.endswith('vcf.gz'):
+            strain.file_one.decompress()
+        if strain.file_two and strain.file_two.endswith('vcf.gz'):
+            strain.file_two.decompress()
+
         try:
-            return strain.run()
+            if not strain.run():
+                raise ValueError("Run didn't work")
         except JobSubmissionError:
             raise ValueError("Can't run job")
 
@@ -86,7 +92,8 @@ class Command(BaseCommand):
 
         for strain in qset.filter(piperun__isnull=True):
             try:
-                self.submit_strain_pipeline(strain)
+                if not self.submit_strain_pipeline(strain):
+                    continue
                 log("RUN: {} ({})", strain, strain.pipeline)
                 time.sleep(0.25)
             except PrepareError as err:

@@ -19,6 +19,7 @@ Manage uploads to django via a number of different mechanisms.
 """
 
 import os
+import gzip
 import inspect
 import logging
 
@@ -141,6 +142,16 @@ class UploadFile(Model):
         if os.path.islink(self.fullpath):
             return os.readlink(self.fullpath)
         return self.fullpath
+
+    def decompress(self):
+        """Ensure the file is uncompressed"""
+        if self.filename.endswith('.gz'):
+            with gzip.open(self.fullpath, mode='rb') as fhl_in:
+                with open(self.fullpath[:-3], 'wb') as fhl_out:
+                    fhl_out.write(fhl_in.read())
+            self.delete_now()
+            self.filename = self.filename[:-3]
+            self.save()
 
     def save_now(self, data):
         """Save the data as if this external download was done"""
