@@ -49,9 +49,9 @@ class Command(BaseCommand):
         if status is 'FILE_ERROR':
             raise IOError("Download Error")
 
-        if strain.file_one and strain.file_one.endswith('vcf.gz'):
+        if strain.file_one and strain.file_one.filename.endswith('vcf.gz'):
             strain.file_one.decompress()
-        if strain.file_two and strain.file_two.endswith('vcf.gz'):
+        if strain.file_two and strain.file_two.filename.endswith('vcf.gz'):
             strain.file_two.decompress()
 
         try:
