@@ -649,7 +649,7 @@ class ProgramRun(TimeStampedModel):
                 if now() - self.submitted < timedelta(days=1):
                     self.error_text += "Couldn't find job on update_status...\n"
                     self.save()
-                    continue
+                    return
                 self.is_complete = True
                 self.is_error = True
                 self.error_text = "Job Stopped"
