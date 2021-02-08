@@ -18,7 +18,7 @@ def octal(s): # converts to binary
   return o
 
 def subsumes(a,b):
-  if len(a)!=43 or len(b)!=43: print "Error in subsumes"; sys.exit(0)
+  if len(a)!=43 or len(b)!=43: print("Error in subsumes"); sys.exit(0)
   good = True
   for i in range(len(a)):
     if a[i]=='0' and b[i]=='1': good = False
