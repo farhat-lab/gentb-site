@@ -35,7 +35,7 @@ class Command(BaseCommand):
 
         # Rerun process
         for run in ProgramRun.objects.filter(is_submitted=False, is_error=True):
-            if not run.has_input:
+            if not run.has_input or not run.debug_text:
                 continue
             log("RERUN: {}", run)
             run.error_text = ''
