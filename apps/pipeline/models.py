@@ -647,8 +647,6 @@ class ProgramRun(TimeStampedModel):
                 # This usually means the job is so old that it's gone from
                 # the job manager queue and we have no further information about it
                 if now() - self.submitted < timedelta(days=1):
-                    self.error_text += "Couldn't find job on update_status...\n"
-                    self.save()
                     return
                 self.is_complete = True
                 self.is_error = True

@@ -4,11 +4,11 @@
 import os
 import sys
 import json
-
+import glob
 
 
 sys.path.insert(0, '.')
-sys.path.insert(0, '..')
+#sys.path.insert(0, '..')
 
 try:
     import manage # pylint: disable=unused-import
@@ -96,24 +96,31 @@ class Command(object):
         for json_file in os.listdir(self.args.json):
             if not json_file.endswith('.json'):
                 continue
+
+            json_path = os.path.join(self.args.json, json_file)
+            with open(json_path, 'r') as fhl:
+                json_data = json.loads(fhl.read())
+
             name = json_file.rsplit('.', 1)[0]
             var_path = os.path.join(self.args.var, name + '.var')
 
-            if 'ID' in self.args.vcf:
-                vcf_path = self.args.vcf.replace('ID', name)
-            else:
-                vcf_path = os.path.join(self.args.vcf, name + '.vcf')
+            vcfs = []
+            for file_key in (name, json_data.get('strain_name', None), json_data.get('strain_id', None)):
+                if file_key is None:
+                    continue
+                if 'ID' in self.args.vcf:
+                    vcfs.append(self.args.vcf.replace('ID', name))
+                else:
+                    vcfs.extend(glob.glob(os.path.join(self.args.vcf, f'*{file_key}*.vcf')))
 
-            json_path = os.path.join(self.args.json, json_file)
-
-            if os.path.isfile(var_path) or os.path.isfile(vcf_path):
+            vcfs = [v for v in vcfs if os.path.isfile(v)]
+            if len(vcfs) > 1:
+                self.move_json(json_path, 'multiple-vcfs')
+            elif os.path.isfile(var_path) or vcfs:
                 sys.stderr.write(f" > Importing {name}\n")
 
-                with open(json_path, 'r') as fhl:
-                    json_data = json.loads(fhl.read())
-
                 try:
-                    self.import_vcf(json_data, var_path, vcf_path)
+                    self.import_vcf(json_data, var_path, vcfs[0])
                     self.move_json(json_path, 'done', 'ok')
                 except DataError as err:
                     self.move_json(json_path, 'bad-data')
