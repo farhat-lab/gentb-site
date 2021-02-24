@@ -746,7 +746,7 @@ class ProgramRun(TimeStampedModel):
         return int(age.total_seconds() / 60 / 60)
 
     def output_life(self, keep_for=None):
-        if keep_for is None:
+        if keep_for is None and self.program is not None:
             keep_for = self.program.keep_for
         if keep_for == -1:
             return -1
