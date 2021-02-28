@@ -238,7 +238,11 @@ class Command(object):
             sys.stderr.write(f" + Generating var {vcf_path} > {var_path}\n")
             with open(var_path, 'wb') as fhl:
                 self.annotate_vcf(fhl, vcf_path)
-        var = CsvLookup(filename=var_path, key='varname')
+
+        try:
+            var = CsvLookup(filename=var_path, key='varname')
+        except KeyError:
+            raise DataError("Bad CsvLookup")
 
         strain, _ = StrainSource.objects.update_or_create(name=name, defaults=datum)
         for _drug in metadata.get('drug', []):
