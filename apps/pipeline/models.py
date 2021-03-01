@@ -748,7 +748,7 @@ class ProgramRun(TimeStampedModel):
     def output_life(self, keep_for=None):
         if keep_for is None and self.program is not None:
             keep_for = self.program.keep_for
-        if keep_for == -1:
+        if keep_for == -1 or keep_for is None:
             return -1
         return max([keep_for - self.output_age(), 0])
 
