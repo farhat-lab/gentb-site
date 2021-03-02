@@ -52,7 +52,6 @@ class Command(BaseCommand):
 
             importer.complete = (done == importer.vcf_files().count())
             importer.save()
-        self.clean_outputs()
 
     def import_mutations(self, importer, vcf_file):
         """
