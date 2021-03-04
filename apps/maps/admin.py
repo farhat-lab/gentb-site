@@ -22,6 +22,10 @@ class CountryAdmin(ModelAdmin):
 
     inlines = [HealthInline, DetailInline]
 
+@register(CountryHealth)
+class CountryHealthAdmin(ModelAdmin):
+    list_display = ('country',)
+
 @register(CountryDetail)
 class CountryDetailAdmin(ModelAdmin):
     list_display = ('__str__', 'name_short', 'name_abbr',
