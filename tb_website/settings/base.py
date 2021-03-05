@@ -163,9 +163,6 @@ WEBSITE_APPS = (
     'django_spaghetti',
     'adminsortable2',
     'apps.versioner',
-
-    # Holds dataverse file ids for Two Ravens
-    'apps.explore',
 )
 
 # Apps specific for this project go here.

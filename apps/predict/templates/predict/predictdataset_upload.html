@@ -8,7 +8,7 @@
         <small>Upload your genetic data to make drug resistance prediction.</small>
       </h1>
 
-      <p>To examine the frequency of individual mutations by drug resistance you can consult the <a href="{% url 'maps:map' %}">Map function</a> for country specific data, and the <a href="{% url 'explore:home' %}">Explore function</a>  to examine their frequency in all of the data.</p>
+      <p>To examine the frequency of individual mutations by drug resistance you can consult the <a href="{% url 'maps:map' %}">Map function</a> for country specific data.</p>
 
     <table class="table-condensed content-to-top">
       {% for form in view.forms %}

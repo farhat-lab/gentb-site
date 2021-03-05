@@ -45,7 +45,6 @@ urlpatterns = [ # pylint: disable=invalid-name
 
     #url(r'.+', Tv.as_view(template_name='offline.html'), name="offline"),
 
-    url(r'^explore/', include('apps.explore.urls')),
     url(r'^predict/', include('apps.predict.urls', namespace='predict')),
     url(r'^pipeline/', include('apps.pipeline.urls')),
     url(r'^uploads/', include('apps.uploads.urls')),
