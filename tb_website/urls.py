@@ -30,6 +30,9 @@ from apps.versioner.views import Version
 
 urlpatterns = [ # pylint: disable=invalid-name
     path('', Tv.as_view(template_name='home.html'), name="home"),
+    # Sometimes the proxy server misbehaves on the front page
+    path('index.html', Tv.as_view(template_name='home.html'), name="home"),
+
     path('about/', Tv.as_view(template_name='about.html'), name="about"),
     path('data/', Tv.as_view(template_name='data.html'), name="data"),
     path('data/info/', Tv.as_view(template_name='info.html'), name="info"),
