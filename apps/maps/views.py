@@ -345,14 +345,6 @@ class Mutations(DataTableMixin, ListView):
             row['strain_count'] = qset.count()
         return rows
 
-    def get_queryset(self):
-        qset = super(Mutations, self).get_queryset()
-        # We have to get the count so we can remove mutations with no strains too.
-        qset = qset.annotate(strain_count=Count('strain_mutations__pk'),).filter(
-            strain_count__gt=0,
-        )
-        return qset
-
     def post(self, request, *args, **kwargs):
         self.request.GET = self.request.POST
         return self.get(request, *args, **kwargs)
