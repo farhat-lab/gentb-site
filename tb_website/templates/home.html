@@ -21,7 +21,19 @@
         <!-- Page Features -->
         <div class="row text-left">
 
-              <div class="col-md-3 col-sm-6">
+            <div class="col-md-3 col-sm-6">
+                <div class="thumbnail">
+                    <center><h4>Contribute your data <br>to this project</h4></center>
+                    <a href="{% url 'data' %}"><img src="{% static 'images/contribute_data.png' %}" alt=""></a>
+                    <div class="caption">
+                        <p class="text-center">
+                            <a href="{% url 'data' %}" class="btn btn-primary">Share Your Data</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+              <div class="col-md-6 col-sm-12">
                 <div class="thumbnail">
                     <center><h4>Predict resistance based <br>on genotypic data</h4></center>
                     <a href="{% url 'predict:upload' %}"><img src="{% static 'images/predict.png' %}" alt=""></a>
@@ -33,18 +45,6 @@
                 </div>
             </div>
 
-
-            <div class="col-md-6 col-sm-12">
-                <div class="thumbnail">
-                    <center><h4>Contribute your data <br>to this project</h4></center>
-                    <a href="{% url 'data' %}"><img src="{% static 'images/contribute_data.png' %}" alt=""></a>
-                    <div class="caption">
-                        <p class="text-center">
-                            <a href="{% url 'data' %}" class="btn btn-primary">Share Your Data</a>
-                        </p>
-                    </div>
-                </div>
-            </div>
 
             <div class="col-md-3 col-sm-6">
                 <div class="thumbnail">
