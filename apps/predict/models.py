@@ -185,6 +185,8 @@ class PredictDataset(TimeStampedModel):
             return None
 
         if not strain.piperun:
+            if not strain.pipeline:
+                return 'Error: No pipeline set (lost)'
             if strain.pipeline.disabled:
                 return 'Error: pipeline disabled'
             return 'Error: pipeline not started'
