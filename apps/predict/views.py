@@ -33,7 +33,7 @@ class Datasets(PredictMixin, ListView):
 
 
 class DatasetView(PredictMixin, DetailView):
-    parent = Datasets
+    pass
 
 class DatasetViewProcessing(DatasetView):
     template_name = 'predict/predictdataset_processing.html'

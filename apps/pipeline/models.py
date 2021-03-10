@@ -71,7 +71,12 @@ class Pipeline(Model):
     test_files = ManyToManyField('ProgramFile', related_name='tested_in',\
         help_text='Input files used to run the pipeline test', blank=True)
 
+    disabled = BooleanField(default=False,
+        help_text='Automatically disabled pipelines when they have serious syntax errors.')
+
     def __str__(self):
+        if self.disabled:
+            return f"{self.name} (DISABLED)"
         return self.name
 
     def get_absolute_url(self):
@@ -481,6 +486,18 @@ class PipelineRun(TimeStampedModel):
             return None
         return '\n---\n'.join(qset.values_list('error_text', flat=True))
 
+    def run_time(self):
+        ret = timedelta(seconds=0)
+        for program in self.programs.all():
+            rtime = program.run_time()
+            if isinstance(rtime, timedelta):
+                ret += rtime
+        return ret
+
+    def started(self):
+        return self.programs.first().started
+
+
 P_LOG = None
 
 class ProgramRun(TimeStampedModel):
@@ -536,7 +553,7 @@ class ProgramRun(TimeStampedModel):
 
     def run_time(self):
         if self.duration:
-            return str(timedelta(seconds=self.duration))
+            return timedelta(seconds=self.duration)
         if self.started:
             return now() - self.started
         return "-"

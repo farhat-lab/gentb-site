@@ -108,6 +108,11 @@ class PredictDataset(TimeStampedModel):
     def __str__(self):
         return str(self.title)
 
+    @property
+    def parent(self):
+        from .views import Datasets
+        return Datasets
+
     def get_absolute_url(self):
         """Return a link to thedataset view"""
         if self.md5:
@@ -180,6 +185,8 @@ class PredictDataset(TimeStampedModel):
             return None
 
         if not strain.piperun:
+            if strain.pipeline.disabled:
+                return 'Error: pipeline disabled'
             return 'Error: pipeline not started'
 
         prs = ProgramRun.objects.filter(piperun=strain.piperun)
@@ -312,6 +319,8 @@ class PredictPipeline(Model):
 
 class PredictStrain(Model):
     """Each strain uploaded for a dataset"""
+    parent = property(lambda self: self.dataset)
+
     name = CharField(max_length=128)
 
     dataset = ForeignKey(PredictDataset, related_name='strains', on_delete=CASCADE)

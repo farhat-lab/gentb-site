@@ -72,7 +72,7 @@ admin.site.register(Program, ProgramAdmin)
 admin.site.register(ProgramFile)
 
 class ProgramRunInline(admin.TabularInline):
-    fields = ('program', 'job_id', 'job_state', 'is_submitted', 'is_started', 'is_complete', 'is_error', 'debug_text', 'error_text', 'input_files', 'output_files')
+    fields = ('program', 'job_id', 'job_state', 'is_submitted', 'is_started', 'is_complete', 'is_error', 'debug_text', 'error_text', 'input_files', 'output_files', 'duration')
     model = ProgramRun
     extra = 0
 

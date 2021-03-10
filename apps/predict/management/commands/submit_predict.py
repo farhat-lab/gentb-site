@@ -90,7 +90,7 @@ class Command(BaseCommand):
         # Limit all interactions to a timeout (usually a few weeks)
         qset = PredictStrain.objects.filter(dataset__created__gt=get_timeout())
 
-        for strain in qset.filter(piperun__isnull=True):
+        for strain in qset.filter(piperun__isnull=True, pipeline__isnull=False, pipeline__disabled=False):
             try:
                 if not self.submit_strain_pipeline(strain):
                     continue
@@ -98,6 +98,9 @@ class Command(BaseCommand):
                 time.sleep(0.25)
             except PrepareError as err:
                 log("BAD: {}: {}".format(strain, err))
+                pipeline = strain.pipeline
+                pipeline.disabled = True
+                pipeline.save()
             except IOError as err:
                 log("ERR: {} (Bad Download) {}", strain, err)
             except Exception as err: # pylint: disable=broad-except
