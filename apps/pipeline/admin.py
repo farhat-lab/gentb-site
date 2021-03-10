@@ -34,8 +34,12 @@ class PipelineProgramInline(SortableInlineAdminMixin, admin.TabularInline):
 
 class PipelineAdmin(admin.ModelAdmin):
     filter_horizontal = ('test_files',)
-    list_display = ('name', 'description', 'errors')
+    list_display = ('name', 'enabled', 'description', 'errors')
     inlines = (PipelineProgramInline,)
+
+    def enabled(self, obj):
+        return not obj.disabled
+    enabled.boolean = True
 
     @staticmethod
     def errors(obj):
