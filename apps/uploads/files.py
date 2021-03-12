@@ -42,6 +42,7 @@ class ResumableFile(object):
 
         if not self.upload_root:
             raise ImproperlyConfigured('You must set UPLOAD_ROOT in settings')
+
         self.storage = FileSystemStorage(location=self.upload_dir)
 
     @property

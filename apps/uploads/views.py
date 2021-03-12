@@ -77,7 +77,7 @@ class ResumableUploadView(View):
     def post(self, *args, **kwargs):
         """Saves chunks then checks if the file is complete."""
         resumable = self.get_object()
-        if resumable.chunk_exists:
+        if resumable.chunk_exists or resumable.is_complete:
             return HttpResponse('chunk already exists')
         resumable.process_chunk(self.request.FILES.get('file'))
         return HttpResponse()
