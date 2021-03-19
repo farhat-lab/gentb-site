@@ -77,6 +77,10 @@ $(document).ready(function() {
             // "render": $.fn.dataTable.render.number(',', '.', 3, ''),
           },
           {
+            "data": "gene_symbol",
+            "title": "Gene Symbol",
+          },
+          {
             "data": "start",
             "title": "Start in Reference Genome",
           },
