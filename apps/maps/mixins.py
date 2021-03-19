@@ -170,6 +170,7 @@ class DataTableMixin(object):
     filters = {}
     selected = None
     search_fields = []
+    db_limit = 10000
 
     def get(self, request, pk=None):
         """
@@ -291,21 +292,24 @@ class DataTableMixin(object):
             if values:
                 selected = qset.filter(**{col+'__in': values})
 
-        qset = qset.filter(query).exclude(pk__in=selected.values('pk')).distinct()
+        qset = qset.filter(query).exclude(pk__in=selected.values('pk'))
 
-        # Do this before ordering, because we have a BUG in jsonb
         count = qset.count()
+        if not self.db_limit or count < self.db_limit:
+            qset = qset.distinct()
+            count = qset.count()
 
-        ordering = []
-        for order_col in order:
-            column = columns[int(order_col['column'])]['django']
-            if order_col['dir'][0] == 'd':
-                column = '-' + column
-            ordering.append(column)
-        if ordering:
-            qset = qset.order_by(*ordering)
+            ordering = []
+            for order_col in order:
+                column = columns[int(order_col['column'])]['django']
+                if order_col['dir'][0] == 'd':
+                    column = '-' + column
+                ordering.append(column)
+            if ordering:
+                qset = qset.order_by(*ordering)
 
         if int(length) > 0:
             return selected, qset[int(start):int(start) + int(length)], count
+
         return selected, qset, count
 
