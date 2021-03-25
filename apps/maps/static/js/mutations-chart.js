@@ -149,7 +149,7 @@ $(document).ready(function() {
 	    { "data": "aminoacid_reference", "title": "aaref" },
 	    { "data": "aminoacid_position", "title": "aapos" },
             { "data": "aminoacid_varient", "title": "aavar" },
-            { "data": "strain_count", "title": "Strains" },
+            { "data": "strain_count", "title": "Strains", "orderable": false },
           ],
           'order': [[2, 'asc']],
         })
