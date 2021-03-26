@@ -52,6 +52,12 @@ class DjangoJSONEncoder2(DjangoJSONEncoder):
 #Inherit from the parent class View and add Caching
 #ParentClass: https://github.com/django/django/blob/master/django/views/generic/base.py
 
+def json_or_html(request, context):
+    if request.GET.get('html', False):
+        return SimpleTemplateResponse('maps/json-debug.html', context)
+    return JsonResponse(context, encoder=DjangoJSONEncoder2)
+
+
 class JsonView(View):
     """Quickly serve a python data structure as json"""
     cache_timeout = 5 * 60 * 60 * 24
@@ -76,9 +82,7 @@ class JsonView(View):
 
     def render_to_response(self, context):
         """Return an actual json response, except where 'html' is set to 1"""
-        if self.request.GET.get('html', False):
-            return SimpleTemplateResponse('maps/json-debug.html', context)
-        return JsonResponse(context, encoder=DjangoJSONEncoder2)
+        return json_or_html(self.request, context)
 
     def get_context_data(self, **_):
         """The basic data collation for the json output."""
@@ -121,7 +125,8 @@ class DataSlicerMixin(object):
                 filtr, value = filtr(value)
             if not filtr.endswith('__in'):
                 value = value[0]
-            return Q(**{filtr: value})
+            if filtr is not None:
+                return Q(**{filtr: value})
         return Q()
 
     def get_queryset(self, without=None):
@@ -186,11 +191,11 @@ class DataTableMixin(object):
             aset = data['object_list']
             selected, qset, count = self.process_datatable(aset, **dt_settings)
             if dt_settings.get('pks', False):
-                return JsonResponse({
+                return json_or_html(self.request, {
                     'selected': selected.values_list('pk', flat=True),
                     'data': qset.values_list('pk', flat=True),
                 })
-            return JsonResponse({
+            return json_or_html(self.request, {
                 'draw': draw,
                 'recordsTotal': aset.count(),
                 'recordsFiltered': count,
@@ -201,7 +206,8 @@ class DataTableMixin(object):
                     for key in self.filters if self.request.GET.get(key, '')],
             })
         except Exception as err:
-            raise
+            if self.request.GET.get('html'):
+                raise
             return JsonResponse({'error': str(err)})
 
     def prep_data(self, qset, columns, **extra):
