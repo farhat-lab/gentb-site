@@ -26,7 +26,7 @@ from collections import defaultdict, OrderedDict
 from django.views.generic import TemplateView, ListView
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
-from django.db.models import Count, Q
+from django.db.models import Count, Q, OuterRef, Subquery
 
 from apps.mutations.models import (
     ImportSource, StrainSource, StrainMutation, GeneLocus, Genome, StrainResistance,
@@ -316,34 +316,33 @@ class Mutations(DataTableMixin, ListView):
     """Provide a lookup into the mutations database for selecting anavailable mutation"""
     model = Mutation
     search_fields = ['name', 'old_id', 'gene_locus__name']
-    filters = {
-        'source[]': 'strain_mutations__strain__importer__in',
-        'paper[]': 'strain_mutations__strain__source_paper__in',
-        'map[]': 'strain_mutations__strain__country__iso2__in',
-        'drug[]': many_lookup(StrainResistance, 'drug__code', 'strain_id', 'strain_mutations__strain_id__in'),
-        'genelocus[]': (int, 'gene_locus_id__in'),
-    }
     selected = ['mutation[]', 'name', str]
 
     strain_filters = {
         'source[]': 'strain__importer__in',
         'paper[]': 'strain__source_paper__in',
-        'drug[]': many_lookup(StrainResistance, 'drug__code', 'strain_id', 'strain_id__in'),
         'map[]': 'strain__country__iso2__in',
+        'drug[]': 'strain__drug__code__in',
+        'lineage[]': 'strain__lineage__name__in',
+    }
+    filters = {
+        'genelocus[]': (int, 'gene_locus_id__in'),
     }
 
-    def prep_data(self, qset, columns, **kwargs):
-        """Re-add counts for strains"""
-        rows = super().prep_data(qset, columns, **kwargs)
-        # Should only be 10 items as a maximum, meaning it should be 'ok' (but not great)
-        for x, row in enumerate(rows):
-            if x > 15:
-                break
-            obj = Mutation.objects.get(name=row['name'])
-            # This is a manual smacking because the database can't count
-            qset = obj.strain_mutations.filter(self.apply_filters(self.strain_filters))
-            row['strain_count'] = qset.count()
-        return rows
+    def get_queryset(self):
+        qset = super(Mutations, self).get_queryset()
+
+        query = self.apply_filters(self.strain_filters, Q(mutation=OuterRef('pk')))
+        strains = StrainMutation.objects.filter(query).order_by().values('mutation')
+        count_strains = strains.annotate(c=Count('*')).values('c')
+        qset = qset.annotate(strain_count=Subquery(count_strains)).filter(
+            strain_count__gt=0,
+        )
+        return qset
+
+    def prep_data(self, qset, columns, **extra):
+        db_columns = [self.column_to_django(col) for col in columns]
+        return list(qset.values(*db_columns))
 
     def post(self, request, *args, **kwargs):
         self.request.GET = self.request.POST

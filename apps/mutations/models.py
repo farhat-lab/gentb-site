@@ -23,7 +23,7 @@ Drug resistance and strain source for gene mutations django app.
 import os
 
 from django.conf import settings
-from django.db.models import Model, Manager, Q, QuerySet, \
+from django.db.models import Model, Manager, Q, QuerySet,\
     CharField, PositiveIntegerField, ForeignKey, ManyToManyField, URLField, \
     SlugField, IntegerField, SmallIntegerField, BooleanField, DateField, DateTimeField, \
     TextField, DecimalField, CASCADE, SET_NULL

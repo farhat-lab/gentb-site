@@ -251,23 +251,26 @@ class DataTableMixin(object):
 
         for key, col in filters.items():
             val = self.get_filter_value(key)
-
-            if callable(col):
-                col, val = col(val)
-
-            if isinstance(col, (list, tuple)) and len(col) == 2:
-                mtype, col = col
-                if isinstance(val, (list, tuple)):
-                    val = [mtype(v) for v in val]
-                else:
-                    val = mtype(val)
-
-            if val:
-                try:
-                    query &= Q(**{col: val})
-                except TypeError:
-                    raise IOError(f"TYPE ERROR: {col}: {val}")
+            query &= self.apply_filter(key, col, val)
         return query
+
+    def apply_filter(self, key, col, val):
+        if callable(col):
+            col, val = col(val)
+
+        if isinstance(col, (list, tuple)) and len(col) == 2:
+            mtype, col = col
+            if isinstance(val, (list, tuple)):
+                val = [mtype(v) for v in val]
+            else:
+                val = mtype(val)
+
+        if val:
+            try:
+                return Q(**{col: val})
+            except TypeError:
+                raise IOError(f"TYPE ERROR: {col}: {val}")
+        return Q()
 
     def process_datatable(self, qset, columns=(), order=(), search=None, start=0, length=-1, **_):
         """
