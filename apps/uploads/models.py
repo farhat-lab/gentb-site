@@ -158,6 +158,9 @@ class UploadFile(Model):
         if not os.path.exists(self.file_directory):
             os.makedirs(self.file_directory)
 
+        if isinstance(data, str):
+            data = data.encode('utf8')
+
         with open(self.fullpath, 'wb') as fhl:
             fhl.write(data)
 
