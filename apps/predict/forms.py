@@ -41,7 +41,7 @@ class UploadForm(ModelForm):
     Form for a user to enter a title, description, and dropbox files.
     """
     do_not_call_in_templates = True
-    pipeline = ModelChoiceField(queryset=PredictPipeline.objects.all())
+    pipeline = ModelChoiceField(queryset=PredictPipeline.objects.filter(is_retired=False))
     my_file_type = None
     ordered = 100
 
@@ -75,7 +75,7 @@ class UploadForm(ModelForm):
 
     @classmethod
     def pipeline_queryset(cls, **kw):
-        return PredictPipeline.objects.filter(file_type=cls.my_file_type, **kw)
+        return PredictPipeline.objects.filter(file_type=cls.my_file_type, is_retired=False, **kw)
 
     @classmethod
     def all_forms(cls):

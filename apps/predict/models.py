@@ -314,10 +314,11 @@ class PredictPipeline(Model):
     pipeline = ForeignKey(Pipeline, related_name='predicts', null=True, on_delete=SET_NULL)
     file_type = CharField(choices=PredictDataset.FILE_TYPES, max_length=25)
     is_default = BooleanField(default=False)
+    is_retired = BooleanField(default=False)
 
     def __str__(self):
-        return "Pipeline %s" % str(self.pipeline)
-
+        retired = " (retired)" if self.is_retired else ""
+        return f"Pipeline {self.pipeline}{retired}"
 
 class PredictStrain(Model):
     """Each strain uploaded for a dataset"""

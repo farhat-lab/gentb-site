@@ -2,7 +2,11 @@ from django.contrib import admin
 
 from apps.predict.models import *
 
-admin.site.register(PredictPipeline)
+class PredictPipelineAdmin(admin.ModelAdmin):
+    list_display = ('pipeline', 'is_default', 'is_retired')
+    search_fields = ('pipeline__name', 'pipeline__description')
+
+admin.site.register(PredictPipeline, PredictPipelineAdmin)
 
 class PredictDatasetNoteAdmin(admin.ModelAdmin):
     list_display = ('dataset', 'title', 'modified', 'created',)
