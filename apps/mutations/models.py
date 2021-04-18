@@ -21,6 +21,9 @@ Drug resistance and strain source for gene mutations django app.
 """
 
 import os
+import base64
+from collections import OrderedDict
+from itertools import combinations
 
 from django.conf import settings
 from django.db.models import Model, Manager, Q, QuerySet,\
@@ -696,3 +699,96 @@ class StrainResistance(Model):
 
     def __str__(self):
         return "%s is %s to %s" % (str(self.strain), str(self.get_resistance_display()), str(self.drug))
+
+# ------------------- DB CACHING --------------- #
+
+class StrainMutationCache(Model):
+    """
+    This cache saves the counts for all the conditionals possible when looking up mutations.
+
+    This handles one item per column only, multiple objects are supported by the
+    view making multiple requests for pages and collating them together.
+    """
+    mutation = ForeignKey(Mutation, related_name='count_cache', on_delete=CASCADE, db_index=True)
+    count = PositiveIntegerField(default=0, db_index=True)
+
+    #importer = CharField(max_length=255, null=True, blank=False, db_index=True)
+    #country = CharField(max_length=255, null=True, blank=False, db_index=True)
+    #lineage = CharField(max_length=255, null=True, blank=False, db_index=True)
+    #paper = CharField(max_length=255, null=True, blank=False, db_index=True)
+    #drug = CharField(max_length=255, null=True, blank=False, db_index=True)
+    importer = ForeignKey(ImportSource, null=True, db_index=True, on_delete=CASCADE)
+    paper = ForeignKey(Paper, null=True, db_index=True, on_delete=CASCADE)
+    country = ForeignKey(Country, null=True, db_index=True, on_delete=CASCADE)
+    #drug = ForeignKey(Drug, null=True, db_index=True, on_delete=CASCADE)
+    lineage = ForeignKey(Lineage, null=True, db_index=True, on_delete=CASCADE)
+
+    filters = OrderedDict([
+        # Keyref, input_name, query_lookup, size
+        ('importer', ('importer_id', ImportSource, 1)),
+        ('paper', ('source_paper_id', Paper, 1)),
+        ('country', ('country__iso2', Country, 2)),
+        #('drug', ('drug__code', Drug, 1)),
+        ('lineage', ('lineage__name', Lineage, None)),
+    ])
+
+    class Meta:
+        unique_together = ('mutation', 'importer', 'paper', 'country', 'lineage')
+
+    def __str__(self):
+        return f"{self.mutation} in {self.count} strains"
+
+    @classmethod
+    def key_from_inputs(cls, **kwargs):
+        """Return the key string for this request"""
+        ret = {}
+        for input_name, (query_lookup, model, size) in cls.filters.items():
+            ret[input_name] = cls._get_value(
+                kwargs.get(input_name, None), model, query_lookup, size)
+
+        if not any(ret):
+            return {}
+        if len(ret) > 255:
+            raise KeyError("Resulting key for request is too big!")
+        return ret
+
+    @classmethod
+    def _get_value(cls, values, model, lookup, size):
+        if not values:
+            return None
+        if '__' in lookup:
+            (lookup, sub_field) = lookup.split('__')
+            values = model.objects.filter(
+                **{sub_field + '__in': values},
+            ).values_list(model._meta.pk.name, flat=True)
+        # Unique and sorted, coverted to base 64
+        values = sorted(set([cls._prep_id(val, size) for val in values]))
+        return base64.b64encode(b''.join(values)).decode('ascii').strip(',')
+
+    @classmethod
+    def _prep_id(cls, value, size):
+        """Convert integer into a compressed set of bytes of a fixed size"""
+        if isinstance(value, str):
+            return b',' + value.encode('ascii')
+        return int(value).to_bytes(size, byteorder='big')
+
+    @classmethod
+    def _get_items(cls, fltr):
+        model = cls.filters[fltr][1]
+        return [None] + list(model.objects.all())
+
+    @classmethod
+    def matrix_call(cls, func, **parts):
+        """Calls the function for every possible combination of elements"""
+        for input_name in cls.filters:
+            if input_name in parts:
+                continue
+            for pk in cls._get_items(input_name):
+                kwargs = parts.copy()
+                kwargs[input_name] = pk
+                if list(kwargs) != list(cls.filters):
+                    if cls.matrix_call(func, **kwargs) is False:
+                        return False
+                else:
+                    if func(**kwargs) is False:
+                        return False

@@ -305,9 +305,6 @@ class DataTableMixin(object):
 
         count = qset.count()
         if not self.db_limit or count < self.db_limit:
-            qset = qset.distinct()
-            count = qset.count()
-
             ordering = []
             for order_col in order:
                 column = columns[int(order_col['column'])]['django']

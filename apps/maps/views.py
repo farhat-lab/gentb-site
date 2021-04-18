@@ -330,8 +330,7 @@ class Mutations(DataTableMixin, ListView):
     }
 
     def get_queryset(self):
-        qset = super(Mutations, self).get_queryset()
-
+        qset = super(Mutations, self).get_queryset().order_by()
         query = self.apply_filters(self.strain_filters, Q(mutation=OuterRef('pk')))
         strains = StrainMutation.objects.filter(query).order_by().values('mutation')
         count_strains = strains.annotate(c=Count('*')).values('c')
