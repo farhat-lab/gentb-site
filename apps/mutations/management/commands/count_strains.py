@@ -24,6 +24,11 @@ class Command(BaseCommand):
                 return False
             return ret
 
+        def getrkey(value):
+            if value is None:
+                return None
+            return value is not False
+
         # Clear caching count database
         count, details = StrainMutationCache.objects.all().delete()
         print(f" [x] Deleted {count} existing caching rows.")
@@ -35,6 +40,7 @@ class Command(BaseCommand):
 
         counts = defaultdict(int)
         rejected = 0
+        rejects = defaultdict(int)
 
         # Count all the StrainMutations
         for y in range(0, total, 100):
@@ -54,8 +60,13 @@ class Command(BaseCommand):
                     # Reject keys where the required field wasn't even set. This combinatin is invalid
                     if False in key:
                         rejected += 1
-                        continue
-                    counts[(st_mut.mutation,) + key] += 1
+                        r_key = tuple([_getrkey(k) for k in key])
+                        rejects[r_key] += 1
+                        if rejected % 100 == 0:
+                            print(f"Rejected: {rejects}")
+                            sys.exit(2)
+                    else:
+                        counts[(st_mut.mutation,) + key] += 1
 
         print(f" [ ] MutationStrains counted: {x} (100%) generated {ct} counts, {rejected} rejected    ")
         rejected = 0
