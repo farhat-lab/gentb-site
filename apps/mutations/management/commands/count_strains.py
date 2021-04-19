@@ -24,7 +24,7 @@ class Command(BaseCommand):
                 return False
             return ret
 
-        def getrkey(value):
+        def _getrkey(value):
             if value is None:
                 return None
             return value is not False
@@ -36,7 +36,7 @@ class Command(BaseCommand):
         total = StrainMutation.objects.count()
         filters = list(StrainMutationCache.matrix_filter())
         filter_names = list(StrainMutationCache.filters)
-        print(f" [ ] Ready to count {total} StrainMutations.")
+        print(f" [x] Ready to count {total} StrainMutations.")
 
         counts = defaultdict(int)
         rejected = 0
@@ -45,13 +45,13 @@ class Command(BaseCommand):
         # Count all the StrainMutations
         for y in range(0, total, 100):
             pc = (y) / total * 100
-            sys.stdout.write(f"StrainMutation: {y} ({pc:0.2g}%)   \r")
+            sys.stdout.write(f" [/] StrainMutation: {y} ({pc:0.2g}%)   \r")
             sys.stdout.flush()
             for x, st_mut in enumerate(StrainMutation.objects.order_by('pk')[y:y+100]):
-                if x % 10 == 0:
+                if x % 50 == 5:
                     pc = (y + x) / total * 100
                     ct = len(counts)
-                    sys.stdout.write(f"StrainMutation: {y}+{x} ({pc:0.2g}%) {ct} counts, {rejected} rejected       \r")
+                    sys.stdout.write(f" [\] StrainMutation: {y}+{x} ({pc:0.2g}%) {ct} counts, {rejected} rejected {rejects}      \r")
                     sys.stdout.flush()
                 # for each combination of the given fields
                 for combo in filters:
@@ -60,25 +60,23 @@ class Command(BaseCommand):
                     # Reject keys where the required field wasn't even set. This combinatin is invalid
                     if False in key:
                         rejected += 1
-                        r_key = tuple([_getrkey(k) for k in key])
-                        rejects[r_key] += 1
-                        if rejected % 100 == 0:
-                            print(f"Rejected: {rejects}")
-                            sys.exit(2)
+                        for x, k in enumerate(key):
+                            if key is False:
+                                rejects[x] += 1
                     else:
                         counts[(st_mut.mutation,) + key] += 1
 
-        print(f" [ ] MutationStrains counted: {x} (100%) generated {ct} counts, {rejected} rejected    ")
+        print(f" [x] MutationStrains counted: {x} (100%) generated {ct} counts, {rejected} rejected    ")
         rejected = 0
         c = 0
         x = y + x + 1
         total = len(counts)
-        print(f" [ ] Saving {ct} counts...")
+        print(f" [x] Saving {ct} counts...")
         for x, ((mutation, *fields), count) in enumerate(counts.items()):
             if x % 100 == 0:
                 c = x - rejected
                 pc = x / total * 100
-                sys.stdout.write(f"Caches: {c} ({pc:0.2g}%) {c} Saved {rejected} counts too small.\r")
+                sys.stdout.write(f" [ ] Caches: {c} ({pc:0.2g}%) {c} Saved {rejected} counts too small.\r")
                 sys.stdout.flush()
             if count <= 1:
                 # We're not going to count single items, this is sort sorting only.
