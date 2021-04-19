@@ -24,7 +24,7 @@ from django.contrib.admin import register, site, ModelAdmin, StackedInline, Tabu
 from .models import (
     Drug, DrugClass, DrugRegimen, ImportSource, Mutation, Genome, GeneLocus,
     GeneDrugInteraction, TargetSet, TargetRegion, StrainResistance, Paper,
-    BioProject, StrainSource, StrainMutation, Lineage
+    BioProject, StrainSource, StrainMutation, Lineage, StrainMutationCache
 )
 
 @register(Lineage)
@@ -109,6 +109,10 @@ class StrainMutationAdmin(ModelAdmin):
 @register(StrainResistance)
 class StrainResistanceAdmin(ModelAdmin):
     list_filter = ('resistance', 'drug')
+
+@register(StrainMutationCache)
+class StrainMutationCacheAdmin(ModelAdmin):
+    list_display = ('mutation', 'importer', 'source_paper', 'country', 'lineage', 'count')
 
 site.register(BioProject)
 site.register(Paper)

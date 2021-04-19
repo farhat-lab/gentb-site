@@ -29,7 +29,7 @@ class Command(BaseCommand):
         print(f" [x] Deleted {count} existing caching rows.")
 
         total = StrainMutation.objects.count()
-        filters = StrainMutationCache.matrix_filter()
+        filters = list(StrainMutationCache.matrix_filter())
         filter_names = list(StrainMutationCache.filters)
         print(f" [ ] Ready to count {total} StrainMutations.")
 
@@ -57,15 +57,22 @@ class Command(BaseCommand):
                         continue
                     counts[(st_mut.mutation,) + key] += 1
 
+        print(f" [ ] MutationStrains counted: {x} (100%) generated {ct} counts, {rejected} rejected    ")
+        rejected = 0
+        c = 0
         x = y + x + 1
         total = len(counts)
-        print(f" [ ] MutationStrains counted: {x} (100%) generated {ct} counts so far    ")
         print(f" [ ] Saving {ct} counts...")
         for x, ((mutation, *fields), count) in enumerate(counts.items()):
             if x % 100 == 0:
+                c = x - rejected
                 pc = x / total * 100
-                sys.stdout.write(f"Caches Saved: {x} ({pc}%)\r")
+                sys.stdout.write(f"Caches: {c} ({pc:0.2g}%) {c} Saved {rejected} counts too small.\r")
                 sys.stdout.flush()
+            if count <= 1:
+                # We're not going to count single items, this is sort sorting only.
+                rejected += 1
+                continue
             kwargs = dict(zip(filter_names, fields))
             StrainMutationCache.objects.create(
                 mutation=mutation,
@@ -73,4 +80,4 @@ class Command(BaseCommand):
                 **kwargs)
 
         x += 1
-        sys.stdout.write(f" [x] Caches Saved: {x} (100%)\n")
+        sys.stdout.write(f" [x] Caches: {x} (100%), {c} Saved {rejected} counts too small.\n")
