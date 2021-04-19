@@ -718,7 +718,7 @@ class StrainMutationCache(Model):
     #paper = CharField(max_length=255, null=True, blank=False, db_index=True)
     #drug = CharField(max_length=255, null=True, blank=False, db_index=True)
     importer = ForeignKey(ImportSource, null=True, db_index=True, on_delete=CASCADE)
-    paper = ForeignKey(Paper, null=True, db_index=True, on_delete=CASCADE)
+    source_paper = ForeignKey(Paper, null=True, db_index=True, on_delete=CASCADE)
     country = ForeignKey(Country, null=True, db_index=True, on_delete=CASCADE)
     #drug = ForeignKey(Drug, null=True, db_index=True, on_delete=CASCADE)
     lineage = ForeignKey(Lineage, null=True, db_index=True, on_delete=CASCADE)
@@ -726,14 +726,14 @@ class StrainMutationCache(Model):
     filters = OrderedDict([
         # Keyref, input_name, query_lookup, size
         ('importer', ('importer_id', ImportSource, 1)),
-        ('paper', ('source_paper_id', Paper, 1)),
+        ('source_paper', ('source_paper_id', Paper, 1)),
         ('country', ('country__iso2', Country, 2)),
         #('drug', ('drug__code', Drug, 1)),
         ('lineage', ('lineage__name', Lineage, None)),
     ])
 
     class Meta:
-        unique_together = ('mutation', 'importer', 'paper', 'country', 'lineage')
+        unique_together = ('mutation', 'importer', 'source_paper', 'country', 'lineage')
 
     def __str__(self):
         return f"{self.mutation} in {self.count} strains"
@@ -792,3 +792,10 @@ class StrainMutationCache(Model):
                 else:
                     if func(**kwargs) is False:
                         return False
+
+    @classmethod
+    def matrix_filter(cls):
+        """Returns the combination of all filters"""
+        count = len(cls.filters)
+        for s in set(list(combinations([None] * count + list(range(count)), count))):
+            yield [(flt, x in s) for x, flt in enumerate(cls.filters)]
