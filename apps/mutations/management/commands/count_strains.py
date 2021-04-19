@@ -24,11 +24,6 @@ class Command(BaseCommand):
                 return False
             return ret
 
-        def _getrkey(value):
-            if value is None:
-                return None
-            return value is not False
-
         # Clear caching count database
         count, details = StrainMutationCache.objects.all().delete()
         print(f" [x] Deleted {count} existing caching rows.")
@@ -51,7 +46,8 @@ class Command(BaseCommand):
                 if x % 50 == 5:
                     pc = (y + x) / total * 100
                     ct = len(counts)
-                    sys.stdout.write(f" [\] StrainMutation: {y}+{x} ({pc:0.2g}%) {ct} counts, {rejected} rejected {rejects}      \r")
+                    rej = ', '.join([filter_names[r_i] + f': {r_j}' for r_i, r_j in rejects.items()])
+                    sys.stdout.write(f" [\] StrainMutation: {y}+{x} ({pc:0.2g}%) {ct} counts, {rejected} rejected {rej}      \r")
                     sys.stdout.flush()
                 # for each combination of the given fields
                 for combo in filters:
@@ -61,7 +57,7 @@ class Command(BaseCommand):
                     if False in key:
                         rejected += 1
                         for x, k in enumerate(key):
-                            if key is False:
+                            if k is False:
                                 rejects[x] += 1
                     else:
                         counts[(st_mut.mutation,) + key] += 1
