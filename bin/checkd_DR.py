@@ -34,7 +34,11 @@ def main():
             valid += 1
 
     # nonzero exit for GenTB Pipeline
-    if (valid / num_lines) < 0.975:
+    td = valid / num_lines
+    if td < 0.95:
+        sys.stderr.write("Error. Average depth across DR regions = ")
+        sys.stderr.write(str(td))
+        sys.stderr.write("\n")
         exit(1)
 
 
