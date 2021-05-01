@@ -24,7 +24,8 @@ from django.contrib.admin import register, site, ModelAdmin, StackedInline, Tabu
 from .models import (
     Drug, DrugClass, DrugRegimen, ImportSource, Mutation, Genome, GeneLocus,
     GeneDrugInteraction, TargetSet, TargetRegion, StrainResistance, Paper,
-    BioProject, StrainSource, StrainMutation, Lineage, StrainMutationCache
+    BioProject, StrainSource, StrainMutation, Lineage,
+    StrainMutationIndex, StrainMutationCount,
 )
 
 @register(Lineage)
@@ -110,9 +111,13 @@ class StrainMutationAdmin(ModelAdmin):
 class StrainResistanceAdmin(ModelAdmin):
     list_filter = ('resistance', 'drug')
 
-@register(StrainMutationCache)
-class StrainMutationCacheAdmin(ModelAdmin):
-    list_display = ('mutation', 'importer', 'source_paper', 'country', 'lineage', 'count')
+@register(StrainMutationIndex)
+class StrainMutationIndexAdmin(ModelAdmin):
+    list_display = ('importer', 'source_paper', 'country', 'lineage', 'generating', 'generated', 'mutation_count')
+
+    @staticmethod
+    def mutation_count(obj):
+        return obj.mutations.count()
 
 site.register(BioProject)
 site.register(Paper)

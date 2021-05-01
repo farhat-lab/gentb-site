@@ -166,6 +166,8 @@ class AutoBreadcrumbMiddleware(object):
         else:
             try:
                 name = str(obj, errors='ignore')
+            except TypeError:
+                name = "Name Type Error"
             except UnicodeEncodeError:
                 name = "Name Error"
         if hasattr(obj, 'get_absolute_url'):

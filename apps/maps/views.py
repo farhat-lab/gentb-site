@@ -31,9 +31,10 @@ from django.db.models import Count, Q, OuterRef, Subquery
 from apps.mutations.models import (
     ImportSource, StrainSource, StrainMutation, GeneLocus, Genome, StrainResistance,
     Mutation, Paper, BioProject, Lineage, RESISTANCE, RESISTANCE_GROUP,
+    StrainMutationIndex, StrainMutationCount
 )
 
-from .mixins import JsonView, DataSlicerMixin, DataTableMixin
+from .mixins import JsonView, DataSlicerMixin, DataTableMixin, PleaseWait
 from .utils import GraphData, many_lookup, adjust_coords
 from .models import Country, CountryHealth, CountryDetail
 
@@ -318,19 +319,47 @@ class Mutations(DataTableMixin, ListView):
     search_fields = ['name', 'old_id', 'gene_locus__name']
     selected = ['mutation[]', 'name', str]
 
+    cache_filters = {
+        'source[]': 'importer_id',
+        'paper[]': 'source_paper_id',
+        'map[]': 'country__iso2',
+        #'drug[]': 'drug__code',
+        'lineage[]': 'lineage__name',
+    }
     strain_filters = {
         'source[]': 'strain__importer__in',
         'paper[]': 'strain__source_paper__in',
         'map[]': 'strain__country__iso2__in',
-        'drug[]': 'strain__drug__code__in',
+        #'drug[]': 'strain__drug__code__in',
         'lineage[]': 'strain__lineage__name__in',
     }
     filters = {
-        'genelocus[]': (int, 'gene_locus_id__in'),
+        'genelocus[]': (int, 'mutation__gene_locus_id__in'),
     }
 
+    def get_count_indexes(self):
+        # Each combination of multiples (multiple selected items)
+        # Must produce a cache for any of the caches to be valid
+        indexes = []
+        for query in self.filter_product(self.cache_filters):
+            cache, created = StrainMutationIndex.objects.get_or_create(**query)
+            #if not created:
+            #    cache.requested += 1
+            #    cache.save()
+            indexes.append((cache, created))
+
+        for cache, created in indexes:
+            if cache.generating:
+                raise PleaseWait("Generating mutations table, please check back soon...")
+            elif created:
+                raise PleaseWait("Requesting mutations table, please check back soon...")
+            elif not cache.generated:
+                raise PleaseWait("Mutations table requested, please check back soon...")
+
+        return indexes
+
     def get_queryset(self):
-        qset = super(Mutations, self).get_queryset().order_by()
+        qset = super(Mutations, self).get_queryset()
         query = self.apply_filters(self.strain_filters, Q(mutation=OuterRef('pk')))
         strains = StrainMutation.objects.filter(query).order_by().values('mutation')
         count_strains = strains.annotate(c=Count('*')).values('c')
@@ -338,6 +367,26 @@ class Mutations(DataTableMixin, ListView):
             strain_count__gt=0,
         )
         return qset
+
+    def process_datatable(self, qset, columns=(), order=(), search=None, start=0, length=-1, **_):
+        """Special handling for the strain_count order_by case"""
+        if 'strain_count' in self.get_order(columns, order, False):
+            order = ()
+            # 1. If searching, then change the order, we don't want to search and order by count here.
+            if search is None or not search.get('value', None):
+                # XXX If the queryset is small, we could do the request directly.
+                return self.process_counted_table(columns, start, length)
+        return super().process_datatable(qset,
+            columns=columns, order=order, search=search, start=start, length=length)
+
+    def process_counted_table(self, columns, start, length):
+        """
+        This special case for the strain order by allows us to use an index
+        which gives us the pre-calculated counts.
+        """
+        for index, _ in self.get_count_indexes():
+            qset = index.mutations.annotate(strain_count=F('count'))
+            qset = Mutation.objects.annotate(strain_count=F('count_cache__count'))
 
     def prep_data(self, qset, columns, **extra):
         db_columns = [self.column_to_django(col) for col in columns]

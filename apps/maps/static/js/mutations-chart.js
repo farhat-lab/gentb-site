@@ -82,8 +82,9 @@ $(document).ready(function() {
 
     var svg = 'svg.mutations';
     mutations_chart = initialiseMutationChart(svg);
+    var store = $('#mutation-store');
 
-    $('#mutation-store').data('url-signal', function(url, args) {
+    store.data('url-signal', function(url, args) {
 
         // Setup mutations table first
         var t_table = $('#mutation_map table');
@@ -126,6 +127,25 @@ $(document).ready(function() {
                   setUsedFilters(json.filters);
                   return json.data;
               },  
+              "error": function ( jqXHR, textStatus, errorThrown ) {
+                  json = jqXHR.responseJSON;
+                  if(json == undefined) {
+                      json = {'error': "Server Error getting table!"}
+                  }
+                  if(json.please_wait != undefined) {
+                      console.log($('#mutation_map .dataTables_processing'));
+                      $('#mutation_map .dataTables_processing')
+                          .html("<span class='glyphicon glyphicon-time'></span> <span style='display: block'>" + json.please_wait + "</span>")
+                          .addClass('alert').addClass('alert-info').removeClass('alert-danger');
+                      console.log("Please wait", json.please_wait);
+                  } else {
+                      $('#mutation_map .dataTables_processing')
+                          .html("<span class='glyphicon glyphicon-warning-sign'></span> " + json.error)
+                          .addClass('alert').addClass('alert-danger').removeClass('alert-success');
+                      console.error("Error", json.error);
+                  }
+                  return false;
+              }
           },  
           "rowCallback": function(row, data) {
             if (mutations.includes(data.name)) { $(row).addClass('selected'); }
@@ -151,7 +171,7 @@ $(document).ready(function() {
             { "data": "aminoacid_varient", "title": "aavar" },
             { "data": "strain_count", "title": "Strains" },
           ],
-          'order': [[2, 'asc']],
+          'order': [[9, 'desc']],
         })
 
         table.on('draw', function(a, b, c) {

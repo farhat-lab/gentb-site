@@ -21,6 +21,7 @@ Mixins specially for the maps app
 from operator import or_, and_
 from datetime import timedelta
 from functools import reduce
+from itertools import product
 
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db.models import Q, QuerySet, Model
@@ -34,6 +35,11 @@ from .utils import Jdict
 
 #Inherit from the parent class DjangoJsonEncoder and modify the default method to create our own encoder
 #ParentClass: https://github.com/django/django/blob/master/django/core/serializers/json.py
+
+class PleaseWait(ValueError):
+    """When we need to ask the user to wait for data"""
+    def __init__(self, msg):
+        self.msg = msg
 
 class DjangoJSONEncoder2(DjangoJSONEncoder):
     """A json encoder to deal with the python objects we may want to encode"""
@@ -175,17 +181,20 @@ class DataTableMixin(object):
     filters = {}
     selected = None
     search_fields = []
-    db_limit = 10000
 
     def get(self, request, pk=None):
         """
         Overload the ListView's get and replace with datatable getter.
         """
-        super(DataTableMixin, self).get(request)
+        try:
+            super(DataTableMixin, self).get(request)
+        except PleaseWait as err:
+            return JsonResponse({'please_wait': err.msg}, status=400)
+
         data = super(DataTableMixin, self).get_context_data()
         dt_settings = Jdict(request.GET)
         if 'draw' not in dt_settings:
-            return JsonResponse({'error': "Please use with dataTables."})
+            return JsonResponse({'error': "Please use with dataTables."}, status=400)
         try:
             draw = int(dt_settings['draw'])
             aset = data['object_list']
@@ -197,7 +206,7 @@ class DataTableMixin(object):
                 })
             return json_or_html(self.request, {
                 'draw': draw,
-                'recordsTotal': aset.count(),
+                'recordsTotal': self.get_count(aset),
                 'recordsFiltered': count,
                 'data': \
                     self.prep_data(selected, dt_settings.get('columns', []), selected=True)\
@@ -208,7 +217,11 @@ class DataTableMixin(object):
         except Exception as err:
             if self.request.GET.get('html'):
                 raise
-            return JsonResponse({'error': str(err)})
+            return JsonResponse({'error': str(err)}, status=400)
+
+    def get_count(self, qset):
+        """Return the number of total unfiltered rows"""
+        return qset.count()
 
     def prep_data(self, qset, columns, **extra):
         """
@@ -272,6 +285,19 @@ class DataTableMixin(object):
                 raise IOError(f"TYPE ERROR: {col}: {val}")
         return Q()
 
+    def filter_product(self, filters):
+        """Gets each combination value possible as a filter set"""
+        all_values = []
+        for key, col in filters.items():
+            values = [(col, val) for val in self.get_filter_value(key)]
+            if values:
+                all_values.append(values)
+        if all_values:
+            for values in product(*all_values):
+                yield dict(values)
+        else:
+            yield {}
+
     def process_datatable(self, qset, columns=(), order=(), search=None, start=0, length=-1, **_):
         """
         Takes the options as shown in https://datatables.net/manual/server-side
@@ -304,18 +330,19 @@ class DataTableMixin(object):
         qset = qset.filter(query).exclude(pk__in=selected.values('pk'))
 
         count = qset.count()
-        if not self.db_limit or count < self.db_limit:
-            ordering = []
-            for order_col in order:
-                column = columns[int(order_col['column'])]['django']
-                if order_col['dir'][0] == 'd':
-                    column = '-' + column
-                ordering.append(column)
-            if ordering:
-                qset = qset.order_by(*ordering)
+        ordering = list(self.get_order(columns, order))
+        if ordering:
+            qset = qset.order_by(*ordering)
 
         if int(length) > 0:
             return selected, qset[int(start):int(start) + int(length)], count
 
         return selected, qset, count
 
+    def get_order(self, columns, order, direction=True):
+        """Process the order from the query string and output column names"""
+        for order_col in order:
+            column = self.column_to_django(columns[int(order_col['column'])])
+            if direction and order_col['dir'][0] == 'd':
+                column = '-' + column
+            yield column
