@@ -26,7 +26,7 @@ from collections import defaultdict, OrderedDict
 from django.views.generic import TemplateView, ListView
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
-from django.db.models import Count, Q, OuterRef, Subquery
+from django.db.models import Count, Q, F, OuterRef, Subquery, Sum
 
 from apps.mutations.models import (
     ImportSource, StrainSource, StrainMutation, GeneLocus, Genome, StrainResistance,
@@ -334,7 +334,7 @@ class Mutations(DataTableMixin, ListView):
         'lineage[]': 'strain__lineage__name__in',
     }
     filters = {
-        'genelocus[]': (int, 'mutation__gene_locus_id__in'),
+        'genelocus[]': (int, 'gene_locus_id__in'),
     }
 
     def get_count_indexes(self):
@@ -370,25 +370,69 @@ class Mutations(DataTableMixin, ListView):
 
     def process_datatable(self, qset, columns=(), order=(), search=None, start=0, length=-1, **_):
         """Special handling for the strain_count order_by case"""
-        if 'strain_count' in self.get_order(columns, order, False):
-            order = ()
-            # 1. If searching, then change the order, we don't want to search and order by count here.
+        st_order = list(self.get_order(columns, order, strain_count='count', prefix='mutation__'))
+        if 'count' in st_order or '-count' in st_order:
+            # 1. If not searching, then we ignore text searches and use the index
             if search is None or not search.get('value', None):
                 # XXX If the queryset is small, we could do the request directly.
-                return self.process_counted_table(columns, start, length)
+                return self.process_counted_table(columns, int(start), int(length), st_order)
+
+            # 2. If searching, then change the order, we don't want to search and order by count here.
+            order = ()
+
         return super().process_datatable(qset,
             columns=columns, order=order, search=search, start=start, length=length)
 
-    def process_counted_table(self, columns, start, length):
+    def process_counted_table(self, columns, start, length, order):
         """
         This special case for the strain order by allows us to use an index
         which gives us the pre-calculated counts.
         """
+        # Resulting pile is a list of mutations
+        db_columns = [self.column_to_django(col, prefix='mutation__', strain_count='count') for col in columns]
+        counts = {}
+        final_count = 0
+
+        # We set a fixed number of pages to get, because they have to be processed every time.
+        pages = length * 5
+
         for index, _ in self.get_count_indexes():
-            qset = index.mutations.annotate(strain_count=F('count'))
-            qset = Mutation.objects.annotate(strain_count=F('count_cache__count'))
+            # Get all the mutations, plus counts associated with this index, order first
+            qset = index.mutations.order_by(*order)
+            # Apply the same filters the process_datatable would have
+            qset = qset.filter(self.apply_filters(self.filters, prefix='mutations__'))
+            final_count += qset.count()
+
+            # We get every item from zero to length, this is because of the combination
+            for item in qset[0:pages].values('mutation_id', *db_columns):
+                pk = item.pop('mutation_id')
+                item = dict([(n.replace('mutation__', ''), v) for n ,v in item.items()])
+                if pk in counts:
+                    counts[pk]['strain_count'] += item['count']
+                else:
+                    item['strain_count'] = item.pop('count')
+                    counts[pk] = item
+
+        # Get selected items if found in this list of items
+        selected_values = self.get_selected_values()
+        selected = [counts.pop(pk) for pk in list(counts) if counts[pk]['name'] in selected_values]
+
+        # Manually sort and slice the results
+        ret = sorted(counts.values(),
+            key=lambda item: item['strain_count'],
+            reverse=('-count' in order)
+        )
+        end = start + length
+
+        # This count is a fixed number of pages (5) or the length of the result
+        # whichever is smaller.
+        return selected, ret[start:end], min(len(ret), pages)
 
     def prep_data(self, qset, columns, **extra):
+        if qset is None:
+            return []
+        if isinstance(qset, list):
+            return qset
         db_columns = [self.column_to_django(col) for col in columns]
         return list(qset.values(*db_columns))
 

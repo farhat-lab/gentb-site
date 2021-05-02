@@ -245,29 +245,30 @@ class DataTableMixin(object):
         ret.update(extra)
         return ret
 
-    def column_to_django(self, column, db=True):
+    def column_to_django(self, column, db=True, prefix=None, **tr):
         """We calculate the column's django address,
 
         If db is True, then this must return the database field, if false
         then we must return the attribute getter.
         """
-        return column['data']
+        col = column['data']
+        return tr.get(col, (prefix or '') + col)
 
     def get_filter_value(self, key):
         """Get a list of values that will apply to this filter (key)"""
         return self.request.GET.getlist(key, None)
 
-    def apply_filters(self, filters, query=None):
+    def apply_filters(self, filters, query=None, prefix=None):
         """Generate a query object with the given filters"""
         if not query:
             query = Q()
 
         for key, col in filters.items():
             val = self.get_filter_value(key)
-            query &= self.apply_filter(key, col, val)
+            query &= self.apply_filter(key, col, val, prefix=prefix)
         return query
 
-    def apply_filter(self, key, col, val):
+    def apply_filter(self, key, col, val, prefix=None):
         if callable(col):
             col, val = col(val)
 
@@ -280,7 +281,7 @@ class DataTableMixin(object):
 
         if val:
             try:
-                return Q(**{col: val})
+                return Q(**{(prefix or '') + col: val})
             except TypeError:
                 raise IOError(f"TYPE ERROR: {col}: {val}")
         return Q()
@@ -319,14 +320,7 @@ class DataTableMixin(object):
         query = self.apply_filters(self.filters, query)
 
         # Selected items appear above (sticky) to others on every page.
-        selected = qset.none()
-        if self.selected:
-            (key, col, mtype) = self.selected
-            values = self.request.GET.getlist(key, None)
-            values = [mtype(v) for v in values]
-            if values:
-                selected = qset.filter(**{col+'__in': values})
-
+        selected = self.get_selected(qset)
         qset = qset.filter(query).exclude(pk__in=selected.values('pk'))
 
         count = qset.count()
@@ -339,10 +333,25 @@ class DataTableMixin(object):
 
         return selected, qset, count
 
-    def get_order(self, columns, order, direction=True):
+    def get_selected(self, qset, prefix=None):
+        """Get all the selected items as pks"""
+        if self.selected:
+            values, col = self.get_selected_values()
+            if values:
+                return qset.filter(**{(prefix or '') + col+'__in': values})
+        return qset.none()
+
+    def get_selected_values(self):
+        """Get all the selected ids"""
+        (key, col, mtype) = self.selected
+        values = self.request.GET.getlist(key, None)
+        return [mtype(v) for v in values], col
+
+    def get_order(self, columns, order, prefix=None, **tr):
         """Process the order from the query string and output column names"""
         for order_col in order:
             column = self.column_to_django(columns[int(order_col['column'])])
-            if direction and order_col['dir'][0] == 'd':
+            column = tr.get(column, (prefix or '') + column)
+            if order_col['dir'][0] == 'd':
                 column = '-' + column
             yield column
