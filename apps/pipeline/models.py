@@ -134,8 +134,19 @@ class Program(Model):
         help_text='Describe the program and what it does in detail.')
 
     command_line = TextField(
-        help_text='Write the command line using replacement syntax '
-        'for inputs and outputs')
+        help_text="""
+Write the command line using replacement syntax for inputs and outputs.
+
+ ${file}.in means we expect a file called *.txt with the id 'file'
+ @{file}.out means this pipeline will output a file called *.txt using the
+             filename of the input with the id 'file'. For example if the input
+             has the name 'blueberry.in' the output will be 'blueberry.out'
+
+ ${bin}program.py means reference the script 'program.py' in the bin folder. These
+            folders are configured by the website admin and there may be multiple
+            directories where scripts are held for your gentb website.
+
+""")
     quality_control = BooleanField(default=False,
         help_text='If true, failure in this step is considered a failure of the '
                   'data, and not failure of the pipeline program.')
@@ -218,9 +229,8 @@ class Program(Model):
         # First take the files stored against this specific program.
         files_in = file_as_inputs(self.files)
 
-        bins = getattr(settings, 'PIPELINE_BIN', None)
-        if bins is not None:
-            files_in['bin'] = [os.path.join(bins, d) for d in os.listdir(bins)]
+        for key, value in getattr(settings, 'PIPELINE_BIN', []):
+            files_in[key] = [os.path.join(bins, d) for d in os.listdir(bins)]
 
         if output_dir is None:
             output_dir = '/tmp'
