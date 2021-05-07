@@ -229,8 +229,8 @@ Write the command line using replacement syntax for inputs and outputs.
         # First take the files stored against this specific program.
         files_in = file_as_inputs(self.files)
 
-        for key, value in getattr(settings, 'PIPELINE_BIN', []):
-            files_in[key] = [os.path.join(bins, d) for d in os.listdir(bins)]
+        for key, value in getattr(settings, 'PIPELINE_BIN', {}).items():
+            files_in[key] = [os.path.join(value, d) for d in os.listdir(value)]
 
         if output_dir is None:
             output_dir = '/tmp'
