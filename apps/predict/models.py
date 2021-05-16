@@ -519,24 +519,26 @@ class PredictStrain(Model):
             (pr, m_A, m_B) = parts[:3]
 
             # this is different because it assumes that there's only one strain.
-            name = list(m_A)[0]
-            m_C[name] = [([None] * len(m_A[name][0]))] * len(m_A[name])
-            m_D[name] = [([None] * len(m_A[name][0]))] * len(m_A[name])
+            if m_A and m_B:
+                name = list(m_A)[0]
+                m_C[name] = [([None] * len(m_A[name][0]))] * len(m_A[name])
+                m_D[name] = [([None] * len(m_A[name][0]))] * len(m_A[name])
 
-            ex_1, ex_2 = parts[-2:] if len(parts) == 5 else ({}, {})
-            for index, value in ex_1.items():
-                m_C[name][int(index)] = filter_none(value)
-            for index, value in ex_2.items():
-                m_D[name][int(index)] = filter_none(value)
+                ex_1, ex_2 = parts[-2:] if len(parts) == 5 else ({}, {})
+                for index, value in ex_1.items():
+                    m_C[name][int(index)] = filter_none(value)
+                for index, value in ex_2.items():
+                    m_D[name][int(index)] = filter_none(value)
 
+        empty = [[None] * 1]
         # Rotate mutation matrix 90 degrees
-        for name in m_A:
+        for name, *rest in pr:
             yield (name, zip(
-                [(b,c,d,e) for (a,b,c,d,e) in pr if a == name],
-                zip(*m_A[name]),
-                zip(*m_B[name]),
-                zip(*m_C[name]),
-                zip(*m_D[name]),
+                [rest],
+                zip(*m_A.get(name, empty)),
+                zip(*m_B.get(name, empty)),
+                zip(*m_C.get(name, empty)),
+                zip(*m_D.get(name, empty)),
             ))
 
     def generate_results(self):
