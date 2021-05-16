@@ -569,7 +569,7 @@ class ProgramRun(TimeStampedModel):
         return "-"
 
     def wait_time(self):
-        if self.started:
+        if self.started and self.submitted:
             return str(self.started - self.submitted)
         if self.submitted:
             return now() - self.submitted

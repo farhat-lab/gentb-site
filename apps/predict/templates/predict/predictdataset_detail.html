@@ -31,6 +31,15 @@
         </h1>
 
 {% for status in statuses %}
+  {% if status.code == "FILE_WAIT" or status.code == "FILE_START" or status.code == "RUN_WAIT" or status.code == "RUN_START" %}
+    {% ifchanged %}
+<div class="alert alert-warning">
+  <strong>Processing</strong>: The processing may take time to complete depending on the type of data you have submitted. We will send you an email when the process is completed and you can close this page if you want to.
+</div>
+    {% endifchanged %}
+  {% endif %}
+{% endfor %}
+{% for status in statuses %}
   {% if status.level == "danger" %}
     {% ifchanged %}
 <div class="alert alert-danger">
