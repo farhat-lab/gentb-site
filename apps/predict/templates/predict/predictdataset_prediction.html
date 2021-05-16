@@ -1,19 +1,23 @@
 {% load jsonify static %}
+  {% with heatmap=object.get_heatmap %}
 
   <i class="glyphicon glyphicon-info-sign" data-toggle="tooltip" title="See minimal list of predictive mutations in Farhat et al. AJRCCM 2016"></i>
   <i class="glyphicon glyphicon-question-sign" data-toggle="tooltip" title="DR=Drug Resistance, FN=False Negative, FP=False Positive"></i>
 
   <table class="heatmap">
-    {% with heatmap=object.get_heatmap %}
       <tbody>
       {% for row in heatmap.rows %}
         <tr>
           <th scope="row">{{ row.name }}</th>
-          {% for col in row.cols %}
-            <td title="<table><tr><th>Strain</th><td>{{ row.name }}</td></tr><tr><th>Drug</th><td>{{ col.name }}</td></tr><tr><th>DR Probability</th><td>{{ col.dr_probability }}</td></tr><tr><th>FP Rate</th><td>{{ col.false_positive }}</td></tr><tr><th>FN Rate</th><td>{{ col.false_negative }}</td></tr></table>" data-toggle="tooltip" data-container="body" data-html="true">
-                <div class="cell" data-resultid='{{ col.result_id }}' data-row="{{ row.name }}" data-col="{{ col.name }}"><div style="{% if col.dr_probability == None %}background-color: #ccc;{% else %}opacity: {{ col.dr_probability }};{% endif %}">&nbsp;</div></div>
-            </td>
-          {% endfor %}
+          {% if row.error %}
+            <td colspan="{{ heatmap.cols|length }}" class="heatmap-error" title="{{ row.error }}">This heatmap data has critical errors and can not be parsed.</td>
+          {% else %}
+            {% for col in row.cols %}
+              <td title="<table><tr><th>Strain</th><td>{{ row.name }}</td></tr><tr><th>Drug</th><td>{{ col.name }}</td></tr><tr><th>DR Probability</th><td>{{ col.dr_probability }}</td></tr><tr><th>FP Rate</th><td>{{ col.false_positive }}</td></tr><tr><th>FN Rate</th><td>{{ col.false_negative }}</td></tr></table>" data-toggle="tooltip" data-container="body" data-html="true">
+                  <div class="cell" data-resultid='{{ col.result_id }}' data-row="{{ row.name }}" data-col="{{ col.name }}"><div style="{% if col.dr_probability == None %}background-color: #ccc;{% else %}opacity: {{ col.dr_probability }};{% endif %}">&nbsp;</div></div>
+              </td>
+            {% endfor %}
+          {% endif %}
         </tr>
       {% endfor %}
       </tbody>
@@ -25,7 +29,6 @@
           {% endfor %}
         </tr>
       </thead>
-    {% endwith %}
   </table>
 
   <div id="scatter" class="d3graph">
@@ -36,3 +39,4 @@
 
 <script>heatmap_ready("{% url 'predict:scatter_plot' 1 %}");</script>
 
+{% endwith %}

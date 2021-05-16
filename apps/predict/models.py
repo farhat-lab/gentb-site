@@ -222,9 +222,12 @@ class PredictDataset(TimeStampedModel):
             strain.generate_results()
 
         strains = defaultdict(list)
-        qset = PredictResult.objects.filter(strain__dataset=self, drug__isnull=False)
-        vset = qset.values_list('id', 'strain__name', 'drug__code',\
+        qset = PredictResult.objects.filter(strain__dataset=self)
+        vset = qset.filter(drug__isnull=False)\
+                   .values_list('id', 'strain__name', 'drug__code',\
                                 'false_positive', 'false_negative', 'probability')
+
+        errors = dict(qset.filter(drug__isnull=True).values_list('strain__name', 'error'))
 
         for pk, strain, drug, fpos, fneg, prob in vset:
             cols = strains[strain]
@@ -242,6 +245,10 @@ class PredictDataset(TimeStampedModel):
             }
         for strain, cols in strains.items():
             output['rows'].append({'name': strain, 'cols': cols})
+        for strain, err in errors.items():
+            if strain not in strains:
+                output['rows'].append({'name': strain, 'error': err})
+
         return output
 
     def user_name(self):
@@ -445,7 +452,7 @@ class PredictStrain(Model):
     def prediction_file(self):
         """Return a detected prediction file for this strain"""
         for (url, fn, name, life) in self.output_files:
-            if fn.endswith('matrix.json'):
+            if fn.endswith('matrix.json') and os.path.isfile(fn):
                 return fn
         return None
 
@@ -499,11 +506,11 @@ class PredictStrain(Model):
     def get_raw_prediction(self):
         """Get the raw data slightly bound better"""
         matrix_fn = self.prediction_file
-        if matrix_fn and os.path.isfile(matrix_fn):
+        if matrix_fn:
             try:
                 yield from self._prediction_from_file(matrix_fn)
-            except Exception:
-                yield None, False
+            except Exception as err:
+                yield str(err), False
 
     def _prediction_from_file(self, matrix_fn):
         m_A, m_B, m_C, m_D = {}, {}, {}, {}
@@ -536,9 +543,9 @@ class PredictStrain(Model):
         """Populate the database from the matrix files"""
         self.results.all().delete()
 
-        for _, dat in self.get_raw_prediction():
+        for err, dat in self.get_raw_prediction():
             if dat is False: # Error in raw prediction getting, prevent asking again
-                self.results.create(drug=None)
+                self.results.create(drug=None, error=err[:254])
                 break
 
             for (drug_code, dr, fneg, fpos), *data in dat:
@@ -576,6 +583,8 @@ class PredictResult(Model):
     false_negative = DecimalField("False Negative Rate", null=True, blank=True, decimal_places=5, max_digits=10)
     false_positive = DecimalField("False Postive Rate", null=True, blank=True, decimal_places=5, max_digits=10)
     probability = DecimalField("Drug Resistance Probability", null=True, blank=True, decimal_places=5, max_digits=10)
+
+    error = CharField(max_length=255, null=True, blank=True)
 
     class Meta:
         unique_together = [('strain', 'drug')]
