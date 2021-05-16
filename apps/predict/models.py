@@ -34,7 +34,7 @@ from datetime import timedelta
 from model_utils.models import TimeStampedModel
 
 from django.db.models import (
-    Model, CASCADE, SET_NULL,
+    Model, CASCADE, SET_NULL, Q,
     ForeignKey, CharField, TextField, BooleanField, DecimalField, IntegerField, DateTimeField,
 )
 from django.conf import settings
@@ -221,13 +221,14 @@ class PredictDataset(TimeStampedModel):
         for strain in self.strains.filter(results__isnull=True):
             strain.generate_results()
 
+        err_q = Q(drug__isnull=True)
         strains = defaultdict(list)
         qset = PredictResult.objects.filter(strain__dataset=self)
-        vset = qset.filter(drug__isnull=False)\
+        vset = qset.exclude(err_q)\
                    .values_list('id', 'strain__name', 'drug__code',\
                                 'false_positive', 'false_negative', 'probability')
 
-        errors = dict(qset.filter(drug__isnull=True).values_list('strain__name', 'error'))
+        errors = dict(qset.filter(err_q).values_list('strain__name', 'error'))
 
         for pk, strain, drug, fpos, fneg, prob in vset:
             cols = strains[strain]
