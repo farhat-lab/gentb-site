@@ -134,7 +134,7 @@ class UploadForm(ModelForm):
 class ManualInputForm(UploadForm):
     my_file_type = PredictDataset.FILE_TYPE_MANUAL
     doc_title = "Manually Entered Prediction"
-    doc = """Create a prediction though manual selection of 1 or more mutations from a list. This option involves the shortest processing time but does assume that any non-entered mutations have been tested for and are absent. Minimal genotypic information for accurate resistance predictions are below. Genetic regions are listed in order of decreasing importance. For more detailed list of genetic variants see reference <a href="http://www.ncbi.nlm.nih.gov/pubmed/26910495">Farhat MR, Sultana R et al. Genetic Determinants of Drug Resistance in Mycobacterium tuberculosis and Their Diagnostic Value. AJRCCM 2016</a>"""
+    doc = """Create a prediction though the manual selection of 1 or more mutations from a list. This option assumes that any non-entered mutations have been tested for and are absent. Minimal genotypic information for accurate resistance predictions are below. Genetic regions are listed in order of decreasing importance. For more detailed list of genetic variants see reference <a href="http://www.ncbi.nlm.nih.gov/pubmed/26910495">Farhat MR, Sultana R et al. Genetic Determinants of Drug Resistance in Mycobacterium tuberculosis and Their Diagnostic Value. AJRCCM 2016</a>"""
     genetic_information = GeneticInputField(reverse_lazy('genes:json'))
     ordered = 20
     btn = 'default'
@@ -187,7 +187,7 @@ class UploadVcfForm(UploadForm):
 class UploadFastQSingleForm(UploadForm):
     my_file_type = PredictDataset.FILE_TYPE_FASTQ
     doc_title = "Create FastQ Single-Ended Prediction"
-    doc = "Create a prediction from a single-ended FastQ genetic sequence file. This option involves a large file and takes more time to process that the VCF or manual options."
+    doc = "Create a prediction from a single-ended FastQ genetic sequence file. This option allow legacy prediction on single-end data. We do not recommend using this option if paired-end data is available."
     fastq_file = UploadField(extensions=FASTQ_FILES, required=True,
         label="FastQ Files", help_text="FastQ files containing the single sequence read. Multiple files can be selected, one fastq file per strain to compare.")
     ordered = 5
@@ -196,7 +196,7 @@ class UploadFastQSingleForm(UploadForm):
 class UploadFastQPairForm(UploadForm):
     my_file_type = PredictDataset.FILE_TYPE_FASTQ2
     doc_title = "Create FastQ Pair-Ended Prediction"
-    doc = "Create a prediction from a set of pair-ended FastQ genetic sequences. This option involves the largest files and takes more time to process that the VCF or manual options."
+    doc = "Create a prediction from a set of pair-ended FastQ genetic sequences."
     fastq_file = UploadField(extensions=FASTQ_FILES, buckets=[
         ('file_one', "^(.+)[\._\- ][Rr]?1\.fastq(?:\.gz)?$", "Forward FastQ Files", 'file_two'),
         ('file_two', "^(.+)[\._\- ][Rr]?2\.fastq(?:\.gz)?$", "Backward FastQ Files", 'file_one')],
