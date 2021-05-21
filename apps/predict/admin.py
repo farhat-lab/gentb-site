@@ -29,6 +29,20 @@ class PredictStrainAdmin(admin.ModelAdmin):
 
 admin.site.register(PredictStrain, PredictStrainAdmin)
 
+class PredictResultLocusInline(admin.TabularInline):
+    raw_id_fields = ('result', 'locus',)
+    model = PredictResultLocus
+    can_delete = False
+    extra = 0
+
+class PredictResultAdmin(admin.ModelAdmin):
+    inlines = (PredictResultLocusInline,)
+    raw_id_field = ('strain', 'drug',)
+    search_fields = ("strain__name", "strain__dataset__name")
+    list_display = ("strain",)
+
+admin.site.register(PredictResult, PredictResultAdmin)
+
 class PredictDatasetNoteInline(admin.StackedInline):
     model = PredictDatasetNote
     can_delete = True
