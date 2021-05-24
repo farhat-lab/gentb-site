@@ -520,27 +520,28 @@ class PredictStrain(Model):
             (pr, m_A, m_B) = parts[:3]
 
             # this is different because it assumes that there's only one strain.
-            if m_A and m_B:
-                name = list(m_A)[0]
-                m_C[name] = [([None] * len(m_A[name][0]))] * len(m_A[name])
-                m_D[name] = [([None] * len(m_A[name][0]))] * len(m_A[name])
+            name = list(pr)[0][0]
+            if not m_A:
+                m_A[name] = {name: [[None] * len(pr)]}
+            if not m_B:
+                m_B[name] = {name: [[None] * len(pr)]}
 
-                ex_1, ex_2 = parts[-2:] if len(parts) == 5 else ({}, {})
-                for index, value in ex_1.items():
-                    m_C[name][int(index)] = filter_none(value)
-                for index, value in ex_2.items():
-                    m_D[name][int(index)] = filter_none(value)
+            m_C[name] = [([None] * len(m_A[name][0]))] * len(m_A[name])
+            m_D[name] = [([None] * len(m_A[name][0]))] * len(m_A[name])
 
-        empty = [[None] * 1]
+            ex_1, ex_2 = parts[-2:] if len(parts) == 5 else ({}, {})
+            for index, value in ex_1.items():
+                m_C[name][int(index)] = filter_none(value)
+            for index, value in ex_2.items():
+                m_D[name][int(index)] = filter_none(value)
+
+        m_A = list(zip(*m_A[name]))
+        m_B = list(zip(*m_B[name]))
+        m_C = list(zip(*m_C[name]))
+        m_D = list(zip(*m_D[name]))
         # Rotate mutation matrix 90 degrees
-        for name, *rest in pr:
-            yield (name, zip(
-                [rest],
-                zip(*m_A.get(name, empty)),
-                zip(*m_B.get(name, empty)),
-                zip(*m_C.get(name, empty)),
-                zip(*m_D.get(name, empty)),
-            ))
+        for x, (name, *rest) in enumerate(pr):
+            yield (name, ([rest], m_A[x], m_B[x], m_C[x], m_D[x]))
 
     def generate_results(self):
         """Populate the database from the matrix files"""
