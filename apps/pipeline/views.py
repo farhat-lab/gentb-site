@@ -60,7 +60,7 @@ class DiskUsage(ProtectedMixin, ListView):
 
     def get_context_data(self, **kwargs):
         data = super().get_context_data(**kwargs)
-        file_types = ['fastq', 'fastq.gz', 'vcf', 'vcf.gz']
+        file_types = ['fastq', 'fastq.gz', 'vcf', 'vcf.gz', '.fq', '.fq.gz']
         qset = self.get_queryset()
 
         data['uploads'] = dict([(file_type,

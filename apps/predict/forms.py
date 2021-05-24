@@ -33,7 +33,7 @@ from apps.mutations.models import Mutation
 
 from .models import PredictDataset, PredictStrain, PredictPipeline
 
-FASTQ_FILES = ['.fastq', '.fastq.gz']
+FASTQ_FILES = ['.fastq', '.fastq.gz', '.fq', '.fq.gz']
 VCF_FILES = ['.vcf', '.vcf.gz']
 
 class UploadForm(ModelForm):
@@ -198,8 +198,8 @@ class UploadFastQPairForm(UploadForm):
     doc_title = "Create FastQ Pair-Ended Prediction"
     doc = "Create a prediction from a set of pair-ended FastQ genetic sequences."
     fastq_file = UploadField(extensions=FASTQ_FILES, buckets=[
-        ('file_one', "^(.+)[\._\- ][Rr]?1\.fastq(?:\.gz)?$", "Forward FastQ Files", 'file_two'),
-        ('file_two', "^(.+)[\._\- ][Rr]?2\.fastq(?:\.gz)?$", "Backward FastQ Files", 'file_one')],
+        ('file_one', "^(.+)[\._\- ][Rr]?1\.(fastq|fq)(?:\.gz)?$", "Forward FastQ Files", 'file_two'),
+        ('file_two', "^(.+)[\._\- ][Rr]?2\.(fastq|fq)(?:\.gz)?$", "Backward FastQ Files", 'file_one')],
         required=True, label="FastQ Files",
         help_text="FastQ file containing the forward and backward sequence. Multiple strains can be selected for comparison.")
     ordered = 6
