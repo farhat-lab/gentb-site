@@ -541,7 +541,7 @@ class PredictStrain(Model):
         m_D = list(zip(*m_D[name]))
         # Rotate mutation matrix 90 degrees
         for x, (name, *rest) in enumerate(pr):
-            yield (name, ([rest], m_A[x], m_B[x], m_C[x], m_D[x]))
+            yield (name, (list(rest), m_A[x], m_B[x], m_C[x], m_D[x]))
 
     def generate_results(self):
         """Populate the database from the matrix files"""
@@ -552,26 +552,26 @@ class PredictStrain(Model):
                 self.results.create(drug=None, error=err[:254])
                 break
 
-            for (drug_code, dr, fneg, fpos), *data in dat:
-                try:
-                    drug = Drug.objects.get(code__iexact=drug_code)
-                except Drug.DoesNotExist:
-                    continue
-                res, _ = self.results.get_or_create(drug=drug, defaults={
-                    'probability':dr, 'false_positive':fpos, 'false_negative':fneg})
+            (drug_code, dr, fneg, fpos), *data = dat
+            try:
+                drug = Drug.objects.get(code__iexact=drug_code)
+            except Drug.DoesNotExist:
+                continue
+            res, _ = self.results.get_or_create(drug=drug, defaults={
+                'probability':dr, 'false_positive':fpos, 'false_negative':fneg})
 
-                for cat, datum in enumerate(data):
-                    for mutation in datum:
-                        if not mutation:
-                            continue
-                        try:
-                            locus = GeneLocus.objects.for_mutation_name(mutation, True)
-                        except ValueError:
-                            continue
-                        (obj, created) = res.loci.get_or_create(category=cat + 1, locus=locus,
+            for cat, datum in enumerate(data):
+                for mutation in datum:
+                    if not mutation:
+                        continue
+                    try:
+                        locus = GeneLocus.objects.for_mutation_name(mutation, True)
+                    except ValueError:
+                        continue
+                    (obj, created) = res.loci.get_or_create(category=cat + 1, locus=locus,
                                                                  defaults={'mutations': mutation})
-                        if not created:
-                            obj.mutations += "\n" + mutation
+                    if not created:
+                         br.mutations += "\n" + mutation
 
     def __str__(self):
         return str(self.name)
