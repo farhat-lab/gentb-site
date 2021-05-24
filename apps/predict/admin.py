@@ -38,7 +38,7 @@ class PredictResultLocusInline(admin.TabularInline):
 class PredictResultAdmin(admin.ModelAdmin):
     inlines = (PredictResultLocusInline,)
     raw_id_field = ('strain', 'drug',)
-    search_fields = ("strain__name", "strain__dataset__name")
+    search_fields = ("strain__name", "strain__dataset__title")
     list_display = ("strain",)
 
 admin.site.register(PredictResult, PredictResultAdmin)
