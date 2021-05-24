@@ -5,7 +5,7 @@ Dataset
  * Title: {{ object.title }}
  * Description: {{ object.description }}
  * Status: {{ object.get_status }}
-{% if object.status == 6 or object.status == 7 %}
+{% if object.status == "RUN_DONE" or object.status == "READY" %}
 Your dataset has been processed.  The details are below:
 {% else %}
 Sorry! The processing of your file has failed.
