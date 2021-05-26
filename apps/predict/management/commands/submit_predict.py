@@ -49,10 +49,15 @@ class Command(BaseCommand):
         if status is 'FILE_ERROR':
             raise IOError("Download Error")
 
-        if strain.file_one and strain.file_one.filename.endswith('vcf.gz'):
-            strain.file_one.decompress()
-        if strain.file_two and strain.file_two.filename.endswith('vcf.gz'):
-            strain.file_two.decompress()
+        for st_file in (strain.file_one, strain.file_two):
+            if not st_file:
+                continue
+            if st_file.filename.endswith('vcf.gz'):
+                st_file.decompress()
+            elif st_file.filename.endswith('.fq'):
+                st_file.rename(st_file.filename[:-3] + ".fastq")
+            elif st_file.filename.endswith('fq.gz'):
+                st_file.rename(st_file.filename[:-3] + ".fastq.gz")
 
         try:
             if not strain.run():

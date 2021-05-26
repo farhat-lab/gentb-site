@@ -101,7 +101,7 @@ class UploadFile(Model):
     @property
     def fullpath(self):
         """Returns the full path on disk of this file"""
-        return os.path.join(self.file_directory, self.filename)
+        return os.path.join(self.file_directory, self.filename.lstrip('/'))
 
     @property
     def is_file(self):
@@ -152,6 +152,13 @@ class UploadFile(Model):
             self.delete_now()
             self.filename = self.filename[:-3]
             self.save()
+
+    def rename(self, new_name):
+        """Rename the file, only if files are on the same device!"""
+        oldpath = self.fullpath
+        self.filename = new_name
+        os.rename(oldpath, self.fullpath)
+        self.save()
 
     def save_now(self, data):
         """Save the data as if this external download was done"""
