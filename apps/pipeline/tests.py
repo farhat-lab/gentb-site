@@ -28,7 +28,9 @@ from extratest.base import ExtraTestCase
 from apps.pipeline.models import Program, ProgramFile, Pipeline
 
 DIR = os.path.dirname(__file__)
-FIX = os.path.join(DIR, 'fixtures')
+FIX = {
+    'bin': os.path.join(DIR, 'fixtures'),
+}
 
 class ProgramTest(ExtraTestCase):
     """Test the loading of programs and how they make commands"""
@@ -38,7 +40,7 @@ class ProgramTest(ExtraTestCase):
             ProgramFile.objects.create(name='file', store='test_{}.txt'.format(name))\
                 for name in ('one', 'two')]
 
-        self.program = Program(name='test', keep=False,
+        self.program = Program(name='test', keep_for=0,
                                command_line='ls -l ${file} > @{file}')
         self.program.save()
         self.program.files.set([self.files[0]])
@@ -157,7 +159,7 @@ class PipelineTest(ExtraTestCase):
 
         self.assertTrue(result.is_submitted)
         self.assertTrue(result.is_complete)
-        self.assertEqual(result.error_text, None)
+        self.assertEqual(result.error_text, '')
         self.assertFalse(result.is_error)
 
         self.assertGreater(result.input_size, 0)

@@ -64,7 +64,9 @@ MEDIA_URL = '/media/'
 ########## END MEDIA CONFIGURATION
 
 PIPELINE_ROOT = normpath(join(DATA_ROOT, 'pipeline'))
-PIPELINE_BIN = normpath(join(SITE_ROOT, 'bin'))
+PIPELINE_BIN = {
+    'bin': normpath(join(SITE_ROOT, 'bin')),
+}
 
 ########## STATIC FILE CONFIGURATION
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#static-root
