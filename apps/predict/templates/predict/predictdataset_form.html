@@ -56,16 +56,7 @@
     </div>
     <div class="col-md-6 portfolio-item">
       <h3 title="{{ form.my_file_type }}">{{ form.doc_title }}</h3>
-      <p>{{ form.doc|safe }}</p>
-
-      {% if form.my_file_type == 'fastq-pair' %}
-      <p>Both compressed and uncompressed files are accepted but the former are preferred.<br />Please label paired end FastQ files as follows:</p>
-      <ul>
-        <li><i>isolate-name-here</i>_R1.fastq</li>
-        <li><i>isolate-name-here</i>_R2.fastq</li>
-      </ul>
-      <p>Replace “<i>isolate-name-here</i>” with your desired isolate or strain name.
-      {% endif %}
+      {% include form.doc_template %}
     </div>
   </div>
 {% endblock %}

@@ -1,0 +1,329 @@
+
+<p><strong>Table: List of <em>M. tuberculosis</em> genetic loci used for model training and minimum genomic input for resistance prediction</strong></p>
+
+<table class="table table-condensed">
+ <tbody>
+  <tr>
+   <th scope="col" rowspan="2" style="vertical-align: middle">Drug</th>
+   <th scope="col" colspan="2" class="text-center">Prediction model</th>
+  </tr>
+  <tr>
+   <th scope="col">GenTB-RF [1]</th>
+   <th scope="col">GenTB-WDNN [2]</th>
+  </tr>
+ </tbody>
+ <tbody>
+  <tr>
+   <td>
+     Isoniazid
+   </td>
+   <td>
+     <em>
+      katG, inhA
+     </em>
+     (+ promoter),
+     <em>
+       fabG1, embB, kasA,
+      <br/>
+       ahpC
+     </em>
+     (+ promoter),
+     <em>
+      oxyR, iniA, iniB, iniC, ndh
+     </em>
+   </td>
+   <td>
+     <em>
+      katG, inhA
+     </em>
+     (+ promoter),
+     <em>
+       fabG1, embB, kasA,
+      <br/>
+       ahpC
+     </em>
+     (+ promoter),
+     <em>
+      oxyR, iniA, iniB, iniC, ndh
+     </em>
+   </td>
+  </tr>
+ </tbody>
+ <tbody>
+  <tr>
+   <td>
+     Rifampicin
+   </td>
+   <td>
+     <em>
+      rpoB
+     </em>
+   </td>
+   <td>
+
+     <em>
+      rpoB
+     </em>
+
+   </td>
+  </tr>
+ </tbody>
+ <tbody>
+  <tr>
+   <td>
+
+     Ethambutol
+
+   </td>
+   <td>
+
+     <em>
+      embB, embA, embC, iniA, iniB, iniC
+     </em>
+
+   </td>
+   <td>
+
+     <em>
+      embB, embA, embC, iniA, iniB, iniC
+     </em>
+
+   </td>
+  </tr>
+ </tbody>
+ <tbody>
+  <tr>
+   <td>
+
+     Pyrazinamide
+
+   </td>
+   <td>
+
+     <em>
+      pncA
+     </em>
+
+   </td>
+   <td>
+
+     <em>
+      pncA, rpsA
+     </em>
+     (+ promoter)
+
+   </td>
+  </tr>
+ </tbody>
+ <tbody>
+  <tr>
+   <td>
+
+     Streptomycin
+
+   </td>
+   <td>
+
+     <em>
+      rpsL, rrs, gid
+     </em>
+
+   </td>
+   <td>
+
+     <em>
+      rpsL, gid
+     </em>
+
+   </td>
+  </tr>
+ </tbody>
+ <tbody>
+  <tr>
+   <td>
+
+     Ethionamide
+
+   </td>
+   <td>
+
+     <em>
+      ethA, inhA
+     </em>
+      (+ promoter)
+
+   </td>
+   <td>
+
+     -
+
+   </td>
+  </tr>
+ </tbody>
+ <tbody>
+  <tr>
+   <td>
+
+     Ciprofloxacin
+
+   </td>
+   <td>
+
+     <em>
+      gyrA, gyrB
+     </em>
+
+   </td>
+   <td>
+
+     <em>
+      gyrA, gyrB
+     </em>
+
+   </td>
+  </tr>
+ </tbody>
+ <tbody>
+  <tr>
+   <td>
+
+     Ofloxacin
+
+   </td>
+   <td>
+
+     <em>
+      gyrA, gyrB
+     </em>
+
+   </td>
+   <td>
+
+     <em>
+      gyrA, gyrB
+     </em>
+
+   </td>
+  </tr>
+ </tbody>
+ <tbody>
+  <tr>
+   <td>
+
+     Levofloxacin / Moxifloxacin
+
+   </td>
+   <td>
+
+     <em>
+      gyrA, gyrB
+     </em>
+
+   </td>
+   <td>
+
+     <em>
+      gyrA, gyrB
+     </em>
+
+   </td>
+  </tr>
+ </tbody>
+ <tbody>
+  <tr>
+   <td>
+
+     Amikacin
+
+   </td>
+   <td>
+
+     <em>
+      rrs, rrl
+     </em>
+
+   </td>
+   <td>
+
+     <em>
+      rrs, rrl
+     </em>
+
+   </td>
+  </tr>
+ </tbody>
+ <tbody>
+  <tr>
+   <td>
+
+     Capreomycin
+
+   </td>
+   <td>
+
+     <em>
+      rrs, rrl, tlyA
+     </em>
+
+   </td>
+   <td>
+
+     <em>
+      rrs, rrl, tlyA
+     </em>
+
+   </td>
+  </tr>
+ </tbody>
+ <tbody>
+  <tr>
+   <td>
+
+     Kanamycin
+
+   </td>
+   <td>
+
+     <em>
+      rrs, rrl
+     </em>
+
+   </td>
+   <td>
+
+     <em>
+      rrs, rrl, eis
+     </em>
+     (+ promoter)
+
+   </td>
+  </tr>
+ </tbody>
+ <tbody>
+  <tr>
+   <td>
+
+     Para-aminosalicylic acid
+
+   </td>
+   <td>
+
+     <em>
+      thyA
+     </em>
+
+   </td>
+   <td>
+
+     -
+
+   </td>
+  </tr>
+ </tbody>
+</table>
+
+<ol>
+ <li>GenTB-RF = GenTB-Random Forest, for more details see Farhat MR <em>et al.</em>, 2016, PMID 26910495</li>
+ <li>GenTB-WDNN = GenTB-Wide and Deep Neural Network, for more details see Chen ML<em>et al</em>., PMID 31047860</li>
+</ol>
+
