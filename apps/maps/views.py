@@ -359,16 +359,27 @@ class Mutations(DataTableMixin, ListView):
         return indexes
 
     def get_queryset(self):
-        qset = super(Mutations, self).get_queryset()
-        query = self.apply_filters(self.strain_filters, Q(mutation=OuterRef('pk')))
-        strains = StrainMutation.objects.filter(query).order_by().values('mutation')
-        count_strains = strains.annotate(c=Count('*')).values('c')
-        qset = qset.annotate(strain_count=Subquery(count_strains)).filter(
-            strain_count__gt=0,
-        )
+        return super(Mutations, self).get_queryset().none()
+
+    def hard_queryset(self, data):
+        #qset = super(Mutations, self).get_queryset()
+
+        query = self.apply_filters(self.strain_filters, prefix='strain_mutations__')
+        qset = Mutation.objects.filter(query)
+        qset = qset.annotate(strain_count=Count('strain_mutations__pk'),).filter(strain_count__gt=1)
+
+        #query = self.apply_filters(self.strain_filters, Q(mutation=OuterRef('pk')))
+        #strains = StrainMutation.objects.filter(query).order_by().values('mutation')
+        #count_strains = strains.annotate(c=Count('*')).values('c')
+        #qset = qset.annotate(strain_count=Subquery(count_strains)).filter(
+        #    strain_count__gt=0,
+        #)
+        #qset = qset.annotate(strain_count=Count('strain_mutations__pk'),).filter(
+        #    strain_count__gt=0,
+        #)
         return qset
 
-    def process_datatable(self, qset, columns=(), order=(), search=None, start=0, length=-1, **_):
+    def _process_datatable(self, qset, columns=(), order=(), search=None, start=0, length=-1, **_):
         """Special handling for the strain_count order_by case"""
         st_order = list(self.get_order(columns, order, strain_count='count', prefix='mutation__'))
         if 'count' in st_order or '-count' in st_order:
@@ -380,6 +391,7 @@ class Mutations(DataTableMixin, ListView):
             # 2. If searching, then change the order, we don't want to search and order by count here.
             order = ()
 
+        raise PleaseWait("Table is disabled for maintence")
         return super().process_datatable(qset,
             columns=columns, order=order, search=search, start=start, length=length)
 
@@ -428,13 +440,23 @@ class Mutations(DataTableMixin, ListView):
         # whichever is smaller.
         return selected, ret[start:end], min(len(ret), pages)
 
-    def prep_data(self, qset, columns, **extra):
+    def _prep_data(self, qset, columns, **extra):
         if qset is None:
             return []
         if isinstance(qset, list):
             return qset
         db_columns = [self.column_to_django(col) for col in columns]
+        #if 'strain_count' in db_columns:
+        #    db_columns.remove('strain_count')
+        #    return [self.add_strain_count(item) for item in qset.values(*db_columns)]
         return list(qset.values(*db_columns))
+
+    #def add_strain_count(self, row):
+    #    """Manually count the strains in this row"""
+    #    obj = Mutation.objects.get(name=row['name'])
+    #    qset = obj.strain_mutations.filter(self.apply_filters(self.strain_filters))
+    #    row['strain_count'] = qset.count()
+    #    return row
 
     def post(self, request, *args, **kwargs):
         self.request.GET = self.request.POST

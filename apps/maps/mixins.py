@@ -182,6 +182,9 @@ class DataTableMixin(object):
     selected = None
     search_fields = []
 
+    def hard_queryset(self, data):
+        return data['object_list']
+
     def get(self, request, pk=None):
         """
         Overload the ListView's get and replace with datatable getter.
@@ -197,7 +200,7 @@ class DataTableMixin(object):
             return JsonResponse({'error': "Please use with dataTables."}, status=400)
         try:
             draw = int(dt_settings['draw'])
-            aset = data['object_list']
+            aset = self.hard_queryset(data)
             selected, qset, count = self.process_datatable(aset, **dt_settings)
             if dt_settings.get('pks', False):
                 return json_or_html(self.request, {
@@ -214,6 +217,8 @@ class DataTableMixin(object):
                 'filters': [key.replace('[]', '')\
                     for key in self.filters if self.request.GET.get(key, '')],
             })
+        except PleaseWait as err:
+            return JsonResponse({'please_wait': err.msg}, status=400)
         except Exception as err:
             if self.request.GET.get('html'):
                 raise
