@@ -1,5 +1,6 @@
+"""Local settings for gentb"""
 
-from .base import *
+from .base import * #pylint: disable=wildcard-import,unused-wildcard-import
 
 #
 # All these settings can be replaced (and should be)
@@ -20,7 +21,7 @@ DEBUG = True
 # See: http://django-debug-toolbar.readthedocs.org/en/latest/installation.html#explicit-setup
 if DEBUG:
     INSTALLED_APPS += ('debug_toolbar',)
-    MIDDLEWARE_CLASSES += ('debug_toolbar.middleware.DebugToolbarMiddleware',)
+    MIDDLEWARE += ['debug_toolbar.middleware.DebugToolbarMiddleware',]
     DEBUG_TOOLBAR_PATCH_SETTINGS = False
 ########## END DEBUG CONFIGURATION
 
