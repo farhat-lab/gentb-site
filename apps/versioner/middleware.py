@@ -19,7 +19,10 @@
 # Code imported from inkscape-web 2017-10-18 AGPLv3
 #
 
-from git import Repo
+try:
+    from git import Repo
+except (ImportError, ModuleNotFoundError):
+    Repo = None
 
 from django.conf import settings
 from .utils import BaseMiddleware, to
@@ -36,7 +39,7 @@ class VersionInformation(BaseMiddleware):
     Load any version information cached on the disk.
     """
     def process_template_response(self, request, response):
-        if not hasattr(response, 'context_data'):
+        if not hasattr(response, 'context_data') or Repo is None:
             return response
 
         self.repo = Repo(settings.SITE_ROOT)
