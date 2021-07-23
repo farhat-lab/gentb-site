@@ -361,7 +361,7 @@ class PredictStrain(Model):
             if self.dataset.delete_sources:
                 options['clean_files'].append(options['file_two'])
 
-        options['name'] = slugify(f"{self.pk}:{self.dataset.title}.{self.name}")
+        options['name'] = slugify(f"{self.pk}-{self.dataset.title}-{self.name}")
         self.piperun = self.pipeline.run(**options)
         self.save()
         return self.piperun.programs.filter(is_error=True).count() == 0
