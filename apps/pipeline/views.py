@@ -33,6 +33,7 @@ from apps.uploads.models import UploadFile
 
 from .models import Pipeline, PipelineRun, ProgramRun, Program
 
+
 class PipelineDetail(ProtectedMixin, DetailView): # pylint: disable=too-many-ancestors
     """Test the pipeline in the front end to test the connectivity"""
     model = Pipeline

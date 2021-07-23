@@ -35,10 +35,10 @@ Testing is done by including PipelineFiles as testing files.
 
 import re
 import os
-from datetime import timedelta
+import sys
 import random
-
 import logging
+from datetime import timedelta
 
 from django.db.models import (
     Model, Q, PositiveIntegerField, IntegerField, FileField, SlugField, DateTimeField,
@@ -95,7 +95,12 @@ class Pipeline(Model):
             name = self.name + '_' + str(random.randint(0, 9999))
 
         if commit:
-            (runner, created) = self.runs.get_or_create(name=slugify(name))
+            try:
+                (runner, created) = self.runs.get_or_create(name=slugify(name))
+            except PipelineRun.MultipleObjectsReturned:
+                # This happens when the name is not unique enough. This is BAD!
+                raise ValueError(f"Multiple pipeline runs with the same name! '{name}'")
+
             if not created and rerun:
                 runner.programs.filter(is_error=True).update(is_submitted=False)
         else:
