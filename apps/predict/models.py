@@ -552,7 +552,7 @@ class PredictStrain(Model):
                 self.results.create(drug=None, error=err[:254])
                 break
 
-            (drug_code, dr, fneg, fpos), *data = dat
+            (drug_code, dr, fneg, fpos, *_), *data = dat
             try:
                 drug = Drug.objects.get(code__iexact=drug_code)
             except Drug.DoesNotExist:

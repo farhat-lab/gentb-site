@@ -128,6 +128,7 @@ class GeneLocusManager(Manager):
 
     def for_mutation_name(self, name, brute=False):
         """Match a mutation name to a gene locus"""
+        raw = None
         try:
             raw = match_snp_name(name)
         except ValueError:
@@ -141,6 +142,8 @@ class GeneLocusManager(Manager):
                     for col in ('gene_symbol', 'name', 'previous_id'):
                         if getattr(gene, col) and getattr(gene, col).lower() in name:
                             return gene
+        if raw is None:
+            raise ValueError(f"Can't find  gene locus for name: '{name}'")
         return self._for_mutation(int(raw['ntpos']), name)
 
     def for_mutation(self, obj):
