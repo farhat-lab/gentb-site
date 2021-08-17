@@ -1,6 +1,6 @@
 """
 Load the social determinant of health data from the World Health Organization and the World Bank
-""""
+"""
 import csv
 import requests
 import sys
@@ -34,6 +34,7 @@ class Command(BaseCommand):
         pop_dens_url = "http://api.worldbank.org/v2/en/indicator/EN.POP.DNST?downloadformat=csv"
         wealth_url = "http://api.worldbank.org/v2/en/indicator/NW.TOW.PC?downloadformat=csv"
         gdp_url = "http://api.worldbank.org/v2/en/indicator/NY.GDP.MKTP.CD?downloadformat=csv"
+        avika_data = 'Supp Table 3 who_corrected_snp10_6.4.21.csv'
 
 
         with requests.Session() as s:
@@ -213,3 +214,163 @@ class Command(BaseCommand):
                 health.world_bank_gdp = row[year_index]
                 health.save()
                 print("Saved World Bank GDP data for {}".format(country))
+
+        # load Avika's data
+        DATA_DIR = os.path.join(settings.DATA_ROOT, 'maps')
+        avika_pwd = os.path.join(DATA_DIR, avika_data)
+        with open(avika_pwd, 'r') as avika_csv:
+            rows = csv.reader(avika_csv)
+            header = next(rows)
+            country_index = header.index("country")
+            drug_index = header.index("drug")
+            """rr_drug = {
+                    "amk" : health.amk_rr,
+                    "cap" : health.cap_rr,
+                    "cip" : health.cip_rr,
+                    "emb" : health.emb_rr,
+                    "eth" : health.eth_rr,
+                    "inh" : health.inh_rr,
+                    "kan" : health.kan_rr,
+                    "levo" : health.levo_rr,
+                    "oflx" : health.oflx_rr,
+                    "pas" : health.pas_rr,
+                    "pza" : health.pza_rr,
+                    "rif" : health.rif_rr,
+                    "str" : health.str_rr 
+             }"""
+            for row in rows:
+                try:
+                    country = Country.objects.get(name=row[country_index])
+                    health = country.health
+                except CountryHealth.DoesNotExist:
+                    health = CountryHealth(country=country)
+                except Country.DoesNotExist:
+                    print("Can't find country {}".format(row[country_index]))
+                    continue
+
+                if (row[drug_index] == "amk") : 
+                    health.amk_resistant = row[header.index("gentb_snp10_res")]
+                    health.amk_rr = row[header.index("gentb_snp10_res_rr")]
+                    health.amk_rs = row[header.index("gentb_snp10_res_rs")]
+                    health.amk_mean_rr = row[header.index("mean_snp10_rr")]
+                #rr = row[header.index("p_a_r")]
+                    health.amk_mean_rs = row[header.index("mean_snp10_rs")]
+
+                if (row[drug_index] == "cap") :
+                    health.cap_resistant = row[header.index("gentb_snp10_res")]
+                    health.cap_rr = row[header.index("gentb_snp10_res_rr")]
+                    health.cap_rs = row[header.index("gentb_snp10_res_rs")]
+                    health.cap_mean_rr = row[header.index("mean_snp10_rr")]
+                #rr = row[header.index("p_a_r")]
+                    health.cap_mean_rs = row[header.index("mean_snp10_rs")]
+
+                if (row[drug_index] == "cip") :
+                    health.cip_resistant = row[header.index("gentb_snp10_res")]
+                    health.cip_rr = row[header.index("gentb_snp10_res_rr")]
+                    health.cip_rs = row[header.index("gentb_snp10_res_rs")]
+                    health.cip_mean_rr = row[header.index("mean_snp10_rr")]
+                #rr = row[header.index("p_a_r")]
+                    health.cip_mean_rs = row[header.index("mean_snp10_rs")]
+
+                if (row[drug_index] == "emb") :
+                    health.emb_resistant = row[header.index("gentb_snp10_res")]
+                    health.emb_rr = row[header.index("gentb_snp10_res_rr")]
+                    health.emb_rs = row[header.index("gentb_snp10_res_rs")]
+                    health.emb_mean_rr = row[header.index("mean_snp10_rr")]
+                #rr = row[header.index("p_a_r")]
+                    health.emb_mean_rs = row[header.index("mean_snp10_rs")]
+
+                if (row[drug_index] == "eth") :
+                    health.eth_resistant = row[header.index("gentb_snp10_res")]
+                    health.eth_rr = row[header.index("gentb_snp10_res_rr")]
+                    health.eth_rs = row[header.index("gentb_snp10_res_rs")]
+                    health.eth_mean_rr = row[header.index("mean_snp10_rr")]
+                #rr = row[header.index("p_a_r")]
+                    health.eth_mean_rs = row[header.index("mean_snp10_rs")]
+
+                if (row[drug_index] == "inh") :
+                    health.inh_resistant = row[header.index("gentb_snp10_res")]
+                    health.inh_rr = row[header.index("gentb_snp10_res_rr")]
+                    health.inh_rs = row[header.index("gentb_snp10_res_rs")]
+                    health.inh_mean_rr = row[header.index("mean_snp10_rr")]
+                #rr = row[header.index("p_a_r")]
+                    health.inh_mean_rs = row[header.index("mean_snp10_rs")]
+
+                if (row[drug_index] == "kan") :
+                    health.kan_resistant = row[header.index("gentb_snp10_res")]
+                    health.kan_rr = row[header.index("gentb_snp10_res_rr")]
+                    health.kan_rs = row[header.index("gentb_snp10_res_rs")]
+                    health.kan_mean_rr = row[header.index("mean_snp10_rr")]
+                #rr = row[header.index("p_a_r")]
+                    health.kan_mean_rs = row[header.index("mean_snp10_rs")]
+
+                if (row[drug_index] == "levo") :
+                    health.levo_resistant = row[header.index("gentb_snp10_res")]
+                    health.levo_rr = row[header.index("gentb_snp10_res_rr")]
+                    health.levo_rs = row[header.index("gentb_snp10_res_rs")]
+                    health.levo_mean_rr = row[header.index("mean_snp10_rr")]
+                #rr = row[header.index("p_a_r")]
+                    health.levo_mean_rs = row[header.index("mean_snp10_rs")]
+
+                if (row[drug_index] == "oflx") :
+                    health.oflx_resistant = row[header.index("gentb_snp10_res")]
+                    health.oflx_rr = row[header.index("gentb_snp10_res_rr")]
+                    health.oflx_rs = row[header.index("gentb_snp10_res_rs")]
+                    health.oflx_mean_rr = row[header.index("mean_snp10_rr")]
+                #rr = row[header.index("p_a_r")]
+                    health.oflx_mean_rs = row[header.index("mean_snp10_rs")]
+
+                if (row[drug_index] == "pas") :
+                    health.pas_resistant = row[header.index("gentb_snp10_res")]
+                    health.pas_rr = row[header.index("gentb_snp10_res_rr")]
+                    health.pas_rs = row[header.index("gentb_snp10_res_rs")]
+                    health.pas_mean_rr = row[header.index("mean_snp10_rr")]
+                #rr = row[header.index("p_a_r")]
+                    health.pas_mean_rs = row[header.index("mean_snp10_rs")]
+
+                if (row[drug_index] == "pza") :
+                    health.pza_resistant = row[header.index("gentb_snp10_res")]
+                    health.pza_rr = row[header.index("gentb_snp10_res_rr")]
+                    health.pza_rs = row[header.index("gentb_snp10_res_rs")]
+                    health.pza_mean_rr = row[header.index("mean_snp10_rr")]
+                #rr = row[header.index("p_a_r")]
+                    health.pza_mean_rs = row[header.index("mean_snp10_rs")]
+
+                if (row[drug_index] == "rif") :
+                    health.rif_resistant = row[header.index("gentb_snp10_res")]
+                    health.rif_rr = row[header.index("gentb_snp10_res_rr")]
+                    health.rif_rs = row[header.index("gentb_snp10_res_rs")]
+                    health.rif_mean_rr = row[header.index("mean_snp10_rr")]
+                #rr = row[header.index("p_a_r")]
+                    health.rif_mean_rs = row[header.index("mean_snp10_rs")]
+
+                if (row[drug_index] == "str") : 
+                    health.str_resistant = row[header.index("gentb_snp10_res")]
+                    health.str_rr = row[header.index("gentb_snp10_res_rr")]
+                    health.str_rs = row[header.index("gentb_snp10_res_rs")]
+                    health.str_mean_rr = row[header.index("mean_snp10_rr")]
+                #rr = row[header.index("p_a_r")]
+                    health.str_mean_rs = row[header.index("mean_snp10_rs")]
+                """
+                drugObj = lookup.get(row[drug_index],None)
+                print(row[drug_index])
+                print(drugObj)
+                drugObj.name = row[drug_index]
+                drugObj.resistant = row[header.index("gentb_snp10_res")]
+                drugObj.rr = row[header.index("gentb_snp10_res_rr")]
+                drugObj.rs = row[header.index("gentb_snp10_res_rs")]
+                drugObj.mean_rr = row[header.index("mean_snp10_rr")]
+                drugObj.rr = row[header.index("p_a_r")]
+                drugObj.mean_rs = row[header.index("mean_snp10_rs")]
+                """
+                #health.percent_resistance = row[header.index('p_a_r')]
+                #health.confidence_interval = row[header.index('var_a_r')]
+                health.sample_size = row[header.index('gentb_snp10_n')]
+                health.resistant_isolates = row[header.index("gentb_snp10_n_rr")]
+                health.suseptable_isolates = row[header.index("gentb_snp10_n_rs")]
+                #print(row[header.index('gentb_snp10_n')])
+             # health.isonized_resistance = row[header.index('mean_snp10_rs')]
+                health.save()
+                print("Saved Avika Data for {}".format(country))
+                print("drug {}".format(row[drug_index]))
+

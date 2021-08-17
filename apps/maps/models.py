@@ -92,6 +92,25 @@ class Country(Model):
     def __str__(self):
         return self.name
 
+class druginfo(Model):
+    #def __init__(Name):
+       # name = Name
+        
+    """can keep track of each drug info from Avika's data in each country"""
+    country = OneToOneField(Country, related_name='drug', on_delete=CASCADE)
+    name = CharField(null=True, blank=True,max_length=36)
+    resistant = CharField(null=True, blank=True,max_length=36,\
+        help_text="Number of isolates resistant to {}".format(name))
+    rr = CharField(null=True, blank=True,max_length=36,\
+        help_text="of the rif resistant isolates, isolates also resistant to {}".format(name))
+    rs = CharField(null=True, blank=True,max_length=36,\
+        help_text="Of the rif suseptable isolates, isolates resistant to {}".format(name))
+    mean_resistance = CharField(null=True, blank=True,max_length=36,\
+         help_text="Mean resistance to {}".format(name))
+    mean_rs = CharField(null=True, blank=True,max_length=36,\
+        help_text="Mean rif suseptibility to {}".format(name))
+
+
 class CountryHealth(Model):
     """Extra WHO data about a country"""
     country = OneToOneField(Country, related_name='health', on_delete=CASCADE)
@@ -109,8 +128,164 @@ class CountryHealth(Model):
         help_text="Estimated % Drug Resistance for the country")
     world_bank_gdp = CharField(null=True, blank=True, max_length=36,\
         help_text="GDP (current US$)")
-    total_wealth = CharField(null=True, blank=True, max_length=36,\
-        help_text="Total wealth per capita (constant 2014 US$)")
+    #total_wealth = CharField(null=True, blank=True, max_length=36,\
+    #    help_text="Total wealth per capita (constant 2014 US$)")
+    #percent_resistance = CharField(null=True, blank=True,max_length=36,\
+    #    help_text="The percent of isolates resistant to isonized variants")
+    #confidence_interval = CharField(null=True, blank=True,max_length=36,\
+    #    help_text="The confidence interval in which the percent resistance is calculated")
+    sample_size = CharField(null=True, blank=True,max_length=36,\
+        help_text="the number of samples from each country")
+    resistant_isolates = CharField(null=True, blank=True,max_length=36,\
+        help_text="Number of isolates resistant to rif")
+    suseptable_isolates = CharField(null=True, blank=True,max_length=36,\
+        help_text="Number of isolates suseptable to rif")
+    ### AMK data
+    amk_resistant = CharField(null=True, blank=True,max_length=36,\
+        help_text="Number of isolates resistant to amk")
+    amk_rr = CharField(null=True, blank=True,max_length=36,\
+        help_text="of the rif resistant isolates, isolates also resistant to amk")
+    amk_rs = CharField(null=True, blank=True,max_length=36,\
+        help_text="Of the rif suseptable isolates, isolates resistant to amk")
+    amk_mean_rr = CharField(null=True, blank=True,max_length=36,\
+         help_text="Mean resistance to amk")
+    amk_mean_rs = CharField(null=True, blank=True,max_length=36,\
+        help_text="Mean rif suseptibility to amk")
+    #RIF data
+    rif_resistant = CharField(null=True, blank=True,max_length=36,\
+        help_text="Number of isolates resistant to rif")
+    rif_rr = CharField(null=True, blank=True,max_length=36,\
+        help_text="of the rif resistant isolates, isolates also resistant to rif")
+    rif_rs = CharField(null=True, blank=True,max_length=36,\
+        help_text="Of the rif suseptable isolates, isolates resistant to rif")
+    rif_mean_rr = CharField(null=True, blank=True,max_length=36,\
+         help_text="Mean resistance to rif")
+    rif_mean_rs = CharField(null=True, blank=True,max_length=36,\
+        help_text="Mean rif suseptibility to rif")
+    #CAP data
+    cap_resistant = CharField(null=True, blank=True,max_length=36,\
+        help_text="Number of isolates resistant to cap")
+    cap_rr = CharField(null=True, blank=True,max_length=36,\
+        help_text="of the rif resistant isolates, isolates also resistant to cap")
+    cap_rs = CharField(null=True, blank=True,max_length=36,\
+        help_text="Of the rif suseptable isolates, isolates resistant to cap")
+    cap_mean_rr = CharField(null=True, blank=True,max_length=36,\
+         help_text="Mean resistance to cap")
+    cap_mean_rs = CharField(null=True, blank=True,max_length=36,\
+        help_text="Mean rif suseptibility to cap")
+    #CIP data
+    cip_resistant = CharField(null=True, blank=True,max_length=36,\
+        help_text="Number of isolates resistant to cip")
+    cip_rr = CharField(null=True, blank=True,max_length=36,\
+        help_text="of the rif resistant isolates, isolates also resistant to cip")
+    cip_rs = CharField(null=True, blank=True,max_length=36,\
+        help_text="Of the rif suseptable isolates, isolates resistant to cip")
+    cip_mean_rr = CharField(null=True, blank=True,max_length=36,\
+         help_text="Mean resistance to cip")
+    cip_mean_rs = CharField(null=True, blank=True,max_length=36,\
+        help_text="Mean rif suseptibility to cip")
+    #EMB data
+    emb_resistant = CharField(null=True, blank=True,max_length=36,\
+        help_text="Number of isolates resistant to emb")
+    emb_rr = CharField(null=True, blank=True,max_length=36,\
+        help_text="of the rif resistant isolates, isolates also resistant to emb")
+    emb_rs = CharField(null=True, blank=True,max_length=36,\
+        help_text="Of the rif suseptable isolates, isolates resistant to emb")
+    emb_mean_rr = CharField(null=True, blank=True,max_length=36,\
+         help_text="Mean resistance to emb")
+    emb_mean_rs = CharField(null=True, blank=True,max_length=36,\
+        help_text="Mean rif suseptibility to emb")
+    #ETH data
+    eth_resistant = CharField(null=True, blank=True,max_length=36,\
+        help_text="Number of isolates resistant to eth")
+    eth_rr = CharField(null=True, blank=True,max_length=36,\
+        help_text="of the rif resistant isolates, isolates also resistant to eth")
+    eth_rs = CharField(null=True, blank=True,max_length=36,\
+        help_text="Of the rif suseptable isolates, isolates resistant to eth")
+    eth_mean_rr = CharField(null=True, blank=True,max_length=36,\
+         help_text="Mean resistance to eth")
+    eth_mean_rs = CharField(null=True, blank=True,max_length=36,\
+        help_text="Mean rif suseptibility to eth")
+    #INH data
+    inh_resistant = CharField(null=True, blank=True,max_length=36,\
+        help_text="Number of isolates resistant to inh")
+    inh_rr = CharField(null=True, blank=True,max_length=36,\
+        help_text="of the rif resistant isolates, isolates also resistant to inh")
+    inh_rs = CharField(null=True, blank=True,max_length=36,\
+        help_text="Of the rif suseptable isolates, isolates resistant to inh")
+    inh_mean_rr = CharField(null=True, blank=True,max_length=36,\
+         help_text="Mean resistance to inh")
+    inh_mean_rs = CharField(null=True, blank=True,max_length=36,\
+        help_text="Mean rif suseptibility to inh")
+    #KAN data
+    kan_resistant = CharField(null=True, blank=True,max_length=36,\
+        help_text="Number of isolates resistant to kan")
+    kan_rr = CharField(null=True, blank=True,max_length=36,\
+        help_text="of the rif resistant isolates, isolates also resistant to kan")
+    kan_rs = CharField(null=True, blank=True,max_length=36,\
+        help_text="Of the rif suseptable isolates, isolates resistant to kan")
+    kan_mean_rr = CharField(null=True, blank=True,max_length=36,\
+         help_text="Mean resistance to kan")
+    kan_mean_rs = CharField(null=True, blank=True,max_length=36,\
+        help_text="Mean rif suseptibility to kan")
+    #LEVO data
+    levo_resistant = CharField(null=True, blank=True,max_length=36,\
+        help_text="Number of isolates resistant to levo")
+    levo_rr = CharField(null=True, blank=True,max_length=36,\
+        help_text="of the rif resistant isolates, isolates also resistant to levo")
+    levo_rs = CharField(null=True, blank=True,max_length=36,\
+        help_text="Of the rif suseptable isolates, isolates resistant to levo")
+    levo_mean_rr = CharField(null=True, blank=True,max_length=36,\
+         help_text="Mean resistance to levo")
+    levo_mean_rs = CharField(null=True, blank=True,max_length=36,\
+        help_text="Mean rif suseptibility to levo")
+    #OFLX data
+    oflx_resistant = CharField(null=True, blank=True,max_length=36,\
+        help_text="Number of isolates resistant to oflx")
+    oflx_rr = CharField(null=True, blank=True,max_length=36,\
+        help_text="of the rif resistant isolates, isolates also resistant to oflx")
+    oflx_rs = CharField(null=True, blank=True,max_length=36,\
+        help_text="Of the rif suseptable isolates, isolates resistant to oflx")
+    oflx_mean_rr = CharField(null=True, blank=True,max_length=36,\
+         help_text="Mean resistance to oflx")
+    oflx_mean_rs = CharField(null=True, blank=True,max_length=36,\
+        help_text="Mean rif suseptibility to oflx")
+    #PAS data
+    pas_resistant = CharField(null=True, blank=True,max_length=36,\
+        help_text="Number of isolates resistant to pas")
+    pas_rr = CharField(null=True, blank=True,max_length=36,\
+        help_text="of the rif resistant isolates, isolates also resistant to pas")
+    pas_rs = CharField(null=True, blank=True,max_length=36,\
+        help_text="Of the rif suseptable isolates, isolates resistant to pas")
+    pas_mean_rr = CharField(null=True, blank=True,max_length=36,\
+         help_text="Mean resistance to pas")
+    pas_mean_rs = CharField(null=True, blank=True,max_length=36,\
+        help_text="Mean rif suseptibility to pas")
+    #PZA data
+    pza_resistant = CharField(null=True, blank=True,max_length=36,\
+        help_text="Number of isolates resistant to pza")
+    pza_rr = CharField(null=True, blank=True,max_length=36,\
+        help_text="of the rif resistant isolates, isolates also resistant to pza")
+    pza_rs = CharField(null=True, blank=True,max_length=36,\
+        help_text="Of the rif suseptable isolates, isolates resistant to pza")
+    pza_mean_rr = CharField(null=True, blank=True,max_length=36,\
+         help_text="Mean resistance to pza")
+    pza_mean_rs = CharField(null=True, blank=True,max_length=36,\
+        help_text="Mean rif suseptibility to pza")
+    #STR data
+    str_resistant = CharField(null=True, blank=True,max_length=36,\
+        help_text="Number of isolates resistant to str")
+    str_rr = CharField(null=True, blank=True,max_length=36,\
+        help_text="of the rif resistant isolates, isolates also resistant to str")
+    str_rs = CharField(null=True, blank=True,max_length=36,\
+        help_text="Of the rif suseptable isolates, isolates resistant to str")
+    str_mean_rr = CharField(null=True, blank=True,max_length=36,\
+         help_text="Mean resistance to str")
+    str_mean_rs = CharField(null=True, blank=True,max_length=36,\
+        help_text="Mean rif suseptibility to str")
+
+
+    
 
     def __str__(self):
         return "WHO TB Data for {}".format(self.country)
@@ -149,7 +324,6 @@ class CountryDetail(Model):
 
     def __str__(self):
         return self.name_short or self.name_abbr or self.country_id
-
 
 class PlaceManager(GeoManager):
     def get_by_natural_key(self, name, country):

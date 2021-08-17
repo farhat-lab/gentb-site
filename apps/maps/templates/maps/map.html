@@ -18,7 +18,7 @@
   <script src="{% static "js/leaflet.js" %}"></script>
   <script src="{% static "js/genetics-map.js" %}"></script>
   <script src="{% static "js/drugs-chart.js" %}"></script>
-  <script src="{% static "js/lineage-chart.js" %}"></script>
+  <!-- <script src="{% static "js/lineage-chart.js" %}"></script>-->
   <script src="{% static "js/gene-chart.js" %}"></script>
   <script src="{% static "js/mutations-chart.js" %}"></script>
   <script src="{% static "js/vertical-tabs.js" %}"></script>
@@ -59,7 +59,7 @@
                 <a href="#" class="list-group-item text-center filter-mutation" id="mutation-store" data-json-url="{% url 'maps:map.mutations' %}">
                   <h2 class="icon-mutation"></h2>
                   <p>Mutation</p>
-                </a>
+		</a>
               </div>
             </div>
             <div class="col-lg-11 col-md-9 col-sm-9 col-xs-9 vertical-tab max-width">
@@ -100,39 +100,59 @@
                   </div>
                   <h4 style="margin-left: 20px;"> Color by: </h4>
                   <div class="form-check-inline" style="margin-left:20px">
-                    <input class="form-check-input" type="radio" name="colorBy" id="colorByOption1" value="feature.properties.values.Total" checked>
+                    <input class="form-check-input" type="radio" name="colorBy" id="colorByOption1" value="feature.properties.inh_rr" checked>
                     <label class="form-check-label" for="colorBy1">
-                      Total isolates
+                      inh
                     </label>
-                    <input class="form-check-input" type="radio" name="colorBy" id="colorByOption7" value="feature.properties.values.MDR">
-                    <label class="form-check-label" for="colorBy7">
-                      MDR Isolates
-                    </label>
-                    <input class="form-check-input" type="radio" name="colorBy" id="colorByOption8" value="feature.properties.who_est_mdr">
-                    <label class="form-check-label" for="colorBy8">
-                     WHO Estimated MDR (% of new cases)
-                    </label>
-                    <input class="form-check-input" type="radio" name="colorBy" id="colorByOption6" value="feature.properties.all_tb_incidence2018">
-                    <label class="form-check-label" for="colorBy6">
-                      TB Incidence (all types)
-                    </label>
-                    <br>
-                    <input class="form-check-input" type="radio" name="colorBy" id="colorByOption5" value="feature.properties.pop_dens">
-                    <label class="form-check-label" for="colorBy5">
-                     Population Density
-                    </label>
-                    <input class="form-check-input" type="radio" name="colorBy" id="colorByOption4" value="feature.properties.total_funding">
-                    <label class="form-check-label" for="colorBy4">
-                     TB Funding
-                    </label>
-                    <input class="form-check-input" type="radio" name="colorBy" id="colorByOption2" value="feature.properties.world_bank_gdp">
+                    <input class="form-check-input" type="radio" name="colorBy" id="colorByOption2" value="feature.properties.rif_rr">
                     <label class="form-check-label" for="colorBy2">
-                        GDP
+                      rif
                     </label>
-                    <input class="form-check-input" type="radio" name="colorBy" id="colorByOption3" value="feature.properties.total_wealth">
+                    <input class="form-check-input" type="radio" name="colorBy" id="colorByOption3" value="feature.properties.pza_rr">
                     <label class="form-check-label" for="colorBy3">
-                     Total Wealth per Capita
+                     pza
                     </label>
+                    <input class="form-check-input" type="radio" name="colorBy" id="colorByOption4" value="feature.properties.emb_rr">
+                    <label class="form-check-label" for="colorBy4">
+                      emb
+                    </label>
+                    <input class="form-check-input" type="radio" name="colorBy" id="colorByOption5" value="feature.properties.str_rr">
+                    <label class="form-check-label" for="colorBy5">
+                     str
+                    </label>
+                    <input class="form-check-input" type="radio" name="colorBy" id="colorByOption6" value="feature.properties.eth_rr">
+                    <label class="form-check-label" for="colorBy6">
+                     eth
+		    </label>
+		    <br>
+                    <input class="form-check-input" type="radio" name="colorBy" id="colorByOption7" value="feature.properties.kan_rr">
+                    <label class="form-check-label" for="colorBy7">
+                     kan
+                    </label>
+                    <input class="form-check-input" type="radio" name="colorBy" id="colorByOption8" value="feature.properties.cap_rr">
+                    <label class="form-check-label" for="colorBy8">
+                     cap
+                    </label>
+                    <input class="form-check-input" type="radio" name="colorBy" id="colorByOption9" value="feature.properties.amk_rr">
+                    <label class="form-check-label" for="colorBy9">
+                     amk
+		    </label>
+                    <input class="form-check-input" type="radio" name="colorBy" id="colorByOption10" value="feature.properties.cip_rr">
+                    <label class="form-check-label" for="colorBy10">
+                     cip
+                    </label>
+		    <input class="form-check-input" type="radio" name="colorBy" id="colorByOption11" value="feature.properties.levo_rr">
+                    <label class="form-check-label" for="colorBy11">
+                     levo
+                    </label>
+                    <input class="form-check-input" type="radio" name="colorBy" id="colorByOption12" value="feature.properties.oflx_rr">
+                    <label class="form-check-label" for="colorBy12">
+                     oflx
+		    </label>
+                    <input class="form-check-input" type="radio" name="colorBy" id="colorByOption13" value="feature.properties.pas_rr">
+                    <label class="form-check-label" for="colorBy13">
+                     pas
+		    </label> 
                     <br/>
                   </div>
                 <div class="maps" id="mapid"></div>
@@ -149,7 +169,7 @@
                     <svg class="drugs" id="drugs"></svg>
                   </div>
                 </div>
-                <div class="vertical-tab-content">
+               <div class="vertical-tab-content">
                   <div class="alert alert-info" style="margin: 0px;" role="alert">
                     <span class="glyphicon glyphicon-question-sign pull-left" style="font-size:1.2em; padding-right: 8px;"></span>
                     Hover over any arc to view the number of strains in each lineage group. Clicking an arc narrows down the plotted data, and clicking the inner circle zooms out to the default view.  Selecting a lineage arc or the inner circle will filter the world map and drug chart by the selected lineage(s). Click the "Clear filtering" button to deselect all lineages.
@@ -178,12 +198,12 @@
                   <div id="mutation_map" style="padding: 15px;">
                     <table class="table table-striped dt">
                     </table>
-                  </div>
+		 </div>
 
                   <div class="mutation_graph" style="margin-top: 15px;">
                     <svg class="mutations" id="mutations" data-json-url="{% url 'maps:map.mutation' %}" style="display: none;"></svg>
                   </div>
-                </div>
+		</div>
             </div>
         </div>
   </div>
