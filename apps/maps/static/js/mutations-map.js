@@ -233,7 +233,7 @@ function mapStrainData(map, data, newLegend, maxGDP, maxTotal, maxWealth, color_
     ret.append($('<h6 style = "font-weight:bold"= >' + 'World Health Organization and World Bank Related Social Determinants of Health Data:' + '</h6>'));
     ret.append($("<hr/><div style = 'color:#505050'> Population Density (people per sq. km of land area): <span>" + (Math.round(feature.properties.pop_dens*10)/10) + "</span></div>"));
     ret.append($("<hr/><div style = 'color:#505050'> Estimated average household size: <span>" + (Math.round(feature.properties.household*10)/10) + "</span></div>"));
-    if(feature.properties.total_funding.length != 0) {
+    if(feature.properties.total_funding && feature.properties.total_funding.length != 0) {
     ret.append($("<hr/><div style = 'color:#505050'> Total TB Funding (billions): $<span>" + (Math.round(feature.properties.total_funding/10000000)*10000000)/1000000000 + "</span></div>"));
     }
     else {
