@@ -20,10 +20,13 @@
 
 //Uses jquery selectors to select all the tabs (created in the beginning of map.html)
 var all_tabs = 'div.vertical-tab-menu > div.list-group > a';
+var tabs_id = 'default';
 
 $(document).ready(function() {
   //Setup the ajax agent that we will use to get data from the server
   $.ajaxSetup({ cache: false });
+
+  tabs_id = $("div.vertical-tab-menu")[0].id;
 
   // Right click resets the tab data
   $(all_tabs).mousedown(function(e) {
@@ -109,12 +112,12 @@ $(document).ready(function() {
           console.error("Couldn't find url handler: ", tab.attr('id'));
       }
     }
-    var last_tab = localStorage.setItem("last_tab", tab.attr('id'));
+    var last_tab = localStorage.setItem(tabs_id + ".last_tab", tab.attr('id'));
   });
   // Okay now that all the data stuff has been dealt with we just move on now
   //   and actually move on the new tab that was just clicked.
 
-  var last_tab = localStorage.getItem("last_tab");
+  var last_tab = localStorage.getItem(tabs_id + ".last_tab");
   if (last_tab) {
       $('#' + last_tab).addClass("active");
   } else {
@@ -214,6 +217,9 @@ function getTabStore(key) {
     store.data('values', []);
     store.data('map', []);
   }
+  if (!store.length) {
+    console.error("Can not find tab", key, '#'+key+'-store');
+  }
   return store;
 }
 
@@ -271,11 +277,11 @@ function freezeData() {
         'column': store.data('column'),
     }
   });
-  localStorage.setItem("all_tab_data", JSON.stringify(data));
+  localStorage.setItem(tabs_id + ".all_tab_data", JSON.stringify(data));
 }
 
 function liquidateData() {
-  var data = localStorage.getItem("all_tab_data");
+  var data = localStorage.getItem(tabs_id + ".all_tab_data");
   if(data) {
     data = JSON.parse(data);
     for(key in data) {

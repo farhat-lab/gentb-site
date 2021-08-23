@@ -65,7 +65,7 @@ def get_world_bank_gdp(self, **_):
 class MapPage(TemplateView):
     """The html map page everything is provided by javascript"""
     title = "Mutations Map"
-    template_name = 'maps/map.html'
+    template_name = 'maps/map_mutations.html'
 
 
 class Sources(JsonView, DataSlicerMixin):

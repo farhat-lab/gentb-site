@@ -125,3 +125,10 @@ text.lineage_text {
 g.selected-drug {
   fill: red;
 }
+
+div.maps-hover h4 {
+  font-weight: bold;
+}
+div.maps-hover div {
+  color: #000080;
+}

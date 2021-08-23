@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block extra_css %}
+  <link rel="stylesheet" href="{% static "css/nv.d3.css" %}"/>
+  <link rel="stylesheet" href="{% static "css/leaflet.css" %}"/>
+  <link rel="stylesheet" href="{% static "css/genetics-map.css" %}"/>
+  <link rel="stylesheet" href="{% static "css/vertical-tabs.css" %}"/>
+{% endblock %}
+{% block extra_js %}
+  <script src="{% static "js/d3.js" %}"></script>
+  <script src="{% static "js/nv.d3.js" %}"></script>
+
+  <script src="{% static "js/leaflet.js" %}"></script>
+  <script src="{% static "js/antibiograms-map.js" %}"></script>
+  <script src="{% static "js/antibiograms-drugs.js" %}"></script>
+  <script src="{% static "js/vertical-tabs.js" %}"></script>
+{% endblock %}
+
+
+{% block content %}
+    <div class="container">
+        <h2 class="page-header">{{ title }} <small>Marginal Resistance...</small>
+      </h2>
+
+      <div class="row">
+        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 vertical-tab-container">
+            <div class="col-lg-1 col-md-3 col-sm-3 col-xs-3 vertical-tab-menu" id="antibiograms">
+              <!--Okay so this is the tabs that you see on the right of the menu that you actually click on-->
+              <div class="list-group" id="data-store">
+                <!--See how this class is active, thats cause thats currently the tab you are looking at-->
+                <a href="#" class="list-group-item text-center defaultactive filter-map" id="map-store" data-json-url="{% url 'maps:data.marginalplaces' %}">
+                  <h2 class="glyphicon glyphicon-globe"></h2>
+                  <p>World</p>
+                </a>
+                <a href="#" class="list-group-item text-center filter-drug" id="drug-store" data-json-url="{% url 'maps:data.marginaldrugs' %}">
+                  <h2 class="icon-flask"></h2>
+                  <p>Drug</p>
+                </a>
+              </div>
+            </div>
+            <div class="col-lg-11 col-md-9 col-sm-9 col-xs-9 vertical-tab max-width">
+              <!--Okay so this is that blue thing at the top-->
+                <div class="vertical-tab-content defaultactive">
+                  <div class="maps" id="mapid"></div>
+                </div>
+                <div class="vertical-tab-content">
+                  <div class="d3graph">
+                    <!--This is where that cool graphic goes look at hte drug-chart.js to see how the javascript creates the bar chart-->
+                    <svg class="drugs" id="drugs"></svg>
+                  </div>
+                </div>
+            </div>
+        </div>
+  </div>
+</div>
+
+{% endblock %}

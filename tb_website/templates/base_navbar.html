@@ -4,8 +4,16 @@
     <li{% if data_page %} class="active"{% endif %}>
         <a href="{% url 'data' %}">Data</a>
     </li>
-    <li{% if map_page %} class="active"{% endif %}>
-        <a href="{% url 'maps:map' %}">Map</a>
+    <li class="dropdown">
+      <a href="#" class="dropdown-toggle{% if map_page or map_two_page %} active{% endif %}" data-toggle="dropdown">Maps <span class="caret"></span></a>
+      <ul class="dropdown-menu" role="menu">
+        <li{% if map_page %} class="active"{% endif %}>
+          <a href="{% url 'maps:map.mutations' %}">Mutations Map</a>
+        </li>
+        <li{% if map_two_page %} class="active"{% endif %}>
+          <a href="{% url 'maps:map.antibiogram' %}">Antibiogram Map</a>
+        </li>
+      </ul>
     </li>
     <li{% if about_page %} class="active"{% endif %}>
         <a href="{% url 'about' %}">About</a>

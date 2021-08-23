@@ -114,6 +114,10 @@ class DataSlicerMixin(object):
     def get_filters(self, without=None):
         """Gets the filter applied to the queryset for this slice."""
         for (key, filtrs) in self.filters.items():
+            # Fixed filter
+            if isinstance(filtrs, list):
+                yield Q(**{key + '__in': filtrs})
+                continue
             if key not in self.request.GET and key not in self.required:
                 continue
             yield reduce(or_, self.get_filter_or(key, filtrs, without), Q())

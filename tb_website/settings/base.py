@@ -176,6 +176,7 @@ LOCAL_APPS = (
     'apps.uploads',
     'apps.mutations',
     'apps.maps',
+    'apps.maptables',
 )
 
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps

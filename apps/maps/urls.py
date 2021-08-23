@@ -20,18 +20,31 @@ Maps urls
 """
 
 from django.urls import path
+from django.views.generic.base import RedirectView
 
 from .views import MapPage, Places, DrugList, Lineages, \
     MutationView, LocusList, Mutations, Sources
 
+from .views_antibiograms import AntibiogramMap, MarginalPlaces, MarginalDrugs
+
 app_name = 'maps'
 urlpatterns = [
-    path('', MapPage.as_view(), name="map"),
-    path('data/sources/', Sources.as_view(), name="map.sources"),
-    path('data/places/', Places.as_view(), name="map.places"),
-    path('data/drugs/', DrugList.as_view(), name="map.drugs"),
-    path('data/lineages/', Lineages.as_view(), name="map.lineages"),
-    path('data/locuses/', LocusList.as_view(), name="map.locuses"),
-    path('data/mutations/', Mutations.as_view(), name="map.mutations"),
-    path('data/mutation/', MutationView.as_view(), name="map.mutation"),
+    # Default map, used for quick url access
+    path('', RedirectView.as_view(pattern_name='map.mutations'), name='map'),
+
+    # Original mutations map
+    path('mutations/', MapPage.as_view(), name="map.mutations"),
+    path('data/sources/', Sources.as_view(), name="data.sources"),
+    path('data/places/', Places.as_view(), name="data.places"),
+    path('data/drugs/', DrugList.as_view(), name="data.drugs"),
+    path('data/lineages/', Lineages.as_view(), name="data.lineages"),
+    path('data/locuses/', LocusList.as_view(), name="data.locuses"),
+    path('data/mutations/', Mutations.as_view(), name="data.mutations"),
+    path('data/mutation/', MutationView.as_view(), name="data.mutation"),
+
+    # New autobiograms map
+    path('antibiogram/', AntibiogramMap.as_view(), name="map.antibiogram"),
+    path('data/antibiograms/places/', MarginalPlaces.as_view(), name="data.marginalplaces"),
+    path('data/antibiograms/drugs/', MarginalDrugs.as_view(), name="data.marginaldrugs"),
+
 ]

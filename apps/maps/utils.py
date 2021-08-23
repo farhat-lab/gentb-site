@@ -24,8 +24,10 @@ COUNTRY_MAP = {
     'unknown': None,
     'UK': 'United Kingdom',
     'United Kingdom of Great Britain and Northern Ireland': 'United Kingdom',
+    'United States of America': 'United States',
     'South Afica': 'South Africa',
     'Ivory Coast': 'CIV',
+    "Côte d'Ivoire": 'CIV',
     'Netherland': 'Netherlands',
     'Camerun': 'Cameroon',
     'Trinidad & Tobago': 'Trinidad and Tobago',
@@ -40,6 +42,7 @@ COUNTRY_MAP = {
     'Myanmar': 'Burma',
     'Netherlands Antilles': 'Sint Maarten',
     'Guinea-Conakry': 'Guinea',
+    'Czechia': 'Czech Republic',
     'China /Tibet': 'Tibet',
     'Carribean': 'Aruba',
     'Russian Federation': 'Russia',
@@ -47,6 +50,9 @@ COUNTRY_MAP = {
     'Comoro Islands': 'Comoros',
     'South Korea N': 'Korea, Republic of',
     'Korea': 'Korea, Republic of',
+    'Republic of Korea': 'Korea, Republic of',
+    'Eswatini': 'Swaziland',
+    'China, Hong Kong SAR': 'Hong Kong',
 }
 
 CITY_MAP = {

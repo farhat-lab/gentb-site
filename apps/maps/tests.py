@@ -146,7 +146,7 @@ class SourcesData(BaseCase):
     """Test sources data output (tab)."""
     def test_general_output(self):
         """Test output contains sources and papers only."""
-        val = self.assertJson('maps:map.sources', field='values')
+        val = self.assertJson('maps:data.sources', field='values')
         uni = Counter(["{kind}-{name}".format(**row) for row in val])
         self.assertEqual(len(uni), len(val), f"Sources aren't unique: {uni}")
 
@@ -164,7 +164,7 @@ class PlacesData(BaseCase):
 
     def test_all_output(self):
         """Test entire map output."""
-        features = self.assertJson('maps:map.places', filters=(), field='features')
+        features = self.assertJson('maps:data.places', filters=(), field='features')
 
         self.assertTrue(features[0]['geometry']['coordinates'])
         self.assertEqual(features[0]['geometry']['type'], 'MultiPolygon')
@@ -179,7 +179,7 @@ class PlacesData(BaseCase):
     def test_source_output(self):
         """Test source sliced map output."""
         source = ImportSource.objects.get(name='Import Z')
-        maps = self.assertJson('maps:map.places', filters=('source',), field='features',
+        maps = self.assertJson('maps:data.places', filters=('source',), field='features',
                                data={'source[]': [source.pk]})
         self.assertPlaces(
             maps,
@@ -188,7 +188,7 @@ class PlacesData(BaseCase):
             ['Russia', 'RU', {'MDR': 3, 'Total': 4, 's': 1}],
         )
         source = ImportSource.objects.get(name='Import Y')
-        maps = self.assertJson('maps:map.places', filters=('source',), field='features',
+        maps = self.assertJson('maps:data.places', filters=('source',), field='features',
                                data={'source[]': [source.pk]})
         self.assertPlaces(
             maps,
@@ -196,7 +196,7 @@ class PlacesData(BaseCase):
             ['Russia', 'RU', {'MDR': 2, 'Total': 3, 'XDR': 1}],
         )
         source = ImportSource.objects.get(name='Import X')
-        maps = self.assertJson('maps:map.places', filters=('source',), field='features',
+        maps = self.assertJson('maps:data.places', filters=('source',), field='features',
                                data={'source[]': [source.pk]})
         self.assertPlaces(
             maps,
@@ -206,14 +206,14 @@ class PlacesData(BaseCase):
 
     def test_paper_output(self):
         """Test paper sliced map output."""
-        maps = self.assertJson('maps:map.places', filters=('paper',), data={'paper[]': [1]}, field='features')
+        maps = self.assertJson('maps:data.places', filters=('paper',), data={'paper[]': [1]}, field='features')
         self.assertPlaces(
             maps,
             ['France', 'FR', {'MDR': 2, 'Total': 2}],
             ['Germany', 'DE', {'MDR': 1, 'Total': 2, 'XDR': 1}],
             ['Russia', 'RU', {'MDR': 2, 'Total': 6, 'XDR': 4}],
         )
-        maps = self.assertJson('maps:map.places', filters=('paper',), data={'paper[]': [2]}, field='features')
+        maps = self.assertJson('maps:data.places', filters=('paper',), data={'paper[]': [2]}, field='features')
         self.assertPlaces(
             maps,
             ['France', 'FR', {'MDR': 1, 'Total': 1}],
@@ -223,7 +223,7 @@ class PlacesData(BaseCase):
 
     def test_drug_output_one(self):
         """Test drug sliced map output."""
-        maps = self.assertJson('maps:map.places', filters=('drug',), data={'drug[]': ['H2O']}, field='features')
+        maps = self.assertJson('maps:data.places', filters=('drug',), data={'drug[]': ['H2O']}, field='features')
         self.assertPlaces(
             maps,
             ['France', 'FR', {'MDR': 3, 'Total': 3}],
@@ -233,7 +233,7 @@ class PlacesData(BaseCase):
 
     def test_drug_output_many(self):
         """Test drug sliced map output."""
-        maps = self.assertJson('maps:map.places', filters=('drug',), field='features',
+        maps = self.assertJson('maps:data.places', filters=('drug',), field='features',
                                data={'drug[]': ['MEM', 'WAVE', 'PIN', 'BUMP']})
         self.assertPlaces(
             maps,
@@ -247,7 +247,7 @@ class DrugListData(BaseCase):
     """Test drug data output."""
     def test_everything(self):
         """Test unsliced drug output"""
-        drugs = self.assertJson('maps:map.drugs', filters=())
+        drugs = self.assertJson('maps:data.drugs', filters=())
         self.assertGraph(
             drugs,
             [None, 'BUMP', 'H2O', 'MEM', 'PIN', 'WAVE'], {
@@ -260,7 +260,7 @@ class DrugListData(BaseCase):
     def test_source_output(self):
         """Test source sliced drug output"""
         source = ImportSource.objects.get(name='Import Z')
-        drugs = self.assertJson('maps:map.drugs', filters=('source',),
+        drugs = self.assertJson('maps:data.drugs', filters=('source',),
                                 data={'source[]': source.pk})
         self.assertGraph(
             drugs,
@@ -273,7 +273,7 @@ class DrugListData(BaseCase):
 
     def test_paper_output(self):
         """Test paper sliced drug output"""
-        drugs = self.assertJson('maps:map.drugs', filters=('paper',), data={'paper[]': 1})
+        drugs = self.assertJson('maps:data.drugs', filters=('paper',), data={'paper[]': 1})
         self.assertGraph(
             drugs,
             [None, 'BUMP', 'H2O', 'MEM', 'PIN', 'WAVE'], {
@@ -285,7 +285,7 @@ class DrugListData(BaseCase):
 
     def test_map_output(self):
         """Test map sliced drug output"""
-        drugs = self.assertJson('maps:map.drugs', filters=('map',), data={'map[]': ['DE', 'FR']})
+        drugs = self.assertJson('maps:data.drugs', filters=('map',), data={'map[]': ['DE', 'FR']})
         self.assertGraph(
             drugs,
             [None, 'BUMP', 'H2O', 'MEM', 'PIN', 'WAVE'], {
@@ -300,7 +300,7 @@ class LineageData(BaseCase):
     """Test lineage data output."""
     def test_all_output(self):
         """Test not sliced lineage output"""
-        lineages = self.assertJson('maps:map.lineages', field='children')
+        lineages = self.assertJson('maps:data.lineages', field='children')
         self.assertEqual(lineages, [
             {'name': 'LA', 'color': 'rgb(48,129,189)', 'children': [], 'size': 4},
             {'name': 'LB', 'color': 'rgb(48,129,189)', 'children': [
@@ -312,7 +312,7 @@ class LineageData(BaseCase):
     def test_source_output(self):
         """Test source sliced lineage output"""
         source = ImportSource.objects.get(name='Import X')
-        lineages = self.assertJson('maps:map.lineages', field='children',
+        lineages = self.assertJson('maps:data.lineages', field='children',
                                    filters=('source',), data={'source[]': source.pk})
         self.assertEqual(lineages, [
             {'children': [], 'color': 'rgb(48,129,189)', 'name': 'LA', 'size': 1},
@@ -324,7 +324,7 @@ class LineageData(BaseCase):
 
     def test_paper_output(self):
         """Test paper sliced lineage output"""
-        lineages = self.assertJson('maps:map.lineages', field='children',
+        lineages = self.assertJson('maps:data.lineages', field='children',
                                    filters=('paper',), data={'paper[]': 1})
         self.assertEqual(lineages, [
             {'children': [], 'color': 'rgb(48,129,189)', 'name': 'LA', 'size': 3},
@@ -336,7 +336,7 @@ class LineageData(BaseCase):
 
     def test_map_output(self):
         """Test map sliced lineage output"""
-        lineages = self.assertJson('maps:map.lineages', field='children',
+        lineages = self.assertJson('maps:data.lineages', field='children',
                                    filters=('map',), data={'map[]': ['DE', 'RU']})
         self.assertEqual(lineages, [
             {'children': [], 'color': 'rgb(48,129,189)', 'name': 'LA', 'size': 4},
@@ -348,7 +348,7 @@ class LineageData(BaseCase):
 
     def test_drug_output(self):
         """Test drug sliced lineage output"""
-        lineages = self.assertJson('maps:map.lineages', field='children',
+        lineages = self.assertJson('maps:data.lineages', field='children',
                                    filters=('drug',), data={'drug[]': ['WAVE', 'BUMP', 'PIN']})
         self.assertEqual(lineages, [
             {'children': [], 'color': 'rgb(48,129,189)', 'name': 'LA', 'size': 3},
@@ -364,7 +364,7 @@ class LocusListData(BaseCase):
         """Test locus list is unsliced"""
         locus = GeneLocus.objects.get(gene_symbol='WA8')
         val = self.assertDataTable(
-            'maps:map.locuses', names=('pk', 'str', 'start'), order=2,
+            'maps:data.locuses', names=('pk', 'str', 'start'), order=2,
             data={'genelocus[]': [locus.pk]},
             filters=()
         )
@@ -376,7 +376,7 @@ class MutationsData(BaseCase):
     def test_all_output(self):
         """Test mutation list"""
         val = self.assertDataTable(
-            'maps:map.mutations', order=0,
+            'maps:data.mutations', order=0,
             names=('name', 'mode', 'gene_locus', 'nucleotide_position', 'strain_count'),
             data={'mutation[]': 'Mutation_020'},
             filters=()
@@ -393,7 +393,7 @@ class MutationsData(BaseCase):
         sources = ImportSource.objects.filter(name__in=['Import Z', 'Import Y'])
 
         val = self.assertDataTable(
-            'maps:map.mutations', order=0,
+            'maps:data.mutations', order=0,
             names=('name', 'mode', 'gene_locus', 'nucleotide_position', 'strain_count'),
             data={'source[]': sources.values_list('pk', flat=True)},
             filters=('source',)
@@ -405,7 +405,7 @@ class MutationsData(BaseCase):
     def test_paper_output(self):
         """Test mutations sliced by paper"""
         val = self.assertDataTable(
-            'maps:map.mutations', order=0,
+            'maps:data.mutations', order=0,
             names=('name', 'mode', 'gene_locus', 'nucleotide_position', 'strain_count'),
             data={'paper[]': 1},
             filters=('paper',)
@@ -417,7 +417,7 @@ class MutationsData(BaseCase):
     def test_map_output(self):
         """Test mutations sliced by map"""
         val = self.assertDataTable(
-            'maps:map.mutations', order=0,
+            'maps:data.mutations', order=0,
             names=('name', 'mode', 'gene_locus', 'nucleotide_position', 'strain_count'),
             data={'map[]': ['DE', 'FR']},
             filters=('map',)
@@ -430,7 +430,7 @@ class MutationsData(BaseCase):
         """Test mutations sliced by locus"""
         loci = GeneLocus.objects.filter(gene_symbol__in=['W9', 'WA8', 'W4'])
         val = self.assertDataTable(
-            'maps:map.mutations', order=0,
+            'maps:data.mutations', order=0,
             names=('name', 'mode', 'gene_locus', 'nucleotide_position', 'strain_count'),
             data={'genelocus[]': loci.values_list('pk', flat=True)},
             filters=('genelocus',)
@@ -442,7 +442,7 @@ class MutationsData(BaseCase):
     def test_drug_output(self):
         """Test mutations sliced by drug"""
         val = self.assertDataTable(
-            'maps:map.mutations', order=0,
+            'maps:data.mutations', order=0,
             names=('name', 'mode', 'gene_locus', 'nucleotide_position', 'strain_count'),
             data={'drug[]': ['WAVE', 'PIN', 'MEM']},
             filters=('drug',)
@@ -456,7 +456,7 @@ class MutationResistanceData(BaseCase):
     """Test mutation resistance data."""
     def test_all_output(self):
         """Test mutation list"""
-        mutations = self.assertJson('maps:map.mutation', filters=('mutation',),\
+        mutations = self.assertJson('maps:data.mutation', filters=('mutation',),\
             data={'mutation[]': ['Mutation_020', 'Mutation_001', 'Mutation_002', 'Mutation_003']})
         self.assertGraphTotals(
             mutations,
@@ -473,7 +473,7 @@ class MutationResistanceData(BaseCase):
         """Test mutations sliced by source"""
         sources = ImportSource.objects.filter(name__in=['Import Z', 'Import Y'])
 
-        mutations = self.assertJson('maps:map.mutation', filters=('source', 'mutation'), data={
+        mutations = self.assertJson('maps:data.mutation', filters=('source', 'mutation'), data={
             'source[]': sources.values_list('pk', flat=True),
             'mutation[]': ['Mutation_020', 'Mutation_001', 'Mutation_002', 'Mutation_003'],
         })
@@ -489,7 +489,7 @@ class MutationResistanceData(BaseCase):
 
     def test_paper_output(self):
         """Test mutations sliced by paper"""
-        mutations = self.assertJson('maps:map.mutation', filters=('paper', 'mutation'), data={
+        mutations = self.assertJson('maps:data.mutation', filters=('paper', 'mutation'), data={
             'paper[]': 1,
             'mutation[]': ['Mutation_020', 'Mutation_001', 'Mutation_002', 'Mutation_003'],
         })
@@ -505,7 +505,7 @@ class MutationResistanceData(BaseCase):
 
     def test_map_output(self):
         """Test mutations sliced by map"""
-        mutations = self.assertJson('maps:map.mutation', filters=('map', 'mutation'), data={
+        mutations = self.assertJson('maps:data.mutation', filters=('map', 'mutation'), data={
             'map[]': ['DE', 'FR'],
             'mutation[]': ['Mutation_001', 'Mutation_002', 'Mutation_003', 'Mutation_005'],
         })
@@ -521,7 +521,7 @@ class MutationResistanceData(BaseCase):
 
     def test_drug_output(self):
         """Test mutations sliced by drug"""
-        mutations = self.assertJson('maps:map.mutation', filters=('drug', 'mutation'), data={
+        mutations = self.assertJson('maps:data.mutation', filters=('drug', 'mutation'), data={
             'drug[]': ['PIN'],
             'mutation[]': ['Mutation_001', 'Mutation_002', 'Mutation_003', 'Mutation_004'],
         })
@@ -538,7 +538,7 @@ class MutationResistanceData(BaseCase):
 
     def test_multi_drug_output(self):
         """Test multiple drugs selected"""
-        mutations = self.assertJson('maps:map.mutation', filters=('drug', 'mutation'), data={
+        mutations = self.assertJson('maps:data.mutation', filters=('drug', 'mutation'), data={
             'drug[]': ['PIN', 'WAVE'],
             'mutation[]': ['Mutation_001', 'Mutation_002',],
         })

@@ -16,7 +16,7 @@
 
   <script src="{% static "js/sources-list.js" %}"></script>
   <script src="{% static "js/leaflet.js" %}"></script>
-  <script src="{% static "js/genetics-map.js" %}"></script>
+  <script src="{% static "js/mutations-map.js" %}"></script>
   <script src="{% static "js/drugs-chart.js" %}"></script>
   <script src="{% static "js/lineage-chart.js" %}"></script>
   <script src="{% static "js/gene-chart.js" %}"></script>
@@ -32,31 +32,31 @@
 
       <div class="row">
         <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 vertical-tab-container">
-            <div class="col-lg-1 col-md-3 col-sm-3 col-xs-3 vertical-tab-menu">
+            <div class="col-lg-1 col-md-3 col-sm-3 col-xs-3 vertical-tab-menu" id="mutations">
               <!--Okay so this is the tabs that you see on the right of the menu that you actually click on-->
               <div class="list-group" id="data-store">
-                <a href="#" class="list-group-item text-center filter-source filter-paper filter-bioproject" id="source-store" data-json-url="{% url 'maps:map.sources' %}">
+                <a href="#" class="list-group-item text-center filter-source filter-paper filter-bioproject" id="source-store" data-json-url="{% url 'maps:data.sources' %}">
                   <h2 class="glyphicon glyphicon-list-alt"></h2>
                   <p>All Data</p>
                 </a>
                 <!--See how this class is active, thats cause thats currently the tab you are looking at-->
-                <a href="#" class="list-group-item text-center defaultactive filter-map" id="map-store" data-json-url="{% url 'maps:map.places' %}">
+                <a href="#" class="list-group-item text-center defaultactive filter-map" id="map-store" data-json-url="{% url 'maps:data.places' %}">
                   <h2 class="glyphicon glyphicon-globe"></h2>
                   <p>World</p>
                 </a>
-                <a href="#" class="list-group-item text-center filter-drug" id="drug-store" data-json-url="{% url 'maps:map.drugs' %}">
+                <a href="#" class="list-group-item text-center filter-drug" id="drug-store" data-json-url="{% url 'maps:data.drugs' %}">
                   <h2 class="icon-flask"></h2>
                   <p>Drug</p>
                 </a>
-                <a href="#" class="list-group-item text-center filter-lineage" id="lineage-store" data-json-url="{% url 'maps:map.lineages' %}">
+                <a href="#" class="list-group-item text-center filter-lineage" id="lineage-store" data-json-url="{% url 'maps:data.lineages' %}">
                   <h2 class="icon-graph"></h2>
                   <p>Lineage</p>
                 </a>
-                <a href="#" class="list-group-item text-center filter-genelocus" id="genelocus-store" data-json-url="{% url 'maps:map.locuses' %}">
+                <a href="#" class="list-group-item text-center filter-genelocus" id="genelocus-store" data-json-url="{% url 'maps:data.locuses' %}">
                   <h2 class="icon-helix"></h2>
                   <p>Gene Locus</p>
                 </a>
-                <a href="#" class="list-group-item text-center filter-mutation" id="mutation-store" data-json-url="{% url 'maps:map.mutations' %}">
+                <a href="#" class="list-group-item text-center filter-mutation" id="mutation-store" data-json-url="{% url 'maps:data.mutations' %}">
                   <h2 class="icon-mutation"></h2>
                   <p>Mutation</p>
                 </a>
@@ -181,7 +181,7 @@
                   </div>
 
                   <div class="mutation_graph" style="margin-top: 15px;">
-                    <svg class="mutations" id="mutations" data-json-url="{% url 'maps:map.mutation' %}" style="display: none;"></svg>
+                    <svg class="mutations" id="mutations" data-json-url="{% url 'maps:data.mutation' %}" style="display: none;"></svg>
                   </div>
                 </div>
             </div>
