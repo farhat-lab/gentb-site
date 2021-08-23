@@ -66,7 +66,8 @@ class MarginalPlaces(JsonView, DataSlicerMixin):
                 {
                     # Turning this to json and then back to python just to feed
                     # to JsonView, seems a little wasteful and redundent.
-                    "geometry": adjust_coords(json.loads(country.geom.geojson)),
+                    #"geometry": adjust_coords(json.loads(country.geom.geojson)),
+                    "geometry": json.loads(country.geom.geojson),
                     "popupContent": country.name,
                     "type": "Feature",
                     "id": country.id,
