@@ -30,7 +30,7 @@ from .views_antibiograms import AntibiogramMap, MarginalPlaces, MarginalDrugs
 app_name = 'maps'
 urlpatterns = [
     # Default map, used for quick url access
-    path('', RedirectView.as_view(pattern_name='map.mutations'), name='map'),
+    path('', RedirectView.as_view(pattern_name='maps:map.mutations'), name='map'),
 
     # Original mutations map
     path('mutations/', MapPage.as_view(), name="map.mutations"),
