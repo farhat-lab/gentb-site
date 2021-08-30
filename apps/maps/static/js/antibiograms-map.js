@@ -101,6 +101,7 @@ function initialiseStrainMap(map) {
   }).addTo(map);
 }
 
+var details = null;
 var map_layer = null;
 function mapAntibiogramData(map, data) {
     let color_max;
@@ -112,11 +113,12 @@ function mapAntibiogramData(map, data) {
         map.removeLayer(map_layer);
     }
     function get_style(feature) {
-        var color_by = feature.properties.row.mean_snp10;
+        var conf = data['fill'];
+        var color_by = feature.properties.row[conf['column']];
         var color_max = 1.0;
         best_color = d3.scale.threshold()
-            .domain([color_max/8, color_max/4, color_max/2, color_max*3/4])
-            .range(['#FFFFCC', '#C7E9B4', '#7FCDBB', '#41B6C4', '#1D91C0']);
+            .domain(conf['ranges'])
+            .range(conf['colors']);
         return {
             fillColor: best_color(color_by),
             weight: 1,
@@ -125,14 +127,21 @@ function mapAntibiogramData(map, data) {
             fillOpacity: 0.35
         };
     }
+    details = data["details"];
     map_layer = L.geoJson(data, {
       style: get_style,
       onEachFeature: onEachFeature,
     }).addTo(map)
 }
 
-function f(v) {
+function type_s(v) {
+    return v;
+}
+function type_f(v) {
     return v.toLocaleString(undefined, {style: 'percent', minimumFractionDigits: 2})
+}
+function type_i(v) {
+    return v; // TODO: ParseInt
 }
 
 function onEachFeature(feature, layer) {
@@ -144,10 +153,13 @@ function onEachFeature(feature, layer) {
 
     ret.append($('<h4>' + feature.properties.name + '</h4>'));
     ret.append($("<div> Drug: <span><strong>" + drug.code + "</strong> (" + drug.name + ")</span></div>"));
-    ret.append($("<div> Number of Isolates: <span>" + (row.gentb_snp10_n) + "</span></div>"));
-    ret.append($("<div> Marginal Resistance Rate: <span>" + f(row.mean_snp10) + "</span></div>"));
-    ret.append($("<div> Lower Marginal Resistance Rate: <span>" + f(row.hi_snp10) + "</span></div>"));
-    ret.append($("<div> Upper Marginal Resistance Rate: <span>" + f(row.lo_snp10) + "</span></div>"));
+    $.each(details, function(i, e) {
+        var type = type_s;
+        if (e.type == 'float') { type = type_f; }
+        if (e.type == 'int') { type = type_i; }
+        var dat = type(row[e.column]);
+        ret.append($("<div> " + e.label + ": <span>" + dat + "</span></div>"));
+    });
 
     layer.bindPopup(ret[0]);
 }

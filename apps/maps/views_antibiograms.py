@@ -55,17 +55,37 @@ class MarginalPlaces(JsonView, DataSlicerMixin):
             drugs[row['drug__code']] = row['drug__name']
             rows[row['country__iso2']][row['drug__code']] = json.loads(row['data'])
 
+        drug = None
+        drug_sort = ['INH']
         # Limit to one drug only
-        drug = list(drugs)[0]
+        if len(drugs) > 1:
+            for dname in drug_sort:
+                if dname in drugs:
+                    drug = dname
+            if drug is None:
+                drug = list(drugs)[0]
+        elif len(drugs) == 1:
+            drug = list(drugs)[0]
 
         return {
             "type": "FeatureCollection",
+            "fill": {
+                'column': 'mean_snp10',
+                'max': 1.0,
+                'ranges': [1/8, 1/4, 1/2, 3/4],
+                'colors': ['#FFFFDD', '#C7E9B4', '#7FCDBB', '#41B6C4', '#1D91C0'],
+            },
+            "details": [
+                {'label': "Number of Isolates", 'column': 'gentb_snp10_n', 'type': 'int'},
+                {'label': "Marginal Resistance Rate", 'column': 'mean_snp10', 'type': 'float'},
+                {'label': "Lower Marginal Resistance Rate", 'column': 'lo_snp10', 'type': 'float'},
+                {'label': "Upper Marginal Resistance Rate", 'column': 'hi_snp10', 'type': 'float'},
+            ],
             'filters': self.applied_filters(),
             'drugs': drugs,
             'features': [
                 {
-                    # Turning this to json and then back to python just to feed
-                    # to JsonView, seems a little wasteful and redundent.
+                    "srid": country.geom.srid,
                     #"geometry": adjust_coords(json.loads(country.geom.geojson)),
                     "geometry": json.loads(country.geom.geojson),
                     "popupContent": country.name,
