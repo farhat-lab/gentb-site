@@ -50,6 +50,7 @@ class MarginalPlaces(JsonView, DataSlicerMixin):
 
     def get_context_data(self, **_):
         drugs = dict()
+        parent_map = CustomMap.objects.get(slug='antibiograms')
         rows = defaultdict(dict)
         for row in self.get_data():
             drugs[row['drug__code']] = row['drug__name']
@@ -70,16 +71,14 @@ class MarginalPlaces(JsonView, DataSlicerMixin):
         return {
             "type": "FeatureCollection",
             "fill": {
-                'column': 'mean_snp10',
-                'max': 1.0,
-                'ranges': [1/8, 1/4, 1/2, 3/4],
-                'colors': ['#FFFFDD', '#C7E9B4', '#7FCDBB', '#41B6C4', '#1D91C0'],
+                'max': parent_map.fill_max,
+                'column': parent_map.fill_column,
+                'ranges': parent_map.get_ranges(),
+                'colors': parent_map.get_colors(),
             },
             "details": [
-                {'label': "Number of Isolates", 'column': 'gentb_snp10_n', 'type': 'int'},
-                {'label': "Marginal Resistance Rate", 'column': 'mean_snp10', 'type': 'float'},
-                {'label': "Lower Marginal Resistance Rate", 'column': 'lo_snp10', 'type': 'float'},
-                {'label': "Upper Marginal Resistance Rate", 'column': 'hi_snp10', 'type': 'float'},
+                {'label': item.label, 'column': item.column, 'type': item.kind}
+                    for item in parent_map.details.all()
             ],
             'filters': self.applied_filters(),
             'drugs': drugs,
