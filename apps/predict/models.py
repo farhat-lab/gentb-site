@@ -49,6 +49,7 @@ from apps.pipeline.models import Pipeline, PipelineRun, ProgramRun
 from apps.mutations.models import Drug, GeneLocus
 
 from .utils import lineage_spoligo, lineage_fast_caller, lineage_other_caller, filter_none
+from .predict_data import decypher_predict_format
 
 LOGGER = logging.getLogger('apps.predict')
 
@@ -552,13 +553,18 @@ class PredictStrain(Model):
                 self.results.create(drug=None, error=err[:254])
                 break
 
-            (drug_code, dr, fneg, fpos, *_), *data = dat
+            metadata, data = decypher_predict_format(dat)
             try:
-                drug = Drug.objects.get(code__iexact=drug_code)
+                drug = Drug.objects.get(code__iexact=metadata['drug_code'])
             except Drug.DoesNotExist:
+                raise
                 continue
+
             res, _ = self.results.get_or_create(drug=drug, defaults={
-                'probability':dr, 'false_positive':fpos, 'false_negative':fneg})
+                'probability': metadata['dr'],
+                'false_positive': metadata['fpos'],
+                'false_negative': metadata['fneg']
+            })
 
             for cat, datum in enumerate(data):
                 for mutation in datum:
@@ -566,6 +572,8 @@ class PredictStrain(Model):
                         continue
                     try:
                         locus = GeneLocus.objects.for_mutation_name(mutation, True)
+                        if locus is None:
+                            continue
                     except ValueError:
                         continue
                     (obj, created) = res.loci.get_or_create(category=cat + 1, locus=locus,
