@@ -31,6 +31,7 @@ from .utils import GraphData, geo_adjust
 from .models import Country
 
 from apps.maptables.models import CustomMap, MapRow
+from apps.mutations.models import Drug
 
 class AntibiogramMap(TemplateView):
     title = "Antibiograms Map"
@@ -57,7 +58,8 @@ class MarginalPlaces(JsonView, DataSlicerMixin):
             rows[row['country__iso2']][row['drug__code']] = json.loads(row['data'])
 
         drug = None
-        drug_sort = ['INH']
+        default_drug = 'INH'
+        drug_sort = [default_drug]
         # Limit to one drug only
         if len(drugs) > 1:
             for dname in drug_sort:
@@ -67,6 +69,8 @@ class MarginalPlaces(JsonView, DataSlicerMixin):
                 drug = list(drugs)[0]
         elif len(drugs) == 1:
             drug = list(drugs)[0]
+
+        all_drugs = dict(parent_map.rows.values_list('drug__code', 'drug__name'))
 
         return {
             "type": "FeatureCollection",
@@ -80,8 +84,7 @@ class MarginalPlaces(JsonView, DataSlicerMixin):
                 {'label': item.label, 'column': item.column, 'type': item.kind}
                     for item in parent_map.details.all()
             ],
-            'filters': self.applied_filters(),
-            'drugs': drugs,
+            'c_filters': self.drug_filter(drug, all_drugs) + list(self.applied_filters(parent_map)),
             'features': [
                 {
                     "srid": country.geom.srid,
@@ -100,6 +103,18 @@ class MarginalPlaces(JsonView, DataSlicerMixin):
             ]
         }
 
+    def drug_filter(self, drug, drugs):
+        """Drug filter always available"""
+        return [
+            {'label': 'Drug', 'default': 'drug', 'key': 'drug', 'values': 
+                [{'value': code, 'label': label, 'selected': (code == drug)}
+                    for code, label in drugs.items()]
+            },
+        ]
+
+    def applied_filters(self, c_map):
+        """Generate filters which the javascript can create into dropdowns"""
+        return []
 
 class MarginalDrugs(JsonView, DataSlicerMixin):
     """Provide a json data slice into the drug resistance data"""

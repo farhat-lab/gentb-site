@@ -143,3 +143,16 @@ label {
   text-align: center;
   width: 6em;
 }
+
+.toolbar {
+  margin: 10px;
+}
+.toolbar .input-group-btn {
+  text-align: center;
+}
+.toolbar .input-group-btn .dropdown-menu {
+  left: 50%;
+  right: auto;
+  text-align: center;
+  transform: translate(-50%, 0);
+}

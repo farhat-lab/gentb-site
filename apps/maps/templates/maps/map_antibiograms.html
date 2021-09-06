@@ -33,7 +33,7 @@
                   <h2 class="glyphicon glyphicon-globe"></h2>
                   <p>World</p>
                 </a>
-                <a href="#" class="list-group-item text-center filter-drug" id="drug-store" data-json-url="{% url 'maps:data.marginaldrugs' %}">
+                <a href="#" class="list-group-item text-center filter-drug" id="drug-store" data-json-url="{% url 'maps:data.marginaldrugs' %}" style="display: none;">
                   <h2 class="icon-flask"></h2>
                   <p>Drug</p>
                 </a>
@@ -42,13 +42,21 @@
             <div class="col-lg-11 col-md-9 col-sm-9 col-xs-9 vertical-tab max-width">
               <!--Okay so this is that blue thing at the top-->
                 <div class="vertical-tab-content defaultactive">
+                  <div class="toolbar input-group">
+
+<div class="input-group-btn classic-dropdown template" style="display: none;">
+  <button class="btn btn-default dropdown-toggle" type="button" id="dropdown_t" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+    <span class="filter-label">Label</span>: <span class="filter-value">VALUE</span>
+    <span class="caret"></span>
+  </button>
+  <ul class="dropdown-menu" aria-labelledby="dropdown_t">
+    <li><a href="#"></a></li>
+  </ul>
+</div>
+
+                  </div> <!-- End toolbar -->
+
                   <div class="maps" id="mapid"></div>
-                </div>
-                <div class="vertical-tab-content">
-                  <div class="d3graph">
-                    <!--This is where that cool graphic goes look at hte drug-chart.js to see how the javascript creates the bar chart-->
-                    <svg class="drugs" id="drugs"></svg>
-                  </div>
                 </div>
             </div>
         </div>

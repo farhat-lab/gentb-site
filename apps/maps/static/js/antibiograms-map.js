@@ -82,9 +82,61 @@ $(document).ready(function() {
     $('#map-store').data('json-signal', function(data) {
       mapAntibiogramData(map, data);
       map.invalidateSize();
+      createFilterDropdowns(data.c_filters);
     });
   });
 });
+
+// Create dropdowns which allow the user to filter the data shown in the maps.
+function createFilterDropdowns(filters) {
+
+  var template = $('.toolbar .template').clone();
+  template.removeClass('template');
+
+  $.each(filters, function(index, f) {
+      var existing = $('.toolbar #' + f.key);
+
+      if (existing.length) {
+          console.log("Existing!");
+      } else {
+          console.log("New dropdown!");
+
+          var dropdown = template.clone();
+
+          $('.filter-label', dropdown).text(f.label);
+          $('.dropdown-menu li', dropdown).remove();
+          dropdown[0].id = f.key;
+
+          $.each(f.values, function(index, v) {
+              $('.dropdown-menu', dropdown).append($('<li data-value="' + v.value + '"><a href="#">' + v.label + ' (' + v.value + ')</a></li>'));
+              if (v.selected) {
+                  $('.filter-value', dropdown).text(v.value);
+              }
+          });
+          dropdown.show();
+          $('.toolbar').append(dropdown);
+      }
+  });
+  $('.toolbar .template').remove();
+
+  // Filters toolbar
+  $('.toolbar .dropdown-menu li').click(function() {
+      var parent = this.parentNode.parentNode;
+      var key = parent.id;
+      var value = $(this).data('value');
+      console.log("Clicked!", key, value);
+      $('.filter-value', parent).text(value);
+      unsetTabData(key);
+      addTabData(key, value, value, undefined, undefined);
+      console.log("Data set!");
+      reloadMapData();
+  });
+}
+
+function reloadMapData() {
+    var map_tab = $('#map-store');
+    map_tab.trigger("data:refresh");
+}
 
 function matchKey(datapoint, key_variable) {
   if(key_variable[0]) {
