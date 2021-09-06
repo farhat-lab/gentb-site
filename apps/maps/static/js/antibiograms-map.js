@@ -99,7 +99,7 @@ function createFilterDropdowns(filters) {
       if (existing.length) {
           console.log("Existing!");
       } else {
-          console.log("New dropdown!");
+          console.log("New dropdown!", f);
 
           var dropdown = template.clone();
 
@@ -108,13 +108,18 @@ function createFilterDropdowns(filters) {
           dropdown[0].id = f.key;
 
           $.each(f.values, function(index, v) {
-              $('.dropdown-menu', dropdown).append($('<li data-value="' + v.value + '"><a href="#">' + v.label + ' (' + v.value + ')</a></li>'));
+              $('.dropdown-menu', dropdown).append($('<li data-value="' + v.value + '"><a href="#">' + v.label + '</a></li>'));
               if (v.selected) {
                   $('.filter-value', dropdown).text(v.value);
               }
           });
           dropdown.show();
           $('.toolbar').append(dropdown);
+
+          // We need to make a new tab store here.
+          var store = $('<a href="#" class="list-group-item text-center filter-' + f.key + '" id="' + f.key + '-store" style="display: none;"><h2 class=""></h2><p></p></a>');
+          $('#data-store').append(store);
+
       }
   });
   $('.toolbar .template').remove();
@@ -124,11 +129,9 @@ function createFilterDropdowns(filters) {
       var parent = this.parentNode.parentNode;
       var key = parent.id;
       var value = $(this).data('value');
-      console.log("Clicked!", key, value);
       $('.filter-value', parent).text(value);
       unsetTabData(key);
       addTabData(key, value, value, undefined, undefined);
-      console.log("Data set!");
       reloadMapData();
   });
 }

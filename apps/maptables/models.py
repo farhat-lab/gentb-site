@@ -69,11 +69,19 @@ class MapDetail(Model):
     def __str__(self):
         return f"DETAILS:[self.label]"
 
+FILTER_TYPES = (
+    ('', 'No filter'),
+    ('limit', 'Limit by values'),
+)
+
 class MapDataFilter(Model):
     parent_map = ForeignKey(CustomMap, related_name='data_filters', on_delete=CASCADE)
 
-    label = CharField(max_length=128)
+    key = SlugField(max_length=16, default="")
+    kind = CharField(max_length=16, choices=FILTER_TYPES, default="")
     column = CharField(max_length=48)
+
+    label = CharField(max_length=128)
     options = TextField(help_text="A json formatted definition of the map filter options")
 
     def __str__(self):
@@ -82,7 +90,12 @@ class MapDataFilter(Model):
     def get_options(self):
         try:
             return json.loads(self.options)
-        except Exception:
+        except Exception as err:
+            self.options = json.dumps({
+                'error': str(err),
+                'data': self.options,
+            })
+            self.save()
             return []
 
 class MapRow(Model):

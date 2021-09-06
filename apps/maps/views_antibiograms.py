@@ -52,10 +52,13 @@ class MarginalPlaces(JsonView, DataSlicerMixin):
     def get_context_data(self, **_):
         drugs = dict()
         parent_map = CustomMap.objects.get(slug='antibiograms')
+        filters = parent_map.data_filters.all()
         rows = defaultdict(dict)
         for row in self.get_data():
             drugs[row['drug__code']] = row['drug__name']
-            rows[row['country__iso2']][row['drug__code']] = json.loads(row['data'])
+            data = json.loads(row['data'])
+            if self.filter_row(filters, data):
+                rows[row['country__iso2']][row['drug__code']] = data
 
         drug = None
         default_drug = 'INH'
@@ -84,7 +87,7 @@ class MarginalPlaces(JsonView, DataSlicerMixin):
                 {'label': item.label, 'column': item.column, 'type': item.kind}
                     for item in parent_map.details.all()
             ],
-            'c_filters': self.drug_filter(drug, all_drugs) + list(self.applied_filters(parent_map)),
+            'c_filters': self.drug_filter(drug, all_drugs) + list(self.applied_filters(filters)),
             'features': [
                 {
                     "srid": country.geom.srid,
@@ -106,15 +109,57 @@ class MarginalPlaces(JsonView, DataSlicerMixin):
     def drug_filter(self, drug, drugs):
         """Drug filter always available"""
         return [
-            {'label': 'Drug', 'default': 'drug', 'key': 'drug', 'values': 
-                [{'value': code, 'label': label, 'selected': (code == drug)}
+            {'label': 'Drug', 'default': drug, 'key': 'drug', 'values': 
+                [{'value': code, 'label': f"{label} ({code})", 'selected': (code == drug)}
                     for code, label in drugs.items()]
             },
         ]
 
-    def applied_filters(self, c_map):
+    def filter_row(self, filters, row):
+        for _fl in filters:
+            value = self.request.GET.getlist(_fl.key, None)
+            if value is None or len(value) == 0:
+                return True
+            if not getattr(self, 'filter_' + _fl.kind, self.filter_none)(_fl, value[0], row):
+                return False
+        return True
+
+    def filter_none(self, _fl, value, row):
+        return True
+
+    def filter_limit(self, _fl, value, row):
+        """Filter based on the row"""
+        if str(value).isdigit():
+            value = int(value)
+        if value is None:
+            return True
+        if _fl.column not in row:
+            return False
+        if row[_fl.column] < value:
+            print(f"Ignoring row {row} {value}")
+            return False
+        return True
+
+    def applied_filters(self, filters):
         """Generate filters which the javascript can create into dropdowns"""
-        return []
+        for _fl in filters:
+            opts = _fl.get_options()
+            if not opts or isinstance(opts, dict) and opts['error']:
+                print("Ignoring missing or error drop down")
+                continue
+
+            selected = self.request.GET.get(_fl.key, None)
+            if selected is None:
+                selected = opts[0].get('value', None)
+
+            for op in opts:
+                op['selected'] = op.get('value', None) == selected
+
+            yield {
+                'key': _fl.key,
+                'label': _fl.label,
+                'values': opts,
+            }
 
 class MarginalDrugs(JsonView, DataSlicerMixin):
     """Provide a json data slice into the drug resistance data"""
