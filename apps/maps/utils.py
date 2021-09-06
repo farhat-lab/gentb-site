@@ -19,6 +19,7 @@ Data management for maps, basic functions.
 """
 
 from collections import defaultdict, OrderedDict
+from django.conf import settings
 
 COUNTRY_MAP = {
     'unknown': None,
@@ -267,6 +268,11 @@ def many_lookup(model, local_filter, id_field, ret_field='pk__in'):
             model.objects.filter(**{local_filter+'__in': values})\
                          .values_list(id_field, flat=True)
     return _inner
+
+def geo_adjust(geom):
+    if settings.GEO_ROTATE:
+        return adjust_coords(geom)
+    return geom
 
 def adjust_coords(geom):
     """

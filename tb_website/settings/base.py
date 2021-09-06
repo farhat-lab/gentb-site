@@ -259,3 +259,5 @@ SPAGHETTI_SAUCE = {
 VERSION_BRANCHES = [
     ('Incoming', 'master')
 ]
+
+GEO_ROTATE = False

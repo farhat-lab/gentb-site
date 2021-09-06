@@ -35,7 +35,7 @@ from apps.mutations.models import (
 )
 
 from .mixins import JsonView, DataSlicerMixin, DataTableMixin, PleaseWait
-from .utils import GraphData, many_lookup, adjust_coords
+from .utils import GraphData, many_lookup, geo_adjust
 from .models import Country, CountryHealth, CountryDetail
 
 def get_gdp(self, **_):
@@ -131,7 +131,7 @@ class Places(JsonView, DataSlicerMixin):
                 {
                     # Turning this to json and then back to python just to feed
                     # to JsonView, seems a little wasteful and redundent.
-                    "geometry": json.loads(country.geom.geojson),
+                    "geometry": geo_adjust(json.loads(country.geom.geojson)),
                     "popupContent": country.name,
                     "type": "Feature",
                     "id": country.id,

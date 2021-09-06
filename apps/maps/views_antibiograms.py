@@ -27,7 +27,7 @@ from django.db.models import Count
 from apps.mutations.models import Drug
 
 from .mixins import JsonView, DataSlicerMixin
-from .utils import GraphData, adjust_coords
+from .utils import GraphData, geo_adjust
 from .models import Country
 
 from apps.maptables.models import CustomMap, MapRow
@@ -85,8 +85,7 @@ class MarginalPlaces(JsonView, DataSlicerMixin):
             'features': [
                 {
                     "srid": country.geom.srid,
-                    #"geometry": adjust_coords(json.loads(country.geom.geojson)),
-                    "geometry": json.loads(country.geom.geojson),
+                    "geometry": geo_adjust(json.loads(country.geom.geojson)),
                     "popupContent": country.name,
                     "type": "Feature",
                     "id": country.id,
