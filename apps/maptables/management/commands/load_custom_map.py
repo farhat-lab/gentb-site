@@ -1,5 +1,5 @@
 """
-Load a custom map via csv
+Load a custom map data via csv
 """
 
 import os
@@ -13,7 +13,7 @@ from apps.maps.utils import COUNTRY_MAP
 from apps.maps.models import Country
 from apps.mutations.models import Drug
 from apps.mutations.utils import csv_merge
-from apps.maptables.models import CustomMap, MapRow
+from apps.maptables.models import MapDataSource
 
 class Command(BaseCommand):
     def add_arguments(self, parser):
@@ -33,16 +33,16 @@ class Command(BaseCommand):
             raise CommandError(f"File not found: {filename}")
         delim = self.get_delim(filename)
 
-        custom_map, created = CustomMap.objects.get_or_create(
+        data_source, created = MapDataSource.objects.get_or_create(
             slug=key,
             defaults={'name': key, 'description': 'Automatically created'}
         )
         if created:
-            print(f"Created new custom map {key}...")
+            print(f"Created new map data source {key}...")
         elif keep:
-            print(f"Adding to existing map {key}...")
+            print(f"Adding to map data source {key}...")
         else:
-            rows, _ = custom_map.rows.all().delete()
+            rows, _ = data_source.rows.all().delete()
             print(f"Deleted {rows} rows in {key} and reloading...")
 
         rows_added = 0
@@ -57,7 +57,7 @@ class Command(BaseCommand):
                         raise CommandError("Can't find column 'country' in csv.")
                 elif isinstance(row, dict):
                     try:
-                        self.add_row(custom_map, row)
+                        self.add_row(data_source, row)
                         rows_added += 1
                     except Country.DoesNotExist:
                         bad_countries.add(row['country'])
@@ -74,7 +74,7 @@ class Command(BaseCommand):
             print(f"\n = Sucessfully imported {rows_added} rows =\n")
 
 
-    def add_row(self, custom_map, row):
+    def add_row(self, data_source, row):
 
         drug = Drug.objects.get(code__iexact=row['drug'].lower())
 
@@ -102,7 +102,7 @@ class Command(BaseCommand):
             else:
                 cleaned[col] = row[col]
 
-        custom_map.rows.update_or_create(
+        data_source.rows.update_or_create(
             drug=drug,
             country=country,
             defaults={'data': json.dumps(cleaned)})

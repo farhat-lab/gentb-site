@@ -19,48 +19,42 @@
 
 
 {% block content %}
-    <div class="container">
-        <h2 class="page-header">{{ title }} <small>Marginal Resistance...</small>
-      </h2>
+  <div class="container">
+    <h2 class="page-header">{{ title }} <small>Marginal Resistance...</small></h2>
 
-      <div class="row">
-        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 vertical-tab-container">
-            <div class="col-lg-1 col-md-3 col-sm-3 col-xs-3 vertical-tab-menu" id="antibiograms">
-              <!--Okay so this is the tabs that you see on the right of the menu that you actually click on-->
-              <div class="list-group" id="data-store">
-                <!--See how this class is active, thats cause thats currently the tab you are looking at-->
-                <a href="#" class="list-group-item text-center defaultactive filter-map" id="map-store" data-json-url="{% url 'maps:data.marginalplaces' %}">
-                  <h2 class="glyphicon glyphicon-globe"></h2>
-                  <p>World</p>
-                </a>
-                <a href="#" class="list-group-item text-center filter-drug" id="drug-store" data-json-url="{% url 'maps:data.marginaldrugs' %}" style="display: none;">
-                  <h2 class="icon-flask"></h2>
-                  <p>Drug</p>
-                </a>
-              </div>
-            </div>
-            <div class="col-lg-11 col-md-9 col-sm-9 col-xs-9 vertical-tab max-width">
-              <!--Okay so this is that blue thing at the top-->
-                <div class="vertical-tab-content defaultactive">
-                  <div class="toolbar input-group">
-
-<div class="input-group-btn classic-dropdown template" style="display: none;">
-  <button class="btn btn-default dropdown-toggle" type="button" id="dropdown_t" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
-    <span class="filter-label">Label</span>: <span class="filter-value">VALUE</span>
-    <span class="caret"></span>
-  </button>
-  <ul class="dropdown-menu" aria-labelledby="dropdown_t">
-    <li><a href="#"></a></li>
-  </ul>
-</div>
-
-                  </div> <!-- End toolbar -->
-
-                  <div class="maps" id="mapid"></div>
-                </div>
-            </div>
+    <div class="row">
+      <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 vertical-tab-container">
+        <div class="col-lg-1 col-md-3 col-sm-3 col-xs-3 vertical-tab-menu" id="antibiograms">
+          <!--Okay so this is the tabs that you see on the right of the menu that you actually click on-->
+          <div class="list-group" id="data-store">
+            <!--See how this class is active, thats cause thats currently the tab you are looking at-->
+            {% for map in object_list %}
+            <a href="#" class="list-group-item text-center defaultactive filter-map" id="map-{{ map.slug }}-store" data-json-url="{{ map.get_absolute_url }}" data-tab-key="map-{{ map.slug }}">
+                <h2 class="glyphicon glyphicon-globe"></h2>
+                <p>{{ map }}</p>
+              </a>
+            {% endfor %}
+          </div>
         </div>
-  </div>
-</div>
-
+        <div class="col-lg-11 col-md-9 col-sm-9 col-xs-9 vertical-tab max-width">
+          {% for map in object_list %}
+            <div class="vertical-tab-content defaultactive" id="map-{{map.slug}}-content">
+              <div class="toolbar input-group">
+                <div class="input-group-btn classic-dropdown template" style="display: none;">
+                  <button class="btn btn-default dropdown-toggle" type="button" id="dropdown_t" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+                    <span class="filter-label">Label</span>: <span class="filter-value">VALUE</span>
+                    <span class="caret"></span>
+                  </button>
+                  <ul class="dropdown-menu" aria-labelledby="dropdown_t">
+                    <li><a href="#"></a></li>
+                  </ul>
+                </div>
+              </div>
+              <div class="generic-map" id="map-{{map.slug}}-svg-holder"></div>
+            </div>
+          {% endfor %}
+        </div> <!--End vertical-tab-->
+      </div> <!--End tab-container-->
+    </div> <!--End row-->
+  </div> <!--End container-->
 {% endblock %}

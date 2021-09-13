@@ -3,9 +3,10 @@ A combination of map and drug data.
 """
 import json
 
+from django.urls import reverse
 from django.core.exceptions import ValidationError
 from django.db.models import (
-    Model, ForeignKey, SlugField, CharField, TextField, DecimalField, CASCADE,
+    Model, ForeignKey, SlugField, CharField, TextField, DecimalField, CASCADE, SET_NULL
 )
 
 from apps.maps.models import Country
@@ -20,10 +21,39 @@ def validate_json(text):
     except Exception as err:
         raise ValidationError(f"Row must be valid json: {err}")
 
-class CustomMap(Model):
+
+class MapDataSource(Model):
+    """A collection of rows for the data"""
+    slug = SlugField(max_length=16)
+    name = CharField(max_length=48)
+    description = CharField(max_length=128, null=True, blank=True)
+    
+    def __str__(self):
+        return self.name
+
+class MapDataRow(Model):
+    """A single row in the data source"""
+    source = ForeignKey(MapDataSource, related_name='rows', on_delete=CASCADE)
+    country = ForeignKey(Country, related_name='custom_map_rows', on_delete=CASCADE)
+    drug = ForeignKey(Drug, related_name='custom_map_rows', on_delete=CASCADE)
+
+    data = TextField(validators=[validate_json],
+        help_text='The content for this row, must be a json encoded row')
+
+    class Meta:
+        ordering = ('country', 'drug')
+        unique_together = (('source', 'country', 'drug'),)
+
+    def __str__(self):
+        return f"{self.parent_map}:{self.country}x{self.drug}"
+
+class MapDisplay(Model):
+    """A displayed map of the given data"""
     slug = SlugField(max_length=16)
     name = CharField(max_length=32)
-    description = CharField(max_length=128)
+    description = CharField(max_length=128, null=True, blank=True)
+
+    data = ForeignKey(MapDataSource, related_name='maps', on_delete=CASCADE)
 
     fill_column = CharField(max_length=48, default='count',
         help_text="The value used to decide what color the fill should be.")
@@ -33,6 +63,7 @@ class CustomMap(Model):
         help_text="A comma seperated list of color ranges.")
     fill_colors = TextField(max_length=255, default='#FFFFDD,#C7E9B4,#7FCDBB,#41B6C4,#1D91C0',
         help_text="A comma seperated list of colours which the ranges relate to.")
+    default_drug = ForeignKey(Drug, null=True, blank=True, on_delete=SET_NULL)
 
     def natural_key(self):
         return (self.slug,)
@@ -56,8 +87,11 @@ class CustomMap(Model):
     def get_colors(self):
         return self.fill_colors.split(',')
 
-class MapDetail(Model):
-    parent_map = ForeignKey(CustomMap, related_name='details', on_delete=CASCADE)
+    def get_absolute_url(self):
+        return reverse('maps:data.marginalplaces', kwargs={'slug': self.slug})
+
+class MapDisplayDetail(Model):
+    parent_map = ForeignKey(MapDisplay, related_name='details', on_delete=CASCADE)
     label = CharField(max_length=128)
     column = CharField(max_length=48, help_text="The column who's value is shown in this detail row.")
     kind = CharField(max_length=16, default='str', choices=(
@@ -74,8 +108,8 @@ FILTER_TYPES = (
     ('limit', 'Limit by values'),
 )
 
-class MapDataFilter(Model):
-    parent_map = ForeignKey(CustomMap, related_name='data_filters', on_delete=CASCADE)
+class MapDisplayFilter(Model):
+    parent_map = ForeignKey(MapDisplay, related_name='data_filters', on_delete=CASCADE)
 
     key = SlugField(max_length=16, default="")
     kind = CharField(max_length=16, choices=FILTER_TYPES, default="")
@@ -97,19 +131,4 @@ class MapDataFilter(Model):
             })
             self.save()
             return []
-
-class MapRow(Model):
-    parent_map = ForeignKey(CustomMap, related_name='rows', on_delete=CASCADE)
-    country = ForeignKey(Country, related_name='custom_map_rows', on_delete=CASCADE)
-    drug = ForeignKey(Drug, related_name='custom_map_rows', on_delete=CASCADE)
-
-    data = TextField(validators=[validate_json],
-        help_text='The content for this row, must be a json encoded row')
-
-    class Meta:
-        ordering = ('country', 'drug')
-        unique_together = (('parent_map', 'country', 'drug'),)
-
-    def __str__(self):
-        return f"{self.parent_map}:{self.country}x{self.drug}"
 

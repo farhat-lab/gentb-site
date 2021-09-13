@@ -95,7 +95,7 @@ $(document).ready(function() {
 
           // calls a function using the json data just fetched, the data already
           //   stored in the tabs, and the url used to fetch the data.
-          tab.data('json-signal')(json, url, data);
+          tab.data('json-signal')(json, url, data, tab);
 
           //Signal that the tab data has been fetched and 
           tab.data('done', true);
@@ -287,7 +287,7 @@ function liquidateData() {
     for(key in data) {
       var datum = data[key];
       if(!datum['text']) {
-          console.error("Invalid data structure!");
+          console.error("Invalid data structure!", data);
           return;
       }
       for(i in datum['values']) {

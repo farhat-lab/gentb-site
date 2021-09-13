@@ -125,9 +125,7 @@ class Places(JsonView, DataSlicerMixin):
         return {
             "type": "FeatureCollection",
             'filters': self.applied_filters(),
-            'features':
-
-            [
+            'features': [
                 {
                     # Turning this to json and then back to python just to feed
                     # to JsonView, seems a little wasteful and redundent.
@@ -151,8 +149,7 @@ class Places(JsonView, DataSlicerMixin):
                     }
 
                 } for country in Country.objects.filter(iso2__in=list(ret))
-                ]
-
+            ]
         }
 
 

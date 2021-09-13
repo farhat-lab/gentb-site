@@ -25,7 +25,7 @@ from django.views.generic.base import RedirectView
 from .views import MapPage, Places, DrugList, Lineages, \
     MutationView, LocusList, Mutations, Sources
 
-from .views_antibiograms import AntibiogramMap, MarginalPlaces, MarginalDrugs
+from .views_antibiograms import AntibiogramMap, MarginalPlaces
 
 app_name = 'maps'
 urlpatterns = [
@@ -44,7 +44,6 @@ urlpatterns = [
 
     # New autobiograms map
     path('antibiogram/', AntibiogramMap.as_view(), name="map.antibiogram"),
-    path('data/antibiograms/places/', MarginalPlaces.as_view(), name="data.marginalplaces"),
-    path('data/antibiograms/drugs/', MarginalDrugs.as_view(), name="data.marginaldrugs"),
+    path('data/antibiograms/<str:slug>/', MarginalPlaces.as_view(), name="data.marginalplaces"),
 
 ]

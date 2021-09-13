@@ -19,9 +19,19 @@
  */
 
 $(document).ready(function() {
-  $('div.maps').each(function(map) {
-    var map = L.map(this.id).setView([12, 25], 2);
-    var newLegend = function(map, max, color) {
+    $('div.generic-map').each(function(id, elem) {
+
+      console.log("Setting up map", elem.id);
+
+      var map = L.map(elem.id).setView([12, 25], 2);
+      L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          maxZoom: 18,
+          attribution: '' //Map tiles (c) <a href="http://openstreetmap.org">OpenStreetMap</a>, Map data (c) genTB'
+      }).addTo(map);
+
+      $(elem.parentNode).data('map', map);
+
+    /*var newLegend = function(map, max, color) {
         legend = L.control({
             position: 'topright'
         });
@@ -75,32 +85,32 @@ $(document).ready(function() {
               .attr("y", 21)
               .text('Number of isolates');
 
-    };
+    };*/
 
-    initialiseStrainMap(map);
-
-    $('#map-store').data('json-signal', function(data) {
-      mapAntibiogramData(map, data);
-      map.invalidateSize();
-      createFilterDropdowns(data.c_filters);
-    });
+  });
+  $('.filter-map').data('json-signal', function(json, url, data, tab) {
+      var content = $('#' + tab.data('tab-key') + "-content");
+      var map = content.data('map');
+      mapAntibiogramData(map, json, tab);
+      createFilterDropdowns(json.c_filters, tab);
+      setTimeout(function(){ map.invalidateSize()}, 100);
   });
 });
 
 // Create dropdowns which allow the user to filter the data shown in the maps.
-function createFilterDropdowns(filters) {
+function createFilterDropdowns(filters, tab) {
 
-  var template = $('.toolbar .template').clone();
+  var content_id = tab.data('tab-key') + "-content";
+  var content = $('#' + content_id);
+  var template = $('.toolbar .template', content).clone();
   template.removeClass('template');
 
   $.each(filters, function(index, f) {
-      var existing = $('.toolbar #' + f.key);
+      var existing = $('.toolbar #' + f.key + '-store', content);
 
-      if (existing.length) {
+      if (existing.length || !template.length) {
           console.log("Existing!");
       } else {
-          console.log("New dropdown!", f);
-
           var dropdown = template.clone();
 
           $('.filter-label', dropdown).text(f.label);
@@ -114,31 +124,27 @@ function createFilterDropdowns(filters) {
               }
           });
           dropdown.show();
-          $('.toolbar').append(dropdown);
+          $('.toolbar', content).append(dropdown);
 
-          // We need to make a new tab store here.
-          var store = $('<a href="#" class="list-group-item text-center filter-' + f.key + '" id="' + f.key + '-store" style="display: none;"><h2 class=""></h2><p></p></a>');
-          $('#data-store').append(store);
+          if ($('#data-store #' + f.key + '-store').length == 0) {
+              // We need to make a new tab store here.
+              var store = $('<a href="#" class="list-group-item text-center filter-' + f.key + '" id="' + f.key + '-store" style="display: none;"><h2 class=""></h2><p></p></a>');
+              $('#data-store').append(store);
+          }
 
+          // Filters toolbar
+          $('.dropdown-menu li', dropdown).click(function() {
+              var parent = this.parentNode.parentNode;
+              var key = parent.id;
+              var value = $(this).data('value');
+              $('.filter-value', parent).text(value);
+              unsetTabData(key);
+              addTabData(key, value, value, undefined, undefined);
+              tab.trigger("data:refresh");
+          });
       }
   });
-  $('.toolbar .template').remove();
-
-  // Filters toolbar
-  $('.toolbar .dropdown-menu li').click(function() {
-      var parent = this.parentNode.parentNode;
-      var key = parent.id;
-      var value = $(this).data('value');
-      $('.filter-value', parent).text(value);
-      unsetTabData(key);
-      addTabData(key, value, value, undefined, undefined);
-      reloadMapData();
-  });
-}
-
-function reloadMapData() {
-    var map_tab = $('#map-store');
-    map_tab.trigger("data:refresh");
+  $('.toolbar .template', content).remove();
 }
 
 function matchKey(datapoint, key_variable) {
@@ -148,21 +154,13 @@ function matchKey(datapoint, key_variable) {
   return "black";
 }
 
-var legend = null;
-function initialiseStrainMap(map) {
-  L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    maxZoom: 18,
-    attribution: '' //Map tiles (c) <a href="http://openstreetmap.org">OpenStreetMap</a>, Map data (c) genTB'
-  }).addTo(map);
-}
-
 var details = null;
 var map_layer = null;
-function mapAntibiogramData(map, data) {
+function mapAntibiogramData(map, data, tab) {
     let color_max;
     let best_color;
 
-    var existing = getTabData('map');
+    var existing = getTabData(tab.data('tab-key'));
     if(map_layer) {
         // Remove previous layer
         map.removeLayer(map_layer);

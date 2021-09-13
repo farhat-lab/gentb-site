@@ -1,23 +1,31 @@
 from django.contrib.admin import ModelAdmin, StackedInline, TabularInline, register
 
-from .models import CustomMap, MapDetail, MapDataFilter, MapRow
+from .models import MapDisplayDetail, MapDisplayFilter, MapDisplay, MapDataSource, MapDataRow
 
-class DetailsInline(TabularInline):
-    model = MapDetail
+class DetailInline(TabularInline):
+    model = MapDisplayDetail
     extra = 1
 
 class FilterInline(StackedInline):
-    model = MapDataFilter
+    model = MapDisplayFilter
     extra = 1
 
-@register(CustomMap)
-class CustomMapAdmin(ModelAdmin):
-    list_display = ('name',)
-    search_fields = ('name',)
-    inlines = [DetailsInline, FilterInline]
+@register(MapDisplay)
+class MapDisplayAdmin(ModelAdmin):
+    list_display = ('name', 'data', 'description')
+    list_filter = ('data',)
+    search_fields = ('name', 'description')
+    inlines = [DetailInline, FilterInline]
 
-@register(MapRow)
+@register(MapDataSource)
+class MapSourceAdmin(ModelAdmin):
+    list_display = ('name', 'count_rows')
+
+    def count_rows(self, obj):
+        return obj.rows.count()
+
+@register(MapDataRow)
 class MapRowAdmin(ModelAdmin):
-    list_display = ('parent_map', 'country', 'drug')
-    list_filter = ('parent_map', 'drug')
-    search_fields = ('parent_map__name', 'country__name')
+    list_display = ('source', 'country', 'drug')
+    list_filter = ('source', 'drug')
+    search_fields = ('source__name', 'country__name')

@@ -21,7 +21,7 @@ A second map with Marginal Resistance data.
 import re
 import json
 from collections import defaultdict
-from django.views.generic import TemplateView
+from django.views.generic import ListView, TemplateView
 from django.db.models import Count
 
 from apps.mutations.models import Drug
@@ -30,10 +30,11 @@ from .mixins import JsonView, DataSlicerMixin
 from .utils import GraphData, geo_adjust
 from .models import Country
 
-from apps.maptables.models import CustomMap, MapRow
+from apps.maptables.models import MapDisplay, MapDataRow
 from apps.mutations.models import Drug
 
-class AntibiogramMap(TemplateView):
+class AntibiogramMap(ListView):
+    model = MapDisplay
     title = "Antibiograms Map"
     template_name = 'maps/map_antibiograms.html'
 
@@ -41,20 +42,19 @@ class MarginalPlaces(JsonView, DataSlicerMixin):
     """
     Provide a json output that slices mutation data by country
     """
-    model = MapRow
+    model = MapDataRow
     order = ['country__name', 'country__region']
     values = ['country__iso2', 'drug__code', 'drug__name', 'data']
     filters = {
-        'parent_map__slug': ['antibiograms'],
         'drug[]': 'drug__code',
     }
 
     def get_context_data(self, **_):
         drugs = dict()
-        parent_map = CustomMap.objects.get(slug='antibiograms')
-        filters = parent_map.data_filters.all()
+        parent_map = MapDisplay.objects.get(slug=self.kwargs['slug'])
+        filters = list(self.prepare_filters(parent_map.data_filters.all()))
         rows = defaultdict(dict)
-        for row in self.get_data():
+        for row in self.get_data().filter(source_id=parent_map.data.pk):
             drugs[row['drug__code']] = row['drug__name']
             data = json.loads(row['data'])
             if self.filter_row(filters, data):
@@ -62,7 +62,10 @@ class MarginalPlaces(JsonView, DataSlicerMixin):
 
         drug = None
         default_drug = 'INH'
+        if parent_map.default_drug:
+            default_drug = parent_map.default_drug.code
         drug_sort = [default_drug]
+
         # Limit to one drug only
         if len(drugs) > 1:
             for dname in drug_sort:
@@ -73,7 +76,7 @@ class MarginalPlaces(JsonView, DataSlicerMixin):
         elif len(drugs) == 1:
             drug = list(drugs)[0]
 
-        all_drugs = dict(parent_map.rows.values_list('drug__code', 'drug__name'))
+        all_drugs = dict(parent_map.data.rows.values_list('drug__code', 'drug__name'))
 
         return {
             "type": "FeatureCollection",
@@ -115,12 +118,17 @@ class MarginalPlaces(JsonView, DataSlicerMixin):
             },
         ]
 
-    def filter_row(self, filters, row):
+    def prepare_filters(self, filters):
+        """Prepare filter functions and values"""
         for _fl in filters:
-            value = self.request.GET.getlist(_fl.key, None)
+            value = self.request.GET.getlist(_fl.key + '[]', self.request.GET.get(_fl.key, None))
+            yield (_fl, getattr(self, 'filter_' + _fl.kind, self.filter_none), value)
+
+    def filter_row(self, filters, row):
+        for _fl, func, value in filters:
             if value is None or len(value) == 0:
                 return True
-            if not getattr(self, 'filter_' + _fl.kind, self.filter_none)(_fl, value[0], row):
+            if not func(_fl, value[0], row):
                 return False
         return True
 
@@ -136,65 +144,28 @@ class MarginalPlaces(JsonView, DataSlicerMixin):
         if _fl.column not in row:
             return False
         if row[_fl.column] < value:
-            print(f"Ignoring row {row} {value}")
             return False
         return True
 
     def applied_filters(self, filters):
         """Generate filters which the javascript can create into dropdowns"""
-        for _fl in filters:
+        for _fl, _, selected in filters:
             opts = _fl.get_options()
             if not opts or isinstance(opts, dict) and opts['error']:
                 print("Ignoring missing or error drop down")
                 continue
 
-            selected = self.request.GET.get(_fl.key, None)
-            if selected is None:
+            if selected is None or len(selected) == 0:
                 selected = opts[0].get('value', None)
 
+            if not isinstance(selected, (tuple, list)):
+                selected = (selected,)
+
             for op in opts:
-                op['selected'] = op.get('value', None) == selected
+                op['selected'] = op.get('value', None) in selected
 
             yield {
                 'key': _fl.key,
                 'label': _fl.label,
                 'values': opts,
             }
-
-class MarginalDrugs(JsonView, DataSlicerMixin):
-    """Provide a json data slice into the drug resistance data"""
-    model = MapRow
-    order = ['drug__regimen', '-drug__priority',]
-    values = ['drug__name', 'drug__code', 'data']
-    filters = {
-        'parent_map__slug': ['antibiograms'],
-        'country[]': 'country__iso2__in',
-    }
-
-    def get_context_data(self, **_):
-        """Return a dictionary of template variables"""
-
-        totals = defaultdict(int)
-        for row in self.get_data():
-            dat = json.loads(row['data'])
-            totals[row['drug__code']] += dat['gentb_snp10_n']
-
-        
-        drug_dict = [
-            {
-                'key': 'gentb_snp10_n',
-                'values': [{
-                    'y': i,
-                    'x': t,
-                    'col': t,
-                    'value': i,
-                    'total': i,
-                } for t, i in totals.items()]
-            }
-        ]
-
-        return {
-            'data': drug_dict,
-            'filters': self.applied_filters(),
-        }
-
