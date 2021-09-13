@@ -24,7 +24,7 @@ def validate_json(text):
 
 class MapDataSource(Model):
     """A collection of rows for the data"""
-    slug = SlugField(max_length=16)
+    slug = SlugField(max_length=32)
     name = CharField(max_length=48)
     description = CharField(max_length=128, null=True, blank=True)
     
@@ -49,7 +49,7 @@ class MapDataRow(Model):
 
 class MapDisplay(Model):
     """A displayed map of the given data"""
-    slug = SlugField(max_length=16)
+    slug = SlugField(max_length=32)
     name = CharField(max_length=32)
     description = CharField(max_length=128, null=True, blank=True)
 
@@ -111,8 +111,8 @@ FILTER_TYPES = (
 class MapDisplayFilter(Model):
     parent_map = ForeignKey(MapDisplay, related_name='data_filters', on_delete=CASCADE)
 
-    key = SlugField(max_length=16, default="")
-    kind = CharField(max_length=16, choices=FILTER_TYPES, default="")
+    key = SlugField(max_length=32, default="")
+    kind = CharField(max_length=32, choices=FILTER_TYPES, default="")
     column = CharField(max_length=48)
 
     label = CharField(max_length=128)
