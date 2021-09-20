@@ -110,14 +110,13 @@ $(document).ready(function() {
         })
         .on('click', 'tbody tr', function () {
           var data = table.row( this.rowIndex - 1 ).data();
-          var name = data.str;
           var pk = data.pk;
           if ($(this).hasClass('selected') ) {
             $(this).removeClass('selected');
             removeTabData('genelocus', pk);
           } else {
             $(this).addClass('selected');
-            addTabData('genelocus', pk, name, ' icon-helix')
+            addTabData('genelocus', pk, data.name, ' icon-helix')
           }
       });
     });

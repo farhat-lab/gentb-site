@@ -179,8 +179,11 @@ $(document).ready(function() {
             var data = table.row( this.rowIndex - 1 ).data();
             var snp = $('#snp');
 
-            $(this).toggleClass('selected');
-            toggleTabData('mutation', data.name, data.name, ' icon-mutation');
+            if (toggleTabData('mutation', data.name, data.name, ' icon-mutation') == 1) {
+                $(this).addClass('selected');
+            } else {
+                $(this).removeClass('selected');
+            }
 
             mutations = getTabData('mutation');
             refresh_mutations_graph();
@@ -198,10 +201,10 @@ function refresh_mutations_graph() {
     $.getJSON($('svg.mutations').data('json-url'), getAllTabData())
       .done(function(json) {
           if(json.data.length > 0) {
-            $('#mutations').show();
+            $('#mutation_graph').show();
             $('#mutation_explainer').hide();
           } else {
-            $('#mutations').hide();
+            $('#mutation_graph').hide();
             $('#mutation_explainer').show();
           }
           chartData('svg.mutations', mutations_chart, json.data);

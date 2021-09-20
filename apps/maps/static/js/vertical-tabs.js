@@ -181,34 +181,36 @@ function setUsedFilters(filters) {
             'key' as the key word argument name sent to the server.
  */
 function addTabData(key, value, text, icon, column) {
-  var store = getTabStore(key);
+    var store = getTabStore(key);
 
-  if (!store.data('original-text')) {
-    store.data('original-column', store.data('column'));
-    store.data('original-text', $('p', store).text());
-    store.data('original-icon', $('h2', store).attr('class'));
-  }
+    if (!store.data('original-text')) {
+        store.data('original-column', store.data('column'));
+        store.data('original-text', $('p', store).text());
+        store.data('original-icon', $('h2', store).attr('class'));
+    }
 
-  if (!store.data('values').includes(value)) {
-    store.addClass('selected');
-    store.data('column', column);
-    store.data('values').push(value);
+    if (!store.data('values').includes(value)) {
+        store.addClass('selected');
+        store.data('column', column);
+        store.data('values').push(value);
 
-    $('p', store).text(text);
-    $('h2', store).attr('class', 'glyphicon glyphicon-'+icon);
-  }
-  updateVisuals(key);
+        $('p', store).text(text);
+        $('h2', store).attr('class', 'glyphicon glyphicon-'+icon);
+    }
+    updateVisuals(key);
 
-  // Updates (id -> name) mapping
-  if (text) { store.data('map')[value] = text };
+    // Updates (id -> name) mapping
+    if (text) { store.data('map')[value] = text };
+    return 1;
 }
 
 /* Removes all elements matching `value` from the `key` store */
 function removeTabData(key, value) {
-  var store = getTabStore(key);
-  store.data('values', store.data('values').filter(function(el) { return el != value }));
-  updateVisuals(key);
-  delete store.data('map')[value];
+    var store = getTabStore(key);
+    store.data('values', store.data('values').filter(function(el) { return el != value }));
+    updateVisuals(key);
+    delete store.data('map')[value];
+    return -1;
 }
 
 function getTabStore(key) {
@@ -225,12 +227,11 @@ function getTabStore(key) {
 
 /* Adds `value` to store if not already present, otherwise removes `value` */
 function toggleTabData(key, value, text, icon, column) {
-  var store = getTabStore(key);
-  if (store.data('values').includes(value)) {
-    removeTabData(key, value);
-  } else {
-    addTabData(key, value, text, icon, column);
-  }
+    var store = getTabStore(key);
+    if (store.data('values').includes(value)) {
+        return removeTabData(key, value);
+    }
+    return addTabData(key, value, text, icon, column);
 }
 
 /* Refreshes tab icon and plots to match new data */

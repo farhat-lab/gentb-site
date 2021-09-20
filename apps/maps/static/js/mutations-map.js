@@ -101,8 +101,12 @@ $(document).ready(function() {
                   max = Math.max(data[i]["properties"][attribute], max);
               }
           }
-          maxPlace = Math.ceil(Math.log10(max))
-          return max.toPrecision(maxPlace)
+          maxPlace = Math.ceil(Math.log10(max));
+          try {
+              return max.toPrecision(maxPlace);
+          } catch {
+              return -1;
+          }
       }
       var maxGDP = getMaxAttribute(data.features, "world_bank_gdp")
       var maxTotal = getMaxAttribute(data.features, "total_strains");
