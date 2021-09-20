@@ -31,6 +31,10 @@ class MapDataSource(Model):
     def __str__(self):
         return self.name
 
+    def get_columns(self):
+        row = self.rows.first()
+        return row is not None and row.get_columns() or []
+
 class MapDataRow(Model):
     """A single row in the data source"""
     source = ForeignKey(MapDataSource, related_name='rows', on_delete=CASCADE)
@@ -46,6 +50,15 @@ class MapDataRow(Model):
 
     def __str__(self):
         return f"{self.parent_map}:{self.country}x{self.drug}"
+
+    def get_data(self):
+        try:
+            return json.loads(self.data)
+        except Exception:
+            return {}
+
+    def get_columns(self):
+        return list(self.get_data().keys())
 
 class MapDisplay(Model):
     """A displayed map of the given data"""

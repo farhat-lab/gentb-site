@@ -1,4 +1,5 @@
 from django.contrib.admin import ModelAdmin, StackedInline, TabularInline, register
+from django.utils.html import format_html
 
 from .models import MapDisplayDetail, MapDisplayFilter, MapDisplay, MapDataSource, MapDataRow
 
@@ -19,10 +20,16 @@ class MapDisplayAdmin(ModelAdmin):
 
 @register(MapDataSource)
 class MapSourceAdmin(ModelAdmin):
-    list_display = ('name', 'count_rows')
+    list_display = ('name', 'count_rows', 'get_columns')
 
     def count_rows(self, obj):
+        """Rows"""
         return obj.rows.count()
+    count_rows.short_description = "Number of Rows"
+
+    def get_columns(self, obj):
+        return format_html("<br/>".join(obj.get_columns()))
+    get_columns.short_description = "Column Names"
 
 @register(MapDataRow)
 class MapRowAdmin(ModelAdmin):
