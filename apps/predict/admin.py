@@ -22,10 +22,18 @@ class ResultsInline(admin.TabularInline):
 
 class PredictStrainAdmin(admin.ModelAdmin):
     inlines = (ResultsInline,)
+    actions = ['clear_result_cache']
     raw_id_fields = ('piperun', 'pipeline', 'dataset', 'file_one', 'file_two')
     search_fields = ("name", "dataset__title")
-    list_display = ("name", "dataset", "file_one", "file_two")
+    list_display = ("name", "dataset", "file_one", "file_two", 'result_count')
     list_filter = ("pipeline",)
+
+    def clear_result_cache(modeladmin, request, queryset):
+        PredictResult.objects.filter(strain_id__in=queryset.values('pk')).delete()
+    clear_result_cache.short_description = "Clear all Results Cache (regenerate)"
+
+    def result_count(self, obj):
+        return obj.results.count()
 
 admin.site.register(PredictStrain, PredictStrainAdmin)
 
