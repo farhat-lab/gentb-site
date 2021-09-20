@@ -49,7 +49,7 @@ from apps.pipeline.models import Pipeline, PipelineRun, ProgramRun
 from apps.mutations.models import Drug, GeneLocus
 
 from .utils import lineage_spoligo, lineage_fast_caller, lineage_other_caller, filter_none
-from .predict_data import decypher_predict_format
+from .predict_data import decypher_predict_format, PredictParsingError
 
 LOGGER = logging.getLogger('apps.predict')
 
@@ -220,7 +220,11 @@ class PredictDataset(TimeStampedModel):
             'cols': [],
         }
         for strain in self.strains.filter(results__isnull=True):
-            strain.generate_results()
+            try:
+                strain.generate_results()
+            except PredictParsingError as err:
+                output['rows'].append({'name': strain, 'error': str(err)})
+                continue
 
         err_q = Q(drug__isnull=True)
         strains = defaultdict(list)

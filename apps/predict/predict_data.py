@@ -43,6 +43,9 @@ PR_FORMATS = (
 if len([len(pr) for pr in PR_FORMATS]) != len(PR_FORMATS):
     raise ValueError("Prediction formats MUST be different lengths for detection")
 
+class PredictParsingError(ValueError):
+    pass
+
 def decypher_predict_format(dat):
     metadata = {}
     rest, *data = dat
@@ -51,4 +54,4 @@ def decypher_predict_format(dat):
             for (name, kind), datum in zip(pr, rest):
                 metadata[name] = kind(datum)
             return metadata, data
-    raise ValueError("Can't decypher predict format!")
+    raise PredictParsingError("Can't decypher predict format!")
