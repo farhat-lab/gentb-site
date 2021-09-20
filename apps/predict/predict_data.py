@@ -20,6 +20,8 @@ has changed format several times (unfortunatly), this mask allows us to pick
 out which data format we're dealing with.
 """
 
+import json
+
 def _float(val):
     if not val or str(val).lower() == 'none':
         return None
@@ -38,7 +40,8 @@ def _bool(val):
 
 # List[('name', type/test), ...]
 PR_FORMATS = (
-    [('drug_code', str), ('dr', str), ('fneg', float), ('fpos', float)],
+    [('drug_code', str), ('dr', float), ('fneg', float), ('fpos', float)],
+    [('drug_code', str), ('pr', int), ('fneg', float), ('fpos', float), ('dr', float)],
 )
 if len([len(pr) for pr in PR_FORMATS]) != len(PR_FORMATS):
     raise ValueError("Prediction formats MUST be different lengths for detection")
@@ -55,3 +58,34 @@ def decypher_predict_format(dat):
                 metadata[name] = kind(datum)
             return metadata, data
     raise PredictParsingError("Can't decypher predict format!")
+
+
+def prediction_from_file(matrix_fn):
+    m_A, m_B, m_C, m_D = {}, {}, {}, {}
+    with open(matrix_fn, 'r') as fhl:
+        parts = json.loads(fhl.read())
+        (pr, m_A, m_B) = parts[:3]
+
+        # this is different because it assumes that there's only one strain.
+        name = list(pr)[0][0]
+        if not m_A:
+            m_A[name] = {name: [[None] * len(pr)]}
+        if not m_B:
+            m_B[name] = {name: [[None] * len(pr)]}
+
+        m_C[name] = [([None] * len(m_A[name][0]))] * len(m_A[name])
+        m_D[name] = [([None] * len(m_A[name][0]))] * len(m_A[name])
+
+        ex_1, ex_2 = parts[-2:] if len(parts) == 5 else ({}, {})
+        for index, value in ex_1.items():
+            m_C[name][int(index)] = filter_none(value)
+        for index, value in ex_2.items():
+            m_D[name][int(index)] = filter_none(value)
+
+    m_A = list(zip(*m_A[name]))
+    m_B = list(zip(*m_B[name]))
+    m_C = list(zip(*m_C[name]))
+    m_D = list(zip(*m_D[name]))
+    # Rotate mutation matrix 90 degrees
+    for x, (name, *rest) in enumerate(pr):
+        yield (name, (list(rest), m_A[x], m_B[x], m_C[x], m_D[x]))

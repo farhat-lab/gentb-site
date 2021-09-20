@@ -37,23 +37,5 @@
   </table>
 </div>
 
-<!--script>
-  $(document).ready(function() {
-    var data = {"rows": null, "cols": null,
-      "matrix": {{ object.get_heatmap|jsonify }}
-    };
-    var options = {
-      "xaxis_height": 80,
-      "yaxis_width": 120,
-      "xaxis_font_size": null,
-      "yaxis_font_size": null,
-      "brush_color": "#0000FF",
-      "show_grid": true,
-      "anim_duration": 500,
-    }
-    heatmap('#heatmap', data, options);
-  });
-</script-->
-
 {% endblock %}
 

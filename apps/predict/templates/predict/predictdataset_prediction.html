@@ -14,7 +14,7 @@
           {% else %}
             {% for col in row.cols %}
               <td title="<table><tr><th>Strain</th><td>{{ row.name }}</td></tr><tr><th>Drug</th><td>{{ col.name }}</td></tr><tr><th>DR Probability</th><td>{{ col.dr_probability }}</td></tr><tr><th>FP Rate</th><td>{{ col.false_positive }}</td></tr><tr><th>FN Rate</th><td>{{ col.false_negative }}</td></tr></table>" data-toggle="tooltip" data-container="body" data-html="true">
-                  <div class="cell" data-resultid='{{ col.result_id }}' data-row="{{ row.name }}" data-col="{{ col.name }}"><div style="{% if col.dr_probability == None %}background-color: #ccc;{% else %}opacity: {{ col.dr_probability }};{% endif %}">&nbsp;</div></div>
+                  <div class="cell" data-resultid='{{ col.result_id }}' data-row="{{ row.name }}" data-col="{{ col.name }}"><div style="{% if col.dr_prediction != None %}opacity: {{ col.dr_prediction|add:0 }};{% else %}{% if col.dr_probability == None %}background-color: #ccc;{% else %}opacity: {{ col.dr_probability }};{% endif %}{% endif %}">&nbsp;</div></div>
               </td>
             {% endfor %}
           {% endif %}

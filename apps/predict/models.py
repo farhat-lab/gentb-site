@@ -49,7 +49,7 @@ from apps.pipeline.models import Pipeline, PipelineRun, ProgramRun
 from apps.mutations.models import Drug, GeneLocus
 
 from .utils import lineage_spoligo, lineage_fast_caller, lineage_other_caller, filter_none
-from .predict_data import decypher_predict_format, PredictParsingError
+from .predict_data import decypher_predict_format, prediction_from_file, PredictParsingError
 
 LOGGER = logging.getLogger('apps.predict')
 
@@ -231,11 +231,11 @@ class PredictDataset(TimeStampedModel):
         qset = PredictResult.objects.filter(strain__dataset=self)
         vset = qset.exclude(err_q)\
                    .values_list('id', 'strain__name', 'drug__code',\
-                                'false_positive', 'false_negative', 'probability')
+                                'false_positive', 'false_negative', 'probability', 'prediction')
 
         errors = dict(qset.filter(err_q).values_list('strain__name', 'error'))
 
-        for pk, strain, drug, fpos, fneg, prob in vset:
+        for pk, strain, drug, fpos, fneg, prob, pred in vset:
             cols = strains[strain]
             if drug not in output['cols']:
                 output['cols'].append(drug)
@@ -247,7 +247,8 @@ class PredictDataset(TimeStampedModel):
             cols.extend([None] * (index - len(cols) + 1))
             cols[index] = {
                 'result_id': pk, 'name': drug,
-                'false_positive': fpos, 'false_negative': fneg, 'dr_probability': prob,
+                'false_positive': fpos, 'false_negative': fneg,
+                'dr_probability': prob, 'dr_prediction': pred,
             }
         for strain, cols in strains.items():
             output['rows'].append({'name': strain, 'cols': cols})
@@ -514,39 +515,10 @@ class PredictStrain(Model):
         matrix_fn = self.prediction_file
         if matrix_fn:
             try:
-                yield from self._prediction_from_file(matrix_fn)
+                yield from prediction_from_file(matrix_fn)
             except Exception as err:
+                raise
                 yield str(err), False
-
-    def _prediction_from_file(self, matrix_fn):
-        m_A, m_B, m_C, m_D = {}, {}, {}, {}
-        with open(matrix_fn, 'r') as fhl:
-            parts = json.loads(fhl.read())
-            (pr, m_A, m_B) = parts[:3]
-
-            # this is different because it assumes that there's only one strain.
-            name = list(pr)[0][0]
-            if not m_A:
-                m_A[name] = {name: [[None] * len(pr)]}
-            if not m_B:
-                m_B[name] = {name: [[None] * len(pr)]}
-
-            m_C[name] = [([None] * len(m_A[name][0]))] * len(m_A[name])
-            m_D[name] = [([None] * len(m_A[name][0]))] * len(m_A[name])
-
-            ex_1, ex_2 = parts[-2:] if len(parts) == 5 else ({}, {})
-            for index, value in ex_1.items():
-                m_C[name][int(index)] = filter_none(value)
-            for index, value in ex_2.items():
-                m_D[name][int(index)] = filter_none(value)
-
-        m_A = list(zip(*m_A[name]))
-        m_B = list(zip(*m_B[name]))
-        m_C = list(zip(*m_C[name]))
-        m_D = list(zip(*m_D[name]))
-        # Rotate mutation matrix 90 degrees
-        for x, (name, *rest) in enumerate(pr):
-            yield (name, (list(rest), m_A[x], m_B[x], m_C[x], m_D[x]))
 
     def generate_results(self):
         """Populate the database from the matrix files"""
@@ -565,6 +537,7 @@ class PredictStrain(Model):
                 continue
 
             res, _ = self.results.get_or_create(drug=drug, defaults={
+                'prediction': metadata.get('pr', None),
                 'probability': metadata['dr'],
                 'false_positive': metadata['fpos'],
                 'false_negative': metadata['fneg']
@@ -599,6 +572,7 @@ class PredictResult(Model):
     false_negative = DecimalField("False Negative Rate", null=True, blank=True, decimal_places=5, max_digits=10)
     false_positive = DecimalField("False Postive Rate", null=True, blank=True, decimal_places=5, max_digits=10)
     probability = DecimalField("Drug Resistance Probability", null=True, blank=True, decimal_places=5, max_digits=10)
+    prediction = BooleanField("Drug Resistance Prediction", null=True)
 
     error = CharField(max_length=255, null=True, blank=True)
 
