@@ -21,7 +21,7 @@ class Command(BaseCommand):
         """Add all the files to the coding"""
         genome = Genome.objects.get()
         gene_lookup = GeneLookup.from_files(*files)
-        loci = set(genome.gene_locuses.values_list('name', flat=True))
+        loci = set(genome.gene_loci.values_list('name', flat=True))
         count = 0
         for name in gene_lookup:
             count += 1

@@ -298,7 +298,7 @@ class Lineages(JsonView, DataSlicerMixin):
         return self.lineage_tree()
 
 class LocusList(DataTableMixin, ListView):
-    """Get a list of locuses that somewhat match the given locus string"""
+    """Get a list of loci that somewhat match the given locus string"""
     model = GeneLocus
     search_fields = ['name', 'gene_symbol', 'description']
     filters = {}

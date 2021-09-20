@@ -15,8 +15,8 @@ def to_drug_mutations(apps, schema_editor):
     (genome, _) = Genome.objects.get_or_create(name="Mycobacterium tuberculosis", code="H37Rv")
 
     drug_mutations = defaultdict(set)
-    for pkg in Drug.objects.values('pk', 'gene_locuses__mutations__name'):
-        drug_mutations[pkg['pk']].add(pkg['gene_locuses__mutations__name'])
+    for pkg in Drug.objects.values('pk', 'gene_loci__mutations__name'):
+        drug_mutations[pkg['pk']].add(pkg['gene_loci__mutations__name'])
 
     unique_locus = dict()
     for locus in GeneLocus.objects.all():
@@ -47,7 +47,7 @@ def to_drug_mutations(apps, schema_editor):
         drug.mutations.add(*[unique_mutations[name] for name in mutations])
 
 
-def to_drug_locuses(apps, schema_editor):
+def to_drug_loci(apps, schema_editor):
     """Move the relationship back to a foreignkey field and create duplicate mutations"""
     Mutation = apps.get_model("mutations", "Mutation")
     GeneLocus = apps.get_model("mutations", "GeneLocus")
@@ -76,5 +76,5 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunPython(to_drug_mutations, to_drug_locuses),
+        migrations.RunPython(to_drug_mutations, to_drug_loci),
     ]

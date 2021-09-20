@@ -38,7 +38,7 @@ urlpatterns = [
     path('data/places/', Places.as_view(), name="data.places"),
     path('data/drugs/', DrugList.as_view(), name="data.drugs"),
     path('data/lineages/', Lineages.as_view(), name="data.lineages"),
-    path('data/locuses/', LocusList.as_view(), name="data.locuses"),
+    path('data/loci/', LocusList.as_view(), name="data.loci"),
     path('data/mutations/', Mutations.as_view(), name="data.mutations"),
     path('data/mutation/', MutationView.as_view(), name="data.mutation"),
 

@@ -84,7 +84,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='genelocus',
             name='genome',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='gene_locuses', to='mutations.Genome'),
+            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='gene_loci', to='mutations.Genome'),
         ),
         migrations.AlterField(
             model_name='genelocus',

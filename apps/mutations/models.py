@@ -194,7 +194,7 @@ class GeneLocus(Model):
         ('R', 'RNA'),
     )
 
-    genome = ForeignKey(Genome, related_name='gene_locuses', null=True, blank=True,
+    genome = ForeignKey(Genome, related_name='gene_loci', null=True, blank=True,
                         on_delete=SET_NULL)
     name = CharField(max_length=255, db_index=True)
     previous_id = CharField(max_length=64, db_index=True, null=True, blank=True)

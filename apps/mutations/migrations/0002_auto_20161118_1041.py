@@ -267,6 +267,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='genelocus',
             name='genome',
-            field=models.ForeignKey(related_name='gene_locuses', blank=True, to='mutations.Genome', null=True, on_delete=models.CASCADE),
+            field=models.ForeignKey(related_name='gene_loci', blank=True, to='mutations.Genome', null=True, on_delete=models.CASCADE),
         ),
     ]

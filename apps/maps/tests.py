@@ -364,7 +364,7 @@ class LocusListData(BaseCase):
         """Test locus list is unsliced"""
         locus = GeneLocus.objects.get(gene_symbol='WA8')
         val = self.assertDataTable(
-            'maps:data.locuses', names=('pk', 'str', 'start'), order=2,
+            'maps:data.loci', names=('pk', 'str', 'start'), order=2,
             data={'genelocus[]': [locus.pk]},
             filters=()
         )

@@ -92,14 +92,14 @@ class Command(BaseCommand):
         name = os.path.basename(path.rstrip('/'))
         self.genome = Genome.objects.get(code='H37Rv')
         (self.importer, _) = ImportSource.objects.get_or_create(name=name)
-        locuses = dict(self.load_genes(os.path.join(path, 'genes.json'), status='Loading Genes'))
+        loci = dict(self.load_genes(os.path.join(path, 'genes.json'), status='Loading Genes'))
 
         tarset = None
         target_file = os.path.join(path, 'targets.json')
         if os.path.isfile(target_file):
             print "Creating Genetic target set: %s" % name
             (tarset, _) = TargetSet.objects.get_or_create(name=name, genome=self.genome)
-            targets = list(self.load_gene_targets(target_file, locuses=locuses, targetting=tarset, status='Loading Targets'))
+            targets = list(self.load_gene_targets(target_file, loci=loci, targetting=tarset, status='Loading Targets'))
 
         strainres = json_dict(os.path.join(path, 'resistances.json'), key_id='id')
 
@@ -213,9 +213,9 @@ class Command(BaseCommand):
 
 
     @json_generator
-    def load_gene_targets(self, target, locuses, targetting=None):
+    def load_gene_targets(self, target, loci, targetting=None):
         locus = None
-        for location, locus in locuses.items():
+        for location, locus in loci.items():
             if target['stop'] > location > target['start']:
                 break
         # XXX THIS WON"T WORK WITH A BREAK, SEE locus is None down there.
