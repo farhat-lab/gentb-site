@@ -579,7 +579,7 @@ class PredictStrain(Model):
                     (obj, created) = res.loci.get_or_create(category=cat + 1, locus=locus,
                                                                  defaults={'mutations': mutation})
                     if not created:
-                         br.mutations += "\n" + mutation
+                         obj.mutations += "\n" + mutation
 
     def __str__(self):
         return str(self.name)
