@@ -23,7 +23,7 @@ class ResultsInline(admin.TabularInline):
 class PredictStrainAdmin(admin.ModelAdmin):
     inlines = (ResultsInline,)
     raw_id_fields = ('piperun', 'pipeline', 'dataset', 'file_one', 'file_two')
-    search_fields = ("name", "dataset__name")
+    search_fields = ("name", "dataset__title")
     list_display = ("name", "dataset", "file_one", "file_two")
     list_filter = ("pipeline",)
 
