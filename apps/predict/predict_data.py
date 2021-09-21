@@ -21,6 +21,7 @@ out which data format we're dealing with.
 """
 
 import json
+from .utils import filter_none
 
 def _float(val):
     if not val or str(val).lower() == 'none':
