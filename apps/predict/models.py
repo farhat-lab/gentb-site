@@ -243,14 +243,19 @@ class PredictDataset(TimeStampedModel):
                     if len(ocol) < len(output['cols']):
                         ocol.append(None)
 
+        for pk, strain, drug, fpos, fneg, prob, pred in vset:
             index = output['cols'].index(drug)
-            cols.extend([None] * (index - len(cols) + 1))
+            cols = strains[strain]
+            cols.extend([None] * (len(output['cols']) - len(cols)))
             cols[index] = {
                 'result_id': pk, 'name': drug,
                 'false_positive': fpos, 'false_negative': fneg,
                 'dr_probability': prob, 'dr_prediction': pred,
             }
         for strain, cols in strains.items():
+            for x, drug in enumerate(output['cols']):
+                if x >= len(cols) or not cols[x] or not cols[x].get('name', None):
+                    cols[x] = {'result_id': None, 'name': drug}
             output['rows'].append({'name': strain, 'cols': cols})
         for strain, err in errors.items():
             if strain not in strains:
