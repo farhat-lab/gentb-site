@@ -181,39 +181,10 @@ class DrugList(JsonView, DataSlicerMixin):
             section['color'] = colors[x]
             section['d'] = section['key'].lower().replace(' ', '_')
 
-        if self.request.user.is_staff and \
-                len(self.request.GET.getlist('map[]')) == 1:
-            country = Country.objects.get(iso2=self.request.GET.get('map[]'))
-            try:
-                self.add_estimate_corrections(drug_dict, country.health.est_mdr / 100)
-            except CountryHealth.DoesNotExist:
-                section['COR'] = False
-
         return {
             'data': drug_dict,
             'filters': self.applied_filters(),
         }
-
-    def add_estimate_corrections(self, graph, expected):
-        """Correct for sensitivity error"""
-        cors = []
-        for x, drug in enumerate(graph[0]['values']):
-            vals = dict([(section['d'], section['values'][x]['value']) for section in graph])
-            # Calculate correction based on expected percentage.
-            cor = self.estimate_correction(expected, **vals)
-            cors.append({
-                'x': drug['x'],
-                'col': drug['col'],
-                'value': cor,
-                'y': cor,
-                'total': -1,
-            })
-        graph.insert(1, {
-            'values': cors,
-            'color': "#9ecae1",
-            'key': 'Oversampling',
-            'expected': expected,
-        })
 
     def estimate_correction(self, expected, sensitive_to_drug=0, intermediate=0, resistant_to_drug=0, **kw):
         """Estimate the corrects"""
