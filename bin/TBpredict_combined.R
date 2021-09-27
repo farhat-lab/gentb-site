@@ -117,7 +117,7 @@ predictfunction<-function(filename1, filename2){
   result_PZA<-matrix(NA,nrow=1,ncol=5, dimnames=list(c(), c('strain','drug','probability of resistance','False negative percent', 'False positive percent')))
 
   #load RandomForest object
-  load("../data/predict_rdata/pza_finalpredict_v2_0.RData")
+  load("data/predict_rdata/pza_finalpredict_v2_0.RData")
 
   #perform prediction and write strain ID, drug, and probability to result
   Valid <- predict(drugg.full.rf, strain, type='prob', norm.votes=TRUE, predict.all=FALSE)
@@ -143,7 +143,7 @@ predictfunction<-function(filename1, filename2){
 
   # Save JSON file
   file_noext <- substr(filename2, 1, nchar(filename2) - 24)
-  cat(toJSON(listOfpredictions, pretty = TRUE), "\n", file = paste0(file_noext, ".json"))
+  cat(toJSON(listOfpredictions, pretty = TRUE), "\n", file = paste0(file_noext, ".matrix.json"))
   
 }
 
