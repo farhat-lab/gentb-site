@@ -70,8 +70,8 @@ class MapDisplay(Model):
 
     fill_column = CharField(max_length=48, default='count',
         help_text="The value used to decide what color the fill should be.")
-    fill_max = DecimalField(default=1.0, decimal_places=4, max_digits=20,
-        help_text="The maximum value this field will be.")
+    fill_max = DecimalField(default=-1.0, decimal_places=4, max_digits=20,
+        help_text="The maximum value this field will be, if set to -1 the value will be automaticly the maximum value in the set.")
     fill_ranges = TextField(max_length=255, default='1/8,1/4,1/2,3/4',
         help_text="A comma seperated list of color ranges.")
     fill_colors = TextField(max_length=255, default='#FFFFDD,#C7E9B4,#7FCDBB,#41B6C4,#1D91C0',
@@ -84,14 +84,20 @@ class MapDisplay(Model):
     def __str__(self):
         return self.name
 
-    def get_ranges(self):
+    def get_max(self, values):
+        fill_max = float(self.fill_max)
+        if fill_max < 0.0:
+            fill_max = max(values)
+        return fill_max
+
+    def get_ranges(self, fill_max):
         ret = []
         for item in self.fill_ranges.split(','):
             if '/' in item:
                 a, b = [int(c) for c in item.split('/', 1)]
                 item = str(float(a) / float(b))
             if '.' in item and float(item) <= 1.0:
-                item = float(float(self.fill_max) * float(item))
+                item = float(float(fill_max) * float(item))
             else:
                 item = int(item)
             ret.append(item)

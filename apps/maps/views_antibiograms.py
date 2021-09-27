@@ -54,11 +54,17 @@ class MarginalPlaces(JsonView, DataSlicerMixin):
         parent_map = MapDisplay.objects.get(slug=self.kwargs['slug'])
         filters = list(self.prepare_filters(parent_map.data_filters.all()))
         rows = defaultdict(dict)
+        values = []
         for row in self.get_data().filter(source_id=parent_map.data.pk):
             drugs[row['drug__code']] = row['drug__name']
             data = json.loads(row['data'])
             if self.filter_row(filters, data):
                 rows[row['country__iso2']][row['drug__code']] = data
+                if parent_map.fill_column in data:
+                    try:
+                        values.append(float(data[parent_map.fill_column]))
+                    except Exception:
+                        pass
 
         drug = None
         default_drug = 'INH'
@@ -77,13 +83,14 @@ class MarginalPlaces(JsonView, DataSlicerMixin):
             drug = list(drugs)[0]
 
         all_drugs = dict(parent_map.data.rows.values_list('drug__code', 'drug__name'))
+        fill_max = parent_map.get_max(values)
 
         return {
             "type": "FeatureCollection",
             "fill": {
-                'max': parent_map.fill_max,
+                'max': fill_max,
                 'column': parent_map.fill_column,
-                'ranges': parent_map.get_ranges(),
+                'ranges': parent_map.get_ranges(fill_max),
                 'colors': parent_map.get_colors(),
             },
             "details": [
