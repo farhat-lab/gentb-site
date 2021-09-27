@@ -79,9 +79,11 @@ def prediction_from_file(matrix_fn):
 
         ex_1, ex_2 = parts[-2:] if len(parts) == 5 else ({}, {})
         for index, value in ex_1.items():
-            m_C[name][int(index)] = filter_none(value)
+            if index < len(m_C[name]):
+                m_C[name][int(index)] = filter_none(value)
         for index, value in ex_2.items():
-            m_D[name][int(index)] = filter_none(value)
+            if index < len(m_D[name]):
+                m_D[name][int(index)] = filter_none(value)
 
     m_A = list(zip(*m_A[name]))
     m_B = list(zip(*m_B[name]))
