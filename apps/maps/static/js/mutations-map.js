@@ -119,10 +119,10 @@ $(document).ready(function() {
 
       var color_by_dict = {
           // id : ["label", max_value, "key", function() { human readable value }]
-          "feature.properties.world_bank_gdp": ["GDP (Trillions)", maxGDP, "world_bank_gdp", function (val) { return Math.round(val * 100) / 100; } ],
+          "feature.properties.world_bank_gdp": ["GDP (Trillions $)", maxGDP, "world_bank_gdp", function (val) { return Math.round(val * 100) / 100; } ],
           "feature.properties.values.Total": ["Total isolates", maxTotal, "Total", function (val) { return undefined; }],
           "feature.properties.total_wealth": ["Total Wealth per Capita ($)", maxWealth, "total_wealth", function (val) { return Math.round(val); }],
-          "feature.properties.total_funding": ["Total TB Funding ($)", maxFunding, "total_funding", function (val) {
+          "feature.properties.total_funding": ["Total TB Funding (Billions $)", maxFunding, "total_funding", function (val) {
               if (val && val.length != 0) {
                   return Math.round((val/10000000)*10000000)/1000000000;
               }
