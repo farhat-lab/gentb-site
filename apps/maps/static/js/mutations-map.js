@@ -116,15 +116,22 @@ $(document).ready(function() {
       var maxTB = getMaxAttribute(data.features, "all_tb_incidence2018");
       var maxMDR = getMaxAttribute(data.features, "MDR");
       var maxWHOMDR = getMaxAttribute(data.features, "who_est_mdr");
+
       var color_by_dict = {
-          "feature.properties.world_bank_gdp": ["GDP (Trillions)", maxGDP, "world_bank_gdp"],
-          "feature.properties.values.Total": ["Total isolates", maxTotal, "Total"],
-          "feature.properties.total_wealth": ["Total Wealth per Capita ($)", maxWealth, "total_wealth"],
-          "feature.properties.total_funding": ["Total TB Funding ($)", maxFunding, "total_funding"],
-          "feature.properties.pop_dens": ["Population density (people per sq. km of land area)", maxPop, "pop_dens"],
-          "feature.properties.all_tb_incidence2018": ["TB Incidence (all types, cases per 100,000)", maxTB, "all_tb_incidence2018"],
-          "feature.properties.values.MDR": ["MDR isolates", maxMDR, "MDR"],
-          "feature.properties.who_est_mdr": ["WHO Estimated MDR (% of new cases)", maxWHOMDR, "who_est_mdr"]
+          // id : ["label", max_value, "key", function() { human readable value }]
+          "feature.properties.world_bank_gdp": ["GDP (Trillions)", maxGDP, "world_bank_gdp", function (val) { return Math.round(val * 100) / 100; } ],
+          "feature.properties.values.Total": ["Total isolates", maxTotal, "Total", function (val) { return undefined; }],
+          "feature.properties.total_wealth": ["Total Wealth per Capita ($)", maxWealth, "total_wealth", function (val) { return Math.round(val); }],
+          "feature.properties.total_funding": ["Total TB Funding ($)", maxFunding, "total_funding", function (val) {
+              if (val && val.length != 0) {
+                  return Math.round((val/10000000)*10000000)/1000000000;
+              }
+              return undefined;
+          }],
+          "feature.properties.pop_dens": ["Population density (people per sq. km of land area)", maxPop, "pop_dens", function (val) { return Math.round(val*10)/10; }],
+          "feature.properties.all_tb_incidence2018": ["TB Incidence (all types, cases per 100,000)", maxTB, "all_tb_incidence2018", function (val) { return val; }],
+          "feature.properties.values.MDR": ["MDR isolates", maxMDR, "MDR", function (val) { return undefined; }],
+          "feature.properties.who_est_mdr": ["WHO Estimated MDR (% of new cases)", maxWHOMDR, "who_est_mdr", function (val) { return (val*100000)/100000; }]
       }
 
       mapStrainData(map, data, newLegend, maxGDP, maxTotal, maxWealth, color_by_dict);
@@ -215,7 +222,7 @@ function mapStrainData(map, data, newLegend, maxGDP, maxTotal, maxWealth, color_
       .text(color_by_dict[$(".form-check-input:checked").val()][0]);
 
 
-});
+  });
 
   function onEachFeature(feature, layer) {
     var country_code = feature.properties.value;
@@ -229,22 +236,18 @@ function mapStrainData(map, data, newLegend, maxGDP, maxTotal, maxWealth, color_
     if(Object.keys(feature.properties.values).length > 2) {
       ret.append($("<hr/><div class='total' style='color:black'><span>Total isolates: </span><span>" + feature.properties.values.Total + "</span></div>"));
     }
-    ret.append($('<h6 style = "font-weight:bold"= >' + 'World Health Organization Related Data (per 100,000):' + '</h6>'));
-    ret.append($("<hr/><div style='color:#000080'> WHO Estimated MDR (New TB cases with rifampicin resistant TB): <span>" + (feature.properties.who_est_mdr*100000)/100000 + "</span></div>"));
-    ret.append($("<hr/><div style='color:#000080'> HIV Coincidence (TB cases who are HIV-positive): <span>" + (feature.properties.hiv_incidence2018) + "</span></div>"));
-    ret.append($("<hr/><div style='color:#000080'> TB Incidence (all types): <span>" + (feature.properties.all_tb_incidence2018) + "</span></div>"));
+    var opt_id = $(".form-check-input:checked").val();
+    var opt_col = color_by_dict[opt_id];
 
-    ret.append($('<h6 style = "font-weight:bold"= >' + 'World Health Organization and World Bank Related Social Determinants of Health Data:' + '</h6>'));
-    ret.append($("<hr/><div style = 'color:#505050'> Population Density (people per sq. km of land area): <span>" + (Math.round(feature.properties.pop_dens*10)/10) + "</span></div>"));
-    ret.append($("<hr/><div style = 'color:#505050'> Estimated average household size: <span>" + (Math.round(feature.properties.household*10)/10) + "</span></div>"));
-    if(feature.properties.total_funding && feature.properties.total_funding.length != 0) {
-    ret.append($("<hr/><div style = 'color:#505050'> Total TB Funding (billions): $<span>" + (Math.round(feature.properties.total_funding/10000000)*10000000)/1000000000 + "</span></div>"));
+    var opt_val = feature.properties.values[opt_col[2]];
+    if (opt_val == undefined) {
+        opt_val = feature.properties[opt_col[2]];
     }
-    else {
-        ret.append($("<hr/><div style = 'color:#505050'> Total TB Funding (billions): N/A<span>"  + "</span></div>"));
+    opt_val = opt_col[3](opt_val);
+    if (opt_val != undefined) {
+        ret.append($("<hr/><h6><div style='color:#000080'> " + opt_col[0] + ": <span>" + opt_val + "</span></div></h6>"));
     }
-    ret.append($("<hr/><div style = 'color:#505050'> GDP (Trillions): $<span>" + (Math.round(feature.properties.world_bank_gdp* 100)/100) + "</span></div>"));
-    ret.append($("<hr/><div style = 'color:#505050'> Total Wealth per Capita: $<span>" + (Math.round(feature.properties.total_wealth)) + "</span></div>"));
+
     var button1 = $("<button class='btn btn-primary btn-xs'>Select Country</button>").click(function() {
         // WARNING: jquery class selectors and addClass/removeClass DO NOT work here
 
