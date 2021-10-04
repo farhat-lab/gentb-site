@@ -84,7 +84,12 @@ class ResumableFile(object):
     @property
     def upload_dir(self):
         """Gets the directory to save chunks to"""
-        return os.path.join(self.upload_root, str(self.user.pk), self.filename)
+        directory = os.path.join(self.upload_root, str(self.user.pk), self.filename)
+        # When orginal uploads have been deleted, re-upload them.
+        if os.path.islink(directory) and not os.path.exists(os.readlink(directory)):
+            os.unlink(directory)
+        # This might be a file, or a directory, or a symbolic link at this point.
+        return directory
 
     @property
     def is_complete(self):
@@ -99,8 +104,9 @@ class ResumableFile(object):
                 self.storage.save(self.name_template % self.kwargs, _file)
             except AttributeError:
                 pass # Error saving file
-            #except (IOError, OSError) as err:
-                #raise IOError("Tried to save: {}, {}, {}".format(self.name_template, self.kwargs, self.name_template % self.kwargs))
+            except (IOError, OSError) as err:
+
+                raise IOError("Tried to save: {}, {}, {}".format(self.name_template, self.kwargs, self.name_template % self.kwargs))
                 #pass # Existing file in the way
 
     def save_to(self, new_dir):
