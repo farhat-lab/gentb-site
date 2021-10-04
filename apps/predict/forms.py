@@ -177,7 +177,7 @@ class ManualInputForm(UploadForm):
 
 class UploadVcfForm(UploadForm):
     my_file_type = PredictDataset.FILE_TYPE_VCF
-    doc_title = "Create VCF Prediction"
+    doc_title = "Varient Call File (VCF)"
     doc_template = "predict/types/vcf.html"
     doc = "Create a prediction from a variant call file in VCF format."
     vcf_file = UploadField(extensions=VCF_FILES, required=True,
@@ -188,7 +188,7 @@ class UploadVcfForm(UploadForm):
 
 class UploadFastQSingleForm(UploadForm):
     my_file_type = PredictDataset.FILE_TYPE_FASTQ
-    doc_title = "Create FastQ Single-Ended Prediction"
+    doc_title = "Single-Ended FastQ File"
     doc_template = "predict/types/fastq_single.html"
     doc = "Create a prediction from single-ended FastQ genetic sequence."
     fastq_file = UploadField(extensions=FASTQ_FILES, required=True,
@@ -198,7 +198,7 @@ class UploadFastQSingleForm(UploadForm):
 
 class UploadFastQPairForm(UploadForm):
     my_file_type = PredictDataset.FILE_TYPE_FASTQ2
-    doc_title = "Create FastQ Pair-Ended Prediction"
+    doc_title = "Pair-Ended FastQ File"
     doc_template = "predict/types/fastq_pair.html"
     doc = "Create a prediction from a set of pair-ended FastQ genetic sequences."
     fastq_file = UploadField(extensions=FASTQ_FILES, buckets=[

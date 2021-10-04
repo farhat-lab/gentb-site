@@ -29,6 +29,11 @@
           {% endfor %}
         </tr>
       </thead>
+      <tfoot>
+        <tr>
+          <th colspan="{{ heatmap.cols|length }}"><h4 style="text-align: center; font-weight: bold; margin-top: 40px;">Click on the heatmap to explore drug resistance mutations</h4></th>
+        </tr>
+      </tfoot>
   </table>
 
   <div id="scatter" class="d3graph">

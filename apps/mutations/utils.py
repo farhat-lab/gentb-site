@@ -31,6 +31,16 @@ from datetime import date
 
 from django.db.models import Q
 
+# Generate a dictionary of nucleotides to aminoacids.
+ORDER = list(enumerate('TCAG'))
+TR = ('FFLL','SSSS','YY**','CC*W'),('LLLL','PPPP','HHQQ','RRRR'),('IIIM','TTTT','NNKK','SSRR'),('VVVV','AAAA','DDEE','GGGG')
+tt11 = dict([(a+b+c, TR[x][y][z]) for x,a in ORDER for y,b in ORDER for z,c in ORDER])
+
+def codon_to_aa(codon):
+    """Convert codons to amino acids for comparison"""
+    return ''.join([tt11[codon[pos:pos+3]]
+        for pos in range(0, len(codon), 3)])
+
 MONTHS = ['', 'jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec']
 DATE_FORMATS = [
     r'^(?P<year>\d{4})-(?P<mm>\d{2})-(?P<dd>\d{2})$',
