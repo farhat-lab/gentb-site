@@ -8,43 +8,49 @@
 
 <div id="testrunner">
   {% for pp in object.programs.all %}
+    {% with pp.program.version_report as report %}
   <div class="accordion-toggle">
     <div class="accordion-header" id="heading{{pp.program.pk}}">
       <button style="width: 100%; text-align: left;" class="btn btn-default" data-toggle="collapse" data-target="#collapse{{pp.program.pk}}" aria-expanded="true" aria-controls="collapse{{pp.program.pk}}" data-parent="#testrunner">
         <span class="glyphicon glyphicon-tasks"></span> {{ pp.program.name }}
+        <span class="pull-right">v{{ report.version }} {{ report.percent_complete }}</span>
       </button>
     </div>
 
     <div id="collapse{{pp.program.pk}}" class="accordion-body collapse" aria-labelledby="heading{{pp.program.pk}}">
-      {% for report in pp.program.version_report %}
+      {# for report in pp.program.version_report #}
         <div class="alert alert-info">
-          <h4><span class="glyphicon glyphicon-cog" aria-hidden="true"></span> Version {{ report.version }} <span class="pull-right">{{ report.percent_complete }}%</span></h4>
+          <h4><span class="glyphicon glyphicon-cog" aria-hidden="true"></span> Version {{ report.version }} <span class="pull-right">{{ report.percent_complete }}</span></h4>
           {% for run in report.runs %}
             <div class="accordion-toggle">
               <div class="accordion-header" id="heading{{run.pk}}">
-                <button style="width: 100%; text-align: left;" class="btn btn-default" data-toggle="collapse" data-target="#collapse{{run.pk}}" aria-expanded="true" aria-controls="collapse{{run.pk}}" data-parent="#collapse{{pp.program.pk}}">
+                <button style="width: 100%; text-align: left;" class="btn btn-default" data-toggle="collapse" data-target="#run{{run.pk}}" aria-expanded="true" aria-controls="run{{run.pk}}" data-parent="#collapse{{pp.program.pk}}">
                   <span class="glyphicon glyphicon-tasks"></span> {{ run }}
-                  <span class="pull-right">{{ run.job_state }}</span>
+                  {% if run.completed %}
+                    <span class="small text-muted" title="{{ run.completed }}">({{ run.completed|timesince }} ago)</span>
+                  {% endif %}
+                  <span class="pull-right">{% if not run.is_submitted or not run.is_started %}WAITIING{% else %}{{ run.job_state }}{% endif %}</span>
                 </button>
               </div>
             </div>
-            <div id="collapse{{run.pk}}" class="accordion-body collapse" aria-labelledby="heading{{run.pk}}">
+            <div id="run{{run.pk}}" class="accordion-body collapse" aria-labelledby="heading{{run.pk}}">
               {% if run.debug_text %}
                 <div class="alert alert-success">
                   {{ run|process_command }}
                 </div>
               {% endif %}
               {% if run.error_text %}
-                <div class="alert alert-danger">
+                <div class="alert {% if run.is_error %}alert-danger{% else %}alert-warning{% endif %}">
                   {{ run.error_text }}
                 </div>
               {% endif %}
             </div>
           {% endfor %}
         </div>
-      {% endfor %}
+      {# endfor #}
     </div>
   </div>
+    {% endwith %}
   {% endfor %}
 </div>
 

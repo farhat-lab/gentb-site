@@ -351,7 +351,7 @@ Write the command line using replacement syntax for inputs and outputs.
     def version_report(self):
         """Return a breakdown report of each version in use"""
         for version in sorted(set(self.runs.values_list('version', flat=True)), reverse=True):
-            yield PipelineProgramReport(version, self.runs.filter(version=version))
+            return PipelineProgramReport(version, self.runs.filter(version=version))
 
 
 class PipelineProgram(Model):
