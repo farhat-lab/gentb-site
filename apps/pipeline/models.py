@@ -54,6 +54,7 @@ from django.conf import settings
 from django.utils.timezone import now
 from django.utils.text import slugify
 
+from .reports import PipelineProgramReport
 from .utils import file_as_inputs
 
 LOGGER = logging.getLogger('apps.pipeline')
@@ -155,6 +156,10 @@ Write the command line using replacement syntax for inputs and outputs.
     quality_control = BooleanField(default=False,
         help_text='If true, failure in this step is considered a failure of the '
                   'data, and not failure of the pipeline program.')
+
+    last_edited = DateTimeField(auto_now=True, null=True, blank=True)
+    version = PositiveIntegerField(default=0)
+
     keep_for = IntegerField(default=-1,
         choices=[
             (-1, "Keep Forever"),
@@ -189,6 +194,10 @@ Write the command line using replacement syntax for inputs and outputs.
 
     def __str__(self):
         return self.name
+
+    def save(self, **kwargs):
+        self.version = (self.version or 0) + 1
+        return super().save(**kwargs)
 
     def io(self, outputs=True, inputs=True):
         """Parse the command line for input and output variables
@@ -338,6 +347,11 @@ Write the command line using replacement syntax for inputs and outputs.
         cmd = cmd.replace('<NL>', '\n')
 
         return cmd
+
+    def version_report(self):
+        """Return a breakdown report of each version in use"""
+        for version in sorted(set(self.runs.values_list('version', flat=True)), reverse=True):
+            yield PipelineProgramReport(version, self.runs.filter(version=version))
 
 
 class PipelineProgram(Model):
@@ -557,6 +571,8 @@ class ProgramRun(TimeStampedModel):
             ('COMPLETED', 'Completed'),
         ))
 
+    version = PositiveIntegerField(default=0)
+
     class Meta:
         ordering = ['created']
 
@@ -641,6 +657,7 @@ class ProgramRun(TimeStampedModel):
         self.delete_output_files(0)
 
         cmd = self.program.prepare_command(dict(fsi))
+        self.version = self.program.version
         self.debug_text = cmd
         return cmd
 

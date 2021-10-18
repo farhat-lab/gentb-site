@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% load plumber %}
+
+{% block content %}
+  <div class="row">
+    <div class="col-lg-12">
+      <h1 class="page-header">{{ title }}<br/><small>This report shows the pipeline runs and how they are failing. It limits the runs to the last 30 runs.</small></h1>
+
+<div id="testrunner">
+  {% for pp in object.programs.all %}
+  <div class="accordion-toggle">
+    <div class="accordion-header" id="heading{{pp.program.pk}}">
+      <button style="width: 100%; text-align: left;" class="btn btn-default" data-toggle="collapse" data-target="#collapse{{pp.program.pk}}" aria-expanded="true" aria-controls="collapse{{pp.program.pk}}" data-parent="#testrunner">
+        <span class="glyphicon glyphicon-tasks"></span> {{ pp.program.name }}
+      </button>
+    </div>
+
+    <div id="collapse{{pp.program.pk}}" class="accordion-body collapse" aria-labelledby="heading{{pp.program.pk}}">
+      {% for report in pp.program.version_report %}
+        <div class="alert alert-info">
+          <h4><span class="glyphicon glyphicon-cog" aria-hidden="true"></span> Version {{ report.version }} <span class="pull-right">{{ report.percent_complete }}%</span></h4>
+          {% for run in report.runs %}
+            <div class="accordion-toggle">
+              <div class="accordion-header" id="heading{{run.pk}}">
+                <button style="width: 100%; text-align: left;" class="btn btn-default" data-toggle="collapse" data-target="#collapse{{run.pk}}" aria-expanded="true" aria-controls="collapse{{run.pk}}" data-parent="#collapse{{pp.program.pk}}">
+                  <span class="glyphicon glyphicon-tasks"></span> {{ run }}
+                  <span class="pull-right">{{ run.job_state }}</span>
+                </button>
+              </div>
+            </div>
+            <div id="collapse{{run.pk}}" class="accordion-body collapse" aria-labelledby="heading{{run.pk}}">
+              {% if run.debug_text %}
+                <div class="alert alert-success">
+                  {{ run|process_command }}
+                </div>
+              {% endif %}
+              {% if run.error_text %}
+                <div class="alert alert-danger">
+                  {{ run.error_text }}
+                </div>
+              {% endif %}
+            </div>
+          {% endfor %}
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+
+    </div>
+  </div>
+{% endblock %}
+

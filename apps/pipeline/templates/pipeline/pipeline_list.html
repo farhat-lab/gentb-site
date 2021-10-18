@@ -9,28 +9,23 @@
       <table id="dataset-list" class="table table-striped table-bordered table-condensed">
         <thead>
           <tr>
-            <th class="text-center">&nbsp;</th>
             <th class="text-center">Name</th>
             <th class="text-center">Description</th>
             <th class="text-center">Jobs</th>
             <th class="text-center">Does Prediction</th>
-            <th class="text-center">Status</th>
+            <th class="text-center">Links</th>
           </tr>
         </thead>
         <tbody>
           {% for pipeline in object_list %}
             <tr>
-              <td>
-                {% if ds.is_busy %}
-                  <img src="{% static "images/spinner.svg" %}" style="width: 14px;"/>
-                {% else %}
-                {% endif %}
-              </td>
               <td><a href="{{ pipeline.get_absolute_url }}">{{ pipeline.name }}</a></td>
               <td>{{ pipeline.description }}</td>
               <td><a href="{% url "pipeline:runs" pipeline.pk %}">{{ pipeline.runs.count }}</a></td>
               <td>{% for pred in pipeline.predicts.all %}{{ pred.get_file_type_display }}{% endfor %}</td>
-              <td>{{ pipeline.status }}</td>
+              <th class="text-center">
+                <a href="{% url "pipeline:problems" pipeline.pk %}">Problems</a>
+              </th>
             </tr>
           {% endfor %}
         </tbody>

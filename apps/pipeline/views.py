@@ -115,6 +115,12 @@ class ProgramRunDetail(ProtectedMixin, DetailView): # pylint: disable=too-many-a
     model = ProgramRun
     staff_only = True
 
+class PipelineProblems(ProtectedMixin, DetailView):
+    """Show issues with the pipelines"""
+    template_name = 'pipeline/pipeline_problems_list.html'
+    model = Pipeline
+    staff_only = True
+
 class ProgramRunReTry(ProtectedMixin, SingleObjectMixin, RedirectView):
     model = ProgramRun
     staff_only = True

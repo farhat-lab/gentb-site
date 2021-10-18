@@ -24,7 +24,7 @@ from django.urls import path
 from .views import (
     PipelineDetail, PipelineRunList, PipelineRunDetail,
     JobViewer, ProgramRunDetail, ProgramRunReTry, PipelineList,
-    DiskUsage,
+    DiskUsage, PipelineProblems,
 )
 
 app_name = 'pipeline'
@@ -32,6 +32,7 @@ urlpatterns = [
     path('', PipelineList.as_view(), name='pipelines'),
     path('<int:pk>/', PipelineDetail.as_view(), name='detail'),
     path('<int:pk>/run/', PipelineRunList.as_view(), name='runs'),
+    path('<int:pk>/problems/', PipelineProblems.as_view(), name='problems'),
     path('run/', PipelineRunList.as_view(), name='runs'),
     path('run/<int:pk>/', PipelineRunDetail.as_view(), name='run'),
     path('jobs/', JobViewer.as_view(), name='jobs'),
