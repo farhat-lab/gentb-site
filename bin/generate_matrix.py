@@ -89,7 +89,7 @@ def generate_matrix(variants, filename):
             elif parts[1] == 'P':
                 # promoter (to maintain compatibility with old naming used in
                 # randomforest built from MIP data
-                operon = parts[len(parts)-1].split('-')
+                operon = parts[-1].split('-')
                 #sys.stderr.write(str(operon))
                 if operon[0] == "promoter":
                     pattern = parts[3] + '_' + operon[0] + '_' + operon[1]

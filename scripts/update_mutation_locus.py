@@ -106,8 +106,8 @@ def set_gene_locus(mut):
         symbol = str(mut).replace('inter-', 'intergenic ')\
                          .replace('promoter_', 'promoter ')\
                          .split('_')[-1].lower()
-        is_a = str(a.gene_symbol).lower() == symbol or str(a.name).lower() == symbol
-        is_b = str(b.gene_symbol).lower() == symbol or str(b.name).lower() == symbol
+        is_a = symbol in (str(a.gene_symbol).lower(), str(a.name).lower())
+        is_b = symbol in (str(b.gene_symbol).lower(), str(b.name).lower())
         if is_a and not is_b:
             print("A: Moving mutation from {} to {}".format(mut.gene_locus, a))
             mut.gene_locus = a

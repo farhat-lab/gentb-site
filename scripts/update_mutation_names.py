@@ -48,7 +48,7 @@ class Command(object):
                 for m_field, original, data in changes:
                     self.debug(f"  > {m_field} changed '{original}' to '{data}'")
                 if changes:
-                    self.debug(f" ++ Saving mutation changes")
+                    self.debug(" ++ Saving mutation changes")
                     mutation.save()
             except ValueError:
                 unmatched.append(mutation.name)

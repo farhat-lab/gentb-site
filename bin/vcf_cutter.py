@@ -23,7 +23,7 @@ import sys
 # only one base
 def main():
     if len(sys.argv) < 2:
-        exit(1)
+        sys.exit(1)
 
     REF_IDX = -1
     ALT_IDX = -1

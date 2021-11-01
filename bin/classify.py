@@ -39,7 +39,7 @@ def main():
             tbperc = float(percent.group(0)) / 100
 
             if tbperc < 0.9:
-                exit(1)
+                sys.exit(1)
 
             break
 

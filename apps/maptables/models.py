@@ -27,7 +27,7 @@ class MapDataSource(Model):
     slug = SlugField(max_length=32)
     name = CharField(max_length=48)
     description = CharField(max_length=128, null=True, blank=True)
-    
+
     def __str__(self):
         return self.name
 
@@ -120,7 +120,7 @@ class MapDisplayDetail(Model):
     ))
 
     def __str__(self):
-        return f"DETAILS:[self.label]"
+        return f"DETAILS:{self.label}"
 
 FILTER_TYPES = (
     ('', 'No filter'),
