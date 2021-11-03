@@ -164,8 +164,8 @@ class GeneLocusManager(Manager):
         symbol = name.replace('inter-', 'intergenic ')\
                      .replace('promoter_', 'promoter ')\
                      .split('_')[-1].lower()
-        is_a = str(first.gene_symbol).lower() == symbol or str(first.name).lower() == symbol
-        is_b = str(second.gene_symbol).lower() == symbol or str(second.name).lower() == symbol
+        is_a = symbol in (str(first.gene_symbol).lower(), str(first.name).lower())
+        is_b = symbol in (str(second.gene_symbol).lower(), str(second.name).lower())
         lk_a = first.name.lower() in symbol or str(first.gene_symbol).lower() in symbol
         lk_b = second.name.lower() in symbol or str(second.gene_symbol).lower() in symbol
         if (is_a and not is_b) or (lk_a and not lk_b):

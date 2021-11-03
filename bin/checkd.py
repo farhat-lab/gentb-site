@@ -35,7 +35,7 @@ def main():
 
     # nonzero exit for GenTB Pipeline
     if (valid / num_lines) < 0.95:
-        exit(1)
+        sys.exit(1)
 
 
 if __name__ == '__main__':

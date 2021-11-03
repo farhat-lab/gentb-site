@@ -69,7 +69,7 @@ class Command(BaseCommand):
                 )
             count += 1
             if count > 1000:
-                print(f" [x] Created 1000 Counts")
+                print(" [x] Created 1000 Counts")
                 StrainMutationCount.objects.bulk_create(bulk)
                 total_count += count
                 count = 0

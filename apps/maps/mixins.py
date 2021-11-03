@@ -52,7 +52,7 @@ class DjangoJSONEncoder2(DjangoJSONEncoder):
             return {'__type__': 'datetime.timedelta',
                     'args': [getattr(obj, arg) for arg in args]}
         if isinstance(obj, QuerySet):
-            return [item for item in obj]
+            return list(obj)
         return DjangoJSONEncoder.default(self, obj)
 
 #Inherit from the parent class View and add Caching

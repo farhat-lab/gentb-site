@@ -69,7 +69,7 @@ class Command(BaseCommand):
         if bad_countries:
             print(f" * WARNING: Could not match countries {bad_countries}, rows not imported")
         if not rows_added:
-            print(f" * CRITICAL: No rows added!")
+            print(" * CRITICAL: No rows added!")
         else:
             print(f"\n = Sucessfully imported {rows_added} rows =\n")
 
