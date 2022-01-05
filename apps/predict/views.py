@@ -26,6 +26,7 @@ from .forms import *
 
 class Datasets(PredictMixin, ListView):
     title = "My Datasets"
+    paginate_by = 10
 
     @classmethod
     def get_absolute_url(cls):
