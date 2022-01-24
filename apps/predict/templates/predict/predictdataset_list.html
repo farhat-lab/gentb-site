@@ -35,10 +35,8 @@
               </td>
               <td><a {% if ds.md5 %}href="{% url 'predict:view_single_dataset' ds.md5 %}"{% endif %}>{{ ds.title }}</a></td>
               <td>{{ ds.file_type }}</td>
-              {% if ds.has_prediction %}
-                <td class="success">
-                  {% for status in ds.statuses %}{% if status.code == "READY" %}{{ status.pc }}% Completed{% endif %}{% endfor %}
-                </td>
+              {% if ds.has_prediction and ds.strains_count > 0 %}
+                <td class="success">{% widthratio ds.strains_ready ds.strains_count 100 %}% Completed</td>
               {% else %}
                 <td class="{% if ds.is_error %}danger{% elif ds.is_busy %}info{% endif %}">
                   {{ ds.get_status }}

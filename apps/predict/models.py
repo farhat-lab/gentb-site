@@ -106,7 +106,10 @@ class PredictDataset(TimeStampedModel):
     description = TextField('Dataset description')
     file_directory = CharField(max_length=255, blank=True)
 
-    status = TextField('Status', max_length=32, default='', choices=STATUS_CHOICES)
+    status = CharField('Status', max_length=10, default='', choices=STATUS_CHOICES)
+    strains_count = IntegerField("Number of strains total", default=0)
+    strains_ready = IntegerField("Number of strains ready", default=0)
+
     has_prediction = BooleanField('Has prediction', default=False)
     has_lineages = BooleanField('Has lineages', default=False)
     has_output_files = BooleanField('Has any output files', default=False)
@@ -138,13 +141,19 @@ class PredictDataset(TimeStampedModel):
 
     def update_status(self):
         """Update all the cumulative statuses"""
+        total = 0
         previous = 100
+        statuses = defaultdict(int)
+
         self.status = 'RUN_NONE'
         self.has_prediction = False
         self.has_lineages = False
         self.has_output_files = False
 
         for strain in self.strains.all():
+            statuses[strain.status] += 1
+            total += 1
+
             if STATUS[strain.status][2] < previous:
                 self.status = strain.status
                 previous = STATUS[self.status][2]
@@ -158,23 +167,27 @@ class PredictDataset(TimeStampedModel):
             if not self.has_output_files and list(strain.output_files):
                 self.has_output_files = True
 
+        self.strains_count = total
+        self.strains_ready = statuses.get('READY', 0)
+
     @property
     def statuses(self):
-        """Return a count of statuses"""
-        ret = defaultdict(int)
-        total = 0
+        """Calculate the strains here"""
+        # We may want to combine this with the above status update somehow.
+        statuses = defaultdict(int)
         for strain in self.strains.all():
-            ret[strain.status] += 1
-            total += 1
-        if not ret:
-            ret['RUN_NONE'] = 1
+            statuses[strain.status] += 1
+
+        if not statuses:
+            statuses['RUN_NONE'] = 1
+
         return [{
             'code': status,
             'count': count,
             'label': STATUS[status][0],
             'level': STATUS[status][1],
-            'pc': "{:.2f}".format(count / total * 100),
-        } for (status, count) in ret.items()]
+            'pc': "{:.2f}".format(count / self.strains_count * 100),
+        } for (status, count) in statuses.items()]
 
     @property
     def directory_exists(self):
