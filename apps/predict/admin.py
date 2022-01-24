@@ -70,7 +70,7 @@ class PredictDatasetAdmin(admin.ModelAdmin):
     search_fields = ('title', 'user__first_name', 'user__last_name',)
     list_display = ('title', 'user', 'get_status', 'has_prediction', 'has_lineages', 'file_directory', 'created', 'modified',)
     list_filter = []
-    readonly_fields = [ 'created', 'modified', 'md5', 'file_directory',
+    readonly_fields = [ 'created', 'modified', 'md5', 'file_directory', 'last_action',
                         'status', 'has_prediction', 'has_lineages', 'has_output_files', 'strains_count', 'strains_ready',
                         'user_name', 'user_email', 'user_affiliation',]
 

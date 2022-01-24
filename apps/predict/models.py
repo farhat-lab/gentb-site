@@ -109,6 +109,7 @@ class PredictDataset(TimeStampedModel):
     status = CharField('Status', max_length=10, default='', choices=STATUS_CHOICES)
     strains_count = IntegerField("Number of strains total", default=0)
     strains_ready = IntegerField("Number of strains ready", default=0)
+    last_action = DateTimeField("Last Completed Action", null=True, blank=True)
 
     has_prediction = BooleanField('Has prediction', default=False)
     has_lineages = BooleanField('Has lineages', default=False)
@@ -149,6 +150,7 @@ class PredictDataset(TimeStampedModel):
         self.has_prediction = False
         self.has_lineages = False
         self.has_output_files = False
+        self.last_action = None
 
         for strain in self.strains.all():
             statuses[strain.status] += 1
@@ -166,6 +168,13 @@ class PredictDataset(TimeStampedModel):
 
             if not self.has_output_files and list(strain.output_files):
                 self.has_output_files = True
+
+            try:
+                dt = strain.get_time_taken()
+                if not self.last_action or (dt and dt > self.last_action):
+                    self.last_action = dt
+            except ValueError:
+                pass
 
         self.strains_count = total
         self.strains_ready = statuses.get('READY', 0)
@@ -196,35 +205,11 @@ class PredictDataset(TimeStampedModel):
 
     @property
     def time_taken(self):
-        strain = self.strains.first()
-
-        # check if these exist
-        if not strain:
-            return None
-
-        if not strain.piperun:
-            if not strain.pipeline:
-                return 'Error: No pipeline set (lost)'
-            if strain.pipeline.disabled:
-                return 'Error: pipeline disabled'
-            return 'Error: pipeline not started'
-
-        prs = ProgramRun.objects.filter(piperun=strain.piperun)
-
-        # one of the program runs had an error
-        if prs.filter(is_error=True).count():
-            return 'Error in pipeline'
-
-        # time of the final program run completion or now if still running
-        dt = now()
-        if not prs.filter(completed__isnull=True).count():
-            pr = prs.filter(completed__isnull=False).order_by('-completed').first()
-            if pr:
-                dt = pr.completed
-
+        if not self.last_action:
+            return '-'
         # TODO: awkward way to format time
         # removes microseconds from output
-        return str(dt - self.created).split('.')[0]
+        return str(self.last_action - self.created).split('.')[0]
 
     def is_manual(self):
         """Return true if this dataset is a manual input (rather than a file based input)"""
@@ -424,6 +409,31 @@ class PredictStrain(Model):
     def has_timedout(self):
         """Returns True if this prediction run has timed out"""
         return self.dataset.created < get_timeout()
+
+    def get_time_taken(self):
+        """Returns the datetime of the time completed"""
+        if not self.piperun:
+            if not self.pipeline:
+                raise ValueError('Error: No pipeline set (lost)')
+            if self.pipeline.disabled:
+                raise ValueError('Error: pipeline disabled')
+            raise ValueError('Error: pipeline not started')
+
+        prs = ProgramRun.objects.filter(piperun=self.piperun)
+
+        # one of the program runs had an error
+        if prs.filter(is_error=True).count():
+            raise ValueError('Error in pipeline')
+
+        # time of the final program run completion or now if still running
+        dt = None
+        if prs.filter(completed__isnull=False):
+            pr = prs.filter(completed__isnull=False).order_by('-completed').first()
+            if pr:
+                dt = pr.completed
+        elif prs.filter(completed__isnull=True):
+            dt = now()
+        return dt
 
     def get_status(self):
         """Return a string description of the status for this prediction strain"""
