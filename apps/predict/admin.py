@@ -70,7 +70,7 @@ class PredictDatasetAdmin(admin.ModelAdmin):
     search_fields = ('title', 'user__first_name', 'user__last_name',)
     list_display = ('title', 'user', 'get_status', 'has_prediction', 'file_directory', 'created', 'modified')
     list_filter = []
-    readonly_fields = [ 'created', 'modified', 'md5', 'file_directory',
+    readonly_fields = [ 'created', 'modified', 'md5', 'file_directory', 'status',
                         'user_name', 'user_email', 'user_affiliation',]
 
     def retry_processes(modeladmin, request, queryset):

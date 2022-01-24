@@ -67,7 +67,10 @@ STATUS = dict([
     ('READY', (_('Prediction Ready'), 'success', 0)),
     ('INVALID', (_('Lacks Quality'),'warning', 8)),
     ('TIMEOUT', (_('Processing Timed Out'), 'danger', 3)),
+    ('', (_('Status Unknown'), 'danger', 0)),
 ])
+
+STATUS_CHOICES = [(key, STATUS[key][0]) for key in STATUS]
 
 def get_timeout(timeout=14):
     """Returns the timedate when the prediction should time out"""
@@ -103,6 +106,8 @@ class PredictDataset(TimeStampedModel):
     description = TextField('Dataset description')
     file_directory = CharField(max_length=255, blank=True)
 
+    status = TextField('Status', max_length=32, default='', choices=STATUS_CHOICES)
+
     class Meta:
         ordering = ('-created', 'title')
 
@@ -128,8 +133,7 @@ class PredictDataset(TimeStampedModel):
         """Returns the btn/bootstrap color level for this status"""
         return STATUS[self.status][1]
 
-    @property
-    def status(self):
+    def update_status(self):
         """Returns the numeric level which this status has"""
         status = 'RUN_NONE'
         previous = 100
@@ -137,7 +141,7 @@ class PredictDataset(TimeStampedModel):
             if STATUS[strain.status][2] < previous:
                 status = strain.status
                 previous = STATUS[status][2]
-        return status
+        self.status = status
 
     @property
     def statuses(self):
@@ -298,6 +302,8 @@ class PredictDataset(TimeStampedModel):
             if not isdir(self.file_directory):
                 os.makedirs(self.file_directory)
 
+        self.update_status()
+
         return super(PredictDataset, self).save(*args, **kwargs)
 
     def get_full_json(self):
@@ -355,6 +361,11 @@ class PredictStrain(Model):
     file_two = ForeignKey(UploadFile, null=True, blank=True,
                           related_name='link_b', on_delete=SET_NULL)
     files = property(lambda self: [a for a in (self.file_one, self.file_two) if a])
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        # Update dataset saved status
+        self.dataset.save()
 
     def run(self):
         """Runs this pipeline as set (even if run before)"""
