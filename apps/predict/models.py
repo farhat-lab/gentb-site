@@ -107,6 +107,9 @@ class PredictDataset(TimeStampedModel):
     file_directory = CharField(max_length=255, blank=True)
 
     status = TextField('Status', max_length=32, default='', choices=STATUS_CHOICES)
+    has_prediction = BooleanField('Has prediction', default=False)
+    has_lineages = BooleanField('Has lineages', default=False)
+    has_output_files = BooleanField('Has any output files', default=False)
 
     class Meta:
         ordering = ('-created', 'title')
@@ -134,14 +137,26 @@ class PredictDataset(TimeStampedModel):
         return STATUS[self.status][1]
 
     def update_status(self):
-        """Returns the numeric level which this status has"""
-        status = 'RUN_NONE'
+        """Update all the cumulative statuses"""
         previous = 100
+        self.status = 'RUN_NONE'
+        self.has_prediction = False
+        self.has_lineages = False
+        self.has_output_files = False
+
         for strain in self.strains.all():
             if STATUS[strain.status][2] < previous:
-                status = strain.status
-                previous = STATUS[status][2]
-        self.status = status
+                self.status = strain.status
+                previous = STATUS[self.status][2]
+
+            if not self.has_prediction and strain.has_prediction:
+                self.has_prediction = True
+
+            if not self.has_lineages and strain.has_lineage:
+                self.has_lineages = True
+
+            if not self.has_output_files and list(strain.output_files):
+                self.has_output_files = True
 
     @property
     def statuses(self):
@@ -165,21 +180,6 @@ class PredictDataset(TimeStampedModel):
     def directory_exists(self):
         """Returns true if the file_directory exists"""
         return os.path.isdir(self.file_directory)
-
-    @property
-    def has_prediction(self):
-        """Returns true if any strain has a predict file"""
-        return any([strain.has_prediction for strain in self.strains.all()])
-
-    @property
-    def has_lineages(self):
-        """Return true if any strain has a lineage file"""
-        return any([strain.has_lineage for strain in self.strains.all()])
-
-    @property
-    def has_output_files(self):
-        """Return true if any strain has output files"""
-        return any([list(strain.output_files) for strain in self.strains.all()])
 
     @property
     def time_taken(self):
