@@ -87,7 +87,11 @@ class ResumableFile(object):
         directory = os.path.join(self.upload_root, str(self.user.pk), self.filename)
         # When orginal uploads have been deleted, re-upload them.
         if os.path.islink(directory) and not os.path.exists(os.readlink(directory)):
-            os.unlink(directory)
+            try:
+                os.unlink(directory)
+            except FileNotFoundError:
+                # Catch when a different thread cleaned up just as we were about to.
+                pass
         # This might be a file, or a directory, or a symbolic link at this point.
         return directory
 
