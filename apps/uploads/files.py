@@ -116,6 +116,7 @@ class ResumableFile(object):
     def save_to(self, new_dir):
         """When saving all the chunks to a new directory"""
         filename = os.path.join(new_dir, self.filename)
+        lock_file = filename + '.lock'
 
         if os.path.islink(self.upload_dir):
             # This was previously uploaded and we can relink it.
@@ -123,6 +124,11 @@ class ResumableFile(object):
                 linkto = os.readlink(self.upload_dir)
                 os.symlink(linkto, filename)
             return
+
+        if os.path.isfile(lock_file):
+            return
+        with open(lock_file, "w") as fhl:
+            fhl.write("1")
 
         # Actually save the file using storage
         storage = FileSystemStorage(location=new_dir)
@@ -138,6 +144,8 @@ class ResumableFile(object):
         # Create a symlink for tracking and re-user
         if os.path.isfile(filename):
             os.symlink(filename, self.upload_dir)
+        if os.path.isfile(lock_file):
+            os.unlink(lock_file)
 
     @property
     def size(self):
