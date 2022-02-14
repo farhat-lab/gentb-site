@@ -93,7 +93,8 @@ class Command(BaseCommand):
     def handle(self, **_):
         """Called from the command line"""
         # Limit all interactions to a timeout (usually a few weeks)
-        qset = PredictStrain.objects.filter(dataset__created__gt=get_timeout())
+        timeout = get_timeout()
+        qset = PredictStrain.objects.filter(dataset__created__gt=timeout)
 
         for strain in qset.filter(piperun__isnull=True, pipeline__isnull=False, pipeline__disabled=False):
             try:
@@ -113,6 +114,10 @@ class Command(BaseCommand):
 
         clean_predict_dir()
         self.notify_users()
+
+        for dataset in PredictDataset.objects.exclude(status='READY').filter(created__gt=get_timeout()):
+            time.sleep(1.0)
+            dataset.save()
 
 
 def clean_predict_dir():
