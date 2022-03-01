@@ -59,6 +59,16 @@
                   <h4>{{ run.program.name }}</h4>
                 </li>
               {% endif %}
+            {% elif run.job_state == "OUT_OF_MEMORY" %}
+                <li class="error">
+                  <span class="glyphicon glyphicon-signal" data-container="body" data-toggle="tooltip" title="Program ran out of memory."></span>
+                  <h4>{{ run.program.name }}</h4>
+                </li>
+            {% elif run.job_state == "TIMEOUT" %}
+                <li class="error">
+                  <span class="glyphicon glyphicon-time" data-container="body" data-toggle="tooltip" title="Program could not complete in the allotted time."></span>
+                  <h4>{{ run.program.name }}</h4>
+                </li>
             {% elif run.is_complete %}
               <li class="completed">
                 <span class="glyphicon glyphicon-ok" data-container="body" data-toggle="tooltip" title="Program run complete. <br><strong>Wait Time:</strong> {{ run.wait_time }}s<br><strong>Run Time:</strong> {{ run.run_time }}s" data-html="true"></span>
