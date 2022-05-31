@@ -240,7 +240,7 @@ class Lineages(JsonView, DataSlicerMixin):
         lin_counts = defaultdict(int)
         for strain in self.get_data():
             name = strain['lineage__name']
-            if name and re.compile(r'[[A-Z0-9.]').match(name):
+            if name and re.compile(r'[A-Z0-9.]').match(name):
                 lin_counts[name] += 1
         lin_counts = sorted(lin_counts.items())
 
@@ -477,7 +477,7 @@ class MutationView(JsonView, DataSlicerMixin):
                 # totals contains two of each category and so can't total up this
                 # extra dimention correctly (fix in GraphData later)
                 f_name = "{2} ({1})" if len(drugs) > 1 else "{2}"
-                print(f"TOTALS for drug: {drug} is {totals}")
+                #print(f"TOTALS for drug: {drug} is {totals}")
 
                 counts += [{
                     'name': f_name.format(*row),

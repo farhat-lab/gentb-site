@@ -542,7 +542,7 @@ class MutationResistanceData(BaseCase):
             'drug[]': ['PIN', 'WAVE'],
             'mutation[]': ['Mutation_001', 'Mutation_002',],
         })
-        print(mutations)
+        #print(mutations)
         self.assertGraphTotals(
             mutations,
             ['Mutation_001 (PIN)', 'Mutation_001 (WAVE)', 'Mutation_002 (PIN)', 'Mutation_002 (WAVE)'], {

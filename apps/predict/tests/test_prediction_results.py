@@ -89,7 +89,7 @@ class TestPredictFiles(ExtraTestCase):
         for err, dat in strain.get_raw_prediction():
             self.assertNotEqual(err, None)
             metadata, data = decypher_predict_format(dat)
-            self.assertEqual(metadata, {'dr': '0', 'drug_code': 'inh', 'fneg': 4.95, 'fpos': 8.76})
+            self.assertEqual(metadata, {'dr': 0.0, 'drug_code': 'inh', 'fneg': 4.95, 'fpos': 8.76})
             self.assertEqual(data, [
                 (None, None, None, None, None),
                 (None, None, None, None, None),

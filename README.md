@@ -10,10 +10,12 @@ Create a virtualenv and install deps:
 
 ```bash
 virtualenv -p python3 pythonenv
-./pythonenv/bin/activate
+. ./pythonenv/bin/activate
 python3 -m pip install --upgrade pip
 pip install -r requirements.txt
 ```
+
+Note: PyVCF can now not be installed using newer setuptools, use `pip install setuptools==58` to downgrade setuptools first.
 
 Next, you must create a database if you are using PostgreSQL or MySQL. If you are using the default SQLite, skip this.
 
@@ -26,7 +28,34 @@ Change settings relating to the database `location`, `username`, and `password`.
 Finally, it would be best to make sure GIS libraries are installed (some are only required for SQLite and MySQL). The version of `libgeos` may differ depending on the Ubuntu version.
 
 ```bash
-sudo apt install binutils libproj-dev gdal-bin libgeos-3.6.2 libsqlite3-mod spatialite
+sudo apt install binutils libproj-dev gdal-bin libgeos-dev libsqlite3-mod-spatialite
+sudo apt install postgresql-14-postgis-3
+```
+
+To create a database for postgres, log into psql:
+
+```sql
+CREATE DATABASE gentb_local;
+CREATE USER gentb WITH PASSWORD 'password';
+ALTER ROLE gentb SET client_encoding TO 'utf8';
+ALTER ROLE gentb SET default_transaction_isolation TO 'read committed';
+ALTER ROLE gentb SET timezone TO 'UTC';
+GRANT ALL PRIVILEGES ON DATABASE gentb_local TO gentb;
+ALTER DATABASE gentb_local SET timezone TO 'UTC';
+
+\c gentb_local
+CREATE EXTENSION IF NOT EXISTS postgis;
+```
+
+For running tests against the database:
+
+```sql
+CREATE DATABASE test_gentb_local;
+GRANT ALL PRIVILEGES ON DATABASE test_gentb_local TO gentb;
+ALTER DATABASE test_gentb_local SET timezone TO 'UTC';
+
+\c test_gentb_local
+CREATE EXTENSION IF NOT EXISTS postgis;
 ```
 
 Next, you should be able to run the migration:
