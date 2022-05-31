@@ -363,6 +363,11 @@ class Mutations(DataTableMixin, ListView):
         return super().process_datatable(qset,
             columns=columns, order=order, search=search, start=start, length=length)
 
+    def applied_filters(self):
+        all_filters = set(self.filters) | set(self.cache_filters) | set(self.strain_filters)
+        return [key.replace('[]', '')\
+            for key in all_filters if self.request.GET.get(key, '')]
+
     def process_counted_table(self, columns, start, length, order):
         """
         This special case for the strain order by allows us to use an index

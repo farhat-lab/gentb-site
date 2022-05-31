@@ -218,8 +218,7 @@ class DataTableMixin(object):
                 'data': \
                     self.prep_data(selected, dt_settings.get('columns', []), selected=True)\
                     + self.prep_data(qset, dt_settings.get('columns', [])),
-                'filters': [key.replace('[]', '')\
-                    for key in self.filters if self.request.GET.get(key, '')],
+                'filters': self.applied_filters(),
             })
         except PleaseWait as err:
             return JsonResponse({'please_wait': err.msg}, status=400)
@@ -227,6 +226,11 @@ class DataTableMixin(object):
             if self.request.GET.get('html'):
                 raise
             return JsonResponse({'error': str(err)}, status=400)
+
+    def applied_filters(self):
+        """Return a list of used filters"""
+        return [key.replace('[]', '')\
+            for key in self.filters if self.request.GET.get(key, '')],
 
     def get_count(self, qset):
         """Return the number of total unfiltered rows"""

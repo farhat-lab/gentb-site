@@ -101,8 +101,12 @@ class BaseCase(ExtraTestCase):
         field = kwargs.pop('field', 'data')
         filters = kwargs.pop('filters', None)
         content = json.loads(self.assertGet(*args, **kwargs).content)
-        if filters is not None:
-            self.assertEqual(tuple(content['filters']), tuple(filters))
+        if 'please_wait' in content:
+            self.assertEqual(content['please_wait'], kwargs.get('please_wait', None))
+        if 'error' in content:
+            self.assertEqual(content['error'], kwargs.get('error', None))
+        if filters:
+            self.assertEqual(tuple(filters), tuple(content['filters']))
         return content.get(field)
 
     def assertGraph(self, got_rows, cols, rows): # pylint: disable=invalid-name
@@ -411,8 +415,8 @@ class MutationsData(BaseCase):
             filters=('paper',)
         )
         self.assertEqual([unit['name'] for unit in val],\
-            ['Mutation_001', 'Mutation_002', 'Mutation_003', 'Mutation_004', 'Mutation_005'])
-        self.assertEqual([int(unit['strain_count']) for unit in val], [5, 3, 1, 2, 7])
+            ['Mutation_001', 'Mutation_002', 'Mutation_004', 'Mutation_005', 'Mutation_007'])
+        self.assertEqual([int(unit['strain_count']) for unit in val], [5, 3, 2, 7, 4])
 
     def test_map_output(self):
         """Test mutations sliced by map"""
@@ -423,8 +427,8 @@ class MutationsData(BaseCase):
             filters=('map',)
         )
         self.assertEqual([unit['name'] for unit in val],\
-            ['Mutation_001', 'Mutation_002', 'Mutation_003', 'Mutation_005', 'Mutation_006'])
-        self.assertEqual([int(unit['strain_count']) for unit in val], [4, 2, 1, 5, 3])
+            ['Mutation_001', 'Mutation_002', 'Mutation_005', 'Mutation_006', 'Mutation_007'])
+        self.assertEqual([int(unit['strain_count']) for unit in val], [4, 2, 5, 3, 3])
 
     def test_locus_output(self):
         """Test mutations sliced by locus"""
@@ -436,10 +440,11 @@ class MutationsData(BaseCase):
             filters=('genelocus',)
         )
         self.assertEqual([unit['name'] for unit in val],\
-            ['Mutation_006', 'Mutation_007', 'Mutation_016', 'Mutation_017', 'Mutation_018'])
-        self.assertEqual([int(unit['strain_count']) for unit in val], [6, 6, 4, 5, 1])
+            ['Mutation_006', 'Mutation_007', 'Mutation_016', 'Mutation_017', 'Mutation_019'])
+        self.assertEqual([int(unit['strain_count']) for unit in val], [6, 6, 4, 5, 3])
 
-    def test_drug_output(self):
+    # Disabled in code because it's too slow.
+    def _test_drug_output(self):
         """Test mutations sliced by drug"""
         val = self.assertDataTable(
             'maps:data.mutations', order=0,
@@ -548,9 +553,9 @@ class MutationResistanceData(BaseCase):
             ['Mutation_001 (PIN)', 'Mutation_001 (WAVE)', 'Mutation_002 (PIN)', 'Mutation_002 (WAVE)'], {
                 # PIN/r: BOB3,BOB4,BOB5,BOB8,BAB1,BAB5,BAB6,BBB1
                 # WAVE/r: BOB1,BOB2,BOB6,BOB8,BAB2,BAB3,BAB4,BAB5,BAB8,BBB1,BBB2
-                'Sensitive to Drug': ([6, 3, 3, 4], [8, 7, 8, 7]),
+                'Sensitive to Drug': ([6, 3, 3, 4], [7, 7, 7, 7]),
                 'Intermediate': ([0, 0, 0, 0], [-1, -1, -1, -1]),
                 # PIN/s: BOB2,BOB6,BOB9,BAB2,BAB3,BAB4,BAB7,BAB8
                 # WAVE/s: BOB3,BOB4,BOB5,BOB9,BAB1,BAB6,BAB7
-                'Resistant to Drug': ([2, 6, 3, 3], [8, 11, 8, 11]),
+                'Resistant to Drug': ([2, 6, 3, 3], [11, 11, 11, 11]),
             })
