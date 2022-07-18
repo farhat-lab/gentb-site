@@ -50,7 +50,7 @@ def pics(auc, name, rep):
         plt.legend(loc="lower right")
         #plt.show()
         pdf.savefig()
-        plt.close
+        plt.close()
 
 ########################################################################
 # Marginal Effets                                                      #
