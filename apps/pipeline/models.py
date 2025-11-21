@@ -276,6 +276,7 @@ Write the command line using replacement syntax for inputs and outputs.
             except ValueError as err:
                 errors.append(str(err))
 
+        # Override both files and test_files with inputs from the caller.
         if errors:
             raise PrepareError("Error preparing command: \n * " + \
                     "\n * ".join(errors))

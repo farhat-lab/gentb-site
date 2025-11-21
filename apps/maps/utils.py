@@ -155,7 +155,7 @@ class GraphData(defaultdict):
         total = self.keys['y'].get(cat)
         value = self[cat][col]
         if total is not None:
-            if total is 0:
+            if total == 0:
                 return 0, value, total
             return value / float(total), value, total
         return value, value, -1

@@ -202,8 +202,8 @@ class UploadFastQPairForm(UploadForm):
     doc_template = "predict/types/fastq_pair.html"
     doc = "Create a prediction from a set of pair-ended FastQ genetic sequences."
     fastq_file = UploadField(extensions=FASTQ_FILES, buckets=[
-        ('file_one', "^(.+)[\._\- ][Rr]?1\.(fastq|fq)(?:\.gz)?$", "Forward FastQ Files", 'file_two'),
-        ('file_two', "^(.+)[\._\- ][Rr]?2\.(fastq|fq)(?:\.gz)?$", "Backward FastQ Files", 'file_one')],
+        ('file_one', "^(.+)[\\._\\- ][Rr]?1\\.(fastq|fq)(?:\\.gz)?$", "Forward FastQ Files", 'file_two'),
+        ('file_two', "^(.+)[\\._\\- ][Rr]?2\\.(fastq|fq)(?:\\.gz)?$", "Backward FastQ Files", 'file_one')],
         required=True, label="FastQ Files",
         help_text="FastQ file containing the forward and backward sequence. Multiple strains can be selected for comparison.")
     ordered = 6
