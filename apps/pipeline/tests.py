@@ -143,16 +143,16 @@ class PipelineTest(ExtraTestCase):
         for pos, program in enumerate(self.programs):
             self.pipeline.programs.create(order=pos, program=program)
 
-    def assertProgram(self, result, inputs, outputs, data=None): # pylint: disable=invalid-name
+    def assertProgram(self, result, inputs, outputs, data=None, is_fake=False): # pylint: disable=invalid-name
         """Assert that creating a program produces the right data"""
         def content(filename):
             """Read in the filename and return content"""
             with open(filename, 'r') as fhl:
                 return fhl.read()
-        outputs = outputs if isinstance(outputs, list) else [outputs]
-        inputs = inputs if isinstance(inputs, list) else [inputs]
-        self.assertEqual(result.input_files, "\n".join(inputs))
-        self.assertEqual(result.output_files, "\n".join(outputs))
+        outputs = sorted(tuple(outputs if isinstance(outputs, list) else [outputs]))
+        inputs = sorted(tuple(inputs if isinstance(inputs, list) else [inputs]))
+        self.assertEqual(sorted(tuple(result.input_files.split("\n"))), inputs)
+        self.assertEqual(sorted(tuple(result.output_files.split("\n"))), outputs)
         if data is not None:
             ret = '---'.join([content(filename) for filename in outputs])
             self.assertEqual(ret, data)
@@ -162,8 +162,9 @@ class PipelineTest(ExtraTestCase):
         self.assertEqual(result.error_text, '')
         self.assertFalse(result.is_error)
 
-        self.assertGreater(result.input_size, 0)
-        self.assertGreater(result.output_size, 0)
+        if not is_fake:
+            self.assertGreater(result.input_size, 0)
+            self.assertGreater(result.output_size, 0) 
         self.assertGreater(result.duration, 0)
 
     @override_settings(PIPELINE_MODULE='chore.fake.FakeJobManager')
@@ -186,14 +187,15 @@ class PipelineTest(ExtraTestCase):
             limit -= 1
             self.assertTrue(limit > 0, "Pipeline test timed out.")
 
+        # commands aren't run in FakeJobManager
         results = list(result.programs.all())
         self.assertEqual(len(results), 4)
         filename = self.filename[:-4] + ".%s"
-        self.assertProgram(results[0], self.filename, filename % "ls")
-        self.assertProgram(results[1], filename % "ls", filename % "c")
-        #self.assertProgram(results[2], [
-        #    filename % "ls", self.filename, filename % "c"], filename % "out")
-        self.assertProgram(results[3], filename % "out", filename % "out")
+        self.assertProgram(results[0], self.filename, filename % "ls", is_fake=True)
+        self.assertProgram(results[1], filename % "ls", filename % "c", is_fake=True)
+        self.assertProgram(results[2], [
+            filename % "ls", self.filename, filename % "c"], filename % "out", is_fake=True)
+        self.assertProgram(results[3], filename % "out", filename % "out", is_fake=True)
 
     @override_settings(PIPELINE_MODULE='chore.fake.FakeJobManager')
     def test_duration(self):

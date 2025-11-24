@@ -36,6 +36,7 @@ Testing is done by including PipelineFiles as testing files.
 import re
 import os
 import sys
+import math
 import random
 import logging
 from datetime import timedelta
@@ -808,8 +809,8 @@ class ProgramRun(TimeStampedModel):
 
     def update_sizes(self):
         """Update input and output sizes"""
-        self.input_size = self.update_size(*self.input_fn) / 1024.0
-        self.output_size = self.update_size(*self.output_fn) / 1024.0
+        self.input_size = math.ceil(self.update_size(*self.input_fn) / 1024.0)
+        self.output_size = math.ceil(self.update_size(*self.output_fn) / 1024.0)
 
     def delete_output_files(self, keep_for=None):
         """Deletes any of the output files"""
