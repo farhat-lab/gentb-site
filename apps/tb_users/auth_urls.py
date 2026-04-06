@@ -15,7 +15,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-from django.conf.urls import url, include
+from django.conf.urls import include
+from django.urls import re_path as url
 from django.contrib.auth.views import (
   PasswordResetView, PasswordResetConfirmView,
   PasswordResetCompleteView, PasswordResetDoneView,

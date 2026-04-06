@@ -42,7 +42,7 @@ from django.utils.text import slugify
 from django.core import serializers
 from django.urls import reverse
 from django.utils.timezone import now
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 
 from apps.uploads.models import UploadFile
 from apps.pipeline.models import Pipeline, PipelineRun, ProgramRun

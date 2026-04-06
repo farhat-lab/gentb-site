@@ -46,7 +46,7 @@ class Command(BaseCommand):
         if status in ('FILE_START', 'FILE_WAIT', 'FILE_NONE'):
             # Waiting or busy doing file upload
             return False
-        if status is 'FILE_ERROR':
+        if status == 'FILE_ERROR':
             raise IOError("Download Error")
 
         for st_file in (strain.file_one, strain.file_two):
